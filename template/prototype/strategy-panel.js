@@ -1,5 +1,5 @@
 /**
- * BigInitiative — Strategy Panel
+ * BigBlueprint — Strategy Panel
  * Right drawer explaining design decisions per page.
  *
  * Configure by setting window.STRATEGY_CONTEXT before this script loads:

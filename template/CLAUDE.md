@@ -1,4 +1,4 @@
-# BigInitiative Project
+# BigBlueprint Project
 
 ## Document Generation
 

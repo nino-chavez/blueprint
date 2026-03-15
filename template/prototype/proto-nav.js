@@ -1,5 +1,5 @@
 /**
- * BigInitiative — Prototype Navigation Bar
+ * BigBlueprint — Prototype Navigation Bar
  * Sticky bottom bar with page nav + drawer toggles.
  *
  * Configure by setting window.PROTO_NAV before this script loads:
