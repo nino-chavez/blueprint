@@ -1,0 +1,67 @@
+# /blueprint-docs
+
+Document generation phase of a BigBlueprint initiative. Produces strategic documents from research findings and prototype decisions.
+
+## When to use
+After research and prototype are complete (or in parallel with prototyping).
+
+## What it does
+
+1. **Read blueprint.yml** — Load document definitions from `documents:` section. Each document has a type, title, and audience.
+
+2. **Generate documents by type:**
+
+   **Strategy doc** (internal-strategy voice):
+   - Lead with the automation/self-service opportunity (headline numbers)
+   - State methodology for any data claims
+   - Show priorities stacking to total coverage (not overlapping)
+   - Include: sequencing argument, competitive context, risk register with owners, phased roadmap, success metrics with benchmarks, open questions with owners and deadlines
+   - Reference technical feasibility and research docs, don't duplicate them
+
+   **Feasibility doc** (solution-architecture voice):
+   - Map each proposed capability to existing code
+   - For each: does the data exist? Is there an integration? What's the effort?
+   - Split into "ships independently" vs "requires cross-team alignment"
+   - Include open questions with exact code references
+   - Non-prescriptive language — these are questions for the engineering team, not decisions
+
+   **Research doc** (internal-strategy voice):
+   - Organize by pattern category (not by source)
+   - For each pattern: what industry does it, what we adopted, what we rejected, why
+   - Inline citations for every factual claim
+   - Source URLs in a Sources section at the bottom
+
+   **Integration plan** (solution-architecture voice):
+   - Architecture diagram (text-based)
+   - Component-by-component implementation approach
+   - Tool/data-source mapping with code examples
+   - Phased rollout with scope per phase
+   - Cost estimates
+   - Open questions for the engineering team
+
+3. **Run quality audit** — Before generating final output, validate each document:
+   - "So what?" in the first sentence of every section
+   - Tables show conclusions, not require mental math
+   - No logic gaps between sections
+   - Context in scannable format, not dense paragraphs
+   - No redundancy across documents (use cross-references)
+
+4. **Generate deliverables** — Convert markdown to HTML + Word:
+   ```bash
+   node docs/scripts/md-to-docs.mjs docs/content/[doc].md --out docs/deliverables/
+   ```
+
+5. **Copy to prototype** — Place HTML deliverables in `prototype/docs-*.html` and link from the landing page.
+
+## Output files
+- `docs/content/*.md` — markdown source files
+- `docs/deliverables/*.html` — HTML versions
+- `docs/deliverables/*.docx` — Word versions
+- `prototype/docs-*.html` — copies for the deployed site
+
+## Quality checks
+- Every section passes the four-check audit
+- No document duplicates content from another (use cross-references)
+- Reading order is stated at the top of the strategy doc
+- Technical details (code references, model names) only in feasibility/integration docs, not strategy
+- Citations on every factual claim in the research doc

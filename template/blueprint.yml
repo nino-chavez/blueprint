@@ -1,0 +1,62 @@
+# BigBlueprint Configuration
+# Copy this to your initiative root and customize.
+
+project:
+  name: ""                          # e.g., "Self-Service Billing Portal"
+  description: ""                   # One-line description of the initiative
+  product: ""                       # e.g., "BigCommerce BMP"
+  audience:                         # Who sees the deliverables
+    leadership: []                  # e.g., ["Daniel Lentz", "Austin Comer"]
+    engineering: []                 # e.g., ["BMP team"]
+    broader: []                     # e.g., ["All stakeholders"]
+
+# Execution profile (adapted from Specchain)
+execution:
+  depth: standard                   # lean | standard | thorough
+  # lean:     Research + prototype + 1 strategy doc. Fast alignment.
+  # standard: Research + prototype + strategy + feasibility docs. Full pipeline.
+  # thorough: All of standard + market comparables + integration plan + AI chat + codebase validation.
+
+# Content voice modes (from Signal Forge taxonomy)
+voices:
+  strategy: internal-strategy       # "we" voice, scannable, named owners
+  feasibility: solution-architecture # precise, code references, open questions
+  research: internal-strategy       # evidence-based, pattern → decision mapping
+  integration: solution-architecture # code examples, phased rollout
+
+# Prototype configuration
+prototype:
+  design_system: existing           # existing | bigdesign | custom
+  # existing: match current product CSS/components exactly
+  # bigdesign: use BigDesign component specs as reference
+  # custom: provide your own shared.css
+
+  comparison_enabled: true          # show current-state panel (◀ drawer)
+  strategy_panel_enabled: true      # show strategy panel (▶ drawer)
+  chat_enabled: false               # embed AI chat agent
+  deploy_target: vercel             # vercel | static | none
+
+# Research scope
+research:
+  competitors: []                   # e.g., ["Shopify", "Squarespace"]
+  analogous_industries: []          # e.g., ["utility billing", "telecom"]
+  codebase_path: ""                 # path to production repo for feasibility validation
+  screenshots_path: ""              # path to current-state screenshots
+
+# Document package
+documents:
+  - type: strategy
+    title: ""
+    audience: leadership
+  - type: feasibility
+    title: ""
+    audience: engineering
+  # Add more as needed:
+  # - type: research
+  # - type: integration
+
+# Quality gates
+quality:
+  audit_before_share: true          # run four-check audit before generating deliverables
+  fact_check_against_code: true     # validate claims against codebase if path provided
+  cite_sources: true                # require citations in research doc
