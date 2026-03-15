@@ -16,9 +16,24 @@ Inventory what exists by reviewing screenshots and source code before building.
 
 Replace internal jargon with user-facing language in all prototype copy.
 
+**IMPORTANT:** Populate this table during project setup by auditing the existing product for the terms it actually uses. Do not leave placeholders — the agent will use whatever terms are here. Check: labels in the UI, column headers in tables, help text, and locale/i18n files in the codebase.
+
 | Never use | Always use | Why |
 |-----------|-----------|-----|
-| [internal term] | [user-facing term] | [reason] |
+| [internal term] | [user-facing term from the actual product] | [reason] |
+
+**Common patterns to check:**
+- Does the product say "GMV" or "Sales volume"?
+- Does it say "surcharge" or "processing fee" or "transaction fee"?
+- Does it say "downgrade" or "change plan"?
+- Does it say "cap" or "limit"?
+- Does it use acronyms the user wouldn't know?
+
+**Also ban these words in user-facing copy** (universal anti-patterns):
+- "deflect" / "deflection" → use "resolve without support" / "self-service resolution"
+- "non-preferred" → use "third-party" or just the provider name
+- "blocked" → use "not eligible"
+- "auto-upgraded" → use "plan will be updated"
 
 ## 3. Framing
 
