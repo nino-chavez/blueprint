@@ -1,4 +1,4 @@
-# BigInitiative Project
+# the original employer-prefixed name Project
 
 ## Document Generation
 

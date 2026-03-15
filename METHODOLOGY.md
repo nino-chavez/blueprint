@@ -1,12 +1,17 @@
-# BigInitiative Methodology
+# the original employer-prefixed name Methodology
 
-How to take a product initiative from research to prototype to stakeholder alignment
+Agent-assisted pipeline for product planning, prototyping, and stakeholder alignment
 
 ## Overview
 
-BigInitiative is a process for building stakeholder alignment around product changes that affect customers. It produces three things simultaneously: an interactive prototype, strategic documents, and a deployable site — all from a single project.
+the original employer-prefixed name is a jig — a repeatable structure that shapes how an agent assists with product initiatives. The human provides context (screenshots, BRDs, codebase access, competitive intelligence). The agent executes a seven-stage pipeline that produces an interactive prototype, strategic documents, and a deployable stakeholder site.
 
-This methodology was extracted from the a commerce-platform pricing & packaging CX initiative (March 2026), where it was used to prototype a self-service billing portal, produce four strategic documents, conduct cross-industry research, and validate technical feasibility against the production codebase.
+The methodology integrates three existing tools:
+- **Specchain** — agent orchestration patterns and governance principles
+- **Forge Signal** — content generation engine with voice taxonomy and quality validation
+- **Claude Code** — agent runtime with tool use, codebase analysis, and web research
+
+Extracted from the a commerce-platform pricing & packaging CX initiative (March 2026), where it produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility validated against a production Rails codebase, and an embedded AI billing support agent.
 
 ## The Pipeline
 
@@ -171,7 +176,7 @@ After each iteration, capture what was learned:
 
 ## Naming Convention
 
-BigInitiative follows the commerce platform tooling naming: the platform design system, BigTools, BigInitiative.
+the original employer-prefixed name follows the commerce platform tooling naming: the platform design system, BigTools, the original employer-prefixed name.
 
 ## Origin
 

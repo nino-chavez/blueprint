@@ -1,5 +1,5 @@
 /**
- * BigInitiative — Current State Panel
+ * the original employer-prefixed name — Current State Panel
  * Left drawer showing screenshots of the existing product for comparison.
  *
  * Configure by setting window.CURRENT_STATE before this script loads:

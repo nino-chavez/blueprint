@@ -1,5 +1,5 @@
 /**
- * BigInitiative — Strategy Panel
+ * the original employer-prefixed name — Strategy Panel
  * Right drawer explaining design decisions per page.
  *
  * Configure by setting window.STRATEGY_CONTEXT before this script loads:
