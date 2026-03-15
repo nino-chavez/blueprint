@@ -65,11 +65,63 @@ my-initiative/
 ## Quick Start
 
 ```bash
+# 1. Create your initiative from the template
 cp -r template/ my-initiative/
 cd my-initiative/
+
+# 2. Configure
+# Edit blueprint.yml — set project name, audience, research scope, execution depth
+
+# 3. Add screenshots of the current product (if available)
+# cp ~/screenshots/*.png prototype/current-state/
+
+# 4. Run the pipeline
+# The CLAUDE.md provides skills (/blueprint-research, /blueprint-prototype, etc.)
+# and agent definitions that an AI assistant can use to execute each stage.
 ```
 
-Then tell the agent what you're building. The CLAUDE.md provides instructions for document voice, prototype design rules, and quality audit criteria.
+### Optional: Add Forge Signal (strategic content generation)
+
+If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline:
+
+```bash
+# Clone Forge Signal (if not already installed)
+git clone git@github.com:nino-chavez/forge-signal.git ~/tools/forge-signal
+cd ~/tools/forge-signal && npm install
+
+# Enable in your initiative
+# Edit blueprint.yml:
+#   signal_forge:
+#     enabled: true
+#     path: "~/tools/forge-signal"
+```
+
+What this gives you: four voice modes (thought-leadership, executive-advisory, solution-architecture, internal-strategy), document quality audit framework, content generation with Ghost Writer → Copywriter → Editor pipeline, and export to Word/PDF/PPTX/HTML.
+
+GitHub: https://github.com/nino-chavez/forge-signal
+
+### Optional: Add Specchain (implementation specs)
+
+If your initiative needs to produce implementation specs, task breakdowns, or multi-agent development workflows:
+
+```bash
+# Clone Specchain
+git clone git@github.com:nino-chavez/specchain.git ~/tools/specchain
+cd ~/tools/specchain && bash setup.sh
+
+# Enable in your initiative
+# Edit blueprint.yml:
+#   specchain:
+#     enabled: true
+```
+
+What this gives you: spec-driven development workflow, execution profiles (solo/squad × lean/standard/thorough), 13 specialized agents (planners, implementers, verifiers), governance principles, and STATE.md session tracking.
+
+GitHub: https://github.com/nino-chavez/specchain
+
+### What works without either
+
+the original employer-prefixed name works standalone. Without Forge Signal, the doc-writer agent uses built-in internal-strategy voice rules. Without Specchain, there's no implementation spec generation — the initiative stays at the strategy/prototype/feasibility level. Both can be added at any point.
 
 ## The Three Layers of Every Prototype Page
 

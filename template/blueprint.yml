@@ -5,32 +5,60 @@ project:
   name: ""                          # e.g., "Self-Service Billing Portal"
   description: ""                   # One-line description of the initiative
   product: ""                       # e.g., "the commerce platform BMP"
-  audience:                         # Who sees the deliverables
+  audience:
     leadership: []                  # e.g., ["Daniel Lentz", "Austin Comer"]
     engineering: []                 # e.g., ["platform team"]
     broader: []                     # e.g., ["All stakeholders"]
 
-# Execution profile (adapted from Specchain)
+# Execution depth
 execution:
   depth: standard                   # lean | standard | thorough
   # lean:     Research + prototype + 1 strategy doc. Fast alignment.
   # standard: Research + prototype + strategy + feasibility docs. Full pipeline.
   # thorough: All of standard + market comparables + integration plan + AI chat + codebase validation.
 
-# Content voice modes (from Forge Signal taxonomy)
+# ──────────────────────────────────────────────────────────────────
+# Optional dependencies
+# the original employer-prefixed name works standalone. These tools extend it.
+# ──────────────────────────────────────────────────────────────────
+
+# Forge Signal — strategic content generation with voice taxonomy
+# Install: git clone git@github.com:nino-chavez/forge-signal.git && cd forge-signal && npm install
+# Docs: https://github.com/nino-chavez/forge-signal
+signal_forge:
+  enabled: false                    # set true if forge-signal is available
+  path: ""                          # e.g., "~/Workspace/dev/tools/forge-signal"
+  # When enabled:
+  #   - /blueprint-docs can use forge-signal's generate command for thought-leadership voice
+  #   - Voice guides at forge-signal/docs/voice/ are the canonical reference
+  #   - Document quality audit at forge-signal/docs/voice/document-quality-audit.md
+
+# Specchain — spec-driven development with multi-agent orchestration
+# Install: git clone git@github.com:nino-chavez/specchain.git && cd specchain && bash setup.sh
+# Docs: https://github.com/nino-chavez/specchain
+specchain:
+  enabled: false                    # set true if specchain is installed in this project
+  # When enabled:
+  #   - /blueprint-prototype can hand off to specchain for implementation specs
+  #   - Governance principles from specchain/governance/principles.md apply
+  #   - STATE.md session tracking pattern is available
+  #   - Squad mode agents can parallelize research tasks
+
+# ──────────────────────────────────────────────────────────────────
+# Content voice modes
+# ──────────────────────────────────────────────────────────────────
+
 voices:
   strategy: internal-strategy       # "we" voice, scannable, named owners
   feasibility: solution-architecture # precise, code references, open questions
   research: internal-strategy       # evidence-based, pattern → decision mapping
   integration: solution-architecture # code examples, phased rollout
+  # If signal_forge.enabled, voice guides at forge-signal/docs/voice/ are authoritative.
+  # the original employer-prefixed name's built-in doc-writer agent uses these same rules independently.
 
 # Prototype configuration
 prototype:
   design_system: existing           # existing | bigdesign | custom
-  # existing: match current product CSS/components exactly
-  # bigdesign: use the platform design system component specs as reference
-  # custom: provide your own shared.css
-
   comparison_enabled: true          # show current-state panel (◀ drawer)
   strategy_panel_enabled: true      # show strategy panel (▶ drawer)
   chat_enabled: false               # embed AI chat agent
@@ -51,7 +79,6 @@ documents:
   - type: feasibility
     title: ""
     audience: engineering
-  # Add more as needed:
   # - type: research
   # - type: integration
 

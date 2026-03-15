@@ -59,6 +59,20 @@ After research and prototype are complete (or in parallel with prototyping).
 - `docs/deliverables/*.docx` — Word versions
 - `prototype/docs-*.html` — copies for the deployed site
 
+## Forge Signal integration
+
+If `signal_forge.enabled` is true in blueprint.yml:
+- Read voice guides from `{signal_forge.path}/docs/voice/` for authoritative voice definitions
+- Read quality audit from `{signal_forge.path}/docs/voice/document-quality-audit.md`
+- For thought-leadership or executive-advisory voice, consider using forge-signal's generate command:
+  ```bash
+  cd {signal_forge.path}
+  npx tsx src/cli/index.ts generate pov -i {input.md} -f html,word -p anthropic
+  ```
+- For internal-strategy voice (the default), use the built-in doc-writer agent — forge-signal's ghost-writer pipeline applies blog voice which is wrong for internal docs
+
+If forge-signal is not available, the doc-writer agent applies the same voice rules independently. The quality audit checks are built into the agent definition.
+
 ## Quality checks
 - Every section passes the four-check audit
 - No document duplicates content from another (use cross-references)
