@@ -39,6 +39,16 @@ At the start of an initiative, or when new competitive/market context is needed.
 - `research/competitive-analysis/` — per-competitor and per-industry analysis
 - `docs/content/research-comparables.md` — synthesized comparables doc
 
+## Specchain integration
+
+If `specchain.enabled` is true in blueprint.yml:
+- Use specchain's `project-discovery` pattern for codebase exploration (four-pass protocol: structure → patterns → data flow → integration points)
+- Governance principles from `specchain/governance/principles.md` apply to how findings are reported (scope minimization, traceability, boundary validation)
+- In squad mode, parallelize: one agent on codebase exploration, one on competitive research, one on cross-industry research
+- Write findings to STATE.md for session persistence across conversations
+
+If specchain is not available, the researcher agent performs all research sequentially using standard search and file reading tools.
+
 ## Quality checks
 - Every claim cites a source (URL, screenshot reference, or code path)
 - Patterns are organized by category, not by source
