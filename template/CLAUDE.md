@@ -42,6 +42,14 @@ Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents
 2. Do data presentations require mental math?
 3. Does any section contradict another?
 4. Is context in scannable format?
+5. **Methodology check:** If data is presented with specific percentages or breakdowns, is the methodology stated? If a large portion of the data is uncategorized/unlabeled, does the doc explain how the breakdown was derived? A skeptical reader will ask "how do you know X if Y% is uncategorized?" — the document must answer this.
+
+### Citation Rules
+
+- Every factual claim must cite a source
+- External sources must include a URL (not just a name)
+- Internal data must cite the person, date range, and methodology
+- If a claim cannot be verified, mark it as UNVERIFIED — do not present it at the same confidence level as verified claims
 
 ### Anti-Patterns
 
@@ -49,6 +57,8 @@ Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents
 2. **Book prose** — no burying lists in sentences
 3. **Slide-as-doc** — if content needs tables, use document format
 4. **Duplicate content** — cross-reference other docs, don't repeat
+5. **Unsourced claims** — every number needs a source. "Industry data shows..." is not a citation.
+6. **"Deflection" language** — never use "deflect" or "deflection" to describe reducing support cases. Use "self-service resolution" or "resolve without support." Deflection implies pushing customers away from help.
 
 ## Prototype Design
 

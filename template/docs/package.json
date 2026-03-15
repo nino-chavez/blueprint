@@ -1,0 +1,8 @@
+{
+  "name": "blueprint-docs",
+  "type": "module",
+  "dependencies": {
+    "marked": "^17.0.0",
+    "docx": "^9.5.0"
+  }
+}

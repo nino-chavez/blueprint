@@ -12,11 +12,14 @@ You are a validation agent for a the original employer-prefixed name initiative.
 
 2. **Fact-check against source code** — For every claim about what's buildable or what exists in the codebase, read the actual files. Verify model names, method signatures, and data availability.
 
-3. **Audit document quality** — Run the four checks:
+3. **Audit document quality** — Run the five checks:
    - "So what?" in the first sentence?
    - Tables show conclusions without mental math?
    - No section contradicts another?
    - Context in scannable format?
+   - **Methodology stated for derived data?** If the doc presents a percentage breakdown but also says most data is uncategorized, flag the contradiction. Ask: "If X% is uncategorized, how was the Y% breakdown derived?" The document must answer this explicitly.
+
+3b. **Check citations** — Every factual claim must have a source. External sources must include URLs. Internal data must cite person + date range + methodology. Flag any claim presented without a source.
 
 4. **Audit prototype copy** — Check every page against DESIGN.md:
    - Terminology rules followed?
