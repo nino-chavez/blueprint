@@ -1,0 +1,70 @@
+/* BigInitiative — Prototype Design System
+ * Override these variables to match your product's design language.
+ */
+
+:root {
+  --bi-primary: #3C64F4;
+  --bi-primary-hover: #2b50d4;
+  --bi-text: #313440;
+  --bi-text-muted: #8C93AD;
+  --bi-text-secondary: #5E637A;
+  --bi-bg: #F6F7FC;
+  --bi-card-bg: #fff;
+  --bi-border: #D9DCE9;
+  --bi-border-light: #ECEEF5;
+  --bi-success: #2AAB3F;
+  --bi-warning: #F59E0B;
+  --bi-error: #DB3643;
+  --bi-shadow: 0 2px 12px rgba(49, 52, 64, 0.1);
+  --bi-radius: 4px;
+  --bi-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--bi-font); background: var(--bi-bg); color: var(--bi-text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+a { color: var(--bi-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.card { background: var(--bi-card-bg); border-radius: calc(var(--bi-radius) * 2); box-shadow: var(--bi-shadow); padding: 28px 32px; margin-bottom: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.card-title { font-size: 18px; font-weight: 600; }
+.card-subtitle { font-size: 13px; color: var(--bi-text-muted); margin-top: 2px; }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bi-text-muted); padding: 10px 12px; border-bottom: 1px solid var(--bi-border); }
+.data-table td { padding: 14px 12px; border-bottom: 1px solid var(--bi-border-light); font-size: 14px; vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .text-right { text-align: right; }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: var(--bi-radius); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.badge-success { background: var(--bi-success); color: #fff; }
+.badge-warning { background: var(--bi-warning); color: #fff; }
+.badge-error { background: var(--bi-error); color: #fff; }
+
+.btn { display: inline-block; padding: 8px 20px; border-radius: var(--bi-radius); font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid var(--bi-border); background: var(--bi-card-bg); color: var(--bi-primary); transition: all 0.15s; }
+.btn:hover { background: var(--bi-bg); text-decoration: none; }
+.btn-primary { background: var(--bi-primary); color: #fff; border-color: var(--bi-primary); }
+.btn-primary:hover { background: var(--bi-primary-hover); }
+.btn-sm { padding: 5px 14px; font-size: 13px; }
+
+.message { padding: 12px 20px; border-radius: var(--bi-radius); font-size: 13px; margin-bottom: 16px; border-left: 4px solid; }
+.message-info { background: #eff6ff; border-left-color: var(--bi-primary); color: #1e40af; }
+.message-warning { background: #fffbeb; border-left-color: var(--bi-warning); color: #92400e; }
+.message-error { background: #fef2f2; border-left-color: var(--bi-error); color: #991b1b; }
+.message-success { background: #f0fdf4; border-left-color: var(--bi-success); color: #166534; }
+
+.detail-section { background: var(--bi-bg); border: 1px solid var(--bi-border); border-radius: calc(var(--bi-radius) * 1.5); padding: 16px 20px; margin-top: 12px; }
+.detail-section-title { font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+
+.kv-row { display: flex; padding: 8px 0; border-bottom: 1px solid var(--bi-border-light); }
+.kv-row:last-child { border-bottom: none; }
+.kv-label { width: 200px; flex-shrink: 0; font-weight: 600; color: var(--bi-text-secondary); font-size: 13px; text-align: right; padding-right: 20px; }
+.kv-value { font-size: 14px; }
+
+.page-content { max-width: 960px; margin: 24px auto; padding: 0 24px; }
+.breadcrumb { padding: 12px 24px; font-size: 13px; color: var(--bi-text-muted); border-bottom: 1px solid var(--bi-border); background: var(--bi-card-bg); }
+.footer { text-align: center; padding: 32px 24px; font-size: 13px; color: var(--bi-text-muted); }
+.footer a { color: var(--bi-text-secondary); margin: 0 12px; }
+.proto-banner { background: #1e293b; color: #94a3b8; text-align: center; padding: 6px; font-size: 11px; letter-spacing: 0.5px; }
+.proto-banner strong { color: #f8fafc; }
+.lozenge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: #f3f4f6; color: var(--bi-text-secondary); }
