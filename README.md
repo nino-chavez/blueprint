@@ -172,3 +172,7 @@ Extracted from the BigCommerce Pricing & Packaging CX initiative (March 2026). T
 - **[Signal Forge](https://github.com/nino-chavez/signal-forge)** — strategic content generation with voice taxonomy
 - **Specchain** — spec-driven development with multi-agent orchestration
 - **bc-figma-generator** — design asset generation from Figma specs
+
+## BC-Specific Reference
+
+For initiatives targeting BigCommerce marketplace apps, see [docs/bc-marketplace-context.md](docs/bc-marketplace-context.md) — captures iframe canvas behavior, install-flow ownership, scope-list source, BigDesign patterns, and reference apps on disk (`aisles-admin`, `ask-bc`). Use as the existing-product baseline for Stage 1 (Research) of any BC initiative.
