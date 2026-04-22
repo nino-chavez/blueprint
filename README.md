@@ -172,3 +172,7 @@ Extracted from the a commerce-platform pricing & packaging CX initiative (March 
 - **[Forge Signal](https://github.com/nino-chavez/forge-signal)** — strategic content generation with voice taxonomy
 - **Specchain** — spec-driven development with multi-agent orchestration
 - **a-figma-generator** — design asset generation from Figma specs
+
+## BC-Specific Reference
+
+For initiatives targeting the commerce platform marketplace apps, see [docs/bc-marketplace-context.md](docs/bc-marketplace-context.md) — captures iframe canvas behavior, install-flow ownership, scope-list source, the platform design system patterns, and reference apps on disk (`an-internal-admin-app`, `an-internal-assistant-app`). Use as the existing-product baseline for Stage 1 (Research) of any BC initiative.
