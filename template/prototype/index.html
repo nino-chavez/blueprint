@@ -1,79 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>the original employer-prefixed name Prototype</title>
-<link rel="stylesheet" href="shared.css">
-<style>
-  .page-content { max-width: 1080px; }
-  .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
-  .doc-card { background: var(--bi-card-bg); border: 1px solid var(--bi-border); border-radius: 8px; padding: 16px 20px; transition: box-shadow 0.15s; }
-  .doc-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .doc-card .doc-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .doc-card .doc-audience { font-size: 11px; color: var(--bi-text-muted); margin-bottom: 8px; }
-  .doc-card .doc-desc { font-size: 12px; color: var(--bi-text-secondary); line-height: 1.5; margin-bottom: 10px; }
-  .doc-card a { font-size: 13px; font-weight: 600; }
-  .flows-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .flow-card { background: var(--bi-card-bg); border-radius: 8px; padding: 16px 20px; box-shadow: var(--bi-shadow); border-left: 4px solid var(--bi-border); transition: box-shadow 0.15s; }
-  .flow-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .flow-card .flow-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-  .flow-card .flow-sub { font-size: 11px; color: var(--bi-text-muted); margin-bottom: 8px; }
-  .flow-card .flow-desc { font-size: 12px; color: var(--bi-text-secondary); line-height: 1.5; margin-bottom: 10px; }
-  .flow-card a { font-size: 13px; font-weight: 600; }
-  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bi-text-muted); margin-bottom: 12px; margin-top: 28px; }
-  .section-label:first-of-type { margin-top: 0; }
-  .page-intro { font-size: 13px; color: var(--bi-text-secondary); margin-bottom: 16px; line-height: 1.6; }
-  @media (max-width: 768px) { .docs-grid, .flows-grid { grid-template-columns: 1fr; } }
-</style>
-</head>
-<body>
-
-<div class="proto-banner"><strong>PROTOTYPE</strong> — [Project Name]</div>
-
-<div class="breadcrumb"><span>[Project Name]</span></div>
-
-<div class="page-content">
-
-  <div style="margin-bottom: 20px;">
-    <h1 style="font-size: 20px; font-weight: 700; margin-bottom: 6px;">[Project Name] — Prototype & Strategy</h1>
-    <p class="page-intro">[One-line description of the initiative and what this prototype demonstrates.]</p>
-  </div>
-
-  <!-- Strategic Documents -->
-  <div class="section-label">Strategic Documents</div>
-  <div class="docs-grid">
-    <!-- Add doc cards here. Example: -->
-    <!--
-    <div class="doc-card">
-      <div class="doc-title">CX Strategy</div>
-      <div class="doc-audience">Leadership</div>
-      <div class="doc-desc">Description of the document.</div>
-      <a href="docs-strategy.html">Read →</a>
-    </div>
-    -->
-  </div>
-
-  <!-- Prototype Flows -->
-  <div class="section-label">Prototype Screens</div>
-  <div class="flows-grid">
-    <!-- Add flow cards here. Example: -->
-    <!--
-    <div class="flow-card" style="border-left-color: var(--bi-primary);">
-      <div class="flow-title">Feature Name</div>
-      <div class="flow-sub">Context · Details</div>
-      <div class="flow-desc">What this flow demonstrates.</div>
-      <a href="feature.html">View prototype →</a>
-    </div>
-    -->
-  </div>
-
-</div>
-
-<div class="footer">
-  <a href="#">Privacy Policy</a>
-  <a href="#">Terms of Service</a>
-</div>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@200;300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <title>the original employer-prefixed name — Prototype</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
