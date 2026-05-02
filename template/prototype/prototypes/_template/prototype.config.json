@@ -1,0 +1,25 @@
+{
+  "name": "Slice Template",
+  "description": "Skeleton slice. Copy this directory to prototypes/<your-slice-name>/ and customize. The leading underscore in `_template` keeps it out of the Studio Home page.",
+  "brdRef": "Replace with your spec reference (e.g., 'Epic 1 — Onboarding')",
+  "phase": "MVP",
+  "traces": [],
+  "pages": [
+    {
+      "name": "Page One",
+      "route": "/",
+      "story": "US-1.1"
+    },
+    {
+      "name": "Page Two",
+      "route": "/page-two",
+      "story": "US-1.2"
+    }
+  ],
+  "flows": [
+    {
+      "name": "Default flow",
+      "steps": ["Page One", "Page Two"]
+    }
+  ]
+}
