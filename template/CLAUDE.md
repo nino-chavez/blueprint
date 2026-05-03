@@ -6,6 +6,9 @@ Agent-assisted jig for product planning, prototyping, and stakeholder alignment.
 
 ```
 /blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy
+                                                                                            │
+                                                                                            ▼
+                                                                                  /blueprint-triage  (after stakeholder feedback)
 ```
 
 Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents defined in `.claude/agents/blueprint/`.
@@ -17,8 +20,9 @@ Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents
 | `/blueprint-research` | Research | Codebase exploration, competitive analysis, market comparables |
 | `/blueprint-prototype` | Prototype | Build HTML pages, strategy panels, current-state panels, landing page |
 | `/blueprint-docs` | Documents | Generate strategy, feasibility, research, integration docs |
-| `/blueprint-validate` | Validate | Fact-check against screenshots/code, audit quality, check consistency |
+| `/blueprint-validate` | Validate | Fact-check against screenshots/code, audit quality. Diagnose-loop structured (build feedback loops → reproduce → hypothesise root cause → fix at cause) |
 | `/blueprint-deploy` | Deploy | Package and deploy to Vercel |
+| `/blueprint-triage` | Post-demo | Triage stakeholder feedback through state machine (bug / scope-add / opinion / question / kudos) with explicit dispositions |
 
 ## Agents
 
