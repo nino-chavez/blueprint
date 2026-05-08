@@ -36,16 +36,17 @@ The Buyer Portal is the most distinctive part — it's a UI that BC ships, not j
 
 ## 2. The Two API Hosts
 
-B2B Edition splits its API surface across two hosts:
+> **2026-05-08 audit correction (per bc-platform-verify skill):** earlier versions of this doc described `api-b2b.bigcommerce.com` as the unified B2B Edition host. Verified against BC docs (`docs.bigcommerce.com/developer/api-reference/rest/b2b/management/company/companies.mdx`) that the Management API has migrated to `api.bigcommerce.com/b2b/management/...` with `X-Auth-Token` header. The legacy `authToken` is deprecated as of **2025-09-30**. Storefront-side endpoints (token exchange, headless integration) may still use `api-b2b.bigcommerce.com` per the Catalyst integration PDF, but this is a derivative source and may also have migrated. Verify empirically before relying on the old host/header.
 
-| Host | Purpose | Auth |
-|---|---|---|
-| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | Static `X-Auth-Token` (Store API token) |
-| `api-b2b.bigcommerce.com/api/io/...` | B2B-specific — Companies, Buyers, Quotes, Customer Contracts, Shopping Lists | Static `authToken` (B2B API token, distinct from Store API token) + per-customer storefront tokens |
+B2B Edition splits its API surface across hosts:
 
-The two are **distinct credentials**. A BC Store API token does NOT authenticate against the B2B API host, and vice versa. Initiative env files need both.
+| Host | Purpose | Auth | Source |
+|---|---|---|---|
+| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | `X-Auth-Token` (Store API token) | Verified |
+| `api.bigcommerce.com/b2b/management/...` | **B2B Management API** — Companies, RFQ (Quotes), etc. | `X-Auth-Token` (legacy `authToken` deprecated 2025-09-30) | Verified 2026-05-08 against `companies.mdx` |
+| `api-b2b.bigcommerce.com/api/io/...` | **B2B Storefront API** — buyer-facing token exchange (loginWithB2B), Buyer Portal SDK config | `authToken` (header) per Catalyst PDF | TBC — derivative source; BC docs do not publish this surface explicitly. May have migrated to match management API. |
 
-The B2B GraphQL endpoint surface is also separate from BC's storefront GraphQL — B2B has its own GraphQL via the `api-b2b.bigcommerce.com` host.
+**Naming gotcha:** the B2B Edition's "Quotes" feature uses URL path `/rfq` (Request for Quote), NOT `/quotes`. Verified per `quotes.mdx` page on BC docs.
 
 ---
 
