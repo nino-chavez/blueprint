@@ -2,9 +2,26 @@
 
 **Purpose:** Captures the framework-agnostic contract between a host storefront and BC's Buyer Portal SPA, so initiatives can integrate against any host (Catalyst / SvelteKit / Solid / Vue / Astro / Stencil) without re-deriving the protocol.
 
-**Last updated:** 2026-05-08
+**Last updated:** 2026-05-08 (audit pass per `bc-platform-verify` skill — corrects PDF-derived claims that diverged from BC primary sources)
 
-**Source:** "Open Source Buyer Portal working with One Click Catalyst" integration guide (May 2026) + Paradigm B2B initiative (May 2026) port to SvelteKit + bc-subscriptions reference.
+**Sources:**
+- **Verified primary** (BC docs): `https://docs.bigcommerce.com/developer/docs/b2b-edition/storefront/buyer-portal/headless.mdx`
+- **Verified primary** (BC GitHub): `https://github.com/bigcommerce/b2b-buyer-portal/blob/main/docs/headless.md`
+- **Empirically verified** (live CDN script): `https://cdn.bundleb2b.net/b2b/production/storefront/headless.js` inspected 2026-05-08
+- **Derivative** (3rd party PDF): "Open Source Buyer Portal working with One Click Catalyst" — used for the Catalyst port table only; **its data-attribute names diverge from current BC docs and should NOT be trusted for new integrations**
+
+## ⚠️ 2026-05-08 audit corrections
+
+Earlier versions of this doc (and the Catalyst PDF) specified script-tag attributes
+`data-cart-id`, `data-channel-id`, `data-store-hash`, `data-token` (kebab-case).
+
+**Verified against the live BC CDN script:** the production loader reads only
+`data-storehash` and `data-channelid` (lowercase, no hyphens), plus optional
+`data-environment`. The token and cartId are **NOT** passed via script-tag
+attributes — they go through `window.B3` set BEFORE the script loads.
+
+Initiatives that copy the Catalyst PDF verbatim will fail in production. Use
+the contract documented below.
 
 **Companion doc:** `bc-b2b-edition-context.md` covers the B2B Edition data model and surface inventory. This doc is *just* the integration contract.
 
@@ -57,21 +74,49 @@ The loader picks one of three script sources based on env:
 | Mode | Script source | Trigger |
 |---|---|---|
 | **Dev** | `${LOCAL_BUYER_PORTAL_HOST}` (default `http://localhost:3001`) | `LOCAL_BUYER_PORTAL_HOST` is set |
-| **Prod default** | BC CDN (auto-resolved) | Neither `LOCAL_BUYER_PORTAL_HOST` nor `PROD_BUYER_PORTAL_URL` is set |
-| **Prod custom** | `${PROD_BUYER_PORTAL_URL}` | `PROD_BUYER_PORTAL_URL` is set (forked portal) |
+| **Prod default** | `https://cdn.bundleb2b.net/b2b/production/storefront/headless.js` (verified 2026-05-08) | Neither dev nor custom env set |
+| **Prod custom** | `${PROD_BUYER_PORTAL_URL}/headless.js` | `PROD_BUYER_PORTAL_URL` is set (forked portal) |
 
-All three pass these props to the script:
+**Required script-tag attributes** (verified 2026-05-08 against live CDN script):
 
-| Prop | Source | Required for |
+| Attribute | Value | Required |
 |---|---|---|
-| `cartId` | session | All modes |
-| `channelId` | env | All modes |
-| `storeHash` | env | All modes |
-| `token` | session (b2bToken from step 1) | All modes |
-| `prodUrl` | env (`PROD_BUYER_PORTAL_URL`) | Prod custom only |
-| `hashIndex` | env (`PROD_BUYER_PORTAL_HASH_INDEX`) | Prod custom only |
-| `hashIndexLegacy` | env (`PROD_BUYER_PORTAL_HASH_INDEX_LEGACY`) | Prod custom only |
-| `hashPolyfills` | env (`PROD_BUYER_PORTAL_HASH_POLYFILLS`) | Prod custom only |
+| `data-storehash` | The BC store hash (e.g., `cdfqf9k6zf`) | ✅ yes |
+| `data-channelid` | Numeric channel ID (e.g., `1`) | ✅ yes |
+| `data-environment` | `staging` or `production` | optional |
+
+**Configuration via `window.B3`** — must be set BEFORE the script loads. Source: `bigcommerce/b2b-buyer-portal/docs/headless.md`.
+
+```html
+<script>
+  window.B3 = {
+    setting: {
+      store_hash: 'cdfqf9k6zf',
+      channel_id: 1,
+      // Optional config (verified in repo's headless.md):
+      // 'dom.checkoutRegisterParentElement': '#checkout-app',
+      // 'dom.registerElement': '...',
+      // before_login_goto_page: '/account.php?action=order_status',
+      // checkout_super_clear_session: 'true',
+    }
+  };
+  // Optional separate config:
+  // window.b3CheckoutConfig = { routes: { dashboard: '/account.php?...' } };
+</script>
+<script type="module"
+  src="https://cdn.bundleb2b.net/b2b/production/storefront/headless.js"
+  data-storehash="cdfqf9k6zf"
+  data-channelid="1">
+</script>
+```
+
+**TBC** (per bc-platform-verify skill — needs empirical validation):
+
+- Where the b2bToken from step 1 goes inside `window.B3`. The Catalyst PDF claimed `data-token`, but that attribute is not read by the live loader. Likely a property under `window.B3.setting` or similar — needs sandbox probing or BC engineering confirmation.
+- Where the cartId goes (same).
+- Whether the staging URL follows the pattern `https://cdn.bundleb2b.net/b2b/staging/storefront/headless.js` — best guess based on production URL.
+
+These TBCs should resolve once an initiative runs an empirical test against a real B2B sandbox with a real B2B_API_TOKEN. Until then, integrations should expect the SDK to fail to authenticate and prepare a fallback path.
 | `environment` | env (`STAGING_B2B_CDN_ORIGIN === 'true' ? 'staging' : 'production'`) | Prod default only |
 
 ### 3. Wire the cart-creation event listener
@@ -91,16 +136,20 @@ function handleCartCreated({ data: { cartId } }) {
 
 This is the most common breakage point. Symptoms when broken: quote-checkout redirects to empty cart; cart items don't persist after quote acceptance.
 
+**TBC:** the event name `on-cart-created` and the SDK callbacks API surface are sourced from the Catalyst integration PDF, NOT from BC primary docs. The BC docs page at `headless.mdx` and the GitHub repo's `docs/headless.md` do not publish event names. The actual SDK is loaded dynamically via a GraphQL `storefrontScript` query (verified by inspecting the loader source 2026-05-08), which means the event surface is shipped at runtime — not statically inspectable. Until an initiative empirically verifies this by hooking the event in a real session: treat the name as plausible-but-unconfirmed.
+
 ### 4. Render the two PDP B2B buttons
 
 Two buttons on the Product Detail Page:
 
-| Button | Hook (Path 2 / React) | Handler |
+| Button | Hook (Path 2 PDF claim) | Handler |
 |---|---|---|
 | **Add to Quote** | `useAddToQuote()` | If `addToQuote.isEnabled`, render button calling `addToQuote.addProductToQuote(product)` |
 | **Add to Shopping List** | `useAddToShoppingList()` | If `addToShoppingList.isEnabled`, render button calling `addToShoppingList.addProductToShoppingList(product)` |
 
-Hooks are exposed by the loader script at runtime. Non-React hosts re-export equivalents from your B2B client package.
+Hooks are claimed by the Path 2 PDF as exposed by the loader script at runtime. Non-React hosts re-export equivalents from your B2B client package.
+
+**TBC:** these hook names + return shapes come from the Catalyst PDF only. BC primary docs do not publish the hook surface (the SDK is loaded dynamically per §2 above, so the surface isn't statically documented). The PDF's data-attribute claims were proven wrong against the live CDN script (see audit note at top of doc), so trust on hook claims should also be tempered. Empirical verification needed.
 
 ### 5. Add B2B i18n keys
 
