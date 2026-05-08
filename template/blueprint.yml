@@ -45,6 +45,69 @@ specchain:
   #   - Squad mode agents can parallelize research tasks
 
 # ──────────────────────────────────────────────────────────────────
+# BigCommerce B2B Edition — opt-in for B2B-targeted initiatives
+# Reference: docs/bc-b2b-edition-context.md
+#            docs/bc-b2b-buyer-portal-integration.md
+# ──────────────────────────────────────────────────────────────────
+
+b2b_edition:
+  enabled: false                    # set true if initiative targets BC B2B Edition
+  # When enabled:
+  #   - Stage 1 research auto-includes both BC B2B reference docs in research/current-state/
+  #   - prototype/DESIGN.md "When Targeting BC B2B Edition" section is authoritative
+  #   - CLAUDE.md adds B2B-specific anti-patterns and reading order
+  #   - Strategy panels must cite Buyer Portal contract methods (loginWithB2B, useAddToQuote, on-cart-created, etc.)
+  buyer_portal_strategy: bc_cdn     # bc_cdn | fork | host_owned
+  # bc_cdn:     Use BC's hosted Buyer Portal SPA (default, zero infra)
+  # fork:       Fork bigcommerce/b2b-buyer-portal, self-host (when surface customization is unavoidable)
+  # host_owned: Implement Buyer-Portal-equivalent surfaces in your host storefront (rare; usually overkill)
+
+# ──────────────────────────────────────────────────────────────────
+# Hive multi-agent coordination — opt-in
+# Reference: docs/hive-coordination-pattern.md
+# ──────────────────────────────────────────────────────────────────
+
+hive:
+  enabled: false                    # set true to bootstrap Hive on a dedicated CF account
+  source: ""                        # e.g., "~/Workspace/dev/wip/bc-subscriptions/.hive"
+  mcp_server: ""                    # e.g., "myproject-hive-mcp"
+  dashboard: ""                     # e.g., "myproject-hive-dashboard"
+  cf_account: ""                    # CF account binding (named profile or account ID)
+  d1_database: ""                   # e.g., "myproject-hive-d1"
+  # Use when:
+  #   - 5+ parallelizable work streams
+  #   - Multiple agent sessions running concurrently against the same repo
+  #   - Timeline too short for serialized work (<2 weeks)
+  # Skip when:
+  #   - Solo, sequential initiative — TaskCreate is sufficient
+  #   - Throwaway exploration
+
+# ──────────────────────────────────────────────────────────────────
+# Cloudflare deployment — opt-in (replaces default Vercel target)
+# Reference: docs/cloudflare-deployment-pattern.md
+# ──────────────────────────────────────────────────────────────────
+
+cloudflare:
+  enabled: false                    # set true to deploy on Cloudflare instead of Vercel
+  # When enabled:
+  #   - Stage 6 deploy uses `wrangler deploy` / `wrangler pages deploy`
+  #   - Stage 1 research auto-includes cloudflare-deployment-pattern.md
+  #   - ADR-0004 pattern (CF infrastructure inventory) is mandatory before code is written
+  account_strategy: single          # single | per_environment
+  # single:          One CF account, multiple envs via wrangler [env.*] (fastest setup)
+  # per_environment: Separate CF accounts per env (production isolation)
+  primitives:                       # Which CF primitives the initiative will use
+    workers: true
+    pages: true
+    d1: false
+    workers_ai: false
+    vectorize: false
+    kv: false
+    r2: false
+    queues: false
+    durable_objects: false
+
+# ──────────────────────────────────────────────────────────────────
 # Content voice modes
 # ──────────────────────────────────────────────────────────────────
 
@@ -62,7 +125,8 @@ prototype:
   comparison_enabled: true          # show current-state panel (◀ drawer)
   strategy_panel_enabled: true      # show strategy panel (▶ drawer)
   chat_enabled: false               # embed AI chat agent
-  deploy_target: vercel             # vercel | static | none
+  deploy_target: vercel             # vercel | cloudflare-pages | static | none
+                                    # use "cloudflare-pages" if cloudflare.enabled: true above
 
 # Research scope
 research:

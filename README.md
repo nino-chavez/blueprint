@@ -173,6 +173,24 @@ Extracted from the BigCommerce Pricing & Packaging CX initiative (March 2026). T
 - **Specchain** — spec-driven development with multi-agent orchestration
 - **bc-figma-generator** — design asset generation from Figma specs
 
-## BC-Specific Reference
+## BC + Cloudflare Reference Library
 
-For initiatives targeting BigCommerce marketplace apps, see [docs/bc-marketplace-context.md](docs/bc-marketplace-context.md) — captures iframe canvas behavior, install-flow ownership, scope-list source, BigDesign patterns, and reference apps on disk (`aisles-admin`, `ask-bc`). Use as the existing-product baseline for Stage 1 (Research) of any BC initiative.
+Reusable Stage-1 baseline docs for common initiative targets. Copy the relevant ones into your initiative's `research/current-state/` directory.
+
+| Doc | When to use | Reference for |
+|---|---|---|
+| [docs/bc-marketplace-context.md](docs/bc-marketplace-context.md) | Initiative includes a BC marketplace app (admin UI in iframe under `/manage/app/{appId}`) | iframe canvas behavior, install-flow ownership, scope-list source, BigDesign patterns, `aisles-admin` and `ask-bc` references |
+| [docs/bc-b2b-edition-context.md](docs/bc-b2b-edition-context.md) | Initiative integrates with BC B2B Edition (Companies, Buyers, Quotes, Customer Contracts) | Data model, two-API-host split, Buyer Portal SPA architecture, multi-actor role pattern, ownership boundaries |
+| [docs/bc-b2b-buyer-portal-integration.md](docs/bc-b2b-buyer-portal-integration.md) | Initiative embeds the B2B Buyer Portal in any host storefront | Framework-agnostic integration contract (5-step), port table for React/SvelteKit/Solid/Vue/Astro, env vars, troubleshooting |
+| [docs/hive-coordination-pattern.md](docs/hive-coordination-pattern.md) | Initiative needs multiple agents working in parallel | When to use Hive, bootstrap sequence, working rules, integration with BigBlueprint stages |
+| [docs/cloudflare-deployment-pattern.md](docs/cloudflare-deployment-pattern.md) | Initiative deploys on Cloudflare (Workers, Pages, D1, Workers AI, Vectorize, etc.) | Wrangler config conventions, path-scoped GitHub Actions, secrets, multi-environment, cost envelope |
+
+**How blueprint.yml flags activate these:**
+- `b2b_edition.enabled: true` → use both `bc-b2b-edition-context.md` and `bc-b2b-buyer-portal-integration.md`
+- `hive.enabled: true` → use `hive-coordination-pattern.md`
+- `cloudflare.enabled: true` → use `cloudflare-deployment-pattern.md` and switch `prototype.deploy_target: cloudflare-pages`
+
+**Origin context:**
+- Marketplace context distilled from the BMP P&P CX initiative (March 2026) and `aisles-admin` / `ask-bc` reference apps
+- B2B Edition + Buyer Portal docs distilled from Paradigm B2B (May 2026) and the open-source `bigcommerce/b2b-buyer-portal` repo
+- Hive + Cloudflare patterns distilled from `bc-subscriptions` (March 2026) and Paradigm B2B

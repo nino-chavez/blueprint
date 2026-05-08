@@ -1,0 +1,327 @@
+# BigCommerce B2B Edition Context
+
+**Purpose:** Captures everything known about BC B2B Edition's data model, APIs, surfaces, and integration mechanics — so future BigBlueprint initiatives targeting B2B don't have to re-discover this through docs and trial.
+
+**Last updated:** 2026-05-08
+
+**Discovery source:** Paradigm B2B initiative (May 2026) + bc-subscriptions architectural reference + BC's open-source `b2b-buyer-portal` repo + the "Open Source Buyer Portal working with One Click Catalyst" integration guide.
+
+**Companion doc:** `bc-b2b-buyer-portal-integration.md` covers the framework-agnostic host-storefront integration contract. This doc is the data-model and surface inventory.
+
+---
+
+## 1. What B2B Edition Adds Beyond BC Core
+
+BC core (any plan) gives you: products, orders, customers, customer groups, channels, price lists, scripts, themes, payment methods.
+
+B2B Edition adds:
+
+| Capability | What it is |
+|---|---|
+| **Companies** | Multi-buyer organizations with hierarchy. A Company has 1+ Buyers. |
+| **Buyers** | Per-individual accounts under a Company. Buyer has roles, permissions, addresses. |
+| **Buyer roles** | Senior Buyer, Junior Buyer, etc. — drives approval workflows and permissions |
+| **Quotes** | First-class quote objects (RFQ → quote → order pipeline) |
+| **Quote approval workflows** | Multi-step approval routing within a Company |
+| **Customer Contracts** | Negotiated pricing agreements per Customer Group / Company |
+| **Shopping Lists** | Saved lists buyers can re-order from |
+| **Buyer Portal** | A separate React SPA buyers see for account, quotes, orders, lists, approvals |
+| **Sales Rep Dashboard** | Internal-rep view onto Companies, Quotes, Buyers |
+| **Per-buyer addresses** | Address books per buyer, not per company |
+| **B2B-specific GraphQL & REST APIs** | Different endpoint host: `api-b2b.bigcommerce.com` |
+
+The Buyer Portal is the most distinctive part — it's a UI that BC ships, not just APIs. Hosts of B2B-enabled storefronts embed the Buyer Portal via a script-loader. See `bc-b2b-buyer-portal-integration.md` for the contract.
+
+---
+
+## 2. The Two API Hosts
+
+B2B Edition splits its API surface across two hosts:
+
+| Host | Purpose | Auth |
+|---|---|---|
+| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | Static `X-Auth-Token` (Store API token) |
+| `api-b2b.bigcommerce.com/api/io/...` | B2B-specific — Companies, Buyers, Quotes, Customer Contracts, Shopping Lists | Static `authToken` (B2B API token, distinct from Store API token) + per-customer storefront tokens |
+
+The two are **distinct credentials**. A BC Store API token does NOT authenticate against the B2B API host, and vice versa. Initiative env files need both.
+
+The B2B GraphQL endpoint surface is also separate from BC's storefront GraphQL — B2B has its own GraphQL via the `api-b2b.bigcommerce.com` host.
+
+---
+
+## 3. Data Model — Core Entities
+
+```
+Company
+├── id, name, contactInfo, status (pending/approved/rejected)
+├── extraFields[] (custom fields per merchant config)
+├── companyAdmins[] (Buyers with admin role)
+└── Buyers[]
+    ├── id, email, firstName, lastName, role, phone
+    ├── permissions[] (purchase, manage_users, manage_addresses, etc.)
+    ├── addresses[] (own address book)
+    ├── customerGroupId (drives pricing visibility)
+    ├── shoppingLists[]
+    └── orders[] / quotes[]
+
+CustomerGroup (BC core, B2B uses heavily)
+├── id, name, isGroupForGuests
+└── categoryAccess (which categories visible)
+
+PriceList (BC core, B2B uses heavily)
+├── id, name, active
+└── PriceListAssignments[]
+    ├── customerGroupId | channelId | companyId
+    └── PriceListRecords[]
+        ├── productId / variantId
+        ├── price, salePrice, retailPrice, mapPrice
+        └── currency, dateRange
+
+Quote (B2B Edition specific)
+├── id, quoteNumber, customerId, companyId
+├── status (open / sent / accepted / rejected / expired / converted)
+├── lineItems[] (productId, variantId, qty, basePrice, finalPrice, discount)
+├── subtotal, total, tax, shipping
+├── notes[] (internal + customer-facing)
+├── approvalWorkflow (which approver, when)
+├── expirationDate
+└── createdBy (sales rep) / requestedBy (buyer)
+
+CustomerContract (B2B Edition specific)
+├── id, customerId | companyId | customerGroupId
+├── productAssignments[] (sku → contracted price)
+├── volumeBreaks[] (qty thresholds with tiered prices)
+├── effectiveDate, expirationDate
+└── auto-renewal flag
+
+ShoppingList (B2B Edition specific)
+├── id, customerId, name, status (active / archived / shared)
+├── lineItems[]
+└── isPublic (shareable to other buyers in same Company)
+```
+
+**The pattern that recurs across all B2B initiatives:**
+
+- **Pricing visibility** is filtered by Customer Group (B2B catalogs hide products from buyers not in the right group)
+- **Per-buyer pricing** is set via Customer Contracts, not generic price lists
+- **Quote-to-order** is the buying motion; cart-checkout is secondary for many B2B segments
+- **Approval workflows** add steps between cart-add and order-submit
+
+---
+
+## 4. The Buyer Portal SPA
+
+The Buyer Portal is a **React SPA** that BC builds, hosts, and serves from a CDN. Buyers visiting B2B-enabled storefronts see this Portal embedded into the host storefront — not as a separate page, but as a script-loaded component that takes over routes like `/account/*`, `/quotes/*`, `/shopping-lists/*`.
+
+### Three deployment modes
+
+| Mode | Where the portal JS comes from | Use case |
+|---|---|---|
+| **Dev** | Local dev server (`http://localhost:3001` after `yarn dev` in the open-source `b2b-buyer-portal` repo) | Active development with live reload |
+| **Production (BC CDN)** | Default; loaded from BC's CDN | Most merchants — zero infra to manage |
+| **Production (custom)** | Loaded from a self-hosted URL (your own fork of `bigcommerce/b2b-buyer-portal`) | When you need to customize the Portal beyond what config supports |
+
+The integration host (your storefront — Catalyst, SvelteKit, etc.) selects the mode via env vars.
+
+### What the Portal owns (you don't design these)
+
+- Account dashboard
+- Quote inbox + quote detail view
+- Order history
+- Shopping lists
+- Address book
+- User management (within Company)
+- Approval inbox
+
+### What the host storefront owns
+
+- PDP (Product Detail Page) — including the **B2B-specific buttons** Add to Quote and Add to Shopping List that the Portal injects when active
+- Cart, checkout
+- Storefront chrome (header, footer, search, category nav)
+- Login/registration UI (the host owns the form; the Portal handles the post-login session)
+
+---
+
+## 5. Multi-Actor Roles (B2B Pattern)
+
+Cross-cutting roles you'll see in any B2B initiative — not B2B Edition's exact terminology, but the abstraction layer for "which actor is this":
+
+| Role | Description | Example use case |
+|---|---|---|
+| **Owner** | Subscription/account holder, ultimate authority | Company Admin in B2B Edition |
+| **Payer** | Settles invoices; may differ from Owner | Finance team, parent org |
+| **Beneficiary** | Receives goods/services; may differ from Owner & Payer | End-user buyer |
+| **Manager** | Operates day-to-day, has limited spending power | Senior Buyer with $5k/order cap |
+| **Org Admin** | Configures Company-level settings (users, budgets, mandates) | IT or Procurement lead |
+
+Reference: `bc-subscriptions/docs/decisions/0023-multi-actor-roles.md` formalized this for subscription billing. The same enum applies to B2B procurement, marketplace fulfillment, and gift-card/voucher flows.
+
+**Why this matters for prototypes:** Strategy panels and design decisions need to explicitly name *which actor* a feature serves. "We let the user create a quote" is wrong — it's the Junior Buyer (constrained), with approval routing to the Senior Buyer or Org Admin. Make this visible.
+
+---
+
+## 6. Standard B2B Edition Surfaces
+
+| Surface | Owner | Customizability |
+|---|---|---|
+| Storefront PDP | Host storefront | Full — including B2B button injection points |
+| Storefront cart | Host storefront | Full |
+| Storefront checkout | Host storefront | Full |
+| Buyer Portal /account | BC Buyer Portal SPA | Config-only unless forked |
+| Buyer Portal /quotes | BC Buyer Portal SPA | Config-only unless forked |
+| Buyer Portal /shopping-lists | BC Buyer Portal SPA | Config-only unless forked |
+| Buyer Portal /addresses | BC Buyer Portal SPA | Config-only unless forked |
+| Sales Rep Dashboard | BC control panel | Config-only |
+| Approval workflows | BC control panel + Buyer Portal | Workflow definition: control panel; UI: portal |
+| Marketplace App (admin) | Your app, embedded in BC iframe | Full — see `bc-marketplace-context.md` |
+
+**Implication for BigBlueprint prototype slices:** if your slice modifies a Buyer Portal surface, you need to either (a) accept the existing portal's UX and customize via config, (b) fork the portal, or (c) build the surface in your own host (storefront or marketplace app) instead. The decision is non-trivial — see `bc-b2b-buyer-portal-integration.md` §"Two Integration Paths" and ADR pattern in `bc-subscriptions/docs/decisions/`.
+
+---
+
+## 7. Authentication Flow
+
+```
+1. Buyer visits storefront, clicks Login
+2. Storefront calls BC GraphQL `login` mutation
+   Response: customerAccessToken (with expiresAt) + customer.entityId
+3. Storefront server (or host BFF) calls B2B token-exchange:
+   POST https://api-b2b.bigcommerce.com/api/io/auth/customers/storefront
+   Headers: authToken: $B2B_API_TOKEN
+   Body: { channelId, customerId, customerAccessToken }
+   Response: { data: { token: ["<b2bToken>"] } }
+4. Storefront stores b2bToken in session (HMAC-signed cookie recommended)
+5. Storefront mounts Buyer Portal script with b2bToken passed as prop/data-attr
+6. Buyer Portal SPA initializes, exchanges b2bToken for SDK session
+7. Portal exposes hooks (useAddToQuote, useAddToShoppingList) to host storefront
+8. Host PDP renders B2B buttons that call portal hooks
+```
+
+The critical event in this flow is **step 3** — the server-side token exchange. It must happen server-side because the `B2B_API_TOKEN` is a static high-privilege secret. Never put it in client-side code.
+
+The other critical flow is **on-cart-created**:
+
+```
+1. Buyer creates a quote in the Portal
+2. Buyer accepts the quote → Portal converts quote to a cart
+3. Portal SDK fires the on-cart-created event with the new cartId
+4. Host storefront listens for this event, calls setCartId(cartId), re-renders
+5. Storefront /checkout now sees the new cart
+```
+
+This is the most common breakage point in B2B integrations. If quote-checkout silently empties the buyer's cart, the on-cart-created listener isn't wired.
+
+---
+
+## 8. Required Environment Variables
+
+For any BigBlueprint initiative targeting B2B Edition, the host storefront needs:
+
+```bash
+# BC Core (from BC control panel → Settings → API Accounts)
+BIGCOMMERCE_STORE_HASH=
+BIGCOMMERCE_CHANNEL_ID=
+BIGCOMMERCE_CLIENT_ID=
+BIGCOMMERCE_CLIENT_SECRET=
+BIGCOMMERCE_ACCESS_TOKEN=
+
+# B2B Edition (from B2B Settings → API Configuration)
+B2B_API_TOKEN=
+B2B_API_HOST=https://api-b2b.bigcommerce.com/
+
+# Buyer Portal — dev (only if running open-source portal locally)
+LOCAL_BUYER_PORTAL_HOST=http://localhost:3001
+
+# Buyer Portal — prod default (BC CDN)
+STAGING_B2B_CDN_ORIGIN=false   # true = staging CDN, false = prod CDN
+
+# Buyer Portal — prod custom (only if forking the portal)
+PROD_BUYER_PORTAL_URL=
+PROD_BUYER_PORTAL_HASH_INDEX=
+PROD_BUYER_PORTAL_HASH_INDEX_LEGACY=
+PROD_BUYER_PORTAL_HASH_POLYFILLS=
+
+# Storefront session (recommendation: HMAC-signed cookie)
+STOREFRONT_SESSION_SECRET=
+```
+
+In Cloudflare Workers, sensitive vars are set via `wrangler secret put`. Non-sensitive vars (`STAGING_B2B_CDN_ORIGIN`, `LOCAL_BUYER_PORTAL_HOST`) can live in `wrangler.toml`.
+
+---
+
+## 9. Ownership Boundary — B2B Edition Surfaces
+
+| Surface | Owner | Influence |
+|---|---|---|
+| Buyer login UI | Host storefront | Full |
+| Customer access token issuance | BC GraphQL | None (BC does this) |
+| B2B token exchange | Your server-side BFF (BC supplies the API) | You control when, where, how cached |
+| Buyer Portal SPA chrome | BC (BigCommerce ships it) | None — it's their UI |
+| Buyer Portal /quotes route | BC Buyer Portal | Config-only unless forked |
+| Quote object schema | BC B2B Edition | None |
+| Quote approval workflow definitions | BC control panel | Configure via control panel; can't extend logic |
+| Sales Rep Dashboard | BC control panel | None |
+| PDP Add-to-Quote button | **Host storefront, using portal hooks** | Full — hook return values are docs |
+| PDP Add-to-Shopping-List button | **Host storefront, using portal hooks** | Full |
+| Cart sync after quote conversion | Portal fires event; host listens | Host owns the listener |
+| Storefront approval inbox UI | Could be host OR portal | Portal owns by default; host can redirect to its own page |
+
+---
+
+## 10. Common Anti-Patterns (Initiative-Specific)
+
+These show up in every B2B initiative; document and avoid:
+
+1. **Calling B2B APIs from the browser.** `B2B_API_TOKEN` is server-only. Always proxy through your BFF.
+2. **Treating `customer` and `buyer` as synonyms in copy.** They're distinct concepts in B2B. A Customer is the BC core entity; a Buyer is a B2B Edition entity tied to a Company.
+3. **Using "RFQ" in user-facing copy.** BC's term is "Quote." RFQ is industry jargon some buyers know, but the platform consistently uses Quote.
+4. **Showing all products to all buyers.** Customer Groups + Categories = restricted catalogs. Mock data must respect this — don't show product visibility that wouldn't exist at runtime.
+5. **Skipping the on-cart-created listener.** Quote-to-checkout breaks silently without it. Always wire.
+6. **Confusing Customer Contracts with Price Lists.** Price Lists are broad (per group/channel). Customer Contracts are negotiated, per-customer or per-company, often with volume breaks.
+7. **Designing buyer flows without naming the actor.** "User creates quote" is ambiguous. "Junior Buyer creates quote, routed to Senior Buyer for approval" is the actual flow.
+
+---
+
+## 11. Reference Sources
+
+| Source | Path / URL |
+|---|---|
+| Open-source Buyer Portal | `github.com/bigcommerce/b2b-buyer-portal` |
+| Catalyst integration reference (Path 2) | `github.com/CNanninga/catalyst/tree/feature/add-custom-b2b-loader/core` |
+| BC core API docs | `developer.bigcommerce.com/docs/rest-management/` |
+| B2B Edition API docs | `developer.bigcommerce.com/docs/rest-b2b/` |
+| Multi-actor role pattern | `bc-subscriptions/docs/decisions/0023-multi-actor-roles.md` |
+| Marketplace app baseline | `bc-marketplace-context.md` (this same dir) |
+| Buyer Portal integration contract | `bc-b2b-buyer-portal-integration.md` (this same dir) |
+| Cloudflare deploy pattern | `cloudflare-deployment-pattern.md` (this same dir) |
+| Hive coordination pattern | `hive-coordination-pattern.md` (this same dir) |
+
+---
+
+## 12. What Future BigBlueprint B2B Initiatives Don't Need to Re-Discover
+
+- ✅ B2B Edition data model (Companies / Buyers / Quotes / Contracts / Lists)
+- ✅ The two-API-host split (`api.bigcommerce.com` vs `api-b2b.bigcommerce.com`)
+- ✅ How the Buyer Portal SPA loads and is configured
+- ✅ Auth flow (customer access token → b2bToken exchange)
+- ✅ Required env vars
+- ✅ Ownership boundaries (host vs. Portal vs. BC control panel)
+- ✅ Multi-actor role pattern
+- ✅ Common anti-patterns
+- ✅ Where the Sales Rep Dashboard lives (BC control panel — not yours to design)
+
+What's still discoverable per-initiative:
+
+- Specific approval workflow rules a merchant has configured
+- Custom fields (extraFields on Companies/Buyers)
+- Catalog access rules per Customer Group at the merchant
+- Whether they use Klaviyo, Feedonomics, or other adjacent integrations
+- Whether they need a forked Buyer Portal or can live with the BC-hosted one (decide via fact-check)
+
+---
+
+## Relationship to BigBlueprint Methodology
+
+This doc fits Stage 1 (Research → existing-product analysis) of the BigBlueprint pipeline. When an initiative targets BC B2B Edition, copy this doc into the initiative's `research/current-state/` directory as the starting baseline, then layer initiative-specific findings (B2B sandbox screenshots, merchant-specific Customer Groups, etc.) on top.
+
+Pair with `bc-marketplace-context.md` (if the initiative includes a marketplace app) and `bc-b2b-buyer-portal-integration.md` (always — it's the integration contract).

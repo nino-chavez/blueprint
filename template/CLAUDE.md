@@ -2,6 +2,17 @@
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment. See `blueprint.yml` for project configuration.
 
+## Optional Capabilities (Check `blueprint.yml`)
+
+If your initiative has any of these enabled, follow the linked guidance:
+
+| Flag | Reference doc | Read when starting |
+|---|---|---|
+| `b2b_edition.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` | Stage 1 research; copy both into `research/current-state/` |
+| `hive.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
+| `cloudflare.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
+| Marketplace app (any BC initiative) | `~/Workspace/dev/tools/big-blueprint/docs/bc-marketplace-context.md` | Stage 1 research; copy into `research/current-state/` |
+
 ## Pipeline
 
 ```
@@ -63,6 +74,17 @@ Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents
 4. **Duplicate content** — cross-reference other docs, don't repeat
 5. **Unsourced claims** — every number needs a source. "Industry data shows..." is not a citation.
 6. **"Deflection" language** — never use "deflect" or "deflection" to describe reducing support cases. Use "self-service resolution" or "resolve without support." Deflection implies pushing customers away from help.
+
+### Additional Anti-Patterns When Targeting BC B2B Edition
+
+(Apply if `blueprint.yml` has `b2b_edition.enabled: true`. See `docs/bc-b2b-edition-context.md` §10 for full list.)
+
+7. **Calling B2B APIs from the browser.** `B2B_API_TOKEN` is server-only. Always proxy through your BFF.
+8. **Treating "customer" and "buyer" as synonyms.** Customer is BC core; Buyer is B2B Edition entity tied to a Company. Use Buyer in B2B-specific copy.
+9. **Using "RFQ" in user-facing copy.** BC's term is "Quote." RFQ is industry jargon, but the platform consistently uses Quote.
+10. **Showing all products to all buyers.** Customer Groups + Categories = restricted catalogs. Mock data must respect this.
+11. **Skipping the on-cart-created listener.** Quote-to-checkout breaks silently without it. Always wire.
+12. **Designing buyer flows without naming the actor.** "User creates quote" is ambiguous. "Junior Buyer creates quote, routed to Senior Buyer" is the actual flow. See multi-actor role pattern in `bc-b2b-edition-context.md` §5.
 
 ## Prototype Design
 
