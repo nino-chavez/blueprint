@@ -187,3 +187,51 @@ colors:
 ```
 
 A proposed token signals to reviewers that the extraction didn't find this value in the current product — it's a new design decision requiring approval.
+
+---
+
+## When Targeting BC B2B Edition
+
+Apply this section if `blueprint.yml` has `b2b_edition.enabled: true`. Otherwise delete during initiative customization.
+
+### Additional Terminology Rules
+
+Mirror these in frontmatter `terminology.replace:` so `design-md lint` enforces them.
+
+| Never use | Always use | Why |
+|---|---|---|
+| User | Buyer | BC B2B Edition entity tied to a Company |
+| Org / Organization | Company | BC term for the multi-buyer entity |
+| RFQ | Quote | BC has Quote objects; RFQ is industry jargon BC doesn't use |
+| Order admin | Senior Buyer / Company Admin | Specific B2B Edition roles |
+| Customer (in B2B-specific copy) | Buyer or Company (specify) | Customer is BC core; ambiguous in B2B context |
+
+### Additional Rule: Name the Actor
+
+Every flow must name *which actor* (per the multi-actor role pattern):
+
+- **Owner** — Company Admin or ultimate authority
+- **Payer** — settles invoices (may differ from Owner)
+- **Beneficiary** — receives goods (may differ from Owner & Payer)
+- **Manager** — operates day-to-day with limited spending power
+- **Org Admin** — configures Company-level settings
+
+"The user creates a quote" → "The Junior Buyer creates a quote; the Senior Buyer approves it." The actor must be visible in the slice copy (or the strategy panel if implicit in the UI).
+
+### Additional Platform-Fidelity Requirement
+
+Every storefront claim that touches B2B surfaces must cite a contract method from `docs/bc-b2b-buyer-portal-integration.md`:
+
+| Surface | Required citation |
+|---|---|
+| Buyer login | `loginWithB2B()` server-side token exchange |
+| PDP B2B button | `useAddToQuote()` or `useAddToShoppingList()` hook |
+| Cart sync after quote acceptance | `on-cart-created` event listener |
+| B2B catalog visibility | Customer Group filtering (BC core) |
+| Per-buyer pricing | Customer Contracts (B2B Edition) — not Price Lists |
+
+### Additional Reference
+
+- `~/Workspace/dev/tools/big-blueprint/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
+- `~/Workspace/dev/tools/big-blueprint/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
+- Multi-actor role pattern: `~/Workspace/dev/wip/subs-initiative/docs/decisions/0023-multi-actor-roles.md`
