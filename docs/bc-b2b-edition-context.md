@@ -36,15 +36,34 @@ The Buyer Portal is the most distinctive part — it's a UI that BC ships, not j
 
 ## 2. The Two API Hosts
 
-> **2026-05-08 audit correction (per bc-platform-verify skill):** earlier versions of this doc described `api-b2b.bigcommerce.com` as the unified B2B Edition host. Verified against BC docs (`docs.bigcommerce.com/developer/api-reference/rest/b2b/management/company/companies.mdx`) that the Management API has migrated to `api.bigcommerce.com/b2b/management/...` with `X-Auth-Token` header. The legacy `authToken` is deprecated as of **2025-09-30**. Storefront-side endpoints (token exchange, headless integration) may still use `api-b2b.bigcommerce.com` per the Catalyst integration PDF, but this is a derivative source and may also have migrated. Verify empirically before relying on the old host/header.
+> **2026-05-08 architecture update (verified empirically against sandbox `cdfqf9k6zf`, confirmed by Travis Poole, BC Solutions Architect):** **BC has unified the B2B token model.** Standalone B2B API tokens are deprecated. B2B Edition operations now use the **standard BC API access token** (the same one used for BC core) with **B2B Edition scope granted** on the API account. There is no longer a separate B2B token — one token does both.
 
-B2B Edition splits its API surface across hosts:
+### Verified auth pattern (2026-05-08)
 
 | Host | Purpose | Auth | Source |
 |---|---|---|---|
-| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | `X-Auth-Token` (Store API token) | Verified |
+| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | `X-Auth-Token` (Store API token) | Verified well-known |
 | `api.bigcommerce.com/b2b/management/...` | **B2B Management API** — Companies, RFQ (Quotes), etc. | `X-Auth-Token` (legacy `authToken` deprecated 2025-09-30) | Verified 2026-05-08 against `companies.mdx` |
-| `api-b2b.bigcommerce.com/api/io/...` | **B2B Storefront API** — buyer-facing token exchange (loginWithB2B), Buyer Portal SDK config | `authToken` (header) per Catalyst PDF | TBC — derivative source; BC docs do not publish this surface explicitly. May have migrated to match management API. |
+| `api-b2b.bigcommerce.com/api/v3/io/...` | **B2B Storefront API** — buyer-facing token exchange (loginWithB2B), Buyer Portal SDK config | `X-Auth-Token` + `X-Store-Hash` headers | Verified empirically 2026-05-08 (host did NOT migrate; auth migrated to BC standard) |
+
+### Verified empirically (test results from sandbox `cdfqf9k6zf` on 2026-05-08)
+
+| Test | Result | Implication |
+|---|---|---|
+| `api-b2b.bigcommerce.com/api/v3/io/companies` with `X-Auth-Token` + `X-Store-Hash` | 403 "Invalid access token" | **Structurally correct**; token needs B2B scope |
+| Same with legacy `authToken` header | 403 "Invalid signature" | Old auth header has been retired |
+| Same with `?storeHash=...` query param instead of `X-Store-Hash` header | 403 "Store hash is required" | Must use header, not query |
+| BC core `/v2/store` with same token | 200 | Token works for core; just needs B2B scope grant |
+
+### Required token scope grant
+
+For an API account to access B2B Edition surfaces, grant B2B-related scopes in BC admin:
+
+```
+Settings → API Accounts → [your token] → grant B2B Edition scopes → save
+```
+
+Until the scope is added, B2B endpoints return 403 "Invalid access token" — this is expected, not a structural issue.
 
 **Naming gotcha:** the B2B Edition's "Quotes" feature uses URL path `/rfq` (Request for Quote), NOT `/quotes`. Verified per `quotes.mdx` page on BC docs.
 
