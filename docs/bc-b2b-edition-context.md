@@ -79,6 +79,41 @@ Until the scope is added, B2B endpoints return 403 "Invalid access token" — th
 
 **Naming gotcha:** the B2B Edition's "Quotes" feature uses URL path `/rfq` (Request for Quote), NOT `/quotes`. Verified per `quotes.mdx` page on BC docs.
 
+### Schema gotchas (verified 2026-05-09 by writing a seed script against sandbox `cdfqf9k6zf`)
+
+These tripped a real seeding pass; document so future initiatives don't rediscover them:
+
+1. **Company POST requires `admin*`-prefixed contact fields**, not bare ones.
+   Required keys: `adminFirstName`, `adminLastName`, `adminEmail`, `adminPhoneNumber`. A bare `email` returns
+   422 "Admin email is required" — misleading because the field exists in the payload, just under a different key.
+
+2. **Company role IDs are sandbox-specific** — read them from `GET /api/v3/io/companies/roles` (plural, nested under companies).
+   Returns `[{id, name, roleType, roleLevel}]` with names like "Admin", "Senior Buyer", "Junior Buyer".
+   Don't hardcode IDs across environments.
+
+3. **RFQ POST uses camelCase keys** despite the API returning snake_case-looking validation messages. Required body shape:
+   ```json
+   {
+     "companyId": 12660609, "userId": 18298894, "channelId": 1,
+     "quoteTitle": "...", "expiredAt": "06/01/2026",
+     "contactInfo": {"name","email","phoneNumber","companyName"},
+     "productList": [{"productId","variantId","quantity","basePrice","offeredPrice","productName","sku","discount"}],
+     "subtotal": 0, "discount": 0, "grandTotal": 0, "totalAmount": 0,
+     "currency": {"currencyCode": "USD", "currencyExchangeRate": 1}
+   }
+   ```
+   `productId` must reference a real catalog product — `0` returns "Product not found in store".
+
+4. **`expiredAt` is `MM/DD/YYYY` string** — NOT a unix timestamp, NOT `MM/DD/YY`.
+   The API's error message claims `'%m/%D/%y' format` but only 4-digit years are actually accepted.
+
+5. **Price list assignments POST takes a JSON array**, not a single object.
+   `POST /v3/pricelists/assignments` with body `[{price_list_id, customer_group_id}]` (BC core, not B2B host).
+   Single-object posts return "request payload has to be a JSON array".
+
+6. **Companies default to approved when created with `customerGroupId`**.
+   To create a "pending approval" demo company, omit `customerGroupId` on POST; flip status later with PUT and `companyStatus: 1`.
+
 ---
 
 ## 3. Data Model — Core Entities

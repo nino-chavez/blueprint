@@ -285,3 +285,111 @@ If a future session adds new findings (e.g., the App Extension PANEL screenshot)
 This doc fits Stage 1 (Research → existing-product analysis) of the BigBlueprint pipeline (`METHODOLOGY.md` §3.1). When an initiative targets a BC marketplace app, this doc is the existing-product baseline — initiatives can reference it as the "current state" of BC's app-host environment without re-running the discovery.
 
 For new BC-targeted initiatives, copy this file into the initiative's `research/current-state/` directory as a starting point, then layer initiative-specific findings on top.
+
+---
+
+## Verified App SDK + App Extensions surface (2026-05-09)
+
+Pulled directly from the official BC dev portal (now hosted at `docs.bigcommerce.com/developer/...`; the older `developer.bigcommerce.com/docs/...` URLs 301 to the new host). Use this section as the canonical citation surface for `paradigm-b2b/apps/admin` work; the on-disk reference apps (`ask-bc`, `aisles-admin`) are *one team's choices* and may diverge from the spec — flagged below where they do.
+
+### A. Packages BC actually ships
+
+| Package | Version (2026-05-09) | Status | Source |
+|---|---|---|---|
+| `@bigcommerce/big-design` | **2.5.0** | Actively maintained (repo updated 2026-04-22) | npm registry; [github.com/bigcommerce/big-design](https://github.com/bigcommerce/big-design) |
+| `@bigcommerce/app-extensions-sdk` | **NOT PUBLISHED** on npm (HTTP 404 at `registry.npmjs.org/@bigcommerce%2Fapp-extensions-sdk`) | n/a | npm registry direct query |
+| `bigcommerce/app-sdk-js` (GitHub) | last updated **2023-10-06**, not archived | Stale; described in BC docs as "a simple JavaScript library used to manage apps in the control panel" — prevents control-panel logout while user is in app iframe | [github.com/bigcommerce/app-sdk-js](https://github.com/bigcommerce/app-sdk-js) |
+| `bigcommerce/sample-app-extensions` (GitHub) | last updated **2023-06-03** | Reference Next.js starter for App Extensions registration via GraphQL Admin API | [github.com/bigcommerce/sample-app-extensions](https://github.com/bigcommerce/sample-app-extensions) |
+
+**Surprise / spec divergence:** Despite frequent community references to a `@bigcommerce/app-extensions-sdk` package, **no such package is published on npm**. The official "App Extensions guide" (see B below) does not mention any SDK package name — App Extensions are registered via the **GraphQL Admin API** (`createAppExtension` / `updateAppExtension` / `deleteAppExtension` mutations), and the iframe content is just your app rendered at the registered URL. There is no JavaScript runtime contract beyond the iframe + `signed_payload_jwt` on `/load`. If `ask-bc` or `aisles-admin` import a package by that name, audit what they're actually pulling — likely an internal helper, not an official BC SDK.
+
+### B. App Extensions: supported surface
+
+Source: [docs.bigcommerce.com/developer/docs/integrations/apps/app-extensions/guide](https://docs.bigcommerce.com/developer/docs/integrations/apps/app-extensions/guide) (via `llms-full.txt`).
+
+**Supported models** (extension menu items render in the **Action** menu of these native CP pages):
+- `PRODUCTS` — View Products page row action menu
+- `PRODUCT_DESCRIPTION` — Edit-a-Product page Description section
+- `ORDERS` — View Orders page row action menu
+- `CUSTOMERS` — View Customers page row action menu
+
+**Limit:** max **2 App Extensions per model per app**.
+
+**Context types** (apply to all models):
+- `PANEL` — opens iframe in a side-panel overlay over the current CP page
+- `LINK` — redirects to the app's dedicated iframe in the **Apps** sub-menu (multi-page workflows)
+
+**Registration:** GraphQL Admin API mutations `createAppExtension` / `updateAppExtension` / `deleteAppExtension`; query via `store.appExtensions`. Requires `store_app_extensions_manage` OAuth scope on the app.
+
+**Mapping to paradigm-b2b's 5 admin scenarios:**
+
+| Scenario | Best surface | Rationale |
+|---|---|---|
+| MM2.3 At-risk dashboard | Standalone app page (LINK) | Cross-order rollup view; no single-row anchor |
+| EE1.1 Partner approval | Standalone app page | Approval queue is its own list view |
+| EE1.4 Unified pane | Standalone app page | Cross-entity composite |
+| EE2.2 Pricing review | `ORDERS` PANEL extension *or* standalone | Per-order pricing context — PANEL gives in-context review without leaving Orders list |
+| EE2.1 BOM admin | `PRODUCTS` or `PRODUCT_DESCRIPTION` PANEL | Per-product BOM editing fits PRODUCT_DESCRIPTION action menu |
+
+Note: `CUSTOMERS` model is per-customer, not per-Company (B2B Edition's company-level entity is not a native CP page that App Extensions can target — Companies live in the B2B Buyer Portal app, not the BC native customer page).
+
+### C. OAuth callback contract (verified)
+
+Source: [docs.bigcommerce.com/developer/docs/integrations/apps/guide/handling-callbacks](https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/handling-callbacks) and `.../guide/auth`.
+
+**Callbacks:**
+| Endpoint | Required | Origin | Payload | Response |
+|---|---|---|---|---|
+| `GET /auth` | Yes | Browser | URL-encoded query | Markup |
+| `GET /load` | Yes | Browser | `signed_payload_jwt` query param | Markup |
+| `GET /uninstall` | No | Server | `signed_payload_jwt` query param | JSON |
+| `GET /remove_user` | No | Server | `signed_payload_jwt` query param | JSON |
+
+**`signed_payload_jwt` claims** (HS256, signed with the app's client secret):
+`aud` (client ID), `iss` ("bc"), `iat`, `nbf`, `exp` (24h after `nbf`), `jti`, `sub` (`stores/{STORE_HASH}`), `user.id`, `user.email`, `user.locale`, `owner.id`, `owner.email`, `url` (developer-configured deep-link path), `channel_id` (int or null).
+
+**Token exchange** — `POST https://login.bigcommerce.com/oauth2/token`:
+- Request body: `client_id`, `client_secret`, `code`, `scope`, `context`, `grant_type=authorization_code`, `redirect_uri`
+- Response JSON: `access_token`, `scope`, `user{id,username,email}`, `owner{id,username,email}`, `context`, `account_uuid`
+
+Track A's `/auth` implementation (port from `ask-bc`) should match exactly the field names above; `account_uuid` in particular is easy to miss but is needed for B2B Edition cross-app correlation.
+
+### D. OAuth scopes (verbatim from docs)
+
+Source: [docs.bigcommerce.com/developer/docs/overview/api-fundamentals/api-accounts](https://docs.bigcommerce.com/developer/docs/overview/api-fundamentals/api-accounts) (the `developer.bigcommerce.com/docs/start/authentication/api-accounts` URL silently redirects here).
+
+Scopes follow the pattern `store_<area>` for modify and `store_<area>_read_only` for read. Verified scopes pulled from the live page:
+
+`store_app_extensions_manage`, `store_cart_read_only`, `store_channel_listings_read_only`, `store_channel_settings_read_only`, `store_checkout_read_only`, `store_content_checkout_read_only`, `store_fulfillment_methods_manage`, `store_fulfillment_methods_read_only`, `store_inventory_read_only`, `store_locations_read_only`, `store_order_fulfillment_manage`, `store_order_fulfillment_read_only`, `store_sites_read_only`, `store_stored_payment_instruments_read_only`, `store_themes_manage`, `store_themes_read_only`, `store_translations_read_only`, `store_v2_content` / `_read_only`, `store_v2_customers` / `_read_only`, `store_v2_customers_login`, `store_v2_information` / `_read_only`, `store_v2_marketing` / `_read_only`, `store_v2_orders` / `_read_only`, `store_v2_products` / `_read_only`, `store_v2_transactions` / `_read_only`.
+
+**B2B Edition scope** — Source: [docs.bigcommerce.com/developer/docs/b2b-edition/getting-started/authentication](https://docs.bigcommerce.com/developer/docs/b2b-edition/getting-started/authentication).
+
+- The B2B Edition scope is a **single unified `modify`-level scope**, not finer-grained read/write/RFQ-specific. The dev portal explicitly notes: *"If your store doesn't have B2B Edition enabled, the B2B Edition scope will not be available."*
+- Server-to-server B2B API access requires a **store-level V3 API account** (Settings > Store-level API accounts > Create API Account) with the **B2B Edition scope set to `modify`**, not the marketplace app's OAuth grant.
+- B2B requests use `X-Auth-Token` (the long-lived V3 token) + `X-Store-Hash` headers; do not expire by default.
+- A historical B2B-specific `authToken` is **deprecated** in favor of the standard BigCommerce `X-Auth-Token`.
+- BC also exposes a B2B Edition client ID `dl7c39mdpul6hyc489yk0vzxl6jesyx` for storefront login JWT flows (irrelevant for admin app, noted for completeness).
+
+**Implication for paradigm-b2b:** the marketplace app's `/auth` OAuth grant gets the BC store scopes (orders, customers, products, app_extensions_manage, etc.). A *separate* store-level API account with B2B Edition `modify` must be provisioned per merchant to read Companies/Users/RFQ. Two-token model. This is officially documented; if `ask-bc` or `aisles-admin` show only a single-token flow they're skipping the B2B path or assuming pre-provisioned tokens.
+
+### E. Sandbox testing flow (officially documented vs. inferable)
+
+**Officially documented** (from App Extensions guide):
+1. Create app profile in Developer Portal with required scopes (incl. `store_app_extensions_manage` if registering extensions).
+2. Serve the draft app over HTTPS using ngrok.
+3. Configure `.env` with Client ID, Client Secret, ngrok domain.
+4. Add ngrok callback URLs (`/auth`, `/load`, `/uninstall`) to the app profile.
+5. Install the draft app on a sandbox store (the Developer Portal exposes an Install link for draft apps; URL pattern is the standard `store-{hash}.mybigcommerce.com/manage/marketplace/apps/...` install).
+
+**Inferable only from sample code, not spec:**
+- The exact `db:setup` step shown in the BC Next.js starter (`npm run db:setup`) is starter-specific, not a platform contract.
+- App Extensions GraphQL registration timing (register-on-install vs register-on-first-load) is an implementation choice; the spec only says they must be registered via the Admin API at some point.
+
+### F. What surprised me / spec divergences to watch
+
+1. **No `@bigcommerce/app-extensions-sdk` npm package exists** despite community references. App Extensions are pure GraphQL registration + iframe rendering. If the prototype scaffolds an import to it, that import is broken.
+2. **`PRODUCT_DESCRIPTION` is a separate model** from `PRODUCTS`, surfacing inside the Edit-a-Product page's Description section action menu. Useful for EE2.1 BOM admin if BOM is conceptually a product attribute.
+3. **B2B Edition is a single coarse `modify` scope** — there is no `b2b_companies_read_only` or RFQ-specific scope. Plan permission UX accordingly: granting B2B access is all-or-nothing.
+4. **The `app-sdk-js` GitHub repo has not been touched since 2023-10-06** but is not archived. Treat it as the current canonical helper but expect to maintain a vendored fork if you need to patch.
+5. **The official BC docs host has migrated** from `developer.bigcommerce.com/docs/*` to `docs.bigcommerce.com/developer/docs/*`. The old host 301-redirects, but downstream tools that hard-code old URLs will break. Update any LLM scrapes or citation lists.
+
