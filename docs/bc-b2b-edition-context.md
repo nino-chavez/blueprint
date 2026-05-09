@@ -60,10 +60,12 @@ The Buyer Portal is the most distinctive part — it's a UI that BC ships, not j
 | `/api/v3/io/addresses` | 200 | Per-buyer address book. |
 | `/api/v2/io/companies` | 200 | Legacy v2 companies endpoint still live alongside v3. |
 | `/api/v3/io/quotes` | 404 | Confirms the `/rfq` naming (not `/quotes`). |
-| `/api/v3/io/shopping-lists`, `shoppingLists`, `shopping_lists` | 404 | Not under api-b2b.bigcommerce.com — likely surfaced via a different host or only via the storefront SDK. **Pending investigation.** |
-| `/api/v3/io/customer-contracts`, `contracts`, `customerContracts` | 404 | Not under api-b2b. May live under BC core (price-list-driven) or be storefront-SDK-only. **Pending.** |
-| `/api/v3/io/price-lists`, `priceLists` | 404 | Price lists are a BC core concept (`api.bigcommerce.com/stores/{hash}/v3/pricelists`), not B2B-Edition-scoped. |
-| `/api/v3/io/sales-staff`, `salesStaff` | 404 | Not at this path. |
+| `/api/v3/io/shopping-lists` (and `shoppingList`, `lists`, nested under companies/users) | 404 | Not exposed via the Management API. Treat as **storefront-SDK-only**: buyers create + read via `useAddToShoppingList()` from the Buyer Portal SDK; there is no server-side admin endpoint to list them. |
+| `/api/v3/io/customer-contracts` (and variants) | 404 | Not exposed via the Management API. Customer Contracts surface as **price lists scoped to a customer group** in BC core: `api.bigcommerce.com/stores/{hash}/v3/pricelists` + `/v2/customer_groups`. Treat the "customer contract" UX as a price-list view, not a separate API. |
+| `/api/v3/io/price-lists`, `priceLists` | 404 | Price lists are BC core: `api.bigcommerce.com/stores/{hash}/v3/pricelists` — verified 200. |
+| `/api/v3/io/sales-staff`, `salesStaff` | 404 | Not at this path. Sales-staff surface is BC admin-only on this sandbox; not exposed for programmatic access. |
+| BC core: `v3/pricelists` | 200 | Verified — price lists live here, not under api-b2b. |
+| BC core: `v2/customer_groups` | 204 | Verified — customer groups exist on BC core; B2B Companies link to them via `customerGroupId`. |
 
 ### Required token scope grant
 
