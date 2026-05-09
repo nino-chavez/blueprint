@@ -2,7 +2,7 @@
 
 **Purpose:** Captures the framework-agnostic contract between a host storefront and BC's Buyer Portal SPA, so initiatives can integrate against any host (Catalyst / SvelteKit / Solid / Vue / Astro / Stencil) without re-deriving the protocol.
 
-**Last updated:** 2026-05-08 (audit pass per `bc-platform-verify` skill — corrects PDF-derived claims that diverged from BC primary sources)
+**Last updated:** 2026-05-09 — second audit pass: read `bigcommerce/b2b-buyer-portal` source at HEAD. Resolved all four TBCs from the 2026-05-08 audit: token location (it's a method call, not config), event surface (verified 7 `EventType` values), hook claim (no hooks; `window.b2b.utils.*` global methods), button visibility (`getButtonInfo()` returns BtnProperties).
 
 **Sources:**
 - **Verified primary** (BC docs): `https://docs.bigcommerce.com/developer/docs/b2b-edition/storefront/buyer-portal/headless.mdx`
@@ -110,46 +110,103 @@ The loader picks one of three script sources based on env:
 </script>
 ```
 
-**TBC** (per bc-platform-verify skill — needs empirical validation):
+**Resolved 2026-05-09** (by reading `bigcommerce/b2b-buyer-portal` source at HEAD — `apps/storefront/src/index.d.ts` declares `window.b2b`; `apps/storefront/src/HeadlessController/index.tsx` initializes it):
 
-- Where the b2bToken from step 1 goes inside `window.B3`. The Catalyst PDF claimed `data-token`, but that attribute is not read by the live loader. Likely a property under `window.B3.setting` or similar — needs sandbox probing or BC engineering confirmation.
-- Where the cartId goes (same).
-- Whether the staging URL follows the pattern `https://cdn.bundleb2b.net/b2b/staging/storefront/headless.js` — best guess based on production URL.
+- **The b2bToken does NOT go in `window.B3`.** Token exchange (step 1) returns the JWT; the host then calls `window.b2b.utils.user.loginWithB2BStorefrontToken(jwt)` AFTER the SDK has loaded and `window.b2b.isInit === true`. The SDK manages the token internally; retrieve later via `window.b2b.utils.user.getB2BToken()`.
+- **The cartId is set via `window.b2b.utils.cart.setEntityId(cartId)`** — not via window.B3 either. The SDK reads it back via `getEntityId()`. Wire this on `on-cart-created` (see §3 below) and on cart restoration after page reload.
+- **`window.B3` is bootstrap-only.** Its only required keys are `setting.store_hash`, `setting.channel_id`, and `setting.platform` (a `ChannelPlatform` union — `bigcommerce`, `catalyst`, `next`, `wordpress`, `custom`, etc., per the channel's platform). Optional: `setting.environment`, `disable_logout_button`, `cart_url`. All runtime control flows through `window.b2b.utils.*` after init.
 
-These TBCs should resolve once an initiative runs an empirical test against a real B2B sandbox with a real B2B_API_TOKEN. Until then, integrations should expect the SDK to fail to authenticate and prepare a fallback path.
+The PDF's `data-token` claim was wrong about both the location AND the mechanism — not a script-tag attribute, not a window.B3 property, but a method call after SDK ready.
 | `environment` | env (`STAGING_B2B_CDN_ORIGIN === 'true' ? 'staging' : 'production'`) | Prod default only |
 
-### 3. Wire the cart-creation event listener
+### 3. Wire SDK callbacks (events)
 
-```
-sdk?.callbacks?.addEventListener('on-cart-created', handleCartCreated);
+**Verified event types** (sourced from `apps/storefront/src/hooks/useB2BCallback.ts` in `bigcommerce/b2b-buyer-portal`):
+
+```ts
+type EventType =
+  | 'on-quote-create'        // buyer started a new quote
+  | 'on-add-to-shopping-list'// item added to a shopping list
+  | 'on-click-cart-button'   // buyer clicked PDP "add to cart" while in B2B mode
+  | 'on-login'               // buyer logged in successfully
+  | 'on-cart-created'        // SDK created a new BC cart (host should adopt the cartId)
+  | 'on-registered'          // buyer registered (created an account)
+  | 'on-logout';             // buyer logged out
 ```
 
-When a buyer creates a quote and accepts/converts it to a cart in the Buyer Portal, this event fires with the new `cartId`. The host must:
+**Subscribing** (the SDK's CallbackManager is at `window.b2b.callbacks`, not on the loader script):
 
-```
+```ts
+// Wait until the SDK is initialized:
+const wait = setInterval(() => {
+  if (window.b2b?.isInit) {
+    clearInterval(wait);
+    window.b2b.callbacks.addEventListener('on-cart-created', handleCartCreated);
+    window.b2b.callbacks.addEventListener('on-login', handleLogin);
+  }
+}, 50);
+
 function handleCartCreated({ data: { cartId } }) {
-  setCartId(cartId);                  // update host session
-  router.refresh();                   // re-render to pick up new cart
+  // Tell the SDK and the host session about the new cart:
+  window.b2b.utils.cart.setEntityId(cartId);
+  // Re-render host UI / refresh server-loaded cart data:
+  // (SvelteKit) invalidate + goto refresh; (Next) router.refresh();
 }
 ```
 
-This is the most common breakage point. Symptoms when broken: quote-checkout redirects to empty cart; cart items don't persist after quote acceptance.
+**Why this matters:** when a buyer accepts a quote, the SDK creates a new BC cart server-side and dispatches `on-cart-created` with the new `cartId`. If the host doesn't call `setEntityId(cartId)` AND refresh its own cart-display state, quote-checkout redirects to an empty cart and items don't persist. This is the most common breakage point.
 
-**TBC:** the event name `on-cart-created` and the SDK callbacks API surface are sourced from the Catalyst integration PDF, NOT from BC primary docs. The BC docs page at `headless.mdx` and the GitHub repo's `docs/headless.md` do not publish event names. The actual SDK is loaded dynamically via a GraphQL `storefrontScript` query (verified by inspecting the loader source 2026-05-08), which means the event surface is shipped at runtime — not statically inspectable. Until an initiative empirically verifies this by hooking the event in a real session: treat the name as plausible-but-unconfirmed.
+**Source line of truth:** `apps/storefront/src/utils/cartUtils.ts` (the SDK's own `dispatchEvent('on-cart-created', { cartId })` call site). Host listener is symmetric.
 
 ### 4. Render the two PDP B2B buttons
 
-Two buttons on the Product Detail Page:
+The Catalyst PDF claimed React hooks `useAddToQuote()` / `useAddToShoppingList()`. **Those hooks do not exist.** The real surface is `window.b2b.utils.{quote,shoppingList}` — global SDK utility methods that work from any framework, not just React.
 
-| Button | Hook (Path 2 PDF claim) | Handler |
-|---|---|---|
-| **Add to Quote** | `useAddToQuote()` | If `addToQuote.isEnabled`, render button calling `addToQuote.addProductToQuote(product)` |
-| **Add to Shopping List** | `useAddToShoppingList()` | If `addToShoppingList.isEnabled`, render button calling `addToShoppingList.addProductToShoppingList(product)` |
+**Verified surface** (sourced from `apps/storefront/src/index.d.ts` in `bigcommerce/b2b-buyer-portal`):
 
-Hooks are claimed by the Path 2 PDF as exposed by the loader script at runtime. Non-React hosts re-export equivalents from your B2B client package.
+```ts
+window.b2b.utils.quote = {
+  addProductFromPage: (item: LineItem) => void;       // PDP "Add to Quote"
+  addProductsFromCart: () => Promise<void>;            // bulk: cart → quote
+  addProductsFromCartId: (cartId: string) => Promise<void>;
+  addProducts: (items: LineItem[]) => Promise<void>;
+  getQuoteConfigs: () => QuoteConfigProps[];
+  getCurrent: () => { productList: FormattedQuoteItem[] };
+  getButtonInfo: () => BtnProperties;                  // ← USE THIS for visibility
+  getButtonInfoAddAllFromCartToQuote: () => BtnProperties;
+};
 
-**TBC:** these hook names + return shapes come from the Catalyst PDF only. BC primary docs do not publish the hook surface (the SDK is loaded dynamically per §2 above, so the surface isn't statically documented). The PDF's data-attribute claims were proven wrong against the live CDN script (see audit note at top of doc), so trust on hook claims should also be tempered. Empirical verification needed.
+window.b2b.utils.shoppingList = {
+  addProductFromPage: (item: LineItem) => void;       // PDP "Add to Shopping List"
+  addProducts: (shoppingListId: number, items: LineItem[]) => void;
+  createNewShoppingList: (name: string, description: string) =>
+    Promise<{ id: number; name: string; description: string }>;
+  getButtonInfo: () => BtnProperties;                  // ← USE THIS for visibility
+  getLists: () => Promise<ShoppingListsItemsProps[]>;
+  itemFromCurrentPage: ProductMappedAttributes;
+};
+```
+
+**Visibility pattern** (replaces the PDF's `isEnabled` claim — confirm by reading the actual `BtnProperties` shape from `customStyleButton/context/config`, but the pattern is the same):
+
+```html
+<button onclick="window.b2b.utils.quote.addProductFromPage({ productId, quantity, ... })">
+  Add to Quote
+</button>
+<button onclick="window.b2b.utils.shoppingList.addProductFromPage({ productId, quantity, ... })">
+  Add to Shopping List
+</button>
+```
+
+Render these conditionally based on `getButtonInfo()` (which returns the styled-button properties + visibility) and on whether `window.b2b.isInit && window.b2b.utils.user.getProfile()` indicates a B2B-authenticated buyer.
+
+**Other useful surfaces** discovered in the same source:
+- `window.b2b.utils.user.loginWithB2BStorefrontToken(jwt)` — pass the token from step 1
+- `window.b2b.utils.user.getB2BToken()` — retrieve current token (e.g., for direct B2B API calls from the host)
+- `window.b2b.utils.user.getMasqueradeState()` — sales-rep impersonating a buyer
+- `window.b2b.utils.user.setMasqueradeCompany(companyId)` / `endMasquerade()`
+- `window.b2b.utils.openPage(headlessRoute)` — navigate to a Buyer Portal route
+- `window.b2b.utils.cart.{setEntityId, getEntityId}` — cart linkage
 
 ### 5. Add B2B i18n keys
 
