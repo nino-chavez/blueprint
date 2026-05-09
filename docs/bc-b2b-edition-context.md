@@ -2,7 +2,7 @@
 
 **Purpose:** Captures everything known about BC B2B Edition's data model, APIs, surfaces, and integration mechanics — so future BigBlueprint initiatives targeting B2B don't have to re-discover this through docs and trial.
 
-**Last updated:** 2026-05-08
+**Last updated:** 2026-05-09
 
 **Discovery source:** Paradigm B2B initiative (May 2026) + bc-subscriptions architectural reference + BC's open-source `b2b-buyer-portal` repo + the "Open Source Buyer Portal working with One Click Catalyst" integration guide.
 
@@ -36,24 +36,34 @@ The Buyer Portal is the most distinctive part — it's a UI that BC ships, not j
 
 ## 2. The Two API Hosts
 
-> **2026-05-08 architecture update (verified empirically against sandbox `cdfqf9k6zf`, confirmed by Travis Poole, BC Solutions Architect):** **BC has unified the B2B token model.** Standalone B2B API tokens are deprecated. B2B Edition operations now use the **standard BC API access token** (the same one used for BC core) with **B2B Edition scope granted** on the API account. There is no longer a separate B2B token — one token does both.
+> **2026-05-09 architecture update (verified empirically against sandbox `cdfqf9k6zf`, after B2B Edition activation):** Standalone B2B API tokens are deprecated per Travis Poole (BC SA, 2026-05-08). However, **BC admin does not always expose the B2B-Edition scope as additive on an existing core token** — when that's the case, you create a **separate B2B-Edition-scoped token**, and the integration runs with two tokens (one for BC core, one for B2B). This is currently the operationally feasible path on the dev sandbox, and reads cleanly as principle-of-least-privilege.
 
-### Verified auth pattern (2026-05-08)
+### Verified auth pattern (2026-05-09)
 
-| Host | Purpose | Auth | Source |
-|---|---|---|---|
-| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | `X-Auth-Token` (Store API token) | Verified well-known |
-| `api.bigcommerce.com/b2b/management/...` | **B2B Management API** — Companies, RFQ (Quotes), etc. | `X-Auth-Token` (legacy `authToken` deprecated 2025-09-30) | Verified 2026-05-08 against `companies.mdx` |
-| `api-b2b.bigcommerce.com/api/v3/io/...` | **B2B Storefront API** — buyer-facing token exchange (loginWithB2B), Buyer Portal SDK config | `X-Auth-Token` + `X-Store-Hash` headers | Verified empirically 2026-05-08 (host did NOT migrate; auth migrated to BC standard) |
-
-### Verified empirically (test results from sandbox `cdfqf9k6zf` on 2026-05-08)
-
-| Test | Result | Implication |
+| Host + Path | Purpose | Auth |
 |---|---|---|
-| `api-b2b.bigcommerce.com/api/v3/io/companies` with `X-Auth-Token` + `X-Store-Hash` | 403 "Invalid access token" | **Structurally correct**; token needs B2B scope |
-| Same with legacy `authToken` header | 403 "Invalid signature" | Old auth header has been retired |
-| Same with `?storeHash=...` query param instead of `X-Store-Hash` header | 403 "Store hash is required" | Must use header, not query |
-| BC core `/v2/store` with same token | 200 | Token works for core; just needs B2B scope grant |
+| `api.bigcommerce.com/stores/{hash}/v3/...` | BC core — products, orders, customers, channels, price lists | `X-Auth-Token` (core token) |
+| `api-b2b.bigcommerce.com/api/v3/io/{resource}` | **B2B Management API** — Companies, Users, Orders, RFQ, Addresses | `X-Auth-Token` (B2B-scoped token) + `X-Store-Hash` |
+| `api-b2b.bigcommerce.com/api/io/auth/customers/storefront` | **B2B Storefront token exchange** (`loginWithB2B`) | `X-Auth-Token` + `X-Store-Hash`; **NO `v3` segment** |
+
+> **Path-pattern split is non-obvious.** The Management API is `v3`-versioned; the storefront token-exchange endpoint is **not**. An earlier audit assumed `v3` was uniform across the IO surface and got 404s for two days. Verified empirically — the no-v3 path returned a real JWT once B2B Edition was activated.
+
+### Verified endpoint surface (sandbox `cdfqf9k6zf`, B2B-Edition-scoped token, 2026-05-09)
+
+| Path | Status | Notes |
+|---|---|---|
+| `/api/io/auth/customers/storefront` (POST) | 200 | Storefront token exchange. Returns `{ data: { token: [<jwt>] }, code: 200 }`. JWT decodes to `bc_customer_id`, `store_hash`, `bc_channel_id`, `email`, `exp`. |
+| `/api/v3/io/companies` | 200 | Companies list. |
+| `/api/v3/io/users` | 200 | Buyers (per-individual accounts under a Company). |
+| `/api/v3/io/orders` | 200 | B2B-side order index. |
+| `/api/v3/io/rfq` | 200 | **Quotes feature** — URL path is `/rfq`, NOT `/quotes`. |
+| `/api/v3/io/addresses` | 200 | Per-buyer address book. |
+| `/api/v2/io/companies` | 200 | Legacy v2 companies endpoint still live alongside v3. |
+| `/api/v3/io/quotes` | 404 | Confirms the `/rfq` naming (not `/quotes`). |
+| `/api/v3/io/shopping-lists`, `shoppingLists`, `shopping_lists` | 404 | Not under api-b2b.bigcommerce.com — likely surfaced via a different host or only via the storefront SDK. **Pending investigation.** |
+| `/api/v3/io/customer-contracts`, `contracts`, `customerContracts` | 404 | Not under api-b2b. May live under BC core (price-list-driven) or be storefront-SDK-only. **Pending.** |
+| `/api/v3/io/price-lists`, `priceLists` | 404 | Price lists are a BC core concept (`api.bigcommerce.com/stores/{hash}/v3/pricelists`), not B2B-Edition-scoped. |
+| `/api/v3/io/sales-staff`, `salesStaff` | 404 | Not at this path. |
 
 ### Required token scope grant
 
