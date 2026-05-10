@@ -63,6 +63,22 @@ Before building anything, codify the rules. These prevent the prototype from inv
 
 Write `prototype/DESIGN.md` before building the first page. Every design decision during prototyping should be checkable against these rules.
 
+### Testing baseline
+
+The prototype is a stakeholder communication tool, but it is still web code that gets deployed to Vercel and clicked through by VPs. Quality should match production-grade work, not throwaway demo-ware. Adopt the workspace-canonical testing baseline (Claude Code skill `test-stack-baseline` at `~/.claude/skills/test-stack-baseline/SKILL.md`) sized for the prototype's scope:
+
+| Category | What to set up day 1 | Why |
+|---|---|---|
+| **Linting / typing** | eslint + strict `tsc --noEmit` (if TS) as a CI gate | Cheap; catches the "I forgot to import that" class of bug before deploy |
+| **Unit** | Vitest, but only for any non-trivial logic — don't unit-test static HTML | Prototypes are mostly UI; unit tests on UI without behavior are noise |
+| **E2E** | Playwright happy-path per top-level prototype flow (`@smoke` tag) | Catches "the strategy panel toggle broke" without manual click-through every push |
+| **Performance** | Lighthouse-CI on Vercel preview URLs | Stakeholders will judge the prototype's polish by load speed; bad Lighthouse scores undercut credibility |
+| **Security** | Gitleaks GH Action + Dependabot | Free; non-negotiable. Prevents leaked API keys in the prototype's `.env`. |
+
+Skip: heavy unit-test suites (UI prototypes don't justify the cost), Snyk/CodeQL, mutation testing, coverage gates.
+
+This belongs in `prototype/DESIGN.md` alongside the five visual rules — engineering rules and visual rules are codified together so the agent doesn't make engineering choices ad-hoc page by page.
+
 ## Stage 3: Prototype
 
 ### Structure
@@ -136,6 +152,18 @@ vercel --prod
 ```
 
 The deployed URL is the primary deliverable. Share one link that gives stakeholders access to: the interactive prototype, the strategic documents (linked from the landing page), and the current-state comparison.
+
+### Quality gates
+
+CI workflows fire on every push (preview deploys included). Per the testing baseline codified in Stage 2:
+
+- `tsc --noEmit` + `eslint` + `npm audit --audit-level=high`
+- Vitest unit suite (non-trivial logic only)
+- Playwright `@smoke` E2E suite
+- Lighthouse-CI against the Vercel preview URL (3-run averaging)
+- Gitleaks secret scan
+
+Failing gates block the preview-URL share to stakeholders. The whole point is that the link in Slack works the moment a VP clicks it — no "oh sorry, that's a build error, refresh in a minute."
 
 ### Landing page
 
