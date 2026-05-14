@@ -5,6 +5,33 @@ Deployment phase of a BigBlueprint initiative. Packages prototype + docs as a Ve
 ## When to use
 After prototype and docs are built and validated.
 
+## Precondition: validation report must exist
+
+Before deploying, check for a current validation report:
+
+```bash
+ls validation/$(date +%Y-%m-%d)-validate.md 2>/dev/null \
+  || ls validation/$(ls validation/ 2>/dev/null | tail -1) 2>/dev/null
+```
+
+If no validation report exists (or the most recent one is older than the latest
+commit to the prototype/docs), **prompt the user**:
+
+> No current validation report found. Run `/blueprint-validate` before deploying,
+> or pass `--skip-validation` to override if the skip is intentional (e.g., a
+> trivial copy-only iteration that doesn't change claims).
+>
+> Soft enforcement — the skip flag is available, but the implicit-skip path is
+> closed. This prevents shipping a deliverable where fact-check + copy audit +
+> source-validation never ran on the current state.
+
+Rationale: the `/blueprint-validate` skill is comprehensive (6-phase diagnosis
+loop) but optional under prior behavior. Making it a soft-gate precondition for
+deploy gives it teeth without rigid policy enforcement. See
+`docs/case-study-bc-subscriptions-skipped-stages-2-4.md` for the failure mode
+this guards against (a project that skipped Stage 2 + Stage 4 and accumulated
+fixture-mode + COMPLIANT-but-stubbed debt as a result).
+
 ## What it does
 
 1. **Copy deliverables to prototype** — Move HTML doc files to `prototype/docs-*.html`
