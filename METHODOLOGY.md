@@ -98,6 +98,20 @@ Each prototype page has three layers:
 
 The prototype is not a design comp. It is a **stakeholder communication tool**. Every page should be self-explanatory to someone who opens it cold — the strategy panel provides the context they need.
 
+### Companion deliverable: Demo Storyboard
+
+When a project grows beyond a single surface (prototype + production app + admin, or N storefronts + back-office), the demo storyboard at `apps/demos/` becomes the index that prevents "where do I click to demo X" from turning into tribal knowledge.
+
+Architecture:
+- Static HTML site (no build step) — `index.html` + `app.js` + `styles.css` + `scenarios.json`
+- Schema-driven: each scenario lists per-surface status + click-paths + prose guide
+- Optional `state.json` overlay from a mechanical capability tracker (e.g., `state-derive`) cross-checks declared status against reality
+- Mode toggle — same content serves as **demo script** (presenter-paced) and **how-to guide** (self-serve docs)
+
+The prototype Studio Home links to the deployed demos page via `DemoStoryboardPanel`. Symmetric: the demos page's header nav links back to the prototype harness, traceability matrix, and any other family Pages deploys.
+
+See `template/apps/demos/README.md` for the full setup recipe. Origin: extracted from `subs-initiative` (May 2026) where it answered the multi-surface demo problem across Stencil / Catalyst / custom-headless / BC Admin.
+
 ## Stage 4: Fact-Check
 
 Before writing strategic documents, validate every claim against reality:

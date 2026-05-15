@@ -59,6 +59,43 @@ function useDiscoveredSlices(): DiscoveredSlice[] {
   }, []);
 }
 
+/**
+ * Optional sibling deliverable: the demo storyboard at `apps/demos/`.
+ * If your project has scaffolded apps/demos (see template/apps/demos/README.md),
+ * update the `href` below to point at its deployed Pages URL. If you haven't
+ * scaffolded it yet, delete this panel or leave it as a reminder.
+ */
+const DemoStoryboardPanel: FunctionComponent = () => (
+  <Panel header="Demo Storyboard">
+    <Flex flexGap={theme.spacing.large} alignItems="center">
+      <FlexItem flexGrow={1}>
+        <Text marginBottom="xSmall">
+          One-stop demo + how-to index across all of your project's surfaces (prototype, main app(s), admin, etc.). Per-scenario click-paths, status overlays from your capability tracker, presenter vs self-serve docs modes. Source of truth: <code>apps/demos/scenarios.json</code>.
+        </Text>
+      </FlexItem>
+      <FlexItem flexGrow={0}>
+        <a
+          href="https://<PROJECT_NAME>-demos.pages.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: `${theme.spacing.small} ${theme.spacing.large}`,
+            background: theme.colors.primary,
+            color: theme.colors.white,
+            borderRadius: 4,
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: 14,
+          }}
+        >
+          Open storyboard ↗
+        </a>
+      </FlexItem>
+    </Flex>
+  </Panel>
+);
+
 export const Home: FunctionComponent = () => {
   const navigate = useNavigate();
   const slices = useDiscoveredSlices();
@@ -99,6 +136,10 @@ export const Home: FunctionComponent = () => {
               </FlexItem>
             </Flex>
           </Panel>
+        </FlexItem>
+
+        <FlexItem>
+          <DemoStoryboardPanel />
         </FlexItem>
 
         {slices.length === 0 ? (
