@@ -1,0 +1,41 @@
+name: Deploy Demos to Cloudflare Pages
+
+# TODO: Customize the following before first use:
+#   1. Replace <PROJECT_NAME> with your Cloudflare Pages project name.
+#   2. Ensure CF_API_TOKEN and CF_ACCOUNT_ID secrets are set in the repo.
+#   3. If you have a state-derive (or equivalent) capability tracker emitting
+#      a JSON file at docs/audits/_state.json (or your own path), the "Bake
+#      state-derive output" step copies it into the deploy dir at CI time.
+#      Otherwise, comment that step out — scenarios.json alone renders fine.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/demos/**'
+      - '.github/workflows/deploy-demos.yml'
+  workflow_dispatch:
+
+# Pattern: static-only site (no build step). Just upload the directory
+# to Cloudflare Pages. If a state-derive tracker exists, bake its output
+# in at CI time so the runtime overlay works without hitting a private-repo
+# raw URL (which 404s for unauthenticated fetches on private repos).
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Optional: bake state-derive output into the deploy directory.
+      # Comment out if you don't have a capability tracker yet.
+      - name: Bake state-derive output into deploy dir
+        if: hashFiles('docs/audits/_state.json') != ''
+        run: cp docs/audits/_state.json apps/demos/state.json
+
+      - name: Deploy Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: pages deploy apps/demos --project-name=<PROJECT_NAME>-demos --branch=main --commit-dirty=true

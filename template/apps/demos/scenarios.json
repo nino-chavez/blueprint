@@ -1,0 +1,67 @@
+{
+  "schema_version": "0.2",
+  "description": "Demo storyboard content. Customize `project_name`, `surfaces`, and `categories` for your project, then author scenarios in the `scenarios` array. Renderer overlays runtime status from `state.json` if present. Write demo_script and guide copy with the assumption it will become public docs — no internal jargon.",
+  "project_name": "TODO: Your Project Name",
+  "surfaces": [
+    { "id": "prototype", "label": "Prototype", "short_label": "Proto", "description": "Design-oracle prototype harness. UX truth; not production." },
+    { "id": "main-app", "label": "Main app", "short_label": "App", "description": "TODO: Your production application surface. Update label and short_label for your product." },
+    { "id": "admin", "label": "Admin", "short_label": "Admin", "description": "TODO: Admin/back-office surface. Remove if not applicable to your product." }
+  ],
+  "categories": [
+    { "id": "user-flow", "label": "User flows", "description": "End-user-facing actions: sign up, complete a task, manage their account." },
+    { "id": "admin-setup", "label": "Admin setup", "description": "One-time-ish admin configuration: account setup, integrations, policy configuration." },
+    { "id": "admin-ops", "label": "Admin ops", "description": "Daily admin work: dashboards, exception queues, reporting, comms." },
+    { "id": "support-ops", "label": "Support tools", "description": "Tools used by support / CS teams to act on behalf of users." }
+  ],
+  "scenarios": [
+    {
+      "id": "example-feature",
+      "category": "user-flow",
+      "title": "TODO: Your scenario title",
+      "summary": "TODO: One- or two-sentence summary of what this scenario demonstrates.",
+      "brd_refs": ["TODO: BRD section refs"],
+      "state_capability_ids": [],
+      "prerequisites": [
+        "TODO: What needs to be true before this demo can run"
+      ],
+      "expected_outcome": "TODO: What success looks like at the end of the demo.",
+      "surfaces": {
+        "prototype": {
+          "status": "ready",
+          "demo_url": "https://<your-prototype-host>/prototypes/example-slice",
+          "demo_script": [
+            "TODO: Step-by-step instructions for a presenter walking a stakeholder through this.",
+            "Each step is one numbered action.",
+            "Keep them terse — the live presenter narrates the why."
+          ],
+          "guide": "TODO: Self-serve prose explaining the same flow without a presenter."
+        },
+        "main-app": {
+          "status": "partial",
+          "demo_script": [],
+          "guide": "TODO: Status for the production app: 'ready' if shippable, 'partial' if working with caveats, 'missing' if not yet built, 'not-applicable' if this scenario doesn't map to this surface."
+        },
+        "admin": {
+          "status": "not-applicable",
+          "demo_script": [],
+          "guide": "Admin surface not applicable to this user-flow scenario."
+        }
+      }
+    },
+    {
+      "id": "another-example",
+      "category": "admin-setup",
+      "title": "TODO: Another example scenario",
+      "summary": "TODO: Replace with a real admin-setup scenario.",
+      "brd_refs": [],
+      "state_capability_ids": [],
+      "prerequisites": [],
+      "expected_outcome": "TODO",
+      "surfaces": {
+        "prototype": { "status": "missing", "demo_script": [], "guide": "TODO" },
+        "main-app": { "status": "missing", "demo_script": [], "guide": "TODO" },
+        "admin": { "status": "missing", "demo_script": [], "guide": "TODO" }
+      }
+    }
+  ]
+}
