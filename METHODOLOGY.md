@@ -220,6 +220,20 @@ After each iteration, capture what was learned:
 
 BigBlueprint follows BigCommerce tooling naming: BigDesign, BigTools, BigBlueprint.
 
+## Cross-Cutting Disciplines
+
+The seven pipeline stages above describe *what to produce*. The following patterns describe *how to maintain the doc + decision surface that accumulates around a long-running initiative*. Apply per activation threshold; don't gold-plate small projects.
+
+| Pattern | Activates when | What it codifies |
+|---|---|---|
+| [docs/doc-surface-discipline-pattern.md](docs/doc-surface-discipline-pattern.md) | >50 docs + ≥1 pivot | Two-surface model (canonical-present vs decision-lineage), 6-bucket classification, frontmatter convention |
+| [docs/register-pattern.md](docs/register-pattern.md) | ≥1 pivot, or peer products to compare against | Immutable append-only registers — `invalidated-paths` (high-value default) + `differentiators` (optional) |
+| [docs/tiered-orchestration-pattern.md](docs/tiered-orchestration-pattern.md) | Work > one operator-week + parallel-safe PRs | Orchestrator/Specialist/Implementer/Janitor tiering, wave sequencing, calibration discipline |
+| [docs/inventory-as-evidence-pattern.md](docs/inventory-as-evidence-pattern.md) | Cleanup/reorg on >50 items | Read-only walk → classify → file as [Spec] body's evidence |
+| [docs/doc-discipline-micro-patterns.md](docs/doc-discipline-micro-patterns.md) | Always (low overhead) | Small disciplines — surface-existing, capture-ambiguity, wrong-copy-is-signal, avoid multi-role templates |
+
+These disciplines emerged from `bc-subscriptions` (May 2026). When they apply, they belong cross-cutting (not as a pipeline stage) — the pipeline produces the deliverables; the disciplines keep the surface around the deliverables coherent.
+
 ## Origin
 
-Extracted from the BigCommerce Pricing & Packaging CX initiative (March 2026). The full project is at `/Users/nino.chavez/Workspace/dev/wip/pricing-packaging/` with the deployed prototype at `prototype-cx.vercel.app`.
+Extracted from the BigCommerce Pricing & Packaging CX initiative (March 2026). The full project is at `/Users/nino.chavez/Workspace/dev/wip/pricing-packaging/` with the deployed prototype at `prototype-cx.vercel.app`. Cross-cutting disciplines added May 2026 from `bc-subscriptions` doc-reorg work.
