@@ -252,6 +252,11 @@ except Exception:
             else
               drifted=$((drifted + 1))
               echo "::notice::GH#${gh_num} → merged (drift sync)"
+              # Comment on the GH issue so closure reason is visible without
+              # needing to read the Hive dashboard or GHA logs.
+              gh issue comment "$gh_num" \
+                --body "**Hive drift-sync** (automated): This GH issue was closed but the corresponding Hive proposal was still \`open\`/\`discussing\`. The proposal has been transitioned to \`merged\` by the \`hive-proposal-drift-sync\` CI step. Reference SHA: \`${close_sha:0:8}\`. Root cause: \`hive_synthesize\` was called without \`proposal_ids\`, or the issue was closed outside a tracked commit. No action needed." \
+                2>/dev/null || true
             fi
           done <<< "$all_gh_nums"
 
