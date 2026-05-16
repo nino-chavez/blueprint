@@ -1,0 +1,258 @@
+name: Hive — closure sync on push to main
+
+# When commits land on main, scan their subjects for #NNN references that
+# correspond to Hive proposals. For each match, call hive_mark_merged so the
+# proposal transitions to 'merged', proposal_merges gets an audit row, and
+# the GH issue is closed.
+#
+# Four steps (all idempotent — safe to re-run):
+#   1. Extract proposal refs from pushed commits + ADR bodies
+#   2. Call hive_mark_merged for each proposal ref
+#   3. Rollup completed syntheses (cascade when all child tasks are merged)
+#   4. Proposal drift sync (self-heal GH-closed/Hive-open drift on every push)
+#
+# Required secrets:
+#   HIVE_AUTH_TOKEN  — bearer token for your Hive MCP Worker (/api/mcp)
+#
+# TODO: Replace <YOUR_HIVE_MCP_URL> with your Worker URL.
+#
+# See: docs/hive-closure-drift-sync-pattern.md for the root-cause explanation
+# and docs/hive-coordination-pattern.md for full Hive bootstrap instructions.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  sync-merged-proposals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract proposal refs from pushed commits + ADR bodies
+        id: extract
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+        run: |
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            range="HEAD~1..HEAD"
+          else
+            range="${BEFORE_SHA}..${AFTER_SHA}"
+          fi
+
+          results=""
+
+          # Source 1: commit subjects
+          while IFS= read -r line; do
+            sha=$(echo "$line" | cut -d' ' -f1)
+            subject=$(echo "$line" | cut -d' ' -f2-)
+            pr_num=$(echo "$subject" | grep -oE '\(#[0-9]+\)' | grep -oE '[0-9]+' | tail -1)
+            for ref in $(echo "$subject" | grep -oE '#[0-9]+' | grep -oE '[0-9]+'); do
+              [ "$ref" = "$pr_num" ] && continue
+              results="${results}${sha} ${ref} ${pr_num:-}\n"
+            done
+          done < <(git log "$range" --pretty=format:"%H %s" 2>/dev/null || true)
+
+          # Source 2: ADR body scan (docs/decisions/*.md files changed in push)
+          head_sha=$(git rev-parse "$AFTER_SHA" 2>/dev/null || git rev-parse HEAD)
+          while IFS= read -r adr_path; do
+            [ -z "$adr_path" ] && continue
+            body=$(git show "${head_sha}:${adr_path}" 2>/dev/null || true)
+            [ -z "$body" ] && continue
+            for ref in $(echo "$body" | grep -oE '(^|[^A-Za-z0-9_])#[0-9]+' | grep -oE '[0-9]+'); do
+              [ "$ref" -gt 100000 ] && continue
+              results="${results}${head_sha} ${ref} \n"
+            done
+          done < <(git diff --name-only --diff-filter=AM "$range" 2>/dev/null | grep -E '^docs/decisions/.*\.md$' || true)
+
+          if [ -z "$results" ]; then
+            echo "No proposal refs (#NNN) found in pushed commits or ADR bodies."
+            echo "refs=" >> $GITHUB_OUTPUT
+          else
+            echo "Found proposal refs:"
+            printf "%b" "$results"
+            collapsed=$(printf "%b" "$results" | awk 'NF{print $1" "$2" "$3}' | sort -u | tr '\n' ';')
+            echo "refs=${collapsed}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Call hive_mark_merged for each proposal ref
+        if: steps.extract.outputs.refs != ''
+        env:
+          HIVE_BEARER: ${{ secrets.HIVE_AUTH_TOKEN }}
+          MCP_ENDPOINT: <YOUR_HIVE_MCP_URL>/api/mcp
+          REFS: ${{ steps.extract.outputs.refs }}
+        run: |
+          set -u
+
+          if [ -z "${HIVE_BEARER:-}" ]; then
+            echo "::warning::HIVE_AUTH_TOKEN not configured; skipping proposal closure sync."
+            exit 0
+          fi
+
+          IFS=';' read -ra entries <<< "$REFS"
+          for entry in "${entries[@]}"; do
+            entry=$(echo "$entry" | xargs)
+            [ -z "$entry" ] && continue
+
+            commit_sha=$(echo "$entry" | awk '{print $1}')
+            issue_num=$(echo "$entry"  | awk '{print $2}')
+            pr_num=$(echo "$entry"     | awk '{print $3}')
+
+            echo "Closing proposal #${issue_num} via commit ${commit_sha:0:8} (PR ${pr_num:-none})"
+
+            if [ -n "$pr_num" ]; then
+              pr_field="\"pr_number\": $pr_num,"
+            else
+              pr_field=""
+            fi
+
+            payload=$(printf '{
+              "jsonrpc": "2.0",
+              "id": 1,
+              "method": "tools/call",
+              "params": {
+                "name": "hive_mark_merged",
+                "arguments": {
+                  "proposal_id": "%s",
+                  "commit_sha": "%s",
+                  %s
+                  "human_name": "gh-action-closure-sync"
+                }
+              }
+            }' "$issue_num" "$commit_sha" "$pr_field")
+
+            response=$(curl -sS --max-time 15 -X POST "$MCP_ENDPOINT" \
+              -H "Authorization: Bearer $HIVE_BEARER" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json, text/event-stream" \
+              --data "$payload" \
+              2>&1) || { echo "::warning::curl error for #${issue_num}; continuing."; continue; }
+
+            echo "Response for #${issue_num}: $response"
+
+            if echo "$response" | grep -q '"isError":true'; then
+              echo "::warning::hive_mark_merged returned isError=true for #${issue_num} (may not be a Hive proposal — safe to ignore)"
+            elif echo "$response" | grep -q '"idempotent":true'; then
+              echo "::notice::#${issue_num} already recorded for commit ${commit_sha:0:8}"
+            else
+              echo "::notice::#${issue_num} → merged"
+            fi
+          done
+
+      - name: Rollup completed syntheses
+        if: always() && env.HIVE_AUTH_TOKEN != ''
+        env:
+          HIVE_AUTH_TOKEN: ${{ secrets.HIVE_AUTH_TOKEN }}
+          MCP_ENDPOINT: <YOUR_HIVE_MCP_URL>/api/mcp
+        run: |
+          set -u
+
+          payload='{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"hive_rollup_merged","arguments":{}}}'
+
+          response=$(curl -sS --max-time 60 -X POST "$MCP_ENDPOINT" \
+            -H "Authorization: Bearer $HIVE_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json, text/event-stream" \
+            --data "$payload" 2>&1) || { echo "::warning::rollup curl error; continuing."; exit 0; }
+
+          echo "Rollup response: $response"
+
+          summary=$(echo "$response" | sed -n 's/^data: //p' | head -1 \
+            | python3 -c "import sys,json; r=json.load(sys.stdin); t=json.loads(r['result']['content'][0]['text']); print(f\"scanned={t['syntheses_scanned']} synth_transitioned={t['syntheses_transitioned']} prop_transitioned={t['proposals_transitioned']}\")" 2>/dev/null \
+            || echo "(parse failed)")
+          echo "::notice::Synthesis rollup: $summary"
+
+      # Self-heals the GH-closed/Hive-open drift that occurs when:
+      #   - hive_synthesize was called without proposal_ids
+      #   - proposals were bookkeeping-closed (GH issue closed manually)
+      #   - tasks were created directly from proposals (skipping hive_approve_plan)
+      #
+      # Idempotent — hive_mark_merged is a no-op for already-merged proposals.
+      - name: Proposal drift sync (GH-closed → Hive-merged)
+        if: always() && env.HIVE_AUTH_TOKEN != ''
+        env:
+          HIVE_AUTH_TOKEN: ${{ secrets.HIVE_AUTH_TOKEN }}
+          MCP_ENDPOINT: <YOUR_HIVE_MCP_URL>/api/mcp
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -u
+
+          fetch_proposals() {
+            local status=$1
+            local payload="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"hive_get_proposals\",\"arguments\":{\"status\":\"${status}\"}}}"
+            curl -sS --max-time 30 -X POST "$MCP_ENDPOINT" \
+              -H "Authorization: Bearer $HIVE_AUTH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json, text/event-stream" \
+              --data "$payload" 2>/dev/null \
+            | sed -n 's/^data: //p' | head -1 \
+            | python3 -c "
+import sys, json
+try:
+    r = json.load(sys.stdin)
+    proposals = json.loads(r['result']['content'][0]['text']).get('proposals', [])
+    for p in proposals:
+        if p.get('github_issue_number'):
+            print(p['github_issue_number'])
+except Exception:
+    pass
+" 2>/dev/null || true
+          }
+
+          all_gh_nums=$(
+            fetch_proposals open
+            fetch_proposals discussing
+          )
+
+          if [ -z "$all_gh_nums" ]; then
+            echo "No open/discussing proposals with GH issue numbers found."
+            exit 0
+          fi
+
+          drifted=0
+          date_tag=$(date +%Y%m%d)
+
+          while IFS= read -r gh_num; do
+            [ -z "$gh_num" ] && continue
+
+            state=$(gh issue view "$gh_num" --json state --jq '.state' 2>/dev/null || echo "")
+            [ "$state" != "CLOSED" ] && continue
+
+            close_sha=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${gh_num}/timeline" \
+              --jq '[.[] | select(.event=="closed")] | last | (.commit_id // empty)' \
+              2>/dev/null || echo "")
+            if [ -z "$close_sha" ] || [ "$close_sha" = "null" ]; then
+              close_sha="gh-drift-${date_tag}"
+            fi
+            close_sha="${close_sha:0:40}"
+
+            echo "Drift: GH#${gh_num} CLOSED but Hive open/discussing — marking merged"
+
+            payload=$(printf \
+              '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"hive_mark_merged","arguments":{"proposal_id":"%s","commit_sha":"%s","human_name":"hive-proposal-drift-sync"}}}' \
+              "$gh_num" "$close_sha")
+
+            response=$(curl -sS --max-time 15 -X POST "$MCP_ENDPOINT" \
+              -H "Authorization: Bearer $HIVE_AUTH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json, text/event-stream" \
+              --data "$payload" 2>&1) || { echo "::warning::curl error for GH#${gh_num}; continuing."; continue; }
+
+            if echo "$response" | grep -q '"isError":true'; then
+              echo "::warning::hive_mark_merged error for GH#${gh_num} (may be a task issue, not a proposal — safe to ignore)"
+            elif echo "$response" | grep -q '"idempotent":true'; then
+              echo "::notice::GH#${gh_num} already recorded"
+            else
+              drifted=$((drifted + 1))
+              echo "::notice::GH#${gh_num} → merged (drift sync)"
+            fi
+          done <<< "$all_gh_nums"
+
+          echo "::notice::Proposal drift sync: ${drifted} proposals transitioned"
