@@ -204,6 +204,20 @@ See `subs-initiative/docs/decisions/` and `paradigm-b2b/docs/decisions/0003-hive
 
 ---
 
+## Known Failure Mode: GH-Closed / Hive-Open Drift
+
+Over time, proposals accumulate where the GitHub issue is CLOSED but the Hive status is still `open` or `discussing`. This happens when:
+
+- `hive_synthesize` is called without passing `proposal_ids` (most common)
+- GH issues are closed manually or via synthesis sweeps without a matching commit subject reference
+- Tasks are created directly from proposals, bypassing `hive_approve_plan`
+
+**Fix:** Add the `hive-closure-sync.yml` template workflow, which includes a "Proposal drift sync" step that self-heals this on every push to main. Details in `docs/hive-closure-drift-sync-pattern.md`.
+
+**Prevention:** Enforce in `CLAUDE.md` or `WAYS-OF-WORKING.md` that every `hive_synthesize` call must include `proposal_ids`.
+
+---
+
 ## Relationship to the original employer-prefixed name Methodology
 
 When `blueprint.yml` has `hive.enabled: true`, Stage 3 (Prototype) and Stage 5 (Documents) parallelize across multiple agents using the workflow above. CLAUDE.md adds the "register on session start" rule. Other stages benefit but to a lesser degree.
