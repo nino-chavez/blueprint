@@ -194,3 +194,23 @@ Reusable Stage-1 baseline docs for common initiative targets. Copy the relevant 
 - Marketplace context distilled from the BMP P&P CX initiative (March 2026) and `aisles-admin` / `ask-bc` reference apps
 - B2B Edition + Buyer Portal docs distilled from Paradigm B2B (May 2026) and the open-source `bigcommerce/b2b-buyer-portal` repo
 - Hive + Cloudflare patterns distilled from `bc-subscriptions` (March 2026) and Paradigm B2B
+
+## Methodology Reference Library
+
+Cross-cutting disciplines that apply across initiative types. Pull in when the activation threshold for each is met.
+
+| Doc | Activates when | Reference for |
+|---|---|---|
+| [docs/doc-surface-discipline-pattern.md](docs/doc-surface-discipline-pattern.md) | Project has >50 docs and ≥1 major pivot in its history | Two-surface model (canonical-present vs decision-lineage), 6-bucket classification taxonomy, `canonical: true\|false` frontmatter convention, activation thresholds |
+| [docs/register-pattern.md](docs/register-pattern.md) | Project has ≥1 pivot to capture as invalidated-paths, or peer products to capture as differentiators | Immutable append-only register shape — numbered entries, source citations, supersession via reference. Used by `template/docs/invalidated-paths.md` and `template/docs/differentiators.md` skeletons |
+| [docs/tiered-orchestration-pattern.md](docs/tiered-orchestration-pattern.md) | Planned work > what one operator can hand-execute in a week; >3 PRs parallel-safe | Orchestrator/Specialist/Implementer/Janitor tiering, wave sequencing, calibration discipline, anchor-don't-punt for forks, memory-as-inoculation for foundational [Spec]s |
+| [docs/inventory-as-evidence-pattern.md](docs/inventory-as-evidence-pattern.md) | Operator asks for cleanup/reorg/consolidation on a surface with >50 items | Methodology pattern: read-only walk → classify against rubric → surface surprises → present to operator → file as [Spec] body's evidence section |
+| [docs/doc-discipline-micro-patterns.md](docs/doc-discipline-micro-patterns.md) | Always (small disciplines, low overhead) | Surface-existing-discipline-before-inventing-new; capture-ambiguity-via-secondary-tags; wrong-copy-is-signal; avoid-multi-role-template-files; memory-entries-point-at-proposals; trigger-to-revisit on anchored forks |
+
+**Companion template artifacts** (in `template/` — get stamped into new projects):
+- `template/docs/invalidated-paths.md` — register skeleton (high-value default for any project with pivots)
+- `template/docs/differentiators.md` — register skeleton (optional, project-dependent)
+- `template/tools/frontmatter-lint/` — Node validator + CI workflow scaffold for the `canonical: true|false` convention
+- `template/STATE.md` (refactored) — tiered guidance for solo / Hive-enabled / state-derive-enabled projects, prevents the multi-role drift the bc-subscriptions retrofit hit
+
+**Origin:** Methodology patterns distilled from `bc-subscriptions` doc-reorg session (Hive #929, May 2026). That session is the canonical worked example.
