@@ -1,0 +1,7 @@
+# Cloudflare Pages config for the tool-shell deploy.
+# Per copy (tool-operator / tool-public), edit `name` to match your project's
+# convention: <project>-tool-internal / <project>-tool-public.
+
+name = "your-project-tool-internal"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-01-01"
