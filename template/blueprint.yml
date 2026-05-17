@@ -128,6 +128,43 @@ prototype:
   deploy_target: vercel             # vercel | cloudflare-pages | static | none
                                     # use "cloudflare-pages" if cloudflare.enabled: true above
 
+# ──────────────────────────────────────────────────────────────────
+# Tool-surface clustering — how the tooling around the project deploys
+# Reference: docs/clustered-tool-surface-pattern.md
+# ──────────────────────────────────────────────────────────────────
+#
+# The tooling a project ships (Hive dashboard, prototype, demo storyboard,
+# traceability matrix) splits into TWO clusters by auth profile:
+#   - operator-internal: things only the team should see (Hive board, etc.)
+#   - stakeholder-shareable: things meant to be shared (prototype, demos)
+#
+# Three modes:
+#   - clustered  (default) — one deploy per cluster; recommended for new projects
+#   - separate            — each app its own deploy (current subs-initiative pattern)
+#   - unified             — single deploy hosting both clusters (rare; auth-gated at top)
+#
+# See the pattern doc for activation thresholds + retrofit guidance.
+
+tool_surface:
+  mode: clustered                   # unified | clustered (recommended) | separate
+
+  operator_cluster:
+    enabled: true                   # set false if no operator-internal tooling needed
+    auth: cloudflare-access         # cloudflare-access | basic-auth | none
+    apps:                           # which apps mount into the operator shell
+      hive_dashboard: true
+      infra_status: false           # opt-in for state-derive / health dashboards
+    deploy_name: ""                 # defaults to <project>-tool-internal
+
+  shareable_cluster:
+    enabled: true                   # set false if no public-facing tool surface
+    auth: public                    # public | signed-link
+    apps:
+      prototype: true
+      traceability: true
+      demos: true
+    deploy_name: ""                 # defaults to <project>-tool-public
+
 # Research scope
 research:
   competitors: []                   # e.g., ["Shopify", "Squarespace"]
