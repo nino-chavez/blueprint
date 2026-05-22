@@ -141,6 +141,10 @@ Use case: "what knowledge inputs informed the payments tokenization design?" —
 
 Same retrieval as `/derive` but streams the synthesis as Server-Sent Events. Emits four event types: `retrieval` (the ranked top-k chunks, sent first so the client can render citation chips before tokens arrive), `token` (per-token deltas from the synthesis), `done` (terminal), `error`. Used by the chat surface below.
 
+### `GET /admin/derive-stats?days=<n>&top=<n>` — operator-only
+
+Token-gated (reuses `ARCHAEOLOGY_INGEST_TOKEN`). Returns JSON aggregates over the `derive_log` table: daily call counts, top-N questions, top-N IP-hashes (sha256-truncated for privacy), synthesis-vs-retrieval breakdown, retrieval depth + duration stats, page-context popularity, today's headroom against the daily cap. Use this to monitor cost, spot recurring questions worth promoting to a FAQ, and detect abuse via IP fan-out.
+
 ---
 
 ## Interrogation Surface (Chat)
@@ -277,7 +281,7 @@ The Worker's `/embed` endpoint orders pending events as `ORDER BY CASE source WH
 
 ```
 tools/archaeology/
-├── worker/                # CF Worker — POST /events, /embed; GET /timeline, /derive, /embed/stats, /health
+├── worker/                # CF Worker — POST /events, /embed; GET /timeline, /derive, /derive/stream, /embed/stats, /admin/derive-stats, /health
 │   ├── src/index.ts
 │   ├── schema/0001-events.sql
 │   ├── schema/0002-embed-state.sql

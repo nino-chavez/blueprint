@@ -19,6 +19,8 @@ interface Env {
   ALLOWED_PROJECTS: string;
   ANTHROPIC_API_KEY?: string;   // optional — if set, /derive returns full synthesis
   ANTHROPIC_MODEL?: string;     // optional — defaults to claude-sonnet-4-6
+  DERIVE_DAILY_CAP?: string;    // global daily /derive/stream call cap (default 200)
+  DERIVE_PER_IP_CAP?: string;   // per-IP daily cap (default 50)
 }
 
 interface IncomingEvent {
@@ -42,16 +44,20 @@ const SOURCES = new Set([
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
+    // CORS preflight — let any origin probe the surface
+    if (req.method === "OPTIONS") return preflight();
     try {
-      if (req.method === "GET" && url.pathname === "/health") return json({ ok: true });
+      if (req.method === "GET" && url.pathname === "/health") return corsJson({ ok: true });
       if (req.method === "POST" && url.pathname === "/events") return await ingest(req, env);
       if (req.method === "POST" && url.pathname === "/embed")  return await embedBatch(req, env);
-      if (req.method === "GET"  && url.pathname === "/embed/stats") return await embedStats(env);
-      if (req.method === "GET" && url.pathname === "/timeline") return await timeline(url, env);
-      if (req.method === "GET" && url.pathname === "/derive") return await derive(url, env);
-      return json({ error: "not_found" }, 404);
+      if (req.method === "GET"  && url.pathname === "/embed/stats") return corsResponse(await embedStats(env));
+      if (req.method === "GET" && url.pathname === "/timeline") return corsResponse(await timeline(url, env));
+      if (req.method === "GET" && url.pathname === "/derive") return corsResponse(await derive(url, env));
+      if (req.method === "GET" && url.pathname === "/derive/stream") return await deriveStream(req, url, env);
+      if (req.method === "GET" && url.pathname === "/admin/derive-stats") return corsResponse(await adminDeriveStats(req, url, env));
+      return corsJson({ error: "not_found" }, 404);
     } catch (err) {
-      return json({ error: "internal", message: (err as Error).message }, 500);
+      return corsJson({ error: "internal", message: (err as Error).message }, 500);
     }
   },
 };
@@ -431,7 +437,371 @@ Answer the question, citing event_ids inline as [E:<id>].`;
   return { answer, citations: Array.from(citationSet), model };
 }
 
+// ---------- /derive/stream ----------
+
+async function deriveStream(req: Request, url: URL, env: Env): Promise<Response> {
+  const question = url.searchParams.get("question");
+  if (!question) return corsJson({ error: "bad_request", message: "?question= required" }, 400);
+
+  const pageContext = url.searchParams.get("context") ?? "";
+  const topK = Math.min(parseInt(url.searchParams.get("k") ?? "20", 10), 50);
+
+  // ---- rate-limit / spend cap ----
+  const dailyCap = parseInt(env.DERIVE_DAILY_CAP ?? "200", 10);
+  const today = new Date().toISOString().slice(0, 10);
+  const ip = req.headers.get("cf-connecting-ip") ?? "unknown";
+  const ipHash = await sha256Hex(ip);
+  const ipKey = `ip:${ipHash.slice(0, 16)}:${today}`;
+  const dayKey = `day:${today}`;
+
+  const counts = await env.DB
+    .prepare(`SELECT scope_key, call_count FROM spend_counters WHERE scope_key IN (?, ?)`)
+    .bind(dayKey, ipKey)
+    .all<{ scope_key: string; call_count: number }>();
+
+  const byScope = new Map((counts.results ?? []).map((r) => [r.scope_key, r.call_count]));
+  const globalToday = byScope.get(dayKey) ?? 0;
+  const ipToday = byScope.get(ipKey) ?? 0;
+
+  if (globalToday >= dailyCap) {
+    return corsJson({ error: "service_throttled", message: "daily archaeology-chat budget exhausted; try again tomorrow" }, 429);
+  }
+  const perIpCap = parseInt(env.DERIVE_PER_IP_CAP ?? "50", 10);
+  if (ipToday >= perIpCap) {
+    return corsJson({ error: "rate_limited", message: "per-visitor daily limit reached" }, 429);
+  }
+
+  // ---- retrieval ----
+  const embedRes = await env.AI.run("@cf/baai/bge-base-en-v1.5", { text: [question] }) as { data: number[][] };
+  const vector = embedRes.data[0];
+  const matches = await env.INDEX.query(vector, { topK, returnMetadata: true });
+
+  const eventIds = Array.from(new Set(matches.matches.map((m) => String(m.id).split(":")[0])));
+  let chunkEvents: any[] = [];
+  if (eventIds.length) {
+    const placeholders = eventIds.map(() => "?").join(",");
+    const res = await env.DB.prepare(
+      `SELECT event_id, source, source_id, source_ts, type, actor, payload_json
+       FROM events WHERE event_id IN (${placeholders})`)
+      .bind(...eventIds).all();
+    chunkEvents = res.results as any[];
+  }
+  const eventById = new Map(chunkEvents.map((e) => [e.event_id, e]));
+  const ranked = matches.matches.map((m) => {
+    const eid = String(m.id).split(":")[0];
+    return { score: m.score, chunk_id: m.id, event: eventById.get(eid) ?? null };
+  }).filter((x) => x.event != null);
+
+  // ---- bump counters + audit log ----
+  const nowIso = new Date().toISOString();
+  await env.DB.batch([
+    env.DB.prepare(`INSERT INTO spend_counters (scope_key, call_count, approx_cost_milli, first_at, last_at)
+                    VALUES (?, 1, 0, ?, ?)
+                    ON CONFLICT(scope_key) DO UPDATE SET call_count = call_count + 1, last_at = excluded.last_at`)
+      .bind(dayKey, nowIso, nowIso),
+    env.DB.prepare(`INSERT INTO spend_counters (scope_key, call_count, approx_cost_milli, first_at, last_at)
+                    VALUES (?, 1, 0, ?, ?)
+                    ON CONFLICT(scope_key) DO UPDATE SET call_count = call_count + 1, last_at = excluded.last_at`)
+      .bind(ipKey, nowIso, nowIso),
+    env.DB.prepare(`INSERT INTO derive_log (log_id, ts, ip_hash, question, page_context, retrieval_count, synthesized)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)`)
+      .bind(ulid(), nowIso, ipHash.slice(0, 16), question, pageContext, ranked.length, env.ANTHROPIC_API_KEY ? 1 : 0),
+  ]);
+
+  // ---- if no Anthropic key, return retrieval as a single SSE event ----
+  if (!env.ANTHROPIC_API_KEY) {
+    return sseFromString(
+      `event: retrieval\ndata: ${JSON.stringify({ match_count: matches.matches.length, ranked: ranked.slice(0, 20) })}\n\n` +
+      `event: note\ndata: ${JSON.stringify({ message: "ANTHROPIC_API_KEY not set; retrieval-only" })}\n\n` +
+      `event: done\ndata: {}\n\n`
+    );
+  }
+
+  // ---- streaming synthesis ----
+  return await streamSynthesisFromClaude(question, pageContext, ranked, env);
+}
+
+async function streamSynthesisFromClaude(
+  question: string,
+  pageContext: string,
+  ranked: Array<{ score: number; chunk_id: string; event: any }>,
+  env: Env,
+): Promise<Response> {
+  const model = env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+
+  const sources = ranked.slice(0, 20).map((r, i) => {
+    const ev = r.event;
+    const payload = JSON.parse(ev.payload_json);
+    const text = extractText(ev.type, payload);
+    return `[#${i + 1}] event_id=${ev.event_id}
+source=${ev.source} type=${ev.type} source_id=${ev.source_id} ts=${ev.source_ts}
+score=${r.score.toFixed(3)}
+---
+${text.slice(0, 1500)}
+---`;
+  }).join("\n\n");
+
+  const contextLine = pageContext
+    ? `Context: the visitor asked this from the bc-subscriptions portal page \`${pageContext}\`. Scope your answer to topics relevant to that page when the retrieval supports it.\n\n`
+    : "";
+
+  const system = `You answer archaeological questions about the bc-subscriptions project by reasoning from a retrieval result of historical events (sessions, ADRs, audits, inputs manifest, iterations register).
+
+Rules:
+- Cite every load-bearing claim with [E:<event_id>] inline. event_ids are listed beside each source below.
+- If the sources don't answer the question, say so explicitly. Do NOT invent facts.
+- Prefer specific source surfaces (file paths, ADR numbers, manifest entry ids, hive issue numbers) over generic prose.
+- Keep the answer to 6 sentences or fewer unless the question explicitly asks for depth.
+- This is a public-facing surface — write in clear, jargon-light language. Skeptics use this to interrogate the project; assume they have no insider context.`;
+
+  const user = `${contextLine}Question: ${question}
+
+Retrieved sources (top ${ranked.length}, ordered by semantic score):
+
+${sources}
+
+Answer the question, citing event_ids inline as [E:<id>].`;
+
+  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": env.ANTHROPIC_API_KEY!,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1024,
+      stream: true,
+      system,
+      messages: [{ role: "user", content: user }],
+    }),
+  });
+
+  if (!upstream.ok || !upstream.body) {
+    const errBody = await upstream.text();
+    return sseFromString(`event: error\ndata: ${JSON.stringify({ status: upstream.status, body: errBody.slice(0, 500) })}\n\nevent: done\ndata: {}\n\n`);
+  }
+
+  // Pipe Anthropic's SSE stream through, emit a retrieval event up-front so the
+  // client can render citation chips before the answer arrives.
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+
+  const compactRanked = ranked.slice(0, 20).map((r) => ({
+    score: r.score,
+    chunk_id: r.chunk_id,
+    event_id: r.event.event_id,
+    source: r.event.source,
+    type: r.event.type,
+    source_id: r.event.source_id,
+    source_ts: r.event.source_ts,
+  }));
+
+  (async () => {
+    try {
+      await writer.write(encoder.encode(
+        `event: retrieval\ndata: ${JSON.stringify({ match_count: ranked.length, ranked: compactRanked })}\n\n`
+      ));
+
+      const reader = upstream.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        // Parse Anthropic SSE lines (event: / data: blocks separated by \n\n)
+        let idx;
+        while ((idx = buf.indexOf("\n\n")) >= 0) {
+          const block = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          // Extract data: line
+          for (const line of block.split("\n")) {
+            if (line.startsWith("data: ")) {
+              const payload = line.slice(6);
+              if (payload === "[DONE]") continue;
+              try {
+                const obj = JSON.parse(payload);
+                if (obj.type === "content_block_delta" && obj.delta?.type === "text_delta") {
+                  await writer.write(encoder.encode(
+                    `event: token\ndata: ${JSON.stringify({ text: obj.delta.text })}\n\n`
+                  ));
+                }
+              } catch {}
+            }
+          }
+        }
+      }
+      await writer.write(encoder.encode(`event: done\ndata: {}\n\n`));
+    } catch (e) {
+      await writer.write(encoder.encode(
+        `event: error\ndata: ${JSON.stringify({ message: (e as Error).message })}\n\n`
+      ));
+    } finally {
+      await writer.close();
+    }
+  })();
+
+  return new Response(readable, {
+    headers: {
+      ...sseHeaders(),
+      ...corsHeaders(),
+    },
+  });
+}
+
+// ---------- /admin/derive-stats ----------
+
+async function adminDeriveStats(req: Request, url: URL, env: Env): Promise<Response> {
+  // Operator-only — reuses the ingest token because both are operator-scoped
+  // surfaces (anyone who can write events should also be able to inspect what
+  // visitors are asking).
+  const token = req.headers.get("X-Archaeology-Token");
+  if (!token || token !== env.ARCHAEOLOGY_INGEST_TOKEN) {
+    return corsJson({ error: "unauthorized" }, 401);
+  }
+
+  const days = Math.min(Math.max(parseInt(url.searchParams.get("days") ?? "30", 10), 1), 90);
+  const topN = Math.min(Math.max(parseInt(url.searchParams.get("top") ?? "10", 10), 1), 50);
+  const sinceIso = new Date(Date.now() - days * 86_400_000).toISOString();
+
+  // Daily call counts (last N days)
+  const daily = await env.DB.prepare(
+    `SELECT scope_key, call_count
+     FROM spend_counters
+     WHERE scope_key LIKE 'day:%' AND scope_key >= ?
+     ORDER BY scope_key ASC`
+  ).bind(`day:${sinceIso.slice(0, 10)}`).all<{ scope_key: string; call_count: number }>();
+
+  // Top-N questions by frequency
+  const topQuestions = await env.DB.prepare(
+    `SELECT question, COUNT(*) AS times, MAX(ts) AS last_at
+     FROM derive_log
+     WHERE ts >= ?
+     GROUP BY question
+     ORDER BY times DESC, last_at DESC
+     LIMIT ?`
+  ).bind(sinceIso, topN).all<{ question: string; times: number; last_at: string }>();
+
+  // Top-N IP-hashes by call count (privacy-preserving — sha256(ip)[:16])
+  const topIps = await env.DB.prepare(
+    `SELECT ip_hash, COUNT(*) AS times, MAX(ts) AS last_at
+     FROM derive_log
+     WHERE ts >= ?
+     GROUP BY ip_hash
+     ORDER BY times DESC
+     LIMIT ?`
+  ).bind(sinceIso, topN).all<{ ip_hash: string; times: number; last_at: string }>();
+
+  // Synthesis vs retrieval-only breakdown
+  const synthBreakdown = await env.DB.prepare(
+    `SELECT synthesized, COUNT(*) AS times
+     FROM derive_log
+     WHERE ts >= ?
+     GROUP BY synthesized`
+  ).bind(sinceIso).all<{ synthesized: number; times: number }>();
+
+  // Retrieval depth distribution
+  const retrievalStats = await env.DB.prepare(
+    `SELECT
+       COUNT(*) AS calls,
+       AVG(retrieval_count) AS avg_retrieval,
+       MIN(retrieval_count) AS min_retrieval,
+       MAX(retrieval_count) AS max_retrieval,
+       AVG(duration_ms) AS avg_duration_ms
+     FROM derive_log
+     WHERE ts >= ?`
+  ).bind(sinceIso).first<{ calls: number; avg_retrieval: number; min_retrieval: number; max_retrieval: number; avg_duration_ms: number }>();
+
+  // Page-context popularity
+  const topPages = await env.DB.prepare(
+    `SELECT COALESCE(NULLIF(page_context, ''), '(none)') AS page, COUNT(*) AS times
+     FROM derive_log
+     WHERE ts >= ?
+     GROUP BY page
+     ORDER BY times DESC
+     LIMIT ?`
+  ).bind(sinceIso, topN).all<{ page: string; times: number }>();
+
+  // Rate-limit headroom (today)
+  const today = new Date().toISOString().slice(0, 10);
+  const todayDay = await env.DB.prepare(
+    `SELECT call_count FROM spend_counters WHERE scope_key = ?`
+  ).bind(`day:${today}`).first<{ call_count: number }>();
+  const dailyCap = parseInt(env.DERIVE_DAILY_CAP ?? "200", 10);
+
+  return corsJson({
+    window: { days, since: sinceIso },
+    daily_call_counts: daily.results,
+    top_questions: topQuestions.results,
+    top_ip_hashes: topIps.results,
+    synthesis_breakdown: synthBreakdown.results,
+    retrieval_stats: retrievalStats ?? null,
+    top_page_contexts: topPages.results,
+    today: {
+      date: today,
+      call_count: todayDay?.call_count ?? 0,
+      daily_cap: dailyCap,
+      headroom: dailyCap - (todayDay?.call_count ?? 0),
+    },
+  });
+}
+
 // ---------- helpers ----------
+
+const ALLOWED_ORIGINS = new Set<string | RegExp>([
+  "https://{{PROJECT_SLUG}}-portal.pages.dev",
+  /^https:\/\/.+\.{{PROJECT_SLUG}}-portal\.pages\.dev$/, // preview deploys
+  "http://localhost:4321",                               // astro dev
+  "http://localhost:3000",                               // misc dev
+]);
+
+function corsHeaders(origin: string | null = null): Record<string, string> {
+  // Permissive but log-able — public surface
+  return {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET, POST, OPTIONS",
+    "access-control-allow-headers": "content-type, x-archaeology-token",
+    "access-control-max-age": "86400",
+  };
+}
+
+function preflight(): Response {
+  return new Response(null, { status: 204, headers: corsHeaders() });
+}
+
+function corsResponse(res: Response): Response {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
+  return new Response(res.body, { status: res.status, headers });
+}
+
+function corsJson(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: { "content-type": "application/json", ...corsHeaders() },
+  });
+}
+
+function sseHeaders(): Record<string, string> {
+  return {
+    "content-type": "text/event-stream; charset=utf-8",
+    "cache-control": "no-cache, no-transform",
+    "connection": "keep-alive",
+    "x-accel-buffering": "no",
+  };
+}
+
+function sseFromString(s: string): Response {
+  return new Response(s, { headers: { ...sseHeaders(), ...corsHeaders() } });
+}
+
+async function sha256Hex(s: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data, null, 2), {

@@ -15,7 +15,7 @@ This is a **scaffolded template** — copy into your project, run `scaffold-arch
 
 ```
 tools/archaeology/
-├── worker/                # CF Worker — POST /events, /embed; GET /timeline, /derive, /embed/stats, /health
+├── worker/                # CF Worker — POST /events, /embed; GET /timeline, /derive, /derive/stream, /embed/stats, /admin/derive-stats, /health
 │   ├── src/index.ts
 │   ├── schema/0001-events.sql
 │   ├── schema/0002-embed-state.sql
@@ -67,6 +67,28 @@ cp web/ArchaeologyChat.tsx <your-portal>/src/components/
 # Then mount as a global island:
 #   <ArchaeologyChat client:idle pageContext={currentPath} />
 ```
+
+## Cost monitoring
+
+Once `/derive/stream` is in use, hit `GET /admin/derive-stats` (token-gated; reuses `ARCHAEOLOGY_INGEST_TOKEN`) to inspect what visitors are asking and how much budget is being consumed. Returns JSON with:
+
+- Daily call counts over the last N days (default 30)
+- Top-N questions by frequency (default 10)
+- Top-N IP-hashes by call count (privacy-preserving — `sha256(ip)[:16]`)
+- Synthesis vs retrieval-only breakdown
+- Retrieval depth + duration stats (avg/min/max)
+- Page-context popularity (which portal pages drive the most questions)
+- Today's headroom against the daily cap
+
+Example:
+
+```bash
+curl -H "X-Archaeology-Token: $(cat ~/.config/archaeology/ingest-token)" \
+  "https://${PROJECT_SLUG}-archaeology.${CF_WORKERS_SUBDOMAIN}.workers.dev/admin/derive-stats?days=14&top=10" \
+  | jq
+```
+
+Query params: `?days=<1-90>` (default 30), `?top=<1-50>` (default 10). Use this to surface drift in what visitors care about, spot questions that keep recurring (candidate for a FAQ surface), and watch for IP fan-out that signals abuse.
 
 ## Interrogation surface (chat)
 
