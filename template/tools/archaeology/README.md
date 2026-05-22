@@ -24,6 +24,9 @@ tools/archaeology/
 │   └── tsconfig.json
 ├── embed_drive.py         # Driver: loops POST /embed until queue drained
 ├── scaffold.sh            # One-shot provisioning + first deploy
+├── web/                   # Interrogation surface (chat island)
+│   ├── ArchaeologyChat.tsx  # Drop-in React island; mount in your portal layout
+│   └── README.md           # Integration recipes (Astro / Next / vanilla React)
 └── ingesters/             # One per source stream
     ├── _common.py         # Shared Event/Ref dataclasses + batched POST
     ├── sessions.py        # FULL — Claude Code JSONLs (SessionEnd hook for tail)
@@ -58,7 +61,18 @@ python3 embed_drive.py --batch 25 --daily-limit 9500
 
 # 4. Query
 curl "https://${PROJECT_SLUG}-archaeology.${CF_WORKERS_SUBDOMAIN}.workers.dev/derive?question=..."
+
+# 5. (Optional) Mount the chat surface in your portal — see web/README.md
+cp web/ArchaeologyChat.tsx <your-portal>/src/components/
+# Then mount as a global island:
+#   <ArchaeologyChat client:idle pageContext={currentPath} />
 ```
+
+## Interrogation surface (chat)
+
+`web/ArchaeologyChat.tsx` is a drop-in React island that streams answers from the Worker's `/derive/stream` SSE endpoint, with inline `[E:event_id]` citation chips that open a secondary drawer showing the underlying event. Mount it as a global island in your portal layout — every page gets the "ask the substrate" surface contextually scoped to its own path. Integration recipes for Astro / Next / vanilla React are in [`web/README.md`](web/README.md).
+
+The chat surface is **optional**. The substrate itself is fully functional via the JSON `/derive` and `/timeline` endpoints; the chat is a UI affordance on top.
 
 ## Freshness (tail mode)
 

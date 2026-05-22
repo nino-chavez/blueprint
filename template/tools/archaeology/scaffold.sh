@@ -71,7 +71,8 @@ for f in \
   worker/wrangler.toml \
   worker/package.json \
   ingesters/_common.py \
-  embed_drive.py; do
+  embed_drive.py \
+  web/ArchaeologyChat.tsx; do
   if [ -f "$f" ] && grep -q "{{PROJECT_SLUG}}\|{{PROJECT_ID}}" "$f"; then
     templatize "$f"
     echo "  templatized $f"
@@ -161,6 +162,25 @@ echo "[scaffold] deploying Worker"
 deploy_out=$(run_wrangler deploy)
 worker_url=$(echo "$deploy_out" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
 
+# Now that the Worker is deployed we know its full URL, extract the CF workers
+# subdomain (e.g. "bigcommerce-testing-7727") and substitute into files that
+# reference {{CF_WORKERS_SUBDOMAIN}}. Required by web/ArchaeologyChat.tsx,
+# ingesters/_common.py, and embed_drive.py.
+cf_subdomain=$(echo "$worker_url" | sed -E 's|https://[^.]+\.([^.]+)\.workers\.dev|\1|')
+if [ -n "$cf_subdomain" ] && [ "$cf_subdomain" != "$worker_url" ]; then
+  echo "[scaffold] CF workers subdomain detected: $cf_subdomain"
+  for f in \
+    web/ArchaeologyChat.tsx \
+    ingesters/_common.py \
+    embed_drive.py; do
+    if [ -f "$f" ] && grep -q "{{CF_WORKERS_SUBDOMAIN}}" "$f"; then
+      sed -e "s|{{CF_WORKERS_SUBDOMAIN}}|${cf_subdomain}|g" "$f" > "$f.scaffold.tmp"
+      mv "$f.scaffold.tmp" "$f"
+      echo "  templatized $f (CF subdomain)"
+    fi
+  done
+fi
+
 # ------- 7. smoke /health -------
 
 echo "[scaffold] verifying /health"
@@ -218,6 +238,12 @@ cat <<EOF
     4. (Optional) Enable synthesis:
          echo \$ANTHROPIC_API_KEY | ( cd worker && npx wrangler secret put ANTHROPIC_API_KEY )
 
+    5. (Optional) Mount the chat surface in your portal:
+         cp web/ArchaeologyChat.tsx <your-portal>/src/components/
+         # Then mount as a global island in your layout (see web/README.md):
+         #   <ArchaeologyChat client:idle pageContext={currentPath} />
+
   Pattern doc: ~/Workspace/dev/tools/big-blueprint/docs/archaeology-substrate-pattern.md
+  Chat README: ~/Workspace/dev/tools/big-blueprint/template/tools/archaeology/web/README.md
 ──────────────────────────────────────────────────────────────────────
 EOF

@@ -137,6 +137,38 @@ Hybrid retrieval + synthesis: embed → Vectorize top-k → D1 metadata filter �
 
 Use case: "what knowledge inputs informed the payments tokenization design?" — returns prose answer plus a list of refs to source events.
 
+### `GET /derive/stream?question=<text>&context=<page-path>`
+
+Same retrieval as `/derive` but streams the synthesis as Server-Sent Events. Emits four event types: `retrieval` (the ranked top-k chunks, sent first so the client can render citation chips before tokens arrive), `token` (per-token deltas from the synthesis), `done` (terminal), `error`. Used by the chat surface below.
+
+---
+
+## Interrogation Surface (Chat)
+
+A drop-in React island that turns the substrate into a public "ask anything" surface, mounted as a global island in your project's portal. Provided in the template at [`template/tools/archaeology/web/ArchaeologyChat.tsx`](../template/tools/archaeology/web/ArchaeologyChat.tsx).
+
+**Design intent:** the substrate captures and indexes; this UI lets visitors interrogate it from inside the portal pages they're already reading. Borrows the framing from [Signal-x-Studio-LLC/resonance](https://github.com/Signal-x-Studio-LLC/resonance) — "documents respond when questioned" — but lands as a chat fixture rather than inline source-badges, because our portal pages are hand-authored summaries (not AI-generated documents with built-in claim provenance). Inline citations would carry a permanent authoring/maintenance tax for low signal; chat-only citations are derived live with zero drift.
+
+**Mechanics:**
+
+- Fixed-bottom-right "Ask the substrate" button on every portal page until activated
+- Click → drawer opens with chat surface; question is sent to `/derive/stream` with `context=<current page path>`
+- Page context is prepended to the synthesis system prompt so the LLM scopes answers when retrieval supports it
+- `[E:event_id]` markers in the streamed answer render as numbered citation chips
+- Click a chip → secondary drawer fetches the event from `/timeline` and shows source / source_id / timestamp / payload
+- localStorage persistence of last 30 messages per visitor (no server-side per-user state)
+
+**Spend protection:**
+
+- Per-IP daily cap (default 50/day, env: `DERIVE_PER_IP_CAP`)
+- Global daily cap (default 200/day, env: `DERIVE_DAILY_CAP`)
+- Audit log in `derive_log` D1 table with `sha256(ip)[:16]` for privacy-preserving review
+- Both caps enforced before the Anthropic API is called — no abuse vector for spend
+
+**Integration shape:** the component is portal-agnostic. Reference integration mounts it in the Astro layout; Next.js + vanilla React recipes are in [`web/README.md`](../template/tools/archaeology/web/README.md). Empty-state suggestions are customizable per project via the `getSuggestions` prop.
+
+**Why this works for trust restoration:** a skeptic lands on (say) the `/inspect/gates` page, sees the prose summary, and can ask follow-ups grounded in what they were just reading. Every load-bearing claim in the answer carries a numbered citation chip; one click opens the actual session turn / ADR / audit / manifest entry that supports it. The pages stay readable; the substrate stays authoritative; the chat is the bridge.
+
 ---
 
 ## Day-0 Disciplines (the methodology layer)
@@ -253,6 +285,9 @@ tools/archaeology/
 │   ├── package.json
 │   └── tsconfig.json
 ├── embed_drive.py         # Driver: loops POST /embed until queue drained
+├── web/                   # Interrogation surface (chat island)
+│   ├── ArchaeologyChat.tsx  # React island — mount in your portal layout
+│   └── README.md
 └── ingesters/
     ├── _common.py         # Shared Event/Ref dataclasses + batched POST
     ├── sessions.py        # ✓ FULL — Claude Code JSONLs (SessionEnd hook for tail)
@@ -293,19 +328,20 @@ bash scaffold.sh
 
 `scaffold.sh` is idempotent. It does:
 
-1. **Templatize** `{{PROJECT_SLUG}}`, `{{PROJECT_ID}}`, `{{CLAUDE_SESSION_DIR_SLUG}}` placeholders in `wrangler.toml`, `package.json`, `_common.py`, `embed_drive.py`, `sessions.py`.
+1. **Templatize** `{{PROJECT_SLUG}}`, `{{PROJECT_ID}}`, `{{CLAUDE_SESSION_DIR_SLUG}}` placeholders in `wrangler.toml`, `package.json`, `_common.py`, `embed_drive.py`, `sessions.py`, `web/ArchaeologyChat.tsx`.
 2. **Install** worker dependencies (`npm install` inside `worker/`).
 3. **Provision** CF resources (D1 + R2 + Vectorize), populating `database_id` in `wrangler.toml`. Skips any that already exist.
 4. **Generate** an ingest token (`~/.config/archaeology/ingest-token`, 0600), push it to the Worker as `ARCHAEOLOGY_INGEST_TOKEN`, and to the GH repo as a secret.
-5. **Apply** the D1 schema (`schema/0001-events.sql` + `schema/0002-embed-state.sql`).
-6. **Deploy** the Worker and verify `/health` returns `{"ok":true}`.
+5. **Apply** the D1 schema (`schema/0001-events.sql` + `schema/0002-embed-state.sql` + `schema/0003-rate-limits.sql`).
+6. **Deploy** the Worker, parse its assigned `*.workers.dev` subdomain from the deploy output, and substitute `{{CF_WORKERS_SUBDOMAIN}}` into the files that reference it (chat island + ingesters + driver). Verify `/health` returns `{"ok":true}`.
 7. **Install** the Claude Code SessionEnd hook to `~/.claude/hooks/archaeology-session-end.py` (the operator still adds the hook block to `~/.claude/settings.json` — see `template/.claude/settings.json.example`).
-8. **Report** next-step commands (backfill + embed + first smoke query).
+8. **Report** next-step commands (backfill + embed + first smoke query + optional chat-surface mount in your portal).
 
 After scaffold:
 
 - **First commit lands with sessions-tail already capturing.** Sessions JSONLs flow in on every `SessionEnd`.
 - **First push touching `docs/{inputs,iterations,audits}/`** fires the GH Action and ingests those surfaces.
+- **Optional one-shot mount**: copy `web/ArchaeologyChat.tsx` into your portal's component directory and add `<ArchaeologyChat client:idle pageContext={currentPath} />` to your layout. See [`web/README.md`](../template/tools/archaeology/web/README.md) for per-framework recipes.
 - **Remaining sources** (adr/github/hive/git/memory) are skeleton ingesters — wire their tail triggers per the table in §Freshness as you need them.
 
 ### Lint config (recommended, not bundled)
