@@ -2,9 +2,13 @@
 
 **Purpose:** Captures the day-0 pattern for an event-sourced archaeology substrate so future projects can answer "what did we know on date T, why did we pick X, who decided Z" without writing a new ad-hoc tool per question. Codifies the lesson learned on `bc-subscriptions` (May 2026) where five overlapping ingestion tools (session-mine, state-derive, hive-board-derive, drift sweeps, handoff dossiers) were each built reactively to answer a specific archaeological question — and would have collapsed into a single read-side query layer if the substrate had existed from project start.
 
-**Last updated:** 2026-05-21
+**Last updated:** 2026-05-22
 
-**Source:** `bc-subscriptions` — see [`docs/methodology/archaeology-substrate-design.md`](https://github.com/nino-chavez/bc-subscriptions/blob/dev/docs/methodology/archaeology-substrate-design.md) for the full design, and [`tools/archaeology/`](https://github.com/nino-chavez/bc-subscriptions/tree/dev/tools/archaeology) for the working implementation.
+**Status:** Proven in production on `bc-subscriptions` (Phase 6 smoke test passed 2026-05-22). 47K session events + 62 ADRs + 18 inputs + 68 iterations + 43 audits ingested; 15K chunks embedded; `/derive` answers archaeological questions with correctly-grounded citations across both repo docs and live session JSONLs.
+
+**Source:** `bc-subscriptions` — see [`docs/methodology/archaeology-substrate-design.md`](https://github.com/nino-chavez/bc-subscriptions/blob/dev/docs/methodology/archaeology-substrate-design.md) for the full design, [`tools/archaeology/`](https://github.com/nino-chavez/bc-subscriptions/tree/dev/tools/archaeology) for the working implementation, and [`docs/runbooks/archaeology-hydration.md`](https://github.com/nino-chavez/bc-subscriptions/blob/dev/docs/runbooks/archaeology-hydration.md) for the provisioning runbook.
+
+**Template:** [`big-blueprint/template/tools/archaeology/`](../template/tools/archaeology/) — drop-in scaffold with `scaffold.sh` for one-command bootstrap.
 
 **Related patterns:**
 - [`hive-coordination-pattern.md`](hive-coordination-pattern.md) — Hive is one of the six source streams the substrate ingests
@@ -167,55 +171,151 @@ Not one Vectorize per project. Cross-project archaeology is the unlock; per-proj
 
 ---
 
+## Freshness (Tail Mode)
+
+Backfill gets the initial state in. Tail mode keeps it current. Without tail wires, the substrate drifts the moment a new ADR / audit / session lands.
+
+### Two valid tail patterns
+
+1. **Event-triggered (preferred for low-latency capture).** A hook on the source system fires when state changes, calling the ingester's `tail` mode with a single artifact.
+2. **Re-run backfill on change-event (acceptable for batch capture).** A GH Action on push touching a relevant path re-runs the full backfill ingester. The substrate's `(source, source_id, type, source_ts)` UNIQUE constraint dedupes, so this is cheap and safe.
+
+Use #1 when latency matters (sessions disappear from disk if you don't capture them); use #2 when the source is already in a versioned artifact (a doc edit landed in git is already durable, so a few-minute lag is fine).
+
+### Per-source tail triggers
+
+| Source | Tail trigger | Pattern |
+|---|---|---|
+| sessions | Claude Code `SessionEnd` hook in `~/.claude/settings.json` | event-triggered (#1) |
+| inputs / iterations / audits | GH Action on push touching `docs/{inputs,iterations,audits}/**` | re-run backfill (#2) |
+| ADR | Post-merge GH Action diffing `docs/decisions/` | re-run backfill or event-triggered (#1 cleaner) |
+| GitHub | Repo webhook → Worker endpoint `POST /events/github-webhook` | event-triggered (#1) |
+| Hive | One `fetch()` mirror in the Hive Worker's mutation handlers | event-triggered (#1) |
+| Git commits | GH Action on push with `--since <bookmark>` | re-run backfill (#2) |
+| Auto-memory | Claude Code memory-write hook (when available) or nightly cron walk | event-triggered (#1) or batch |
+
+### What ships pre-wired in the template
+
+[`big-blueprint/template/tools/archaeology/`](../template/tools/archaeology/) ships with two tail wires already configured:
+
+- **Sessions** — `template/.claude/hooks/archaeology-session-end.py` (copied to `~/.claude/hooks/` by `scaffold.sh`)
+- **Track 1-3 docs** — `template/.github/workflows/archaeology-tail-docs.yml`
+
+The other five sources have skeleton ingesters with finalized contracts; tail wiring is incremental work that doesn't change the substrate API.
+
+### Why idempotency matters here
+
+Every ingester emits events keyed by `(source, source_id, type, source_ts)`. The Worker's `INSERT … ON CONFLICT DO NOTHING` makes re-ingestion of the same event a no-op. This is what makes tail mode safe — a hook that misfires, a GH Action that runs twice, an operator who manually re-runs backfill — none of them corrupt the substrate. The worst case is a no-op.
+
+---
+
+## Known Issues & Gotchas
+
+Captured from the bc-subscriptions production hydration so the next project doesn't re-discover them:
+
+### CF token Vectorize scope is not implied
+
+Cloudflare API tokens minted for "edit D1/R2/Workers" do *not* automatically include Vectorize. If you try `wrangler vectorize create` with such a token, you get error code 10000 ("Authentication error") even though D1/R2 creates succeeded with the same token. Mint with **Account / Vectorize / Edit** explicitly.
+
+### CF bot protection (code 1010) rejects default Python `urllib` User-Agent
+
+`Python-urllib/3.X` is on Cloudflare's challenge list. Worker rejects POST /events with HTTP 403 + body code 1010 if the default UA is in use. Template's `_common.py` sets `User-Agent: archaeology-ingester/<version>`; preserve this when forking.
+
+### Workers AI free tier ceiling
+
+10K requests/day on the free embedding model (`@cf/baai/bge-base-en-v1.5`). `embed_drive.py` has a `--daily-limit` flag (default 9500) that exits before crossing into paid territory. Initial backfill embedding is the only meaningful cost (~17K chunks per project ≈ 2 days at free tier or ~$0.50 paid); ongoing tail well under the daily ceiling.
+
+### Two-phase install is mandatory
+
+Backfill first, tail wires second. If you wire tail before backfilling, you'll have a permanent gap from project-start to tail-wiring-date. The substrate is append-only — there's no way to retroactively fill an event from a session that was never captured.
+
+### Curated sources first; sessions second
+
+The Worker's `/embed` endpoint orders pending events as `ORDER BY CASE source WHEN 'inputs' THEN 0 WHEN 'iterations' THEN 1 WHEN 'audits' THEN 2 ELSE 3 END`. Curated artifacts (manifest entries, ADR lineage rows, audit docs) are tiny and high-signal; they embed first so `/derive` is useful within minutes, not after the full session corpus drains. If you reorder this, expect early `/derive` calls to return session noise instead of curated answers.
+
+### Synthesis is optional but transformative
+
+`/derive` without `ANTHROPIC_API_KEY` returns top-k ranked chunks (retrieval only). With the key set, the Worker calls Claude with a system prompt that *requires* `[E:event_id]` inline citations. The retrieval-only path is good enough to verify substrate correctness; the synthesis path turns it into an "ask anything" surface. Both are wired in the template.
+
+---
+
 ## Reference Implementation
 
-`bc-subscriptions` (May 2026) ships the working substrate at [`tools/archaeology/`](https://github.com/nino-chavez/bc-subscriptions/tree/dev/tools/archaeology):
+`bc-subscriptions` (May 2026) is the canonical retrofit case study. [`tools/archaeology/`](https://github.com/nino-chavez/bc-subscriptions/tree/dev/tools/archaeology) is the working implementation that this template was derived from:
 
 ```
 tools/archaeology/
-├── worker/                # CF Worker — POST /events, GET /timeline, GET /derive
+├── worker/                # CF Worker — POST /events, /embed; GET /timeline, /derive, /embed/stats, /health
 │   ├── src/index.ts
 │   ├── schema/0001-events.sql
+│   ├── schema/0002-embed-state.sql
 │   ├── wrangler.toml
 │   ├── package.json
 │   └── tsconfig.json
-└── ingesters/             # One per source stream
+├── embed_drive.py         # Driver: loops POST /embed until queue drained
+└── ingesters/
     ├── _common.py         # Shared Event/Ref dataclasses + batched POST
-    ├── sessions.py        # ✓ FULL (Claude Code JSONLs)
+    ├── sessions.py        # ✓ FULL — Claude Code JSONLs (SessionEnd hook for tail)
+    ├── inputs.py          # ✓ FULL — docs/inputs/_manifest.yaml provenance entries
+    ├── iterations.py      # ✓ FULL — docs/iterations/_history.md (ADR lineage + IPs)
+    ├── audits.py          # ✓ FULL — docs/audits/*.md (categorized)
+    ├── adr.py             # ⊙ SKELETON (contract finalized)
     ├── github.py          # ⊙ SKELETON
     ├── hive.py            # ⊙ SKELETON
     ├── git.py             # ⊙ SKELETON
-    ├── adr.py             # ⊙ SKELETON
     └── memory.py          # ⊙ SKELETON
 ```
 
 Hydration runbook: [`docs/runbooks/archaeology-hydration.md`](https://github.com/nino-chavez/bc-subscriptions/blob/dev/docs/runbooks/archaeology-hydration.md) — concrete CF provisioning + backfill commands, idempotent and resumable.
 
+### Phase 6 smoke test outcome (the moment we knew it worked)
+
+Query: `did we include Stripe Billing as an input`
+
+Top retrieval: `inputs/gap_declared :: gap-stripe-billing-factsheet` (score 0.750), followed by 17 session chunks that mention "Stripe Billing" in pitch-frame discussions.
+
+Synthesis answer (Claude Sonnet 4.6):
+> Yes, Stripe Billing was included as an input, but as a positioning/competitive reference rather than a dedicated research artifact. Specifically, Stripe Billing is referenced across multiple substrate documents: PRD §16 Architectural Alternatives Considered, §6.4 Gateway Matrix, and STRATEGY.md ICP exclusion [E:01KS6T8P77H60A7TSKG7D26AS6]. … What is **not** present is a dedicated stripe-billing-factsheet.md … [E:01KS6TPKM9RKQ2YJF0C0HT0DJK].
+
+The first citation resolves to the `inputs/gap_declared` event (repo doc); the second resolves to a `session/assistant_turn` event from 2026-05-07 that literally said *"The differentiator vs Recharge / Stripe Billing isn't features — it's no parallel catalog, no reconciliation tax…"*. The substrate joined a repo doc with a live session JSONL turn in one citation-bound answer.
+
 ---
 
 ## Day-0 Bootstrap Sequence (for new projects)
 
-When `scaffold.sh` provisions a new project that adopts this pattern:
+Set `archaeology.enabled: true` in `blueprint.yml`, then run the scaffold:
 
-1. **Create CF resources** (10 min via wrangler):
-   - D1 database `<project>-archaeology`
-   - R2 bucket `<project>-archaeology-blobs`
-   - Vectorize index `<project>-archaeology-chunks` (768 dims, cosine)
-   - Or: register with an existing org-level archaeology Worker (preferred — federation)
+```bash
+# From the consuming project's root
+cd tools/archaeology
+bash scaffold.sh
+```
 
-2. **Deploy archaeology Worker** if not federated yet, copying from `bc-subscriptions/tools/archaeology/worker/` as a template.
+`scaffold.sh` is idempotent. It does:
 
-3. **Install capture hooks** automatically:
-   - `~/.claude/settings.json` SessionEnd hook → invokes `sessions.py tail --jsonl=$CLAUDE_SESSION_JSONL`
-   - `.github/workflows/archaeology-tail.yml` → on push, runs `git.py` + `adr.py` + `github.py` tail mode
-   - `subs-hive-mcp` Worker config → mirrors writes to archaeology Worker
-   - Claude Code memory-write hook (if available) → invokes `memory.py tail`
+1. **Templatize** `{{PROJECT_SLUG}}`, `{{PROJECT_ID}}`, `{{CLAUDE_SESSION_DIR_SLUG}}` placeholders in `wrangler.toml`, `package.json`, `_common.py`, `embed_drive.py`, `sessions.py`.
+2. **Install** worker dependencies (`npm install` inside `worker/`).
+3. **Provision** CF resources (D1 + R2 + Vectorize), populating `database_id` in `wrangler.toml`. Skips any that already exist.
+4. **Generate** an ingest token (`~/.config/archaeology/ingest-token`, 0600), push it to the Worker as `ARCHAEOLOGY_INGEST_TOKEN`, and to the GH repo as a secret.
+5. **Apply** the D1 schema (`schema/0001-events.sql` + `schema/0002-embed-state.sql`).
+6. **Deploy** the Worker and verify `/health` returns `{"ok":true}`.
+7. **Install** the Claude Code SessionEnd hook to `~/.claude/hooks/archaeology-session-end.py` (the operator still adds the hook block to `~/.claude/settings.json` — see `template/.claude/settings.json.example`).
+8. **Report** next-step commands (backfill + embed + first smoke query).
 
-4. **Lint config**:
-   - `.github/workflows/refs-required.yml` blocks merges with missing refs
-   - `pre-push` hook (in `code-review-bot` lineage) checks commit subjects for closes/synthesis keywords
+After scaffold:
 
-5. **First commit lands with capture already running.** No retroactive backfill needed for greenfield projects — the substrate has been recording since pre-first-commit.
+- **First commit lands with sessions-tail already capturing.** Sessions JSONLs flow in on every `SessionEnd`.
+- **First push touching `docs/{inputs,iterations,audits}/`** fires the GH Action and ingests those surfaces.
+- **Remaining sources** (adr/github/hive/git/memory) are skeleton ingesters — wire their tail triggers per the table in §Freshness as you need them.
+
+### Lint config (recommended, not bundled)
+
+For projects that want to enforce ref-density at PR time:
+
+- `.github/workflows/refs-required.yml` blocks merges if commit subjects lack `closes #N` / `(synthesis #N)` when appropriate
+- A `pre-push` hook (in the `code-review-bot` lineage) checks commit subjects locally
+
+These aren't part of the archaeology template — they're a separate discipline that *complements* archaeology by ensuring the events the substrate captures actually carry refs.
 
 ---
 

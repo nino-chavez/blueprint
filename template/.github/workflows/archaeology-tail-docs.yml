@@ -1,0 +1,75 @@
+name: Archaeology — tail on docs/{inputs,iterations,audits} push
+
+# Keeps the archaeology substrate fresh for the three Track 1-3 canonical
+# surfaces. When any of those paths change on dev or main, re-run the
+# corresponding ingester.
+#
+# Backfill mode is idempotent on (source, source_id, type, source_ts) via the
+# Worker's UNIQUE constraint, so re-running on every push is cheap and safe.
+#
+# Companion freshness wires (see tools/archaeology/README.md):
+#   - sessions:   ~/.claude/hooks/archaeology-session-end.py
+#   - adr/github/hive/git/memory:  skeleton ingesters (per-source tail TBD)
+#
+# Required secrets (repo-level):
+#   ARCHAEOLOGY_INGEST_TOKEN — bearer for the archaeology Worker's
+#                              X-Archaeology-Token header. scaffold.sh sets this.
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - 'docs/inputs/_manifest.yaml'
+      - 'docs/iterations/_history.md'
+      - 'docs/audits/**'
+
+  # Manual trigger for ad-hoc resync (e.g. after disaster-recovery rebuild).
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ingest-curated-sources:
+    runs-on: ubuntu-latest
+    env:
+      ARCHAEOLOGY_WORKER_URL: https://{{PROJECT_SLUG}}-archaeology.{{CF_WORKERS_SUBDOMAIN}}.workers.dev
+      ARCHAEOLOGY_INGEST_TOKEN: ${{ secrets.ARCHAEOLOGY_INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+
+      - name: Ingest inputs manifest
+        run: python3 tools/archaeology/ingesters/inputs.py backfill
+
+      - name: Ingest iterations ledger
+        run: python3 tools/archaeology/ingesters/iterations.py backfill
+
+      - name: Ingest audits corpus
+        run: python3 tools/archaeology/ingesters/audits.py backfill
+
+      - name: Trigger embed batches
+        run: |
+          for i in 1 2 3; do
+            curl -sS -X POST \
+              -H "X-Archaeology-Token: ${ARCHAEOLOGY_INGEST_TOKEN}" \
+              -H "User-Agent: archaeology-gha/0.1" \
+              "${ARCHAEOLOGY_WORKER_URL}/embed?batch=25" \
+              | tee /tmp/embed-batch-${i}.json
+            done=$(jq -r '.done' /tmp/embed-batch-${i}.json 2>/dev/null || echo "false")
+            if [ "$done" = "true" ]; then
+              echo "embed queue drained"
+              break
+            fi
+          done
+
+      - name: Print substrate stats
+        run: |
+          curl -sS -H "User-Agent: archaeology-gha/0.1" \
+            "${ARCHAEOLOGY_WORKER_URL}/embed/stats"
