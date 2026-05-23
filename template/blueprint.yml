@@ -108,6 +108,35 @@ cloudflare:
     durable_objects: false
 
 # ──────────────────────────────────────────────────────────────────
+# Archaeology substrate — opt-in (recommended for >2-week initiatives)
+# Reference: docs/archaeology-substrate-pattern.md
+# Implementation: template/tools/archaeology/  (scaffold.sh provisions everything)
+# ──────────────────────────────────────────────────────────────────
+
+archaeology:
+  enabled: false                    # set true to bootstrap the substrate at project init
+  project_slug: ""                  # short name; used in CF resource names (e.g. "subs", "askbc")
+  project_id: ""                    # full project id; usually matches `project.name`
+  # Use when:
+  #   - Initiative will run more than a few weeks (history accumulates)
+  #   - Multi-agent / multi-session work expected (sessions are highest-value stream)
+  #   - Onboarding new engineers periodically (the substrate turns "write a handoff doc" into "run a query")
+  #   - You want exhaustive provenance queryable as evidence (due-diligence framing)
+  # Skip when:
+  #   - Throwaway prototype that won't outlive the week
+  #   - Solo, single-session work with no Hive or multi-agent coordination
+  #   - Strict regulatory environment that can't tolerate default-on session capture
+  federation: per_project           # per_project | org_shared
+  # per_project: New CF Worker + D1 + R2 + Vectorize per project (zero coordination tax)
+  # org_shared:  Register with an existing org-level archaeology Worker via ALLOWED_PROJECTS
+  embed_synthesis: false            # set true if you'll set ANTHROPIC_API_KEY for /derive synthesis
+  # When enabled:
+  #   - scaffold.sh provisions D1 + R2 + Vectorize and deploys the Worker
+  #   - SessionEnd hook copied to ~/.claude/hooks/archaeology-session-end.py
+  #   - .github/workflows/archaeology-tail-docs.yml installed
+  #   - docs/{inputs,iterations,audits}/ template structure prescribed (Track 1-3 surfaces)
+
+# ──────────────────────────────────────────────────────────────────
 # Content voice modes
 # ──────────────────────────────────────────────────────────────────
 
