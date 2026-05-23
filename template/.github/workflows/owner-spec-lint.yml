@@ -1,0 +1,30 @@
+name: owner-spec-lint (per-PR)
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'tools/**'
+      - 'apps/**'
+      - 'docs/decisions/**'
+      - '.github/workflows/owner-spec-lint.yml'
+      - 'tools/owner-spec-lint/**'
+
+jobs:
+  coupling:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run coupling check (warn-only)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: npx --yes tsx tools/owner-spec-lint/coupling.ts
