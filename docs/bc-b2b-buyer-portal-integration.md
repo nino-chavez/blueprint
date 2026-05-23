@@ -320,7 +320,7 @@ These show up every time and need fact-checking against the specific merchant:
 |---|---|---|
 | Open-source Buyer Portal | `github.com/bigcommerce/b2b-buyer-portal` | Reference for forking; understand portal routes |
 | Catalyst Path 2 fork | `github.com/CNanninga/catalyst/tree/feature/add-custom-b2b-loader/core` | Pre-wired Catalyst integration; copy `core/b2b/` for Catalyst hosts |
-| Paradigm B2B (port to SvelteKit) | `github.com/Signal-x-Studio-LLC/paradigm-b2b` (private) | SvelteKit-on-Cloudflare port of the contract |
+| Paradigm B2B (port to SvelteKit) | `github.com/nino-chavez/paradigm-b2b` (private) | SvelteKit-on-Cloudflare port of the contract |
 | `aisles-admin` (BC marketplace app) | `~/Workspace/dev/wip/aisles-admin/` | Marketplace app reference (separate from Portal integration) |
 
 ---
