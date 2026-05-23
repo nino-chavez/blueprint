@@ -1,0 +1,16 @@
+{
+  "name": "@bc-subscriptions/owner-spec-lint",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Enforces the OWNER-SPEC convention. Per-PR coupling check (warn when tool source changes without OWNER-SPEC touch) + nightly staleness report (max_unattested_days elapsed AND tool churn since last_attested).",
+  "scripts": {
+    "coupling": "tsx coupling.ts",
+    "staleness": "tsx staleness.ts",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "//": "No dependencies. tsx + vitest picked up from workspace via npx. Intentionally outside npm workspaces graph (same pattern as state-derive, hive-board-derive, attestation-derive)."
+}

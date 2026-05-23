@@ -108,6 +108,24 @@ cloudflare:
     durable_objects: false
 
 # ──────────────────────────────────────────────────────────────────
+# OWNER-SPEC pattern — durable expert knowledge on substrate tools
+# Reference: ~/Workspace/dev/tools/big-blueprint/docs/owner-spec-pattern.md
+# Implementation: template/tools/owner-spec-lint/ + template/docs/methodology/owner-spec-convention.md
+# ──────────────────────────────────────────────────────────────────
+
+owner_spec:
+  enabled: false                    # set true to inherit the OWNER-SPEC convention + freshness lint
+  # Use when:
+  #   - Project has >3 substrate tools (derive scripts, lint tools, dashboards, ingesters)
+  #   - Multi-session / multi-agent work expected (future sessions need rationale)
+  #   - Tools accumulate design decisions that aren't obvious from code
+  #   - You plan to build skill-mediated expert agents at any point
+  # Skip when:
+  #   - Project has only trivial scripts (<50 LOC each, fully README-documented)
+  #   - One-shot prototype with no substrate tools
+  #   - You're OK with re-deriving tool design rationale six months from now
+
+# ──────────────────────────────────────────────────────────────────
 # Archaeology substrate — opt-in (recommended for >2-week initiatives)
 # Reference: docs/archaeology-substrate-pattern.md
 # Implementation: template/tools/archaeology/  (scaffold.sh provisions everything)
