@@ -14,6 +14,31 @@ A blueprint with three "inaccurate cost figures" and two "wrong terminology refe
 
 ## Process
 
+### Phase 0 — Mechanical design-system gates (run FIRST)
+
+Before the diagnose loop kicks in, run the mechanical checks. These are pass/fail, not judgment calls — they catch the class of regressions that don't need root-cause analysis. Failures here block validation; fix and re-run before continuing to Phase 1.
+
+These gates enforce the **15-dimension contract** from `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md`.
+
+| Gate | Command | Pass criterion |
+|---|---|---|
+| Build clean | `npm run build` | Exit 0 |
+| Typecheck clean | `npm run typecheck` | Exit 0 |
+| **WCAG AA contrast** | `node prototype/scripts/audit-contrast.mjs` | Exit 0; every text-on-surface pairing ≥ 4.5:1 (normal) or 3:1 (large/UI) |
+| **DESIGN.md completeness** | `node prototype/scripts/lint-design-system.mjs` | Frontmatter declares all of: `colors.primary`, `typography.ramp` (10+ tokens with tuples), `iconography.library`, `motion.durations`, `a11y.contrast_target`, `responsive.mobile_nav`, `data_formatting.date`, `weights_in_use` (length ≤ 3) |
+| **Token discipline** | grep for raw hex / raw rem literals in `src/` | Zero matches outside `styles.css` / `DESIGN.md` |
+| **Single h1 per route** | grep `<h1` in `src/pages/*.tsx` | Each file has exactly one match |
+| **No `font-display` below 20px** (DP-11) | grep `font-display.*text-h4\|font-display.*text-(sm\|xs\|base)` | Zero matches |
+| **No `/agents` route** (DP-2) | grep `path="/agents"` in `src/App.tsx` | Zero matches |
+| **No top-level loop routes** (DP-8) | grep `path="/(brainstorm\|execute\|continuity)"` | Zero matches |
+| **No banned terminology** | grep against `terminology.ban` in DESIGN.md frontmatter | Zero matches in `src/` and `docs/content/` |
+| **Aria-label on icon-only buttons** | grep `<button[^>]*>\s*<Icon` without `aria-label` | Zero matches |
+| **Skip-nav present** | grep `href="#main"` in `src/components/AppShell.tsx` (or equivalent) | At least one match |
+
+If `blueprint.yml prototype.design_system: custom`, all gates are mandatory. If targeting an existing design system, the host's primitives provide some gates (e.g., the platform design system's component a11y) — gate output still must be exit 0.
+
+**Output of Phase 0:** a one-screen report `validation/[date]-phase-0-gates.md` listing gate name + verdict. If any fail, do NOT advance to Phase 1 — fix and re-run Phase 0 until clean. Phase 0 failures are mechanical: a regression in tokens / lint / naming, not a misstated claim.
+
 ### Phase 1 — Build feedback loops (one per claim category)
 
 A feedback loop in this context is anything that gives a fast, deterministic accuracy verdict on a claim. Build one per category before validating:

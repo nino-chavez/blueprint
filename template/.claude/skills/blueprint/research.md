@@ -16,11 +16,14 @@ At the start of an initiative, or when new competitive/market context is needed.
    - What UI patterns and CSS frameworks are in use
    Save findings to `research/current-state/codebase-analysis.md`.
 
-3. **Competitive analysis** — For each competitor listed in `research.competitors`:
-   - Search for their billing/pricing/plan management UX
-   - Document specific patterns with screenshots or descriptions
-   - Note what they do well and what they do poorly
-   Save to `research/competitive-analysis/`.
+3. **Competitive analysis** — For each competitor listed in `research.competitors`, cover the **five research dimensions** from `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md` (R-1 through R-5):
+   - **R-1 IA + dynamic-surface mechanics** — default-view logic, freshness contract, filter/sort affordances above the fold, scale budget, server-side filter/sort (per ux-ui-auditor Phase 8)
+   - **R-2 Voice + microcopy** — imperative vs declarative; chrome vs framing; empty-state voice; CTA labels (audit actual UI copy, not marketing)
+   - **R-3 Visual language** — palette anchors, type families + display/body split, density, elevation strategy, border strategy
+   - **R-4 Motion + micro-interaction** — hover/focus treatment, page transitions, optimistic UI, loading-state pattern (skeleton vs spinner)
+   - **R-5 Onboarding / first-60-seconds** — empty canvas vs starter-kit; guided tour vs jump-into-product; where the IA reveals itself
+   Document specific patterns with screenshots or descriptions; note what they do well and what they do poorly. If `blueprint.yml prototype.design_system: custom`, all five dimensions are mandatory.
+   Save to `research/competitive-analysis/` AND `research/visual-voice-motion-research.md` (or extend existing).
 
 4. **Analogous industry research** — For each industry in `research.analogous_industries`:
    - Search for how that industry solves the same problem
@@ -53,3 +56,5 @@ If specchain is not available, the researcher agent performs all research sequen
 - Every claim cites a source (URL, screenshot reference, or code path)
 - Patterns are organized by category, not by source
 - Each pattern has a concrete "adopt/reject" recommendation
+- **R-1 through R-5 each have at least one per-anchor finding** (per `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md`). A research pass that covers IA + behavior (R-1, R-2) but skips visual/motion/onboarding (R-3, R-4, R-5) is incomplete when `prototype.design_system: custom`.
+- The synthesis includes a cross-cutting patterns section + a "what's distinctive to one anchor" section + recommended Design Principles (DP-N entries)
