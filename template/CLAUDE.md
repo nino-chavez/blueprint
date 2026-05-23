@@ -11,6 +11,7 @@ If your initiative has any of these enabled, follow the linked guidance:
 | `b2b_edition.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` | Stage 1 research; copy both into `research/current-state/` |
 | `hive.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
 | `cloudflare.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
+| `archaeology.enabled: true` | `~/Workspace/dev/tools/big-blueprint/docs/archaeology-substrate-pattern.md` | Stage 0 (project init) — run `bash tools/archaeology/scaffold.sh` BEFORE first commit so capture is live from minute one. Track 1-3 docs (`docs/inputs/`, `docs/iterations/`, `docs/audits/`) get auto-ingested. |
 | Marketplace app (any BC initiative) | `~/Workspace/dev/tools/big-blueprint/docs/bc-marketplace-context.md` | Stage 1 research; copy into `research/current-state/` |
 
 ## Pipeline

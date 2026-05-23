@@ -1,0 +1,17 @@
+{
+  "_comment": "Example Claude Code user settings snippet — merge the SessionEnd block below into your ~/.claude/settings.json. scaffold.sh installs the hook script itself at ~/.claude/hooks/archaeology-session-end.py.",
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/archaeology-session-end.py",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

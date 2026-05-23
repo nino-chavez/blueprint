@@ -1,0 +1,46 @@
+# Provenance manifest — template
+# Schema: ./_manifest.schema.json
+#
+# Every external input that informs this project gets a row here, including
+# "gaps" — inputs we deliberately did NOT include with `excluded_why`.
+#
+# Add a new entry by appending under `entries:`. The archaeology substrate's
+# inputs ingester reads this file directly; no rebuild step required.
+
+version: 1
+
+entries:
+
+  # ── COMPETITIVE ─────────────────────────────────────────────────────────────
+  # Example real entry (delete and replace):
+  #
+  # - id: competitor-x-factsheet
+  #   category: competitive
+  #   title: Competitor X — factsheet + head-to-head comparison
+  #   source: https://example.com/competitor-x
+  #   acquired: '2026-05-22'
+  #   local_path: docs/audits/2026-05-22-competitor-x-factsheet.md
+  #   influenced:
+  #     - PRD§16
+  #     - ADR-0001
+  #     - epic-04
+  #   included_why: >-
+  #     Why this input was selected — what gap it filled or what perspective it gave.
+
+  # Example gap entry (delete and replace):
+  #
+  # - id: gap-analyst-reports
+  #   category: analyst-report
+  #   title: 'GAP: no industry analyst reports acquired'
+  #   excluded_why: >-
+  #     No Gartner / Forrester reports were purchased. Acknowledged gap — file a
+  #     procurement proposal when entering the merchant pilot phase.
+
+# Categories allowed (enum in _manifest.schema.json):
+#   - competitive
+#   - licensed-source
+#   - bc-internal              # rename to e.g. "platform-internal" if you're not on BC
+#   - merchant-interview       # rename to e.g. "customer-interview"
+#   - external-standard
+#   - analyst-report
+#   - conversation
