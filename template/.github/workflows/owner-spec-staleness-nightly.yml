@@ -1,0 +1,37 @@
+name: owner-spec-staleness (nightly report)
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # 07:00 UTC daily
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - 'tools/owner-spec-lint/**'
+      - '.github/workflows/owner-spec-staleness-nightly.yml'
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Derive staleness report
+        run: npx --yes tsx tools/owner-spec-lint/staleness.ts
+      - name: Commit report if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- docs/audits/derived/_owner-spec-staleness.json docs/audits/derived/_owner-spec-staleness.md; then
+            git add docs/audits/derived/_owner-spec-staleness.json docs/audits/derived/_owner-spec-staleness.md
+            git commit -m "chore(owner-spec-lint): nightly staleness report [skip ci]"
+            git push
+          else
+            echo "No staleness changes since last run."
+          fi
