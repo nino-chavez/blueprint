@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Blueprint Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    body { padding-bottom: 80px; }
+
+    .doc-shell { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-8); max-width: 1200px; margin: var(--space-6) auto; padding: 0 var(--space-4); }
+    @media (max-width: 768px) { .doc-shell { grid-template-columns: 1fr; } }
+
+    .doc-nav {
+      position: sticky;
+      top: var(--space-4);
+      align-self: start;
+      max-height: calc(100vh - var(--space-8));
+      overflow-y: auto;
+      padding-right: var(--space-3);
+    }
+    .doc-nav h4 {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+    .doc-nav a {
+      display: block;
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: 2px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      font-weight: 500;
+    }
+    .doc-nav a:hover { background: var(--surface-2); color: var(--text-primary); }
+    .doc-nav a.active { background: var(--brand-100); color: var(--brand-700); font-weight: 600; }
+
+    .doc-content {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10) var(--space-8);
+      min-height: 60vh;
+    }
+
+    /* Markdown render styles */
+    .doc-body { line-height: 1.65; color: var(--text-primary); max-width: 75ch; }
+    .doc-body h1 { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--space-4); line-height: 1.1; }
+    .doc-body h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; margin-top: var(--space-10); margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--card-border); }
+    .doc-body h3 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; margin-top: var(--space-8); margin-bottom: var(--space-3); }
+    .doc-body h4 { font-size: var(--text-base); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-top: var(--space-6); margin-bottom: var(--space-2); }
+    .doc-body p { margin-bottom: var(--space-4); color: var(--text-secondary); }
+    .doc-body strong { color: var(--text-primary); font-weight: 700; }
+    .doc-body em { color: var(--text-primary); }
+    .doc-body code { font-family: var(--font-mono); font-size: 0.9em; background: var(--surface-2); padding: 2px 6px; border-radius: var(--radius-sm); color: var(--text-primary); }
+    .doc-body pre { background: var(--arena-900); color: var(--text-on-dark); padding: var(--space-4); border-radius: var(--radius-md); overflow-x: auto; margin: var(--space-4) 0; }
+    .doc-body pre code { background: transparent; color: inherit; padding: 0; font-size: var(--text-sm); }
+    .doc-body ul, .doc-body ol { margin: var(--space-3) 0 var(--space-4); padding-left: var(--space-6); color: var(--text-secondary); }
+    .doc-body li { margin-bottom: var(--space-2); }
+    .doc-body li > p { margin-bottom: var(--space-2); }
+    .doc-body blockquote { border-left: 4px solid var(--brand-500); padding: var(--space-2) var(--space-5); margin: var(--space-4) 0; background: var(--surface-2); border-radius: var(--radius-md); color: var(--text-secondary); }
+    .doc-body hr { border: none; border-top: 1px solid var(--card-border); margin: var(--space-8) 0; }
+    .doc-body a { color: var(--brand-600); text-decoration: underline; text-underline-offset: 2px; }
+    .doc-body a:hover { color: var(--brand-700); }
+    .doc-body table { border-collapse: collapse; width: 100%; margin: var(--space-4) 0; font-size: var(--text-sm); }
+    .doc-body th, .doc-body td { padding: var(--space-2) var(--space-3); border: 1px solid var(--card-border); text-align: left; vertical-align: top; }
+    .doc-body th { background: var(--surface-2); font-weight: 700; color: var(--text-primary); }
+    .doc-body td code { font-size: 0.85em; }
+    .doc-body img { max-width: 100%; border-radius: var(--radius-md); }
+    .doc-body :first-child { margin-top: 0; }
+
+    .doc-meta { padding: var(--space-4); background: var(--surface-2); border-radius: var(--radius-md); margin-bottom: var(--space-6); font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-3); }
+    .doc-meta .badge { background: var(--brand-100); color: var(--brand-700); }
+    .doc-meta .source { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); margin-left: auto; }
+
+    .doc-empty { padding: var(--space-12); text-align: center; color: var(--text-muted); }
+    .doc-error { padding: var(--space-6); background: hsl(0 85% 97%); border: 1px solid hsl(0 85% 80%); border-radius: var(--radius-md); color: hsl(0 70% 30%); }
+  </style>
+</head>
+<body data-compare-root>
+
+  <header class="header">
+    <div class="container">
+      <a href="../index.html" class="logo">Rally<span class="logo-accent">HQ</span> · <span class="tiny" style="font-weight: 400; opacity: 0.7">Blueprint Docs</span></a>
+      <nav>
+        <a href="../index.html">Portal</a>
+        <a href="./?doc=research-synthesis">Research</a>
+        <a href="./?doc=cx-strategy">Strategy</a>
+        <a href="./?doc=roadmap">Roadmap</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="doc-shell">
+    <aside class="doc-nav">
+      <h4>Strategic docs</h4>
+      <a href="./?doc=cx-strategy" data-doc="cx-strategy">CX Strategy</a>
+      <a href="./?doc=roadmap" data-doc="roadmap">Roadmap</a>
+      <a href="./?doc=gaps" data-doc="gaps">Gaps</a>
+      <a href="./?doc=feasibility" data-doc="feasibility">Feasibility</a>
+
+      <h4 style="margin-top: var(--space-6)">Foundations</h4>
+      <a href="./?doc=research-synthesis" data-doc="research-synthesis">Research synthesis</a>
+      <a href="./?doc=design-principles" data-doc="design-principles">Design principles</a>
+
+      <h4 style="margin-top: var(--space-6)">Audits</h4>
+      <a href="./?doc=personas-cx-audit" data-doc="personas-cx-audit">Personas × stages</a>
+      <a href="./?doc=forge-site-audit" data-doc="forge-site-audit">Forge-site</a>
+
+      <h4 style="margin-top: var(--space-6)">Back to</h4>
+      <a href="../index.html">Portal</a>
+    </aside>
+
+    <main class="doc-content">
+      <div id="doc-meta" class="doc-meta hidden">
+        <span class="badge"></span>
+        <span class="source"></span>
+      </div>
+      <article id="doc-body" class="doc-body">
+        <div class="doc-empty">Pick a document from the sidebar →</div>
+      </article>
+    </main>
+  </div>
+
+  <!-- Marked for markdown rendering (client-side, CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+  <script>
+    const TITLES = {
+      'research-synthesis': 'Research Synthesis',
+      'design-principles': 'Design Principles',
+      'cx-strategy': 'CX Strategy',
+      'roadmap': 'Roadmap',
+      'gaps': 'Gaps',
+      'feasibility': 'Feasibility',
+      'personas-cx-audit': 'Personas × Stage CX Audit',
+      'forge-site-audit': 'Forge-Site Audit'
+    };
+
+    function getDocId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('doc');
+    }
+
+    function setActive(docId) {
+      document.querySelectorAll('.doc-nav a[data-doc]').forEach(a => {
+        a.classList.toggle('active', a.dataset.doc === docId);
+      });
+    }
+
+    async function loadDoc(docId) {
+      if (!docId) return;
+      const body = document.getElementById('doc-body');
+      const meta = document.getElementById('doc-meta');
+      const title = TITLES[docId] || docId;
+
+      body.innerHTML = '<div class="doc-empty">Loading…</div>';
+      meta.classList.add('hidden');
+
+      try {
+        const res = await fetch(`/_docs/${docId}.md`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const md = await res.text();
+
+        // Configure marked: GFM, breaks off, smartypants off
+        marked.setOptions({ gfm: true, breaks: false, headerIds: false, mangle: false });
+        const rendered = marked.parse(md);
+        const sanitized = DOMPurify.sanitize(rendered);
+
+        body.innerHTML = sanitized;
+        meta.classList.remove('hidden');
+        meta.querySelector('.badge').textContent = title;
+        meta.querySelector('.source').textContent = `_docs/${docId}.md`;
+        document.title = `${title} — Blueprint`;
+      } catch (err) {
+        body.innerHTML = `<div class="doc-error"><strong>Couldn't load that doc.</strong><br/>${err.message}</div>`;
+      }
+    }
+
+    function init() {
+      const docId = getDocId() || 'cx-strategy';
+      // Default to CX Strategy when no ?doc param given
+      if (!getDocId()) {
+        // Update URL without reload
+        const url = new URL(window.location.href);
+        url.searchParams.set('doc', docId);
+        window.history.replaceState({}, '', url);
+      }
+      setActive(docId);
+      loadDoc(docId);
+    }
+
+    // Navigation: clicking sidebar links uses query param routing without full reload
+    document.querySelectorAll('.doc-nav a[data-doc]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const docId = a.dataset.doc;
+        const url = new URL(window.location.href);
+        url.searchParams.set('doc', docId);
+        window.history.pushState({}, '', url);
+        setActive(docId);
+        loadDoc(docId);
+        window.scrollTo(0, 0);
+      });
+    });
+    window.addEventListener('popstate', () => init());
+
+    init();
+  </script>
+
+  <script>
+    window.PROTO_PAGE = { id: 'docs', title: 'Blueprint Docs' };
+    window.PROTO_CHAT_DISABLED = false;
+  </script>
+  <script src="../proto-nav.js"></script>
+  <script src="../chat-widget.js" defer></script>
+  <script src="../proto-annotate.js" defer></script>
+</body>
+</html>
