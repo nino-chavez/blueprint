@@ -81,22 +81,47 @@ This belongs in `prototype/DESIGN.md` alongside the five visual rules — engine
 
 ## Stage 3: Prototype
 
-### Structure
+### Two shells, two paths
+
+As of 2026-05-23 there are two prototype-shell templates. Pick the one that matches your stack constraints.
+
+| Shell | When to use | Template | Reference deploy |
+|---|---|---|---|
+| **`portal/` — static HTML + Pages Functions** *(default for new projects)* | Cloudflare-first stack, no React/BigDesign coupling, want zero build pipeline, want stakeholder-facing static site | `template/portal/` | `blueprint.rallyhq.app` (Rally HQ) |
+| **`prototype/` — Vite + React + BigDesign** *(legacy for BC-bound initiatives)* | Targeting BC BigDesign + React 18.3, need full SPA routing for many slices, building toward production-grade React components | `template/prototype/` | `subs-prototype.pages.dev` (bc-subscriptions) |
+
+The static-HTML `portal/` is the default for any non-BC project — it's faster to read, faster to ship, zero build tax, and stakeholders can inspect-element directly. Drop into React only when the production target itself is React.
+
+### Structure (both shells)
 
 Each prototype page has three layers:
 
-1. **The merchant experience** — what the customer sees. HTML/CSS matching the existing product's design language.
-2. **Strategy panel** (right drawer) — explains the "why" behind each design decision with market research citations. Audience: stakeholders reviewing the prototype.
-3. **Current-state panel** (left drawer) — shows screenshots of what exists today for side-by-side comparison. Answers "how is this different from what we have?"
+1. **The product experience** — what the customer sees. UI matching the existing product's design language.
+2. **Strategy panel** (right drawer) — explains the "why" behind each design decision with market research citations. Audience: stakeholders.
+3. **Current-state panel** (left drawer) — shows screenshots of what exists today for side-by-side comparison.
+
+The `portal/` shell additionally provides:
+
+- **Proposed / Side-by-side / Shipped toggle** — page-level comparison view.
+- **Flow mode** — `?flow=<flow-id>` URL param threads multi-page journeys with a top-of-page breadcrumb.
+- **Annotation overlay** — opt-in stakeholder note-taking (`localStorage.setItem('rally-anno-enabled', 'true')`).
+- **AI chat** — Pages Function calling OpenRouter with the blueprint docs corpus preloaded as system context.
+
+### Slice metadata contract
+
+Both shells use per-page metadata files:
+
+- **Portal shell:** `_meta/<page-id>.json` with `id`, `title`, `group`, `surface`, `phase`, `summary`, `strategy`, `currentState`. The page HTML only declares `window.PROTO_PAGE = { id: '<page-id>' };` — all other data flows from the JSON.
+- **Prototype shell:** `prototypes/<slice-name>/prototype.config.json` with `name`, `description`, `brdRef`, `phase`, `pages`, `flows`. Each page wraps in `<SliceShell>` and is auto-discovered via `import.meta.glob`.
 
 ### Navigation
 
-- **Sticky footer nav** — page navigation + drawer toggles. Allows reviewers to move between scenarios and access context without leaving the page.
-- **Chat widget** (optional) — AI agent for interactive exploration of the proposed experience.
+- **Sticky footer nav** — page picker + drawer toggles. Auto-derived from the manifest in both shells.
+- **Chat widget** — built into both shells.
 
 ### Key principle
 
-The prototype is not a design comp. It is a **stakeholder communication tool**. Every page should be self-explanatory to someone who opens it cold — the strategy panel provides the context they need.
+The prototype is not a design comp. It is a **stakeholder communication tool**. Every page should be self-explanatory to someone who opens it cold — the strategy panel provides the context they need. See `template/portal/CONVENTIONS.md` for the full contract.
 
 ### Companion deliverable: Demo Storyboard
 

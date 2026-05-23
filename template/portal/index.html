@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>PROJECT_NAME Blueprint — Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./shared.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="./index.html" class="logo">PROJECT<span class="logo-accent">NAME</span> · <span class="tiny" style="font-weight: 400; opacity: 0.7">Blueprint</span></a>
+      <nav>
+        <a href="./index.html" class="active">Portal</a>
+        <a href="./docs/?doc=cx-strategy">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
+    <div style="max-width: 720px;">
+      <span class="badge badge-victory" style="margin-bottom: var(--space-4)">BLUEPRINT</span>
+      <h1>PROJECT_NAME — Blueprint</h1>
+      <p class="mt-4" style="font-size: var(--text-lg);">
+        Replace this with your project's one-paragraph synthetic-study framing. Cite the
+        big-blueprint methodology + your research synthesis doc.
+      </p>
+    </div>
+
+    <!-- Page cards auto-rendered from _meta/index.json -->
+    <div id="page-grid" class="mt-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4);">
+      <p class="muted">Loading pages from manifest…</p>
+    </div>
+
+    <section class="mt-8 card">
+      <h2>How to read this portal</h2>
+      <ol style="line-height: 1.8; padding-left: var(--space-6); margin-top: var(--space-4);">
+        <li><strong>Each page</strong> shows the proposed customer experience.</li>
+        <li><strong>Bottom-left "◀ Shipped" drawer</strong> — what exists today in the shipped product.</li>
+        <li><strong>Bottom-right "Strategy ▶" drawer</strong> — design decision, finding citation, open question.</li>
+        <li><strong>Toggle at the top</strong> — switch between Proposed / Side-by-side / Shipped.</li>
+        <li><strong>💬 FAB (bottom-left)</strong> — annotation mode. Enable via <code>localStorage.setItem('rally-anno-enabled', 'true')</code> then reload.</li>
+      </ol>
+    </section>
+  </main>
+
+  <script>
+    window.PROTO_PAGE = { id: 'index', title: 'Portal Index' };
+
+    // Auto-render page cards from manifest
+    (async function () {
+      try {
+        const manifestRes = await fetch('./_meta/index.json');
+        const manifest = await manifestRes.json();
+        const pages = await Promise.all(
+          (manifest.pages || []).map(async id => {
+            const r = await fetch(`./_meta/${id}.json`);
+            return r.ok ? await r.json() : null;
+          })
+        );
+        const grid = document.getElementById('page-grid');
+        grid.innerHTML = '';
+        pages.filter(Boolean).forEach(page => {
+          const card = document.createElement('a');
+          card.href = `./pages/${page.id}.html`;
+          card.className = 'card';
+          card.style.cssText = 'display: block;';
+          card.innerHTML = `
+            <span class="badge">${(manifest.groups || []).find(g => g.id === page.group)?.label || page.group || '—'}</span>
+            <h3 class="mt-4">${page.title}</h3>
+            <p class="small mt-4">${page.summary || ''}</p>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (e) {
+        document.getElementById('page-grid').innerHTML =
+          '<p class="muted">Manifest load failed: ' + e.message + '</p>';
+      }
+    })();
+  </script>
+  <script src="./proto-nav.js"></script>
+  <script src="./chat-widget.js" defer></script>
+  <script src="./proto-annotate.js" defer></script>
+</body>
+</html>
