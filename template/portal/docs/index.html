@@ -477,17 +477,33 @@
 
     // Convention recognized in strategic docs. The label opens a paragraph
     // and is followed by content — the post-processor lifts these into
-    // structured callout components.
+    // structured callout components. Project consumers extend this map
+    // with their own domain-specific vocabulary (e.g., 'Pricing shape
+    // rationale' for monetization docs; 'Persona' for business-model docs).
+    // Map values are the callout-kind CSS classes: decision / why /
+    // evidence / audience / status / action / falsification / method / source.
     const CALLOUT_LABELS = {
+      // Decision-shaped (the chosen approach)
       'Decision': 'decision',
       'Strategic decision': 'decision',
+      'Sales motion': 'decision',
+      // Why / rationale-shaped
       'Why': 'why',
+      'Job-to-be-done': 'why',
+      // Evidence-shaped (concrete artifact references)
       'Evidence': 'evidence',
       'Prototype evidence': 'evidence',
+      'Surface served': 'evidence',
+      // Audience-shaped
       'Audience served': 'audience',
+      'Persona': 'audience',
+      // Status-shaped (state of affairs)
       'Status': 'status',
-      'Outcome': 'outcome',
+      'Outcome': 'status',
+      'Volume': 'status',
+      // Action-shaped (what to do)
       'Action': 'action',
+      // Method / source-shaped (validation-plan vocabulary)
       'Falsification signal': 'falsification',
       'Method': 'method',
       'Source': 'source'
