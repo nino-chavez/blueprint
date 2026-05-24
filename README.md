@@ -2,6 +2,10 @@
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment.
 
+## A note on the name
+
+BigBlueprint was extracted from a BigCommerce CX initiative in March 2026, and the "Big" prefix follows BigCommerce tooling conventions (BigDesign, BigTools, BigBlueprint). **The methodology and template are project-agnostic** — currently in use on Rally HQ (tournament management), TNA (agency portfolio), and BigCommerce work. The naming is heritage; the structure isn't coupled to any vertical. If you fork this for a non-BC project, you don't need to rename it — but you can.
+
 ## What This Is
 
 BigBlueprint is a methodology and toolset for running product initiatives with AI assistance. You provide the context — screenshots, BRDs, codebase access, competitive intelligence. The agent does research, builds prototypes, writes strategic documents, validates claims against source code, and iterates based on stakeholder feedback.
