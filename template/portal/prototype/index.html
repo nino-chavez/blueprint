@@ -88,16 +88,7 @@
   </style>
 </head>
 <body>
-  <header class="top-nav">
-    <div class="container">
-      <div class="brand">PROJECT<span style="color: var(--brand-500)">NAME</span> · Blueprint</div>
-      <nav>
-        <a href="/">Front door</a>
-        <a href="/prototype/" class="active">Prototype</a>
-        <a href="/docs/?doc=cx-strategy">Docs</a>
-      </nav>
-    </div>
-  </header>
+  <header data-portal-shell="prototype"></header>
 
   <main class="container">
     <section class="studio-hero">
@@ -226,8 +217,10 @@
   </script>
 
   <script>
+    window.PORTAL_SHELL_CONFIG = { productName: 'PROJECT_NAME' };
     window.PROTO_PAGE = { id: 'index', title: 'Prototype Studio' };
   </script>
+  <script src="/_portal-shell.js"></script>
   <script src="/chat-widget.js" defer></script>
   <script src="/proto-annotate.js?v=20260523-1909" defer></script>
 </body>

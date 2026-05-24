@@ -213,17 +213,7 @@
   </style>
 </head>
 <body>
-  <header class="top-nav">
-    <div class="container">
-      <div class="brand">PROJECT<span style="color: var(--brand-500)">NAME</span> · Blueprint</div>
-      <nav>
-        <a href="/" class="active">Front door</a>
-        <a href="/prototype/">Prototype</a>
-        <a href="/docs/?doc=cx-strategy">Docs</a>
-        <a href="https://github.com/nino-chavez/rally-hq" target="_blank" rel="noopener">Source ↗</a>
-      </nav>
-    </div>
-  </header>
+  <header data-portal-shell="index"></header>
 
   <main class="container">
     <section class="hero">
@@ -375,9 +365,13 @@
   </script>
 
   <script>
+    // Project consumers override this with their product name. See
+    // _portal-shell.js for the full config shape (productName, docsLandingHref).
+    window.PORTAL_SHELL_CONFIG = { productName: 'PROJECT_NAME' };
     window.PROTO_PAGE = { id: 'index', title: 'Front Door' };
     window.PROTO_CHAT_DISABLED = false;
   </script>
+  <script src="/_portal-shell.js"></script>
   <script src="/chat-widget.js" defer></script>
   <script src="/proto-annotate.js?v=20260523-1909" defer></script>
 </body>
