@@ -1,6 +1,9 @@
 {
   "name": "PROJECT_NAME Blueprint",
-  "tagline": "Synthetic design study for PROJECT_NAME — replace this string in template/portal/_meta/index.json",
+  "tagline": "Synthetic design study for PROJECT_NAME — replace this string in _meta/index.json",
+  "slices": [
+    "example-slice"
+  ],
   "groups": [
     { "id": "marketing", "label": "Marketing",  "color": "brand" },
     { "id": "audience",  "label": "Audience",   "color": "accent" },

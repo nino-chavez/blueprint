@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Prototype Studio — PROJECT_NAME Blueprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css?v=20260523-1909">
+  <style>
+    body { background: var(--bg); }
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--card); border-bottom: 1px solid var(--card-border);
+      padding: var(--space-3) var(--space-4);
+    }
+    .top-nav .container { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+    .top-nav .brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); }
+    .top-nav nav { display: flex; gap: var(--space-4); }
+    .top-nav nav a { color: var(--text-secondary); font-size: var(--text-sm); font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; }
+    .top-nav nav a:hover { color: var(--text-primary); }
+    .top-nav nav a.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+
+    .studio-hero { padding: var(--space-10) 0 var(--space-6); }
+    .studio-hero .label { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .studio-hero h1 { font-family: var(--font-hero); font-size: clamp(2rem, 1.5rem + 3vw, 3.5rem); line-height: 0.95; text-transform: uppercase; margin-top: var(--space-2); }
+    .studio-hero p { font-size: var(--text-base); max-width: 60ch; margin-top: var(--space-3); color: var(--text-secondary); }
+
+    .studio-stats { display: flex; gap: var(--space-3); margin-top: var(--space-5); flex-wrap: wrap; }
+    .studio-stat { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+    .studio-stat .v { font-family: var(--font-mono); font-weight: 700; color: var(--text-primary); }
+    .studio-stat .k { color: var(--text-muted); margin-left: var(--space-1); }
+
+    .group-section { margin-bottom: var(--space-8); }
+    .group-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: var(--space-3) 0 var(--space-2);
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: var(--space-3);
+    }
+    .group-header h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-base);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+    }
+    .group-header .count { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+
+    .slice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
+    .slice-card {
+      background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-md);
+      padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2);
+      transition: border-color var(--transition-fast), transform var(--transition-fast);
+    }
+    .slice-card:hover { border-color: var(--brand-300); transform: translateY(-1px); }
+    .slice-card .heading-row { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+    .slice-card h3 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; margin: 0; line-height: 1.25; }
+    .slice-card .phase {
+      font-family: var(--font-mono); font-size: 10px;
+      padding: 2px 6px; border-radius: var(--radius-sm); white-space: nowrap;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .phase-MVP        { background: hsl(142 60% 95%); color: hsl(142 60% 25%); }
+    .phase-Phase-1    { background: hsl(40 95% 92%); color: hsl(40 95% 25%); }
+    .phase-Phase-2    { background: var(--brand-100); color: var(--brand-700); }
+    .phase-Phase-3    { background: var(--arena-100); color: var(--arena-700); }
+    .slice-card p { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; margin: 0; flex: 1; }
+    .slice-card .meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+    .slice-card .surface { color: var(--text-muted); }
+    .slice-card .open-arrow { color: var(--brand-600); font-weight: 700; font-size: var(--text-sm); }
+
+    .flows-section { margin-top: var(--space-8); padding: var(--space-6); background: var(--surface-2); border-radius: var(--radius-lg); border: 1px solid var(--card-border); }
+    .flows-section h2 { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .flow-list { margin-top: var(--space-4); display: grid; gap: var(--space-2); }
+    .flow-row {
+      background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4); display: grid;
+      grid-template-columns: 1fr auto; gap: var(--space-3); align-items: center;
+    }
+    .flow-row .flow-label { font-weight: 600; font-size: var(--text-sm); }
+    .flow-row .flow-summary { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+    .flow-row .flow-pages { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+    .flow-row .flow-start { background: var(--brand-600); color: white; padding: 4px 10px; border-radius: var(--radius-md); font-size: var(--text-xs); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="container">
+      <div class="brand">PROJECT<span style="color: var(--brand-500)">NAME</span> · Blueprint</div>
+      <nav>
+        <a href="/">Front door</a>
+        <a href="/prototype/" class="active">Prototype</a>
+        <a href="/docs/?doc=cx-strategy">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="studio-hero">
+      <span class="label">/ prototype</span>
+      <h1>Prototype Studio</h1>
+      <p>
+        Twelve prototype pages, six audience groups, five multi-page flows. Each page has a strategy panel
+        (decision + finding citation), a current-state panel (shipped equivalent + source files), and a
+        proposed-vs-shipped comparison toggle. Click any card to open. Run <code>?flow=&lt;id&gt;</code> in
+        the URL to thread a journey.
+      </p>
+      <div class="studio-stats" id="studio-stats"></div>
+    </section>
+
+    <section id="groups-container">
+      <!-- Rendered from manifest -->
+    </section>
+
+    <section class="flows-section">
+      <h2>Flows through the studio</h2>
+      <div class="flow-list" id="flow-list"></div>
+    </section>
+  </main>
+
+  <script>
+    (async function () {
+      const manifestRes = await fetch('/_meta/index.json');
+      const manifest = await manifestRes.json();
+      const pages = await Promise.all(
+        (manifest.pages || []).map(async id => {
+          const r = await fetch(`/_meta/${id}.json`);
+          return r.ok ? await r.json() : null;
+        })
+      );
+      const valid = pages.filter(Boolean);
+
+      // Load slice metadata
+      const slices = await Promise.all(
+        (manifest.slices || []).map(async id => {
+          const r = await fetch(`/_meta/slices/${id}.json`);
+          return r.ok ? await r.json() : null;
+        })
+      );
+      const validSlices = slices.filter(Boolean);
+
+      // Studio stats
+      const stats = document.getElementById('studio-stats');
+      stats.innerHTML = `
+        <div class="studio-stat"><span class="v">${validSlices.length}</span><span class="k">slices</span></div>
+        <div class="studio-stat"><span class="v">${valid.length}</span><span class="k">pages</span></div>
+        <div class="studio-stat"><span class="v">${(manifest.flows || []).length}</span><span class="k">flows</span></div>
+        <div class="studio-stat"><span class="v">${valid.filter(p => p.phase === 'MVP').length}</span><span class="k">MVP</span></div>
+        <div class="studio-stat"><span class="v">${valid.filter(p => p.phase === 'Phase 1').length}</span><span class="k">Phase 1</span></div>
+        <div class="studio-stat"><span class="v">${valid.filter(p => p.phase === 'Phase 2').length}</span><span class="k">Phase 2</span></div>
+      `;
+
+      // Group pages by slice
+      const bySlice = {};
+      valid.forEach(p => {
+        const s = p.slice || p.group || 'other';
+        (bySlice[s] = bySlice[s] || []).push(p);
+      });
+
+      const container = document.getElementById('groups-container');
+      container.innerHTML = '';
+      validSlices.forEach(slice => {
+        const items = bySlice[slice.id] || [];
+        if (items.length === 0) return;
+        const section = document.createElement('section');
+        section.className = 'group-section slice-section';
+        const findings = (slice.findings_cited || []).map(f => `<span class="badge-trace">${f}</span>`).join(' ');
+        const principles = (slice.principles_cited || []).map(r => `<span class="badge-trace badge-trace-rule">${r}</span>`).join(' ');
+        section.innerHTML = `
+          <div class="group-header" style="display: block;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3);">
+              <h2>${slice.label}</h2>
+              <span class="count">${items.length} page${items.length === 1 ? '' : 's'} · phase ${slice.phase || '—'}</span>
+            </div>
+            <div style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-top: var(--space-2); max-width: 80ch;">
+              ${slice.summary || ''}
+            </div>
+            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-2); flex-wrap: wrap; align-items: center;">
+              <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${slice.production_surface || ''}</span>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">${findings}${principles ? ' ' + principles : ''}</div>
+            </div>
+          </div>
+          <div class="slice-grid">
+            ${items.map(p => {
+              const phaseSlug = (p.phase || '').replace(' ', '-');
+              return `
+                <a class="slice-card" href="${p.route || `/pages/${p.id}.html`}">
+                  <div class="heading-row">
+                    <h3>${p.title}</h3>
+                    <span class="phase phase-${phaseSlug}">${p.phase || '—'}</span>
+                  </div>
+                  <p>${p.summary || ''}</p>
+                  <div class="meta-row">
+                    <span class="surface">${p.surface || '—'}</span>
+                    <span class="open-arrow">Open →</span>
+                  </div>
+                </a>
+              `;
+            }).join('')}
+          </div>
+        `;
+        container.appendChild(section);
+      });
+
+      // Flows
+      const flowList = document.getElementById('flow-list');
+      (manifest.flows || []).forEach(flow => {
+        const firstPage = flow.pages?.[0];
+        const row = document.createElement('div');
+        row.className = 'flow-row';
+        row.innerHTML = `
+          <div>
+            <div class="flow-label">${flow.label}</div>
+            <div class="flow-summary">${flow.summary || ''}</div>
+            <div class="flow-pages">${(flow.pages || []).join(' → ')}</div>
+          </div>
+          ${firstPage ? `<a class="flow-start" href="/pages/${firstPage}.html?flow=${flow.id}">Start flow →</a>` : ''}
+        `;
+        flowList.appendChild(row);
+      });
+    })();
+  </script>
+
+  <script>
+    window.PROTO_PAGE = { id: 'index', title: 'Prototype Studio' };
+  </script>
+  <script src="/chat-widget.js" defer></script>
+  <script src="/proto-annotate.js?v=20260523-1909" defer></script>
+</body>
+</html>
