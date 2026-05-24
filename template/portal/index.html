@@ -4,86 +4,381 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>PROJECT_NAME Blueprint — Portal</title>
+  <title>PROJECT_NAME Blueprint — Front Door</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css?v=20260523-1909">
+  <style>
+    body { background: var(--bg); }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--card);
+      border-bottom: 1px solid var(--card-border);
+      padding: var(--space-3) var(--space-4);
+    }
+    .top-nav .container {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-6);
+    }
+    .top-nav .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: var(--text-base);
+      letter-spacing: -0.01em;
+    }
+    .top-nav nav { display: flex; gap: var(--space-4); align-items: center; }
+    .top-nav nav a {
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+    }
+    .top-nav nav a:hover { color: var(--text-primary); }
+    .top-nav nav a.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+
+    .audience-pills {
+      display: inline-flex;
+      background: var(--surface-2);
+      border-radius: var(--radius-md);
+      padding: 2px;
+      border: 1px solid var(--card-border);
+    }
+    .audience-pills button {
+      padding: 6px 14px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+    }
+    .audience-pills button.active {
+      background: var(--card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero { padding: var(--space-12) 0 var(--space-8); }
+    .hero .label {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .hero h1 {
+      font-family: var(--font-hero);
+      font-size: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      margin-top: var(--space-2);
+      max-width: 16ch;
+    }
+    .hero p {
+      font-size: var(--text-lg);
+      max-width: 60ch;
+      margin-top: var(--space-4);
+      color: var(--text-secondary);
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-4);
+      margin: var(--space-8) 0;
+    }
+    .stat-tile {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+    }
+    .stat-tile .label {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stat-tile .value {
+      font-family: var(--font-mono);
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: var(--space-1);
+      line-height: 1;
+    }
+    .stat-tile .sub {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+      line-height: 1.4;
+    }
+
+    .paths-section { padding: var(--space-4) 0 var(--space-12); }
+    .paths-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-4);
+    }
+    .path-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+    .path-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--brand-300);
+    }
+    .path-card .icon-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .path-card .icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--brand-100);
+      color: var(--brand-700);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .path-card .status {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .status-ready { background: hsl(142 60% 95%); color: hsl(142 60% 25%); }
+    .status-partial { background: hsl(40 95% 92%); color: hsl(40 95% 25%); }
+    .status-planned { background: var(--arena-100); color: var(--arena-700); }
+    .path-card h3 {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin: 0;
+    }
+    .path-card p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+      flex: 1;
+    }
+    .path-card .links {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .path-card .links a {
+      color: var(--brand-600);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .audience-note {
+      background: var(--surface-2);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-top: var(--space-6);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .audience-note strong { color: var(--text-primary); }
+
+    .footer-note {
+      padding: var(--space-6) 0;
+      border-top: 1px solid var(--card-border);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+  </style>
 </head>
 <body>
-  <header class="header">
+  <header class="top-nav">
     <div class="container">
-      <a href="./index.html" class="logo">PROJECT<span class="logo-accent">NAME</span> · <span class="tiny" style="font-weight: 400; opacity: 0.7">Blueprint</span></a>
+      <div class="brand">PROJECT<span style="color: var(--brand-500)">NAME</span> · Blueprint</div>
       <nav>
-        <a href="./index.html" class="active">Portal</a>
-        <a href="./docs/?doc=cx-strategy">Docs</a>
+        <a href="/" class="active">Front door</a>
+        <a href="/prototype/">Prototype</a>
+        <a href="/docs/?doc=cx-strategy">Docs</a>
+        <a href="https://github.com/nino-chavez/rally-hq" target="_blank" rel="noopener">Source ↗</a>
       </nav>
     </div>
   </header>
 
-  <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
-    <div style="max-width: 720px;">
-      <span class="badge badge-victory" style="margin-bottom: var(--space-4)">BLUEPRINT</span>
-      <h1>PROJECT_NAME — Blueprint</h1>
-      <p class="mt-4" style="font-size: var(--text-lg);">
-        Replace this with your project's one-paragraph synthetic-study framing. Cite the
-        big-blueprint methodology + your research synthesis doc.
+  <main class="container">
+    <section class="hero">
+      <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+        <div>
+          <span class="label">The PROJECT_NAME Blueprint</span>
+          <h1>One front door,<br/>five paths in.</h1>
+        </div>
+        <div class="audience-pills" role="tablist" aria-label="Reorder by audience">
+          <button class="active" data-audience="reviewer">Reviewer</button>
+          <button data-audience="engineer">Engineer</button>
+          <button data-audience="operator">Operator</button>
+        </div>
+      </div>
+      <p>
+        Synthetic design study against the personas, market, and operational reality of running real tournaments.
+        Pick how you want to enter — prototype walk-through, strategy docs, phased roadmap, methodology, or under-the-hood.
       </p>
-    </div>
-
-    <!-- Page cards auto-rendered from _meta/index.json -->
-    <div id="page-grid" class="mt-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4);">
-      <p class="muted">Loading pages from manifest…</p>
-    </div>
-
-    <section class="mt-8 card">
-      <h2>How to read this portal</h2>
-      <ol style="line-height: 1.8; padding-left: var(--space-6); margin-top: var(--space-4);">
-        <li><strong>Each page</strong> shows the proposed customer experience.</li>
-        <li><strong>Bottom-left "◀ Shipped" drawer</strong> — what exists today in the shipped product.</li>
-        <li><strong>Bottom-right "Strategy ▶" drawer</strong> — design decision, finding citation, open question.</li>
-        <li><strong>Toggle at the top</strong> — switch between Proposed / Side-by-side / Shipped.</li>
-        <li><strong>💬 FAB (bottom-left)</strong> — annotation mode. Enable via <code>localStorage.setItem('rally-anno-enabled', 'true')</code> then reload.</li>
-      </ol>
     </section>
+
+    <section class="stat-row" id="stat-row">
+      <div class="stat-tile">
+        <div class="label">Prototype pages</div>
+        <div class="value" id="stat-pages">…</div>
+        <div class="sub">Proposed surfaces across 6 audience groups</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Strategy docs</div>
+        <div class="value">8</div>
+        <div class="sub">Research synthesis · principles · strategy · roadmap · gaps · feasibility · 2 audits</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Findings</div>
+        <div class="value">10</div>
+        <div class="sub">From research synthesis · 4 cross-cutting (F1–F4)</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Flows</div>
+        <div class="value" id="stat-flows">…</div>
+        <div class="sub">Multi-page persona journeys</div>
+      </div>
+    </section>
+
+    <section class="paths-section">
+      <div class="paths-grid" id="paths-grid"></div>
+      <div class="audience-note">
+        <strong>Audience pills reorder the cards above</strong> — <strong>Reviewer</strong> (default) leads with Try + Discover.
+        <strong>Engineer</strong> leads with Inspect + Operate. <strong>Operator</strong> leads with Roadmap + Discover.
+        Selection persists across navigation in this session.
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      <span>PROJECT_NAME Blueprint — generated synthetically. Personas + competitive findings need primary-research validation before structural recommendations ship.</span>
+      <span class="mono">v1.0 · 2026-05-23</span>
+    </footer>
   </main>
 
   <script>
-    window.PROTO_PAGE = { id: 'index', title: 'Portal Index' };
+    const PATHS = [
+      {
+        id: 'try', title: 'Try', icon: '▶', status: 'ready',
+        description: 'Walk the 12 prototype pages with strategy + current-state drawers, proposed-vs-shipped toggle, and multi-page flows. The interactive study.',
+        links: 'Catalog: <a href="/prototype/">/prototype/</a> · Sample: <a href="/pages/tournament">tournament</a>, <a href="/pages/operator-game-day">operator game-day</a>',
+        priority: { reviewer: 1, engineer: 3, operator: 4 }
+      },
+      {
+        id: 'discover', title: 'Discover', icon: '◆', status: 'ready',
+        description: 'Why the blueprint makes the decisions it does. CX strategy synthesizes the 10 findings into a one-sentence product position + per-surface decisions.',
+        links: '<a href="/docs/?doc=cx-strategy">CX Strategy</a> · <a href="/docs/?doc=research-synthesis">Research synthesis</a> · <a href="/docs/?doc=personas-cx-audit">Personas × stages</a>',
+        priority: { reviewer: 2, engineer: 5, operator: 2 }
+      },
+      {
+        id: 'roadmap', title: 'Roadmap', icon: '◷', status: 'ready',
+        description: 'Phased plan: Phase 1 (~17 hrs) free-mode launch keystones. Phase 2 (~30 hrs) identity + retention. Phase 3 primary-research gates.',
+        links: '<a href="/docs/?doc=roadmap">Roadmap</a> · <a href="/docs/?doc=gaps">Per-page gaps</a>',
+        priority: { reviewer: 3, engineer: 4, operator: 1 }
+      },
+      {
+        id: 'operate', title: 'Operate', icon: '⚙', status: 'ready',
+        description: 'Methodology + conventions for building on top of this blueprint. Design principles, the production-UI sanctity rule, page-creation contract, and per-tool OWNER-SPECs.',
+        links: '<a href="/docs/?doc=design-principles">Design principles</a> · <a href="/docs/?doc=feasibility">Feasibility</a> · CONVENTIONS.md in repo',
+        priority: { reviewer: 5, engineer: 1, operator: 3 }
+      },
+      {
+        id: 'inspect', title: 'Inspect', icon: '⌬', status: 'partial',
+        description: 'Under the hood. Per-tool OWNER-SPECs (proto-nav, proto-annotate, chat function), the page metadata schema, the comparison toggle internals.',
+        links: 'OWNER-SPECs in <code>blueprint/prototype/*.OWNER-SPEC.md</code>',
+        priority: { reviewer: 4, engineer: 2, operator: 5 }
+      }
+    ];
 
-    // Auto-render page cards from manifest
+    let currentAudience = 'reviewer';
+
+    function renderPaths() {
+      const grid = document.getElementById('paths-grid');
+      grid.innerHTML = '';
+      const sorted = [...PATHS].sort((a, b) => a.priority[currentAudience] - b.priority[currentAudience]);
+      sorted.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'path-card';
+        card.innerHTML = `
+          <div class="icon-row">
+            <div class="icon">${p.icon}</div>
+            <span class="status status-${p.status}">${p.status}</span>
+          </div>
+          <h3>${p.title}</h3>
+          <p>${p.description}</p>
+          <div class="links">${p.links}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    document.querySelectorAll('.audience-pills button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentAudience = btn.dataset.audience;
+        document.querySelectorAll('.audience-pills button').forEach(b =>
+          b.classList.toggle('active', b === btn)
+        );
+        try { sessionStorage.setItem('rally-bp-audience', currentAudience); } catch {}
+        renderPaths();
+      });
+    });
+
+    try {
+      const saved = sessionStorage.getItem('rally-bp-audience');
+      if (saved) {
+        currentAudience = saved;
+        document.querySelectorAll('.audience-pills button').forEach(b =>
+          b.classList.toggle('active', b.dataset.audience === saved)
+        );
+      }
+    } catch {}
+
+    renderPaths();
+
     (async function () {
       try {
-        const manifestRes = await fetch('./_meta/index.json');
-        const manifest = await manifestRes.json();
-        const pages = await Promise.all(
-          (manifest.pages || []).map(async id => {
-            const r = await fetch(`./_meta/${id}.json`);
-            return r.ok ? await r.json() : null;
-          })
-        );
-        const grid = document.getElementById('page-grid');
-        grid.innerHTML = '';
-        pages.filter(Boolean).forEach(page => {
-          const card = document.createElement('a');
-          card.href = `./pages/${page.id}.html`;
-          card.className = 'card';
-          card.style.cssText = 'display: block;';
-          card.innerHTML = `
-            <span class="badge">${(manifest.groups || []).find(g => g.id === page.group)?.label || page.group || '—'}</span>
-            <h3 class="mt-4">${page.title}</h3>
-            <p class="small mt-4">${page.summary || ''}</p>
-          `;
-          grid.appendChild(card);
-        });
-      } catch (e) {
-        document.getElementById('page-grid').innerHTML =
-          '<p class="muted">Manifest load failed: ' + e.message + '</p>';
+        const r = await fetch('/_meta/index.json');
+        const m = await r.json();
+        document.getElementById('stat-pages').textContent = (m.pages || []).length;
+        document.getElementById('stat-flows').textContent = (m.flows || []).length;
+      } catch {
+        document.getElementById('stat-pages').textContent = '—';
+        document.getElementById('stat-flows').textContent = '—';
       }
     })();
   </script>
-  <script src="./proto-nav.js"></script>
-  <script src="./chat-widget.js" defer></script>
-  <script src="./proto-annotate.js" defer></script>
+
+  <script>
+    window.PROTO_PAGE = { id: 'index', title: 'Front Door' };
+    window.PROTO_CHAT_DISABLED = false;
+  </script>
+  <script src="/chat-widget.js" defer></script>
+  <script src="/proto-annotate.js?v=20260523-1909" defer></script>
 </body>
 </html>

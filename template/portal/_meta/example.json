@@ -2,6 +2,7 @@
   "id": "example",
   "title": "Example Page",
   "group": "marketing",
+  "slice": "example-slice",
   "surface": "TBD — what production surface does this map to?",
   "phase": "Phase 1",
   "route": "/pages/example.html",

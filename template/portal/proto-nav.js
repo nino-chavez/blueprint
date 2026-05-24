@@ -145,9 +145,13 @@
       select.appendChild(og);
     });
 
+    // Footer nav is now a hidden affordance — top brand bar + slice header
+    // + slice sidebar make it redundant. Keep the dropdown wired but render
+    // it via the top brand bar's overflow menu (mobile + jump-to-page only).
+    // The Shipped/Strategy drawer toggle buttons live in the slice header.
     const nav = el('div', { class: 'proto-footer-nav' },
       el('div', { class: 'nav-pages' },
-        el('span', { class: 'tiny muted', style: 'margin-right: 8px' }, 'Blueprint:'),
+        el('span', { class: 'tiny muted', style: 'margin-right: 8px' }, 'Jump to:'),
         select
       ),
       el('div', { class: 'nav-actions' },
@@ -156,6 +160,29 @@
       )
     );
     document.body.appendChild(nav);
+  }
+
+  // ─────────────── top brand bar (proto-nav.js, on every prototype page) ───────────────
+
+  function buildTopBrandBar() {
+    // Skip on the portal index + studio catalog pages — they have their own top nav.
+    if (window.PROTO_PAGE?.id === 'index') return;
+
+    const bar = document.createElement('header');
+    bar.className = 'proto-brand-bar';
+    bar.innerHTML = `
+      <div class="proto-brand-bar-inner">
+        <a href="/" class="brand-mark">
+          ${MANIFEST?.name ? MANIFEST.name.split(' ')[0] : 'Blueprint'}<span class="brand-mark-tag">Blueprint</span>
+        </a>
+        <nav class="brand-bar-nav">
+          <a href="/">Front door</a>
+          <a href="/prototype/">Prototype</a>
+          <a href="/docs/?doc=cx-strategy">Docs</a>
+        </nav>
+      </div>
+    `;
+    document.body.insertBefore(bar, document.body.firstChild);
   }
 
   function togglePanel(which) {
@@ -238,21 +265,127 @@
       toggle.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
     }
 
+    // Compact 3-button pill. The unicode glyphs match the surface:
+    //   △  proposed only (the design as intended)
+    //   ⊟  side-by-side (split view)
+    //   ▢  shipped only (current production)
     const toggle = el('div', { class: 'compare-toggle' },
-      el('button', { 'data-view': 'proposed', class: 'active', onclick: () => setView('proposed') }, 'Proposed'),
-      el('button', { 'data-view': 'split', onclick: () => setView('split') }, 'Side-by-side'),
-      el('button', { 'data-view': 'shipped', onclick: () => setView('shipped') }, 'Shipped')
+      el('button', { 'data-view': 'proposed', class: 'active', onclick: () => setView('proposed'), title: 'Proposed only' }, 'Proposed'),
+      el('button', { 'data-view': 'split', onclick: () => setView('split'), title: 'Side-by-side comparison' }, 'Compare'),
+      el('button', { 'data-view': 'shipped', onclick: () => setView('shipped'), title: 'Shipped only' }, 'Shipped')
     );
 
-    const mount = document.querySelector('[data-compare-toggle-mount]');
-    if (mount) mount.appendChild(toggle);
-    else {
-      const wrap = el('div', { class: 'row-between mt-4', style: 'margin-bottom: 1rem' },
-        el('span', { class: 'tiny muted' }, 'Comparison'),
-        toggle
-      );
-      hasProposed.parentNode.insertBefore(wrap, hasProposed);
+    // Preferred mount order:
+    //   1. Inside the slice header bar (so the toggle lives WITH the breadcrumb + trace badges) — the new architectural home as of v2
+    //   2. Explicit [data-compare-toggle-mount] in the page (legacy override — slice header didn't exist when this was added)
+    //   3. Floating pill in the top-right of the viewport (fallback for pages without slice headers — keeps it out of the page flow)
+    const sliceHeaderActions = document.querySelector('.proto-slice-header .slice-header-actions');
+    const explicitMount = document.querySelector('[data-compare-toggle-mount]');
+    if (sliceHeaderActions) {
+      // Insert before the existing badge cluster
+      sliceHeaderActions.insertBefore(toggle, sliceHeaderActions.firstChild);
+      // If a legacy explicit mount exists, hide it so the old container doesn't leave dead space in the page flow
+      if (explicitMount) explicitMount.style.display = 'none';
+    } else if (explicitMount) {
+      explicitMount.appendChild(toggle);
+    } else {
+      // Fallback: floating pill, top-right, fixed-positioned
+      const floating = el('div', { class: 'compare-toggle-floating' }, toggle);
+      document.body.appendChild(floating);
     }
+  }
+
+  // ─────────────── slice metadata loader + shell ───────────────
+
+  let CURRENT_SLICE = null;
+
+  async function loadSliceMeta(id) {
+    if (!id) return null;
+    const base = isProtoRoot() ? `_meta/slices/${id}.json` : `../_meta/slices/${id}.json`;
+    try {
+      const res = await fetch(base);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      console.warn(`proto-nav: slice meta load failed for ${id}`, err);
+      return null;
+    }
+  }
+
+  function buildSliceHeader(slice, currentPageMeta) {
+    const wrap = document.createElement('div');
+    wrap.className = 'proto-slice-header';
+    wrap.innerHTML = `
+      <div class="slice-header-row">
+        <div class="slice-header-meta">
+          <div class="slice-header-crumb">
+            <a href="/prototype/">Prototype</a>
+            <span class="sep">›</span>
+            <span class="slice-label">${slice.label}</span>
+            ${currentPageMeta ? `<span class="sep">›</span><span class="page-label">${currentPageMeta.title}</span>` : ''}
+          </div>
+          <div class="slice-header-surface">${slice.production_surface || ''}</div>
+        </div>
+        <div class="slice-header-actions">
+          ${(slice.findings_cited || []).map(f => `<span class="badge-trace">${f}</span>`).join('')}
+          ${(slice.principles_cited || []).map(p => `<span class="badge-trace badge-trace-rule">${p}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(wrap);
+  }
+
+  function buildSliceSidebar(slice) {
+    const sidebar = document.createElement('aside');
+    sidebar.className = 'proto-slice-sidebar';
+
+    const pages = (slice.pages || [])
+      .map(id => MANIFEST._cache?.[id])
+      .filter(Boolean);
+
+    const flowsTouching = (MANIFEST.flows || []).filter(f =>
+      (slice.flows_touching_this_slice || []).includes(f.id) ||
+      (f.pages || []).some(p => (slice.pages || []).includes(p))
+    );
+
+    sidebar.innerHTML = `
+      <div class="slice-sidebar-section">
+        <h4>${slice.label}</h4>
+        <p class="slice-sidebar-summary">${slice.summary || ''}</p>
+      </div>
+      <div class="slice-sidebar-section">
+        <h5>Pages in this slice</h5>
+        <ul class="slice-sidebar-list">
+          ${pages.map(p => `
+            <li>
+              <a href="${p.route}" class="${p.id === window.PROTO_PAGE?.id ? 'active' : ''}">
+                <span class="page-title">${p.title}</span>
+                <span class="page-phase phase-${(p.phase || '').replace(' ', '-')}">${p.phase || ''}</span>
+              </a>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      ${flowsTouching.length ? `
+        <div class="slice-sidebar-section">
+          <h5>Flows through slice</h5>
+          <ul class="slice-sidebar-list slice-sidebar-flows">
+            ${flowsTouching.map(f => `
+              <li>
+                <a href="${pageHref((f.pages || [])[0])}?flow=${f.id}">
+                  <span class="flow-title">${f.label}</span>
+                  <span class="flow-pages">${(f.pages || []).length} pages</span>
+                </a>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      ` : ''}
+    `;
+    document.body.appendChild(sidebar);
+
+    // Add a body class so page-specific CSS can adjust for the sidebar
+    document.body.classList.add('proto-has-sidebar');
   }
 
   // ─────────────── init ───────────────
@@ -289,6 +422,20 @@
       CURRENT_FLOW = (MANIFEST.flows || []).find(f => f.id === flowId);
       if (CURRENT_FLOW && CURRENT_FLOW.pages.includes(pageId)) {
         buildFlowBreadcrumb(CURRENT_FLOW, pageId);
+      }
+    }
+
+    // Top brand bar appears on every prototype page so reviewers always
+    // have one-click back to portal / prototype catalog / docs.
+    buildTopBrandBar();
+
+    // Load slice metadata for the current page (if it belongs to a slice)
+    const sliceId = CURRENT_META?.slice;
+    if (sliceId) {
+      CURRENT_SLICE = await loadSliceMeta(sliceId);
+      if (CURRENT_SLICE) {
+        buildSliceHeader(CURRENT_SLICE, CURRENT_META);
+        buildSliceSidebar(CURRENT_SLICE);
       }
     }
 
