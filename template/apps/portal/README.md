@@ -69,3 +69,15 @@ Some surfaces in this scaffold are substrate-aware (Hive, state-derive, the comm
 | Content paths in `src/lib/content.ts` (`PRD.md`, `BRD.md`, `STRATEGY.md`, etc.) | Hard-coded to subs-initiative document filenames | Initiative may override by editing the doc-name list; future ADR to parameterize via `blueprint.yml` |
 
 The substrate-specific paths are advanced Tier-2 features that should ideally move to an optional `@blueprint/ui-substrate-hive` add-on package — tracked in the methodology backlog.
+
+### Known limitation — substrate build coupling
+
+The `loadState` / `loadBoard` / `loadEpicFootprint` loaders in `src/lib/derived.ts` call `readFileSync` on substrate-output files (`docs/audits/derived/_state.json`, `docs/hive/_board.json`) without graceful-degradation. A stamped initiative that does not run state-derive or Hive will hit `ENOENT` during `astro build` on any page that calls these loaders.
+
+**Workarounds until the substrate-tolerance refactor lands:**
+
+1. **Delete the substrate-aware pages** from `src/pages/inspect/` if your initiative has no Hive / state-derive substrate. The portal-pattern-a-conformance-reviewer treats the `/inspect` route as "required" but the substrate sub-pages are not required by the IA contract.
+2. **Populate placeholder substrate data** — write a minimal valid `_state.json` (zero capabilities) and `_board.json` (zero issues) so the pages render with empty content.
+3. **Run the substrate tooling** if your initiative actually uses Hive — see `~/Workspace/dev/wip/blueprint/docs/hive-coordination-pattern.md`.
+
+The proper fix (`loadState` returning `null` on missing-file, pages rendering "Not configured" placeholders) is tracked as future methodology work.

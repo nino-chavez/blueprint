@@ -40,11 +40,17 @@ function substitutions({ name, displayName, repoUrl, tagline }) {
 }
 
 // Files where the subs-initiative strings are business content (10-gate framework,
-// delivery-fork strategy, dependency-graph example issues). The stamper still
-// performs the substitutions, but prepends a banner so the operator knows the
-// content needs review.
+// delivery-fork strategy, dependency-graph example issues) OR substrate-aware
+// governance pages that will fail at build time if the initiative doesn't run
+// Hive / state-derive (the substrate produces docs/audits/derived/_state.json
+// and docs/hive/_board.json; `loadState`/`loadBoard` throw ENOENT without them).
+// The stamper still performs the substitutions, but prepends a banner so the
+// operator knows the content needs review or the page needs deletion.
 const BANNER_FILES = new Set([
   "apps/portal/src/pages/inspect/gates.astro",
+  "apps/portal/src/pages/inspect/coverage.astro",
+  "apps/portal/src/pages/inspect/attestations.astro",
+  "apps/portal/src/pages/inspect/dependencies.astro",
   "apps/portal/src/pages/strategy/delivery-fork.astro",
   "apps/portal/src/pages/strategy/index.astro",
   "packages/ui/preview/dep-graph-data.js",

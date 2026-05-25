@@ -54,7 +54,7 @@ node template/tools/blueprint-init/stamp.mjs \
 
 ## Substitution table
 
-The stamper performs only the substitutions below. Business content (e.g., the 10-gate framework in `inspect/gates.astro`, the strategy delivery-fork content) is subs-initiative-specific and is left as example data with a `REPLACE_FOR_PROJECT` banner injected at the top of each affected file. Operators choose between rewriting or deleting those routes.
+The stamper performs only the substitutions below. Business content (e.g., the 10-gate framework in `inspect/gates.astro`, the strategy delivery-fork content) and substrate-aware governance views (`inspect/coverage.astro`, `inspect/attestations.astro`, `inspect/dependencies.astro` — these call `loadState`/`loadBoard` and will fail at build time without Hive / state-derive substrate) are subs-initiative-specific and left as example data with a `REPLACE_FOR_PROJECT` banner injected at the top of each affected file. Operators choose between rewriting, deleting, or running the substrate tooling. See `template/apps/portal/README.md` § "Known limitation — substrate build coupling" for workarounds.
 
 | Source string | Replaced with |
 |---|---|
@@ -75,7 +75,7 @@ grep -rl 'subs-initiative\|An example product initiative\|/project-logo.png\|--b
   <target>/apps/portal/ <target>/packages/
 ```
 
-Any hits are reported. Expected hits: the `REPLACE_FOR_PROJECT`-banner files (gates, delivery-fork) where business content lives. Unexpected hits block exit code 0 and emit a non-zero exit — the stamper has missed a substitution path and the methodology bug must be fixed before the consumer continues.
+Any hits are reported. Expected hits: the `REPLACE_FOR_PROJECT`-banner files (gates, coverage, attestations, dependencies, delivery-fork, strategy index) where business content or substrate-aware governance views live. Unexpected hits block exit code 0 and emit a non-zero exit — the stamper has missed a substitution path and the methodology bug must be fixed before the consumer continues.
 
 ## Why this lives at `template/tools/blueprint-init/`
 
