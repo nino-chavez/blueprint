@@ -69,7 +69,7 @@ const AUDIENCE_ORDER: Record<Audience, LaneVerb[]> = {
 /**
  * Six-lane card grid on the homepage. Lane order shifts per the persisted
  * audience preference — toggling the switcher in PortalNav re-renders this
- * island via the `bcs-audience-change` CustomEvent the hook dispatches.
+ * island via the `blueprint-audience-change` CustomEvent the hook dispatches.
  */
 export function HomeLanes() {
   const [audience] = useAudiencePreference();
