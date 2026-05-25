@@ -89,6 +89,13 @@ Visual rules + architectural invariants: `prototype/DESIGN.md`. Both are checked
 
 Edit `blueprint.yml` for: variant, execution depth, voice modes, prototype settings, research scope, document package, optional-capability flags.
 
+## Session prompts
+
+Reusable prompts for common Blueprint adoption / update scenarios:
+
+- `~/Workspace/dev/wip/blueprint/docs/prompts/add-blueprint-to-project.md` — paste at start of a fresh session in a project taking on Blueprint for the first time
+- `~/Workspace/dev/wip/blueprint/docs/prompts/pick-up-blueprint-updates.md` — paste in a session resuming an existing Blueprint initiative to refresh methodology context (rename, variant taxonomy, reviewer agents, I-5 invariant, strengthened smoke-runner). Includes an optional `SessionStart` hook recipe for auto-injection per initiative.
+
 ## Converter
 
 `node docs/scripts/md-to-docs.mjs docs/content/my-doc.md --out docs/deliverables/`
