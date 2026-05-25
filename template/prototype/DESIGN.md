@@ -322,6 +322,18 @@ Visual rule 4 says one primary CTA per page (filled button, `{colors.primary}`).
 
 **Why promote visual to structural:** the visual rule depends on the prototype-builder agent's judgment about "primary." The structural rule depends on attribute presence. The agent that built the page may have judged correctly; the agent making a later edit may not. The lint catches the second case automatically.
 
+### I-5. JS Class Output ↔ CSS Coverage
+
+Every class name emitted by JS shells (`proto-nav.js`, `_portal-shell.js`, `chat-widget.js`, `proto-annotate.js`, any future shell module) must have a corresponding CSS rule in the shipping stylesheet. The invariant catches the failure mode where the JS template emits a class hierarchy (e.g., `.proto-top-bar`, `.top-bar-inner`, `.top-bar-lead`) but the template ships zero CSS for those classes — pages return 200 with unstyled chrome.
+
+**Why this exists:** the v3 ninochavez.co session (2026-05-25) shipped portal pages where `proto-nav.js` generated the full `.proto-top-bar` class hierarchy but the template's stylesheet had no rules for any of those classes. Front-door + docs viewer pages worked because they used `.portal-shell` (which IS styled) via `<header data-portal-shell>`; prototype pages bypassed that path and got unstyled chrome. Rally HQ didn't hit the bug because Rally HQ has its own additional CSS that fills the gaps. The template ships incomplete for non-Rally-HQ consumers.
+
+**Structural form:** a lint walks every `.js` file in the shell directory, extracts class-name string literals (anything matching `className = '...'`, `classList.add('...')`, `class="..."` in template strings), then diffs against CSS selectors in the shipping stylesheet. Any class emitted by JS without a matching `.{class}` selector in CSS fails the lint.
+
+**Pass criterion:** zero JS-emitted classes without CSS selectors. Per-consumer override is acceptable for opt-in chrome (e.g., a project that deliberately doesn't ship the annotation overlay can skip `.proto-anno-*` rules), declared via a `--allow-missing` list in the lint config.
+
+**Why a 200 response is not enough:** curl smoke tests check that the server responds. They cannot detect unstyled chrome. This invariant + the strengthened smoke-runner (which now requires viewport screenshots) close the gap.
+
 ### Lint Errors as Remediation Prompts
 
 When a custom lint (`design-md lint`, `[data-primary-cta]` enforcement, token discipline, terminology-linter) fires, its error message must include the *fix*, not just the violation. The cost is one extra sentence per lint rule; the multiplier is every CI run that becomes self-healing because the agent that reads the error is the agent that will write the patch.
