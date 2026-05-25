@@ -10,15 +10,15 @@ const AUDIENCE_META: Record<Audience, { label: string; icon: typeof Briefcase; h
     icon: Briefcase,
     hint: 'Strategy-first walkthrough',
   },
-  discovery: {
-    label: 'Discovery',
+  evaluator: {
+    label: 'Evaluator',
     icon: Compass,
-    hint: 'Merchant/dev evaluation',
+    hint: 'Hands-on / trial evaluation',
   },
-  internal: {
-    label: 'Internal',
+  engineering: {
+    label: 'Engineering',
     icon: Wrench,
-    hint: 'Team onboarding',
+    hint: 'Methodology + behind-the-scenes',
   },
 };
 
@@ -29,7 +29,7 @@ export interface AudienceSwitcherProps extends Omit<ComponentProps<'div'>, 'onCh
 
 /**
  * Chip-group selector for the audience mode. Three options:
- * executive / discovery / internal. Lane order in the portal shifts based
+ * executive / evaluator / engineering. Lane order in the portal shifts based
  * on the selection.
  *
  * State lives outside — usually via `useAudiencePreference` for persistence:

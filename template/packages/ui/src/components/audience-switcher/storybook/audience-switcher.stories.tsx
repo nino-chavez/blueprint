@@ -13,7 +13,7 @@ type Story = StoryObj<typeof AudienceSwitcher>;
 
 export const Default: Story = {
   render: () => {
-    const [audience, setAudience] = useState<Audience>('discovery');
+    const [audience, setAudience] = useState<Audience>('evaluator');
     return <AudienceSwitcher value={audience} onChange={setAudience} />;
   },
 };
@@ -25,9 +25,9 @@ export const Executive: Story = {
   },
 };
 
-export const Internal: Story = {
+export const Engineering: Story = {
   render: () => {
-    const [audience, setAudience] = useState<Audience>('internal');
+    const [audience, setAudience] = useState<Audience>('engineering');
     return <AudienceSwitcher value={audience} onChange={setAudience} />;
   },
 };

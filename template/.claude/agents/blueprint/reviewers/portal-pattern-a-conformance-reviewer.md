@@ -60,7 +60,7 @@ Grep `apps/portal/src/layouts/Layout.astro` (or the project's equivalent shell l
 
 If absent, BLOCK with note "audience switcher missing — required by IA contract per portal-and-tier-ladder.md."
 
-The three pill labels (executive / discovery / internal) are configurable per initiative; only the component presence is enforced here.
+The three canonical pill identifiers (`executive / evaluator / engineering`, per ADR-0001) are configurable per initiative if a project's audience taxonomy genuinely differs; only the component presence is enforced here.
 
 ### 4. Verify canonical shell sourcing
 

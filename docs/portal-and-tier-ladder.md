@@ -47,7 +47,7 @@ Pick before scaffolding. Wrong choice produces retrofit feel that costs a full r
 **Use when:** the initiative is a product with multiple distinct surfaces and multiple audiences who each need a different lane into the artifact family.
 
 - Multi-app monorepo or platform with separable surfaces (admin, storefront, API, SDK)
-- Audiences: executive (strategy), discovery (try the product), internal (operations / methodology)
+- Audiences: executive (strategy), evaluator (hands-on / trial evaluation), engineering (methodology + behind-the-scenes)
 - Live demos embedded via iframe
 - Hive / state-derive substrate optional
 - **Canonical reference:** `subs-initiative` (`private-demo.example`)
@@ -94,7 +94,7 @@ Every Pattern A portal exposes the same six verbs and the same audience switcher
 | `/inspect` | Inspect | Show your work. Methodology, decision lineage, derived state, audits. |
 | `/roadmap` | Roadmap | What's next? Epic progress, swimlanes, ready queue. |
 
-**Audience switcher** in the top-right with three pills: **executive / discovery / internal**. Reorders lanes by priority for the viewing audience and persists to `localStorage`. Discovery is default.
+**Audience switcher** in the top-right with three pills: **executive / evaluator / engineering**. Reorders lanes by priority for the viewing audience and persists to `localStorage`. Evaluator is default. Naming rationale: ADR-0001.
 
 Routes ship with placeholder content if not yet authored. An empty `/operate` signals operate-mode hasn't been authored, not that it's been removed from the contract.
 
@@ -244,5 +244,5 @@ When in doubt: blueprint is process, portals are IA contracts (two patterns, A o
 - **Pattern A v2 reviewer**: ~~the existing `portal-shell-conformance-reviewer` checks Pattern A only. A parallel Pattern B reviewer is required.~~ **Resolved 2026-05-25.** Both reviewers ship in `template/.claude/agents/blueprint/reviewers/portal-pattern-a-conformance-reviewer.md` and `portal-pattern-b-conformance-reviewer.md`. Wired into the reviewer roster as Stage 3 + portal-touching-commit gates.
 - **Pattern B Astro variant**: should Pattern B keep static HTML or move to Astro consuming `@blueprint/design-tokens`? Trade-off: zero-build property vs. design-token consistency with Pattern A. Future ADR.
 - **`@blueprint/ui-svelte` parity**: when does the React-only `@blueprint/ui` get a Svelte equivalent for Pattern A SvelteKit consumers? Demand-driven.
-- **Audience switcher pill naming**: subs-initiative uses `executive / discovery / internal`. "Internal" is overloaded. ADR candidate.
+- ~~**Audience switcher pill naming**: subs-initiative uses `executive / discovery / internal`. "Internal" is overloaded. ADR candidate.~~ **Resolved 2026-05-25.** Renamed to `executive / evaluator / engineering` per [ADR-0001](decisions/0001-audience-pill-naming.md). Storage-key prefix cleanup (`bcs-` → `blueprint-`) tracked as follow-up ADR-0002.
 - **Pattern coexistence**: when a project genuinely needs both A and B portals (multi-audience platform that *also* publishes audit work), how does the workspace plumb both? Single project with `apps/portal/` (A) and `portal/` (B)? Future ADR.

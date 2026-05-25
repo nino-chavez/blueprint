@@ -166,6 +166,6 @@ The fix is the explicit naming in `docs/portal-and-tier-ladder.md`. The other tw
 ## Open follow-ups
 
 - **Tier mapping for variants.** Greenfield + midstream + brownfield each potentially land at different default tiers. Greenfield → Tier 1 (or Tier 2 if a real product surface exists from day one); midstream → Tier 2 (the product exists); brownfield → Tier 1 by default but Tier 0 is permitted for doc-only audits. Tracked as ADR-required if an initiative diverges.
-- **Variant pill naming.** subs-initiative uses `executive / discovery / internal`. "Internal" is overloaded (internal to what?). ADR candidate to rename `internal` → `engineering` or keep as-is.
+- ~~**Variant pill naming.** subs-initiative uses `executive / discovery / internal`. "Internal" is overloaded (internal to what?). ADR candidate to rename `internal` → `engineering` or keep as-is.~~ **Resolved 2026-05-25** via [ADR-0001](decisions/0001-audience-pill-naming.md). All three pills renamed to role-based labels: `executive / evaluator / engineering`. Default audience: `evaluator`. Storage-key prefix cleanup deferred to ADR-0002.
 - **Stack flexibility.** Canonical is Astro + React. SvelteKit and Next variants would need `@blueprint/ui-svelte` and `@blueprint/ui-next` parallel packages — tracked as future ADR.
 - **Voice modes per route.** Discover = executive-advisory voice; Build = solution-architecture; Inspect = methodology/evidence-led. Worth codifying per-route voice modes in `docs/portal-and-tier-ladder.md` once the Blog session's voice-mode-frontmatter convention lands.
