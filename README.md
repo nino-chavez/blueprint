@@ -188,6 +188,8 @@ Reusable Stage-1 baseline docs for common initiative targets. Copy the relevant 
 | [docs/bc-b2b-buyer-portal-integration.md](docs/bc-b2b-buyer-portal-integration.md) | Initiative embeds the B2B Buyer Portal in any host storefront | Framework-agnostic integration contract (5-step), port table for React/SvelteKit/Solid/Vue/Astro, env vars, troubleshooting |
 | [docs/hive-coordination-pattern.md](docs/hive-coordination-pattern.md) | Initiative needs multiple agents working in parallel | When to use Hive, bootstrap sequence, working rules, integration with the original employer-prefixed name stages |
 | [docs/cloudflare-deployment-pattern.md](docs/cloudflare-deployment-pattern.md) | Initiative deploys on Cloudflare (Workers, Pages, D1, Workers AI, Vectorize, etc.) | Wrangler config conventions, path-scoped GitHub Actions, secrets, multi-environment, cost envelope |
+| [docs/browser-legibility.md](docs/browser-legibility.md) | Every initiative with a `prototype/` or `portal/` shell (Stage 0) | `browse-tool` as the default browser sensor (~few hundred tokens vs MCP's ~18k), four-trigger escalation rubric to Chrome DevTools MCP, per-worktree bootability via cwd-named profiles |
+| [docs/variant-selection.md](docs/variant-selection.md) | Every new initiative — picked at `blueprint.yml` init | Three-variant taxonomy (greenfield / midstream / brownfield), pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Wrong variant produces retrofit feel that cannot be un-retrofitted without restart. |
 
 **How blueprint.yml flags activate these:**
 - `b2b_edition.enabled: true` → use both `bc-b2b-edition-context.md` and `bc-b2b-buyer-portal-integration.md`

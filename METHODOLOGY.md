@@ -13,13 +13,69 @@ The methodology integrates three existing tools:
 
 Extracted from the a commerce-platform pricing & packaging CX initiative (March 2026), where it produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility validated against a production Rails codebase, and an embedded AI billing support agent.
 
-## The Pipeline
+## Variant Selection
+
+the original employer-prefixed name serves three project lifecycles: **greenfield** (new product), **midstream** (active in-flight work), and **brownfield** (mature product, audit-first). Each has its own stage sequence and reviewer gates. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
+
+The canonical reference is [docs/variant-selection.md](docs/variant-selection.md), which contains the pattern-match decision tree, per-variant stage shapes, required sub-deliverables, and reviewer-agent gate mapping.
+
+| Variant | Center of gravity | Reference impl |
+|---|---|---|
+| Greenfield (build) | Prototype as central deliverable | This methodology document |
+| Midstream (hybrid) | Targeted diagnose + revision prototype | `apps/rally-hq/blueprint/` (migration in progress) |
+| Brownfield (audit) | Diagnose + prescription as deliverables | `apps/website-nc-v3/blueprint/`, `apps/blog/blueprint/` |
+
+The pipeline described in the rest of this document is the **greenfield variant**. Midstream and brownfield variants share Stage 0 (Application Legibility) and the cross-cutting disciplines, but their stage sequences diverge — see the variant-selection doc for full definitions.
+
+Declare the variant at `blueprint.yml`:
+
+```yaml
+variant: greenfield   # or: midstream | brownfield
+```
+
+Initiatives without an explicit declaration default to `greenfield` to preserve today's behavior.
+
+## The Pipeline (greenfield variant)
 
 ```
-Research → Design Principles → Prototype → Fact-Check → Documents → Deploy → Iterate
+Stage 0: Application Legibility → Research → Design Principles → Prototype → Fact-Check → Documents → Deploy → Iterate
 ```
 
 Each stage feeds the next. The key insight: **the prototype and the documents are built simultaneously, not sequentially.** The prototype tests the design decisions, the documents capture the rationale, and the strategy panels on each prototype page connect the two.
+
+## Stage 0: Application Legibility
+
+Before any other stage runs, the agent must be able to drive the running app — boot the prototype, navigate it, run JS against it, screenshot it. This is wired once per initiative and reused at every downstream stage that validates against the live UI.
+
+Stage 0 is mandatory for midstream and brownfield variants (the product already exists; every audit claim grounds in a captured surface). For greenfield, Stage 0 wiring often defers to Stage 3 — there's nothing to drive until the prototype shell is up.
+
+### Default sensor: `browse-tool`
+
+`browse-tool` (`~/Workspace/dev/tools/browse-tool`) is the default. Token economics: Chrome DevTools MCP costs ~18k tokens of always-loaded schema; browse-tool's README costs a few hundred tokens loaded on-demand. The four primitives the harness actually needs — `browse-start` / `browse-nav` / `browse-eval` / `browse-screenshot` — cover the entire stakeholder-prototype validation surface.
+
+**Install** (once per initiative):
+
+```bash
+export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
+# In Claude Code: /add-dir /Users/nino/Workspace/dev/tools/browse-tool
+```
+
+**Per-initiative profile override**: always pass `--profile-name <initiative-slug>-blueprint`. Default profile name = cwd basename = `blueprint`, which collides across initiatives.
+
+**Per-worktree bootability**: `serve.sh` at the initiative root claims a port (Rally HQ = 8765, website-nc-v3 = 8766, blog = 8767; future initiatives claim the next port up so all can run concurrently).
+
+### Escalate to Chrome DevTools MCP only when
+
+Each trigger below is something `browse-eval` cannot synthesize from DOM access alone. When none of these fire, the agent does not load MCP schemas.
+
+| Trigger | Reason MCP is required |
+|---|---|
+| "capture network requests" / "watch XHR" | `browse-eval` can call `fetch` but cannot intercept ambient traffic |
+| "stream console errors" / "log capture" | `eval` reads page state, doesn't subscribe to console events |
+| "lighthouse audit" / "perf trace" | MCP wraps the CDP performance domain directly |
+| "accessibility tree" / "ARIA snapshot" | MCP exposes the a11y tree; DOM-only eval misses computed ARIA |
+
+Full Stage 0 reference + escalation rubric: [docs/browser-legibility.md](docs/browser-legibility.md).
 
 ## Stage 1: Research
 
