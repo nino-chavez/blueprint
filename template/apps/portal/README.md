@@ -40,10 +40,32 @@ Outputs static-first build to `dist/`. Deployable to Cloudflare Pages, Netlify, 
 
 The audience switcher (top-right) reorders lanes by audience priority — executive / evaluator / engineering — and persists to localStorage.
 
-## What's in each slice
+## Scaffolding into a new initiative
 
-Slice 1 (this commit) — IA + shell + nav + lane-card landing pages. Content is placeholder.
+Do not copy this directory by hand. Use the stamper:
 
-Slices 2 + 3 wire live data and authored content excerpts. Slice 5 lights up live iframes for Try. Slice 7 locks brand identity.
+```bash
+node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+  --name=<project-slug> \
+  --display-name="<Project Display Name>" \
+  --repo-url=https://github.com/<owner>/<repo> \
+  --tagline="<one-line tagline>" \
+  --variant=greenfield|midstream|brownfield \
+  --tier=1|2 \
+  --pattern=A \
+  --target=<absolute path to initiative root>
+```
 
-See `redesign-branch-unified-family` memory or the running task list for the full plan.
+The stamper handles project name, repo URL, tagline, package scope, `--bcs-*` CSS prefix, and logo substitution. Post-stamp mechanical check fails on any unexpected residual `subs-initiative` strings.
+
+## Substrate-specific extensions
+
+Some surfaces in this scaffold are substrate-aware (Hive, state-derive, the commerce platform governance views) and are NOT generic Tier-1 features:
+
+| Surface | What it does | Tier-1 default |
+|---|---|---|
+| `src/lib/derived.ts` + `src/components/DerivedRoadmap.tsx` | Reads `docs/audits/_state.json` (state-derive output) and Hive substrate data | Replace with hand-authored markdown roadmap if `substrate: 'none'` in `blueprint.yml` |
+| `src/components/SubstrateDashboards.tsx`, `src/pages/inspect/gates.astro`, `coverage.astro`, `dependencies.astro`, `attestations.astro` | Hive-and-state-derive governance dashboards | Ship `/inspect` as a single methodology overview page linking to `docs/decisions/` (ADRs) for Tier 1 without Hive |
+| Content paths in `src/lib/content.ts` (`PRD.md`, `BRD.md`, `STRATEGY.md`, etc.) | Hard-coded to subs-initiative document filenames | Initiative may override by editing the doc-name list; future ADR to parameterize via `blueprint.yml` |
+
+The substrate-specific paths are advanced Tier-2 features that should ideally move to an optional `@blueprint/ui-substrate-hive` add-on package — tracked in the methodology backlog.
