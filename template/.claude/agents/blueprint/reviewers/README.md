@@ -18,10 +18,11 @@ Canonical reference: `wip/blueprint/docs/variant-selection.md`.
 
 ## Behavior model
 
-- **Read-only.** Reviewers audit; they do not patch. The calling agent owns the fix.
+- **Read-only audit, with one exception.** Most reviewers audit; they do not patch. The calling agent owns the fix. The exception is `prototype-smoke-runner`, which actively boots the prototype + drives browse-tool to capture screenshots — it produces artifacts (`.smoke-screenshots/`) but does not modify source files.
 - **Variant-aware.** Each reviewer reads `blueprint.yml` to determine variant and adjusts checks accordingly.
 - **Block on failure.** A reviewer's verdict is binary — PASS or BLOCKED. The calling agent must resolve all findings before re-invoking.
 - **Convergence cap.** `fact-check-loop-reviewer` caps at 5 iterations before escalating to the operator. Persistent failure after 5 loops is a signal that the underlying claims are unsupportable, not that more loops will help.
+- **Visual gates beat protocol gates.** `prototype-smoke-runner` requires viewport screenshots + CSS-coverage checks alongside the `@smoke` Playwright run. A 200 response from curl is not enough; a green `@smoke` is not enough. Both are blind to unstyled chrome (see `docs/case-study-v3-portal-css-gap.md`).
 
 ## Location convention
 
