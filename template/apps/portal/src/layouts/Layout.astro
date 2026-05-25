@@ -1,0 +1,52 @@
+---
+import * as Shell from '@blueprint/ui/shell';
+import { PortalNav } from '@/components/PortalNav';
+import { ArchaeologyChat } from '@/components/ArchaeologyChat';
+import '@/styles/global.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const currentPath = Astro.url.pathname;
+const fullTitle = title === 'subs-initiative' ? title : `${title} — subs-initiative`;
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Display:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+  </head>
+  <body class="min-h-screen bg-background text-foreground antialiased">
+    <Shell.Root>
+      <Shell.Header>
+        <PortalNav client:load currentPath={currentPath} />
+      </Shell.Header>
+      <Shell.Main>
+        <slot />
+      </Shell.Main>
+      <Shell.Footer>
+        <div class="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
+          <p>
+            <span class="font-heading font-semibold text-foreground">subs-initiative</span> · An example product initiative
+          </p>
+          <p class="font-mono text-[11px] uppercase tracking-wide text-contrast-400">
+            <a href="the subscriptions initiative's repo (private)" target="_blank" rel="noreferrer" class="hover:text-brand">github ↗</a>
+          </p>
+        </div>
+      </Shell.Footer>
+    </Shell.Root>
+    <ArchaeologyChat client:idle pageContext={currentPath} />
+  </body>
+</html>

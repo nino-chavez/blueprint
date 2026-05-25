@@ -26,6 +26,21 @@ The alternative — patching prompts session-by-session — produces zero compou
 
 This principle is the reason the methodology accumulates: Stage 0 (browser sensor) was an encoded response to "the agent can't see the running app." Reviewer agents (`template/.claude/agents/blueprint/reviewers/`) were an encoded response to "the agent declares stages complete with sub-deliverables empty." The variant taxonomy was an encoded response to "the agent retrofits brownfield work into greenfield pipelines." None of these are prompt fixes; all are repo-level encodings.
 
+The 2026-05-25 reconciliation added eight more encodings against the same principle — each one a repo change, not a prompt:
+
+| Failure observed in the 24-hour window | Encoding |
+|---|---|
+| Three live consumer sessions reasoned about Blueprint from first principles instead of reading canonical docs | `template/.claude/hooks/blueprint-session-start.py` injects `METHODOLOGY.md` + `docs/variant-selection.md` + `docs/portal-and-tier-ladder.md` at SessionStart in every Blueprint initiative |
+| Four-way root-doc drift (METHODOLOGY + v2 patch + 2 handoffs) generated three different "what is Blueprint" answers | The three drift sources archived to `docs/_archive/handoffs/`; `METHODOLOGY.md` is the single source of truth |
+| Variant and tier got conflated in mid-stream reasoning | Variant × Tier matrix added to top of `docs/portal-and-tier-ladder.md`; they are orthogonal axes |
+| Port-registry literals (8765/8766/8767) got promoted to methodology invariant | Struck from Stage 0 here; replaced with "each initiative claims a free port via serve.sh; port assignments do not survive Tier 1 promotion" |
+| Copy-paste of `template/apps/portal/` left `subs-initiative` strings embedded in 6+ files | `template/tools/blueprint-init/stamp.mjs` stamps a fresh portal with mechanical post-stamp grep |
+| `portal-shell-conformance-reviewer` existed but wasn't wired as a gate | Renamed to `portal-pattern-a-conformance-reviewer`; parallel `portal-pattern-b-conformance-reviewer` shipped; both wired at Stage 3 + any portal-touching commit |
+| "What survives a restart" rule was implicit; the next restart would have repeated the swirl | "Shell is throwaway; artifacts are forever" section added to `template/CLAUDE.md` enumerating evidence vs scaffolding directories |
+| Methodology evolved under three live consumer sessions at the same time, producing the drift | "Methodology freeze during consumer migration" rule added to `template/CLAUDE.md`: methodology repo and consumer sessions advance sequentially, not in parallel |
+
+Non-learnings explicitly excluded from this round (kept in their respective project repos, not promoted to methodology): personal-software / harness positioning, buy-vs-build threshold thesis, port registry as a "concurrent comparison" feature. Positioning is project-specific; methodology is general-purpose. Conflating them is how Blueprint stops being reusable.
+
 When you hit an agent failure that isn't covered by an existing reviewer / invariant / sensor / doc, the question is not "how do I prompt around this." The question is "what capability is missing, and how do I encode it." Source: OpenAI's harness engineering practice (Ryan Lopopolo, Feb 11, 2026); adopted into Blueprint per the v2 patch.
 
 ## Variant Selection
@@ -61,7 +76,7 @@ export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
 
 **Per-initiative profile override**: always pass `--profile-name <initiative-slug>-blueprint`. Default profile name = cwd basename = `blueprint`, which collides across initiatives.
 
-**Per-worktree bootability**: `serve.sh` at the initiative root claims a port (Rally HQ = 8765, website-nc-v3 = 8766, blog = 8767; future initiatives claim the next port up so all can run concurrently).
+**Per-worktree bootability**: each initiative claims a free port via `serve.sh` at the initiative root. Port assignments do not survive Tier 1 promotion — at Tier 1 the Astro dev server picks its own port. The "static-HTML on a known port" shape is a Tier 0 / Pattern B convenience, not a methodology invariant. Concurrent comparison of two Tier 0 surfaces on adjacent ports is a coincidence, not a feature.
 
 ### Escalate to Chrome DevTools MCP only when
 

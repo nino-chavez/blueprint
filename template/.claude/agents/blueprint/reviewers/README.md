@@ -11,10 +11,18 @@ Canonical reference: `wip/blueprint/docs/variant-selection.md`.
 | `research-completeness-reviewer` | Stage 1 → Stage 2 | All |
 | `design-principles-reviewer` | Stage 2 → Stage 3 | Greenfield |
 | `prescription-evidence-reviewer` | Stage 2 → Stage 3 | Midstream, Brownfield |
+| `portal-pattern-a-conformance-reviewer` | Stage 3 completion (Pattern A) **and** any commit touching `apps/portal/` | All initiatives at Tier 1+ on Pattern A |
+| `portal-pattern-b-conformance-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B |
 | `fact-check-loop-reviewer` | Stage 4 convergence orchestrator | All |
 | `doc-quality-auditor` | Stage 5 → Stage 6 | All |
 | `terminology-linter` | Stage 5 → Stage 6 (parallel with doc-quality-auditor) | All |
 | `prototype-smoke-runner` | Stage 6 ship gate | Greenfield, Midstream, Brownfield-if-prototype |
+
+### Pattern selection for the portal-conformance gate
+
+Run exactly one of the two portal-conformance reviewers per initiative — whichever matches the pattern declared in `blueprint.yml` (or inferred from the directory layout: `apps/portal/` ⇒ Pattern A, `portal/` or `blueprint/portal/` ⇒ Pattern B). Running both is a configuration error; running neither at Stage 3 on a Tier 1+ initiative is a methodology violation (the failure mode is the v1-with-deliberation-shape, 11-variants-walking portal the blog session shipped pre-2026-05-25).
+
+The "any portal-touching commit" trigger applies to midstream and brownfield variants — those variants can edit a portal anywhere along the pipeline, not just at Stage 3. Greenfield gets the gate at Stage 3 completion only (no portal exists earlier).
 
 ## Behavior model
 
@@ -34,4 +42,4 @@ Reviewers run inside a single orchestrator agent (`fact-check-loop-reviewer` orc
 
 ## Origin
 
-Promoted from the v2 patch Increment 2 deferred set (`METHODOLOGY-v2-harness-engineering-patch.md` §"Open questions to resolve before increment 2"). The v3 variant taxonomy provided the missing per-variant gating that made the reviewer set codifiable.
+Promoted from the v2 patch Increment 2 deferred set (archived; see `docs/_archive/handoffs/METHODOLOGY-v2-harness-engineering-patch.md` for the original §"Open questions to resolve before increment 2"). The v3 variant taxonomy provided the missing per-variant gating that made the reviewer set codifiable; its current home is `docs/variant-selection.md`.

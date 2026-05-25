@@ -2,6 +2,34 @@
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment. This file is a **map**, not a manual — pointers to canonical docs, not inlined content. See `blueprint.yml` for project configuration.
 
+## Operating invariants (read before any methodology-shaped work)
+
+These two rules govern the relationship between an initiative's repo and the Blueprint methodology repo. Both are encoded responses to drift modes observed on 2026-05-25.
+
+### 1. Shell is throwaway; artifacts are forever
+
+A Blueprint initiative grows two kinds of directories. They have different durability rules.
+
+| Kind | Directories | Survival rule |
+|---|---|---|
+| **Evidence** (preserve) | `research/`, `decisions/`, `content/`, `docs/`, `blueprint.yml`, any committed `*.md` capturing rationale | Never delete without explicit "yes, that file" approval. These are the artifacts the methodology exists to produce. |
+| **Scaffolding** (throwaway) | `prototype/`, `portal/`, `apps/portal/`, `serve.sh`, `_meta/`, `.smoke-screenshots/`, generated assets | Safe to `rm -rf` when the initiative pivots or restarts. Regenerate from the template via `template/tools/blueprint-init.*`. |
+
+When an initiative loses trust mid-stream and the operator wants to restart from a clean shell: walk the evidence column first, confirm each item is committed, then the scaffolding column is free to delete. The reason this rule needs to be stated explicitly: on 2026-05-25 a restart-mid-session conversation almost lost research artifacts because the boundary between "the messed-up portal" and "the work that produced it" wasn't named. Without this list, the next restart repeats the mistake.
+
+### 2. Methodology freeze during consumer migration
+
+`wip/blueprint/template/` (the methodology source) and any consumer initiative using it cannot evolve in parallel. The drift mode this prevents was the 2026-05-25 four-way root-doc divergence: methodology was being edited under three live consumer sessions simultaneously, and each session produced a different "what is Blueprint" answer.
+
+**The rule, in two directions:**
+
+- While `wip/blueprint/template/` is being edited (methodology change in flight), **no consumer Blueprint session opens.** Consumer sessions paused until the methodology change lands.
+- While a consumer initiative is migrating (picking up a methodology update), **no template edits land.** Template changes paused until the consumer migration completes.
+
+Sequenced, not parallel. The methodology repo holds one "live consumer" lock at a time. A second concurrent consumer is fine when the methodology is stable; a second concurrent consumer during methodology edits is forbidden.
+
+Operator check before starting a Blueprint-touching session: `git -C ~/Workspace/dev/wip/blueprint status` and any in-flight consumer worktree should both be clean of methodology edits, or one of them is paused.
+
 ## Variant declaration (read this first)
 
 Every initiative declares a variant in `blueprint.yml`:
@@ -73,9 +101,13 @@ Variant-aware gates that block premature stage completion. Full roster + behavio
 | Stage 1 → 2 | `research-completeness-reviewer` |
 | Stage 2 → 3 (greenfield) | `design-principles-reviewer` |
 | Stage 2 → 3 (midstream / brownfield) | `prescription-evidence-reviewer` |
+| Stage 3 completion (Pattern A) + any `apps/portal/` commit | `portal-pattern-a-conformance-reviewer` |
+| Stage 3 completion (Pattern B) + any `portal/` or `blueprint/portal/` commit | `portal-pattern-b-conformance-reviewer` |
 | Stage 4 convergence | `fact-check-loop-reviewer` (orchestrator) |
 | Stage 5 → 6 | `doc-quality-auditor` + `terminology-linter` (parallel) |
 | Stage 6 ship | `prototype-smoke-runner` |
+
+Run exactly one of the two portal-conformance reviewers per initiative — pick by pattern (A or B) per `docs/portal-and-tier-ladder.md`.
 
 ## Document voice
 
@@ -89,12 +121,36 @@ Visual rules + architectural invariants: `prototype/DESIGN.md`. Both are checked
 
 Edit `blueprint.yml` for: variant, execution depth, voice modes, prototype settings, research scope, document package, optional-capability flags.
 
+## Scaffolding a new initiative (Pattern A)
+
+Do not copy `template/apps/portal/` by hand. Use the stamper:
+
+```bash
+node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+  --name=<project-slug> \
+  --display-name="<Project Display Name>" \
+  --repo-url=https://github.com/<owner>/<repo> \
+  --tagline="<one-line tagline>" \
+  --variant=greenfield|midstream|brownfield \
+  --tier=0|1|2 \
+  --pattern=A \
+  --target=<absolute path to initiative root>
+```
+
+The stamper substitutes the subs-initiative reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + pattern, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. Pattern B has no stamper yet — copy `template/portal/` and rely on `portal-pattern-b-conformance-reviewer` to catch drift at Stage 3.
+
 ## Session prompts
 
 Reusable prompts for common Blueprint adoption / update scenarios:
 
 - `~/Workspace/dev/wip/blueprint/docs/prompts/add-blueprint-to-project.md` — paste at start of a fresh session in a project taking on Blueprint for the first time
-- `~/Workspace/dev/wip/blueprint/docs/prompts/pick-up-blueprint-updates.md` — paste in a session resuming an existing Blueprint initiative to refresh methodology context (rename, variant taxonomy, reviewer agents, I-5 invariant, strengthened smoke-runner). Includes an optional `SessionStart` hook recipe for auto-injection per initiative.
+- `~/Workspace/dev/wip/blueprint/docs/prompts/pick-up-blueprint-updates.md` — paste in a session resuming an existing Blueprint initiative to refresh methodology context
+
+## SessionStart canonical-context injection (required)
+
+Install `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/` and merge the SessionStart block from `template/.claude/settings.json.example` into `~/.claude/settings.json`. The hook detects Blueprint initiatives (walks up for `blueprint.yml`) and injects `METHODOLOGY.md` + `docs/variant-selection.md` + `docs/portal-and-tier-ladder.md` at the top of every session.
+
+**Why this is mandatory, not optional**: on 2026-05-25, three live consumer sessions reasoned about Blueprint shape from first principles instead of reading the canonical docs, then disagreed about what Blueprint is. Failing to encode this is a direct violation of Blueprint's own first principle (`METHODOLOGY.md` § "First Principle: Agent Struggle Is a Missing Capability") applied to Blueprint itself. The session-prompts paste-snippets above are a fallback for operators who haven't installed the hook; the hook is the encoding.
 
 ## Converter
 
