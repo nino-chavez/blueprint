@@ -279,6 +279,66 @@ A proposed token signals to reviewers that the extraction didn't find this value
 
 ---
 
+## Architectural Invariants
+
+The seven principles above constrain *visual and copy* behavior. The invariants below constrain *structure*. They are enforced mechanically via lints + structural tests. They define *what* must be true, not *how* it's implemented — the agent picks the library.
+
+The reason for separating invariants from visual rules: visual rules guide the prototype-builder agent; invariants prevent the agent from drifting across pages as the prototype scales. Both are checked at Stage 4 (Fact-Check) by the reviewer agents.
+
+### I-1. Boundary Parsing Required
+
+Every external input is parsed at the boundary. That includes:
+- URL params (`new URLSearchParams(window.location.search)`)
+- `postMessage` payloads
+- `fetch` responses (typed at the call site)
+- `localStorage` reads (the stored shape may be stale)
+- Pages Function (`functions/`) request bodies
+
+Choice of parser is unconstrained — Zod, Valibot, hand-rolled type guards, or framework-native (e.g., SvelteKit's `loadEvent.params`) all qualify. The constraint is that no untrusted value flows into application logic without a parse step.
+
+**Why this matters:** prototypes degrade into "looks fine, crashes on the malformed URL the VP shared" without boundary parsing. The fix is per-call-site cheap; the absence costs a stakeholder demo.
+
+### I-2. Pages Declare Their Own Metadata
+
+Every page-level HTML declares a single source-of-truth identifier:
+
+```html
+<script>window.PROTO_PAGE = { id: 'tournament-detail' };</script>
+```
+
+Everything else — title, group, surface, phase, summary, strategy citations, current-state crops — flows from `_meta/<page-id>.json` (portal shell) or `prototypes/<slice>/prototype.config.json` (prototype shell).
+
+**No inline strategy content in page HTML.** The page HTML is structure + the id; the metadata file is content. This makes meta updates a single-file edit rather than a hunt across N pages.
+
+### I-3. Cross-Cutting Concerns Through a Single Providers Interface
+
+Analytics, feature flags, auth state, telemetry, AI-chat config — all flow through one `Providers` interface (object, module, or React context, depending on shell). Pages do not reach for `window.gtag` directly, do not read flags from `localStorage` ad-hoc, do not import auth helpers per-page.
+
+**Why this matters:** when the analytics provider switches, the auth model changes, or feature flags get added, one file changes — not N pages. The invariant is structural even if the prototype currently has zero cross-cutting concerns; adding the first one without the interface produces the per-page tax that compounds.
+
+### I-4. One Primary CTA Per Page (Structural)
+
+Visual rule 4 says one primary CTA per page (filled button, `{colors.primary}`). The structural form: every primary CTA carries `[data-primary-cta]`, and a lint enforces `count([data-primary-cta]) === 1` per page.
+
+**Why promote visual to structural:** the visual rule depends on the prototype-builder agent's judgment about "primary." The structural rule depends on attribute presence. The agent that built the page may have judged correctly; the agent making a later edit may not. The lint catches the second case automatically.
+
+### Lint Errors as Remediation Prompts
+
+When a custom lint (`design-md lint`, `[data-primary-cta]` enforcement, token discipline, terminology-linter) fires, its error message must include the *fix*, not just the violation. The cost is one extra sentence per lint rule; the multiplier is every CI run that becomes self-healing because the agent that reads the error is the agent that will write the patch.
+
+Example:
+
+```diff
+- "Page has 2 primary CTAs"
++ "Page has 2 primary CTAs. Blueprint enforces one. Remove the [data-primary-cta]
++  attribute from the secondary action and re-style as a tertiary link. See
++  DESIGN.md §I-4 + visual rule 4."
+```
+
+This applies to every custom lint shipped with the prototype shell.
+
+---
+
 ## When Targeting BC B2B Edition
 
 Apply this section if `blueprint.yml` has `b2b_edition.enabled: true`. Otherwise delete during initiative customization.
