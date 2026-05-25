@@ -27,9 +27,7 @@ ls apps/portal/
 
 If `apps/portal/` does not exist, the initiative has not graduated to Tier 1. BLOCK with note "no apps/portal/ — initiative is still at Tier 0 or has misnamed the portal directory."
 
-If both `apps/portal/` and `blueprint/portal/` (or `blueprint/prototype/portal/`) exist as **active** surfaces, BLOCK with note "two portal surfaces present — graduate fully or archive the legacy v1 shell to `_archive/`."
-
-The exception: `template/_archive/portal-v1-static/` is permitted (it's the historical reference, not an active surface).
+If both `apps/portal/` (Pattern A) and `portal/` (or `blueprint/portal/`, Pattern B) exist as **active** surfaces in the same initiative, BLOCK with note "two portal patterns present — pick one per `docs/portal-and-tier-ladder.md`, or write an ADR justifying coexistence (rare; only when the initiative genuinely needs both a platform-portal and a redesign-review portal)."
 
 ### 2. Verify the six canonical routes exist
 
@@ -165,6 +163,7 @@ Drift caught here is a one-commit fix. Drift caught after deploy is a stakeholde
 ## Cross-references
 
 - Contract: [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md)
-- De-bcization handoff: [`template/apps/portal/HANDOFF-DEBCIZATION.md`](../../../../apps/portal/HANDOFF-DEBCIZATION.md)
+- Scaffolder: [`template/tools/blueprint-init/`](../../../../tools/blueprint-init/) — use `stamp.mjs` to scaffold a Pattern A portal mechanically rather than copying `template/apps/portal/` by hand
+- Pattern B counterpart: [`portal-pattern-b-conformance-reviewer.md`](./portal-pattern-b-conformance-reviewer.md)
 - Canonical Tier 2 reference: `bc-subscriptions` (`apps/portal/`, `packages/ui/`, `packages/design-tokens/`)
-- v1 archive: [`template/_archive/portal-v1-static/`](../../../../_archive/portal-v1-static/)
+- Historical context: [`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../../../docs/_archive/handoffs/HANDOFF-debcization.md) — superseded by the stamper; archived for the audit trail
