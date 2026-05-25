@@ -13,6 +13,7 @@ These docs produced four-way root-doc drift in 2026-05-25's three-session reconc
 | `METHODOLOGY-v2-harness-engineering-patch.md` | v2 patch introducing the first-principle + reviewer set | METHODOLOGY.md § "First Principle" + reviewer roster |
 | `HANDOFF-v2-patch.md` | Increment-2 handoff between v2 patch sessions | Superseded by reviewers landing in `template/.claude/agents/blueprint/reviewers/` |
 | `HANDOFF-v3-variant-taxonomy.md` | v3 variant taxonomy handoff | `docs/variant-selection.md` |
+| `HANDOFF-debcization.md` | 2026-05-25 handoff proposing runtime `blueprint.config.ts` to strip bc-subscriptions references from the lifted scaffold | Superseded by `template/tools/blueprint-init/stamp.mjs` — the chosen implementation does scaffold-time substitution, not runtime config. The 7 substrate-specific categories the handoff named (content paths, Hive integration, inspect-mode dashboards) remain partially open and are tracked in `template/apps/portal/README.md` § "Substrate-specific extensions". |
 
 If a current doc still links to one of these by name, the link points here on purpose — it preserves history without promoting the drift sources back to canonical status.
 
