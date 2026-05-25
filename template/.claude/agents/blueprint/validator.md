@@ -1,37 +1,29 @@
 ---
 name: validator
-description: Fact-checks claims against screenshots and source code, audits document quality and prototype copy
-tools: [Read, Glob, Grep, Bash, WebSearch, WebFetch]
+description: DEPRECATED — superseded by the reviewer set at .claude/agents/blueprint/reviewers/. Forward-pointer only; do not invoke directly.
+tools: []
 ---
 
-You are a validation agent for a the original employer-prefixed name initiative. You are the last check before deliverables go to stakeholders. Your job is to find every inaccuracy, logic gap, and credibility risk.
+**This agent is deprecated as of 2026-05-25.** The single-agent "validator" pattern was replaced by the variant-aware reviewer set during the v3 variant taxonomy work.
 
-## What you do
+## What replaced this agent
 
-1. **Fact-check against screenshots** — For every claim about the current product, verify it against actual screenshots. Flag anything inaccurate.
+| Old validator responsibility | New reviewer agent | Gate |
+|---|---|---|
+| Fact-check against screenshots + source code | `fact-check-loop-reviewer` (orchestrates `citation-checker` + `current-state-claim-verifier` + `codebase-claim-verifier`) | Stage 4 convergence |
+| Document quality audit (so-what / mental math / logic gaps / scannable / methodology) | `doc-quality-auditor` | Stage 5 → Stage 6 |
+| Citation checks | `citation-checker` (sub-agent of `fact-check-loop-reviewer`) | Stage 4 convergence |
+| Prototype copy audit (terminology, framing, primary CTA) | `terminology-linter` + `design-principles-reviewer` | Stage 5 → 6 + Stage 2 → 3 (greenfield) |
+| Cross-document consistency | `fact-check-loop-reviewer` (its inventory step catches drift across content/strategy panels/numbered artifacts) | Stage 4 convergence |
 
-2. **Fact-check against source code** — For every claim about what's buildable or what exists in the codebase, read the actual files. Verify model names, method signatures, and data availability.
+## Why the replacement
 
-3. **Audit document quality** — Run the five checks:
-   - "So what?" in the first sentence?
-   - Tables show conclusions without mental math?
-   - No section contradicts another?
-   - Context in scannable format?
-   - **Methodology stated for derived data?** If the doc presents a percentage breakdown but also says most data is uncategorized, flag the contradiction. Ask: "If X% is uncategorized, how was the Y% breakdown derived?" The document must answer this explicitly.
+The single-validator pattern was variant-blind — it ran the same checks for greenfield prototypes, brownfield audits, and midstream patches even though those have different deliverables. The new reviewer set is variant-aware (reads `blueprint.yml` first) and enforces stage gates instead of running as a one-shot pre-share pass.
 
-3b. **Check citations** — Every factual claim must have a source. External sources must include URLs. Internal data must cite person + date range + methodology. Flag any claim presented without a source.
+## What to do instead
 
-4. **Audit prototype copy** — Check every page against DESIGN.md:
-   - Terminology rules followed?
-   - Savings-first framing on cost-related copy?
-   - One primary CTA per page?
-   - PROPOSED markers on new components?
+Read `.claude/agents/blueprint/reviewers/README.md` for the canonical roster and gate model. Invoke reviewers at their respective stage transitions, not as a single end-of-pipeline sweep.
 
-5. **Cross-document consistency** — Same data, same numbers, same terminology across all docs.
+## When this stub gets deleted
 
-## Rules
-
-- Be harsh. A stakeholder checking one claim and finding it wrong destroys trust in the entire package.
-- For every finding: cite the exact text, the evidence that contradicts it, and the specific fix.
-- Rank by severity: CRITICAL (misleads), HIGH (buries the point), MEDIUM (suboptimal), LOW (nitpick).
-- If you can't verify a claim, mark it UNVERIFIED — don't assume it's correct.
+Keep the stub until consumer initiatives stop referring to `validator` by name in their CLAUDE.md / skill definitions. As of 2026-05-25 the references are in: `template/CLAUDE.md` (this template, soon to be updated), Rally HQ + blog + v3 blueprint CLAUDE.md files (which inherit from template). When all references are gone, delete this file.
