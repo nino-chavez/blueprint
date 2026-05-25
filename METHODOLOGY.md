@@ -30,25 +30,9 @@ When you hit an agent failure that isn't covered by an existing reviewer / invar
 
 ## Variant Selection
 
-BigBlueprint serves three project lifecycles: **greenfield** (new product), **midstream** (active in-flight work), and **brownfield** (mature product, audit-first). Each has its own stage sequence and reviewer gates. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
+BigBlueprint serves three project lifecycles — **greenfield** / **midstream** / **brownfield** — each with its own stage sequence and reviewer gates. The pipeline described in the rest of this document is the **greenfield variant**; midstream and brownfield diverge per the canonical taxonomy at [docs/variant-selection.md](docs/variant-selection.md).
 
-The canonical reference is [docs/variant-selection.md](docs/variant-selection.md), which contains the pattern-match decision tree, per-variant stage shapes, required sub-deliverables, and reviewer-agent gate mapping.
-
-| Variant | Center of gravity | Reference impl |
-|---|---|---|
-| Greenfield (build) | Prototype as central deliverable | This methodology document |
-| Midstream (hybrid) | Targeted diagnose + revision prototype | `apps/rally-hq/blueprint/` (migration in progress) |
-| Brownfield (audit) | Diagnose + prescription as deliverables | `apps/website-nc-v3/blueprint/`, `apps/blog/blueprint/` |
-
-The pipeline described in the rest of this document is the **greenfield variant**. Midstream and brownfield variants share Stage 0 (Application Legibility) and the cross-cutting disciplines, but their stage sequences diverge — see the variant-selection doc for full definitions.
-
-Declare the variant at `blueprint.yml`:
-
-```yaml
-variant: greenfield   # or: midstream | brownfield
-```
-
-Initiatives without an explicit declaration default to `greenfield` to preserve today's behavior.
+Declare at `blueprint.yml`: `variant: greenfield | midstream | brownfield`. Default is `greenfield`. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
 
 ## The Pipeline (greenfield variant)
 
