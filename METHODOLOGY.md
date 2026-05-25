@@ -13,6 +13,21 @@ The methodology integrates three existing tools:
 
 Extracted from the BigCommerce Pricing & Packaging CX initiative (March 2026), where it produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility validated against a production Rails codebase, and an embedded AI billing support agent.
 
+## First Principle: Agent Struggle Is a Missing Capability
+
+When the agent fails at a stage, the response is *never* "try harder" or "prompt better." The response is:
+
+1. **Identify what's missing** — tool, guardrail, doc, sensor, invariant, reviewer agent
+2. **Encode it into the repo** — lint, doc, skill, agent definition, stage gate
+3. **Have the agent itself write the encoding** — the failure produces durable infrastructure
+4. **Re-run the stage** — now the capability exists for every future initiative too
+
+The alternative — patching prompts session-by-session — produces zero compounding leverage. Every encoded capability multiplies across every future initiative.
+
+This principle is the reason the methodology accumulates: Stage 0 (browser sensor) was an encoded response to "the agent can't see the running app." Reviewer agents (`template/.claude/agents/blueprint/reviewers/`) were an encoded response to "the agent declares stages complete with sub-deliverables empty." The variant taxonomy was an encoded response to "the agent retrofits brownfield work into greenfield pipelines." None of these are prompt fixes; all are repo-level encodings.
+
+When you hit an agent failure that isn't covered by an existing reviewer / invariant / sensor / doc, the question is not "how do I prompt around this." The question is "what capability is missing, and how do I encode it." Source: OpenAI's harness engineering practice (Ryan Lopopolo, Feb 11, 2026); adopted into Blueprint per the v2 patch.
+
 ## Variant Selection
 
 BigBlueprint serves three project lifecycles: **greenfield** (new product), **midstream** (active in-flight work), and **brownfield** (mature product, audit-first). Each has its own stage sequence and reviewer gates. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
