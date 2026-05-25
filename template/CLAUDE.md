@@ -18,13 +18,49 @@ If your initiative has any of these enabled, follow the linked guidance:
 ## Pipeline
 
 ```
-/blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy
-                                                                                            │
-                                                                                            ▼
-                                                                                  /blueprint-triage  (after stakeholder feedback)
+[Stage 0: Application Legibility] → /blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy
+                                                                                                                                │
+                                                                                                                                ▼
+                                                                                                                      /blueprint-triage  (after stakeholder feedback)
 ```
 
 Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents defined in `.claude/agents/blueprint/`.
+
+## Stage 0: Application Legibility (browser sensor)
+
+Before any prototype work, the agent must be able to drive the running app to validate its own changes. Wired once per initiative.
+
+**Default sensor: `browse-tool`** — cheap, on-demand, ~few hundred tokens of schema vs Chrome DevTools MCP's ~18k always-loaded. The four primitives below cover the entire stakeholder-prototype validation surface.
+
+| Command | Use |
+|---|---|
+| `browse-start` | Boot Chrome with persistent profile (auto-named by cwd basename — `rally-hq` initiative gets `~/.browse-tool/profiles/rally-hq`) |
+| `browse-nav <url>` | Navigate active tab; `--wait` for `networkidle2` |
+| `browse-eval '<js>'` | Run JS in page; returns JSON-serialized result. Use for DOM queries, fetch calls, computed state |
+| `browse-screenshot --out path.png` | Capture viewport or `--full` page |
+| `browse-pick` | Interactive element picker when a human needs to point at a selector |
+
+**Install** (once per initiative):
+
+```bash
+export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
+# In Claude Code: /add-dir /Users/nino/Workspace/dev/tools/browse-tool
+```
+
+Full reference: `~/Workspace/dev/wip/big-blueprint/docs/browser-legibility.md`
+
+### Escalate to Chrome DevTools MCP only when
+
+The task description contains one of these triggers — otherwise MCP schemas do not load:
+
+| Trigger | Reason MCP is required |
+|---|---|
+| "capture network requests" / "watch XHR" | `browse-eval` can call `fetch` but cannot intercept ambient traffic |
+| "stream console errors" / "log capture" | `eval` reads page state, doesn't subscribe to console events |
+| "lighthouse audit" / "perf trace" | MCP wraps the CDP performance domain directly |
+| "accessibility tree" / "ARIA snapshot" | MCP exposes the a11y tree; DOM-only eval misses computed ARIA |
+
+The default is browse-tool because the token economics matter — Blueprint initiatives already push context budget with their docs/ tree, and 18k of unused MCP schema crowds out the design docs the agent actually needs.
 
 ## Skills
 
@@ -44,7 +80,28 @@ Each stage has a skill definition in `.claude/skills/blueprint/` and uses agents
 | `researcher` | Codebase exploration, screenshot analysis, web research, market benchmarks |
 | `prototype-builder` | HTML/CSS pages matching existing product, strategy/current-state panel config |
 | `doc-writer` | Strategic documents in internal-strategy voice with quality audit |
-| `validator` | Fact-checking, quality audit, cross-document consistency |
+| `validator` | Fact-checking, quality audit, cross-document consistency (legacy single-agent equivalent) |
+
+### Reviewer agents (stage gates)
+
+Variant-aware gates that block premature stage completion. Full roster + behavior in `.claude/agents/blueprint/reviewers/README.md`. Canonical variant taxonomy: `~/Workspace/dev/wip/big-blueprint/docs/variant-selection.md`.
+
+| Gate | Reviewer | Variants |
+|---|---|---|
+| Stage 1 → Stage 2 | `research-completeness-reviewer` | All |
+| Stage 2 → Stage 3 | `design-principles-reviewer` | Greenfield |
+| Stage 2 → Stage 3 | `prescription-evidence-reviewer` | Midstream, Brownfield |
+| Stage 4 convergence | `fact-check-loop-reviewer` (orchestrator) | All |
+| Stage 5 → Stage 6 | `doc-quality-auditor` + `terminology-linter` (parallel) | All |
+| Stage 6 ship | `prototype-smoke-runner` | Greenfield, Midstream, Brownfield-if-prototype |
+
+Declare the variant in `blueprint.yml`:
+
+```yaml
+variant: greenfield   # or: midstream | brownfield
+```
+
+Initiatives without an explicit variant default to greenfield.
 
 ## Document Voice: Internal Strategy
 
