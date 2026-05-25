@@ -1,6 +1,6 @@
 # /blueprint-validate
 
-Validation phase of a BigBlueprint initiative. Fact-checks claims, audits copy/UX, and verifies feasibility against source code — structured as a diagnosis loop, not a static checklist.
+Validation phase of a Blueprint initiative. Fact-checks claims, audits copy/UX, and verifies feasibility against source code — structured as a diagnosis loop, not a static checklist.
 
 ## When to use
 
@@ -18,7 +18,7 @@ A blueprint with three "inaccurate cost figures" and two "wrong terminology refe
 
 Before the diagnose loop kicks in, run the mechanical checks. These are pass/fail, not judgment calls — they catch the class of regressions that don't need root-cause analysis. Failures here block validation; fix and re-run before continuing to Phase 1.
 
-These gates enforce the **15-dimension contract** from `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md`.
+These gates enforce the **15-dimension contract** from `~/Workspace/dev/wip/blueprint/docs/design-system-audit.md`.
 
 | Gate | Command | Pass criterion |
 |---|---|---|
@@ -71,7 +71,7 @@ Do not move to hypothesise until you've reproduced and tagged every failure.
 
 For each cluster of related failures, generate 2-3 ranked hypotheses. **Do not single-fix without checking for patterns.**
 
-Common cluster shapes in BigBlueprint validation:
+Common cluster shapes in Blueprint validation:
 
 | Pattern | Hypothesis | Prediction |
 |---|---|---|
@@ -141,4 +141,4 @@ Severity ranking applied to remaining issues: **CRITICAL** / **HIGH** / **MEDIUM
 
 ## Lineage
 
-Phase structure adapted from [matt-pocock/skills `diagnose`](https://github.com/mattpocock/skills) (MIT). The original BigBlueprint validate checklist's content is preserved in the loop construction (Phase 1) and severity ranking; the diagnostic structure is the addition.
+Phase structure adapted from [matt-pocock/skills `diagnose`](https://github.com/mattpocock/skills) (MIT). The original Blueprint validate checklist's content is preserved in the loop construction (Phase 1) and severity ranking; the diagnostic structure is the addition.

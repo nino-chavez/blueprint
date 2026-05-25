@@ -8,7 +8,7 @@
 
 **Source:** `bc-subscriptions` — see [`docs/methodology/archaeology-substrate-design.md`](https://github.com/nino-chavez/bc-subscriptions/blob/dev/docs/methodology/archaeology-substrate-design.md) for the full design, [`tools/archaeology/`](https://github.com/nino-chavez/bc-subscriptions/tree/dev/tools/archaeology) for the working implementation, and [`docs/runbooks/archaeology-hydration.md`](https://github.com/nino-chavez/bc-subscriptions/blob/dev/docs/runbooks/archaeology-hydration.md) for the provisioning runbook.
 
-**Template:** [`big-blueprint/template/tools/archaeology/`](../template/tools/archaeology/) — drop-in scaffold with `scaffold.sh` for one-command bootstrap.
+**Template:** [`blueprint/template/tools/archaeology/`](../template/tools/archaeology/) — drop-in scaffold with `scaffold.sh` for one-command bootstrap.
 
 **Related patterns:**
 - [`hive-coordination-pattern.md`](hive-coordination-pattern.md) — Hive is one of the six source streams the substrate ingests
@@ -232,7 +232,7 @@ Use #1 when latency matters (sessions disappear from disk if you don't capture t
 
 ### What ships pre-wired in the template
 
-[`big-blueprint/template/tools/archaeology/`](../template/tools/archaeology/) ships with two tail wires already configured:
+[`blueprint/template/tools/archaeology/`](../template/tools/archaeology/) ships with two tail wires already configured:
 
 - **Sessions** — `template/.claude/hooks/archaeology-session-end.py` (copied to `~/.claude/hooks/` by `scaffold.sh`)
 - **Track 1-3 docs** — `template/.github/workflows/archaeology-tail-docs.yml`

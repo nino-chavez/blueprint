@@ -1,6 +1,6 @@
 # BigCommerce Marketplace App Context
 
-**Purpose:** Captures everything known about how a BC marketplace app renders within the merchant control panel and dev portal — so future BigBlueprint initiatives targeting BC apps don't have to re-discover this through screenshots and trial.
+**Purpose:** Captures everything known about how a BC marketplace app renders within the merchant control panel and dev portal — so future Blueprint initiatives targeting BC apps don't have to re-discover this through screenshots and trial.
 
 **Last updated:** 2026-04-21
 
@@ -73,7 +73,7 @@ When a merchant clicks an installed app from the left nav, BC loads the app insi
 - Content area starts immediately below BC's top header bar
 - Width: fills the area to the right of left nav, edge to edge
 
-**Implication for BigBlueprint prototypes:** Slices that render `<Page>` chrome are visually identical to what they'd look like in production. No "BC chrome wrapper" required for design fidelity. If stakeholder demos need to feel "in context," an optional `BCChromeWrapper` mock can be added — polish, not necessity.
+**Implication for Blueprint prototypes:** Slices that render `<Page>` chrome are visually identical to what they'd look like in production. No "BC chrome wrapper" required for design fidelity. If stakeholder demos need to feel "in context," an optional `BCChromeWrapper` mock can be added — polish, not necessity.
 
 ---
 
@@ -108,7 +108,7 @@ URL: `/manage/app/{appId}` (post-install state, served as iframe content)
 
 After Confirm, BC POSTs OAuth credentials to the app's `/api/auth` callback, then redirects the merchant to `/api/load` with a `signed_payload_jwt`. The app verifies the JWT, mints a session, and renders its first-run welcome surface. **This is the first surface the app owns.**
 
-**Implication for BigBlueprint prototype slices:** "Install" or "onboarding" slices should model surfaces 5.3 onward — the post-install welcome / setup wizard. Surfaces 5.1 and 5.2 are BC-owned reference material, not designable. Document them in the strategy panel rather than prototyping them.
+**Implication for Blueprint prototype slices:** "Install" or "onboarding" slices should model surfaces 5.3 onward — the post-install welcome / setup wizard. Surfaces 5.1 and 5.2 are BC-owned reference material, not designable. Document them in the strategy panel rather than prototyping them.
 
 ---
 
@@ -263,7 +263,7 @@ One reference screenshot has not been captured:
 
 ---
 
-## 13. What Future BigBlueprint Initiatives Don't Need to Re-Discover
+## 13. What Future Blueprint Initiatives Don't Need to Re-Discover
 
 - ✅ Where the app lives in BC nav
 - ✅ URL patterns for merchant + dev portal surfaces
@@ -280,9 +280,9 @@ If a future session adds new findings (e.g., the App Extension PANEL screenshot)
 
 ---
 
-## Relationship to BigBlueprint Methodology
+## Relationship to Blueprint Methodology
 
-This doc fits Stage 1 (Research → existing-product analysis) of the BigBlueprint pipeline (`METHODOLOGY.md` §3.1). When an initiative targets a BC marketplace app, this doc is the existing-product baseline — initiatives can reference it as the "current state" of BC's app-host environment without re-running the discovery.
+This doc fits Stage 1 (Research → existing-product analysis) of the Blueprint pipeline (`METHODOLOGY.md` §3.1). When an initiative targets a BC marketplace app, this doc is the existing-product baseline — initiatives can reference it as the "current state" of BC's app-host environment without re-running the discovery.
 
 For new BC-targeted initiatives, copy this file into the initiative's `research/current-state/` directory as a starting point, then layer initiative-specific findings on top.
 

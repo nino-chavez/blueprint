@@ -4,7 +4,7 @@
 
 On March 13, 2026, a product strategist at BigCommerce opened a terminal and pasted a plan. The plan described two parallel workstreams for a Pricing & Packaging initiative: strategic documents for leadership alignment, and an agentic billing support prototype. The instruction was: "Implement the following plan."
 
-What happened over the next 48 hours produced: 11 interactive prototype pages deployed to Vercel, an AI billing support agent with 8 tools and 6 mock merchant personas, 4 strategic documents validated against the production codebase, cross-industry research covering 14 platforms with 30+ cited sources, a design system extracted from screenshots of the existing product, and a reusable methodology (BigBlueprint) that was A/B tested against its own origin project.
+What happened over the next 48 hours produced: 11 interactive prototype pages deployed to Vercel, an AI billing support agent with 8 tools and 6 mock merchant personas, 4 strategic documents validated against the production codebase, cross-industry research covering 14 platforms with 30+ cited sources, a design system extracted from screenshots of the existing product, and a reusable methodology (Blueprint) that was A/B tested against its own origin project.
 
 The human didn't write a single line of code, a single word of document copy, or a single design spec. Every artifact was produced by Claude, directed through prompts.
 
@@ -96,7 +96,7 @@ The methodology answer (Jayna classified email subjects using Claude, not from S
 
 Everything above happened once. The question became: can it happen again for a different initiative?
 
-BigBlueprint extracted the methodology into a reusable jig:
+Blueprint extracted the methodology into a reusable jig:
 - Template with configurable CSS, JS components, and CLAUDE.md
 - 5 skills (slash commands for each pipeline stage)
 - 4 agent definitions (researcher, prototype-builder, doc-writer, validator)
@@ -105,7 +105,7 @@ BigBlueprint extracted the methodology into a reusable jig:
 
 ### Hour 24-30: The A/B Test
 
-The test: start a new project from the BigBlueprint template, point it at the same inputs, and see if it produces comparable output without human feedback loops.
+The test: start a new project from the Blueprint template, point it at the same inputs, and see if it produces comparable output without human feedback loops.
 
 **Result: 70-80% quality in 10-15x less time.**
 
@@ -147,7 +147,7 @@ Two more fixes were found in the prototype and doc stages:
 
 9. **The four-check audit catches real issues.** "So what?" placement, mental math, logic gaps, and scannable format — these four checks found the same problems that iterative human review found, but in one pass instead of three.
 
-10. **Composable tools beat monolithic platforms.** BigBlueprint works standalone. Signal Forge adds content generation. Specchain adds implementation specs. Each can be added or removed without breaking the others.
+10. **Composable tools beat monolithic platforms.** Blueprint works standalone. Signal Forge adds content generation. Specchain adds implementation specs. Each can be added or removed without breaking the others.
 
 ---
 
@@ -155,7 +155,7 @@ Two more fixes were found in the prototype and doc stages:
 
 I didn't write a word of this.
 
-Not the 11 prototype pages. Not the 4 strategic documents. Not the cross-industry research with 30+ citations. Not the codebase validation against fat-controller. Not the design system documentation. Not the terminology rules. Not the BigBlueprint methodology. Not the A/B test. Not this retrospective.
+Not the 11 prototype pages. Not the 4 strategic documents. Not the cross-industry research with 30+ citations. Not the codebase validation against fat-controller. Not the design system documentation. Not the terminology rules. Not the Blueprint methodology. Not the A/B test. Not this retrospective.
 
 I also didn't write a line of code. Not the AI billing agent with 8 tools. Not the strategy panel JavaScript. Not the current-state comparison drawer. Not the footer navigation. Not the Vercel serverless function. Not the md-to-docs converter. Not the chat widget. Not the CSS design system.
 
@@ -191,10 +191,10 @@ What can't be validated is the *reasoning path* — why this framing instead of 
 
 This is the trust challenge for agent-assisted product work. The outputs are verifiable. The inputs (prompts) are documented. But the connection between them — the chain of reasoning that turned "implement this plan" into a deployed prototype with validated strategic documents — is a black box to anyone who wasn't in the session.
 
-BigBlueprint's strategy panels, current-state drawers, and design principles documentation are an attempt to make the reasoning visible after the fact. The A/B test is an attempt to make the methodology reproducible. The document quality audit is an attempt to make the outputs trustworthy regardless of how they were produced.
+Blueprint's strategy panels, current-state drawers, and design principles documentation are an attempt to make the reasoning visible after the fact. The A/B test is an attempt to make the methodology reproducible. The document quality audit is an attempt to make the outputs trustworthy regardless of how they were produced.
 
 But the fundamental question remains: when the work and the thinking are buried in prompt sessions in a terminal, what does "showing your work" mean?
 
-We don't have a complete answer. But we have a starting point: make the methodology explicit (BigBlueprint), make the design decisions visible (strategy panels), make the claims verifiable (citations + codebase validation), and make the process reproducible (A/B tested template).
+We don't have a complete answer. But we have a starting point: make the methodology explicit (Blueprint), make the design decisions visible (strategy panels), make the claims verifiable (citations + codebase validation), and make the process reproducible (A/B tested template).
 
 Trust the outputs by validating them. Trust the process by testing it. And trust the human by recognizing that their contribution — the prompts, the judgment, the "what about X?" moments — is what separates a useful product initiative from a well-structured pile of generated text.

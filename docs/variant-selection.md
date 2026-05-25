@@ -2,7 +2,7 @@
 
 **Canonical reference for picking the right blueprint variant at project init.**
 
-BigBlueprint serves three distinct project lifecycles. Each has its own stage sequence, deliverables, and reviewer-agent gates. Pick the variant *before* the first stage runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
+Blueprint serves three distinct project lifecycles. Each has its own stage sequence, deliverables, and reviewer-agent gates. Pick the variant *before* the first stage runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
 
 | Variant | When the product is… | Center of gravity | Canonical artifact set |
 |---|---|---|---|
@@ -165,10 +165,10 @@ The blog blueprint's existing `variant: "diagnose-prescription-brief"` is the sa
 
 ## Cross-references
 
-- Canonical methodology: `wip/big-blueprint/METHODOLOGY.md` (build-variant inherits from this verbatim)
-- v2 patch source: `wip/big-blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
-- v3 handoff: `wip/big-blueprint/HANDOFF-v3-variant-taxonomy.md`
-- Stage 0 reference: `wip/big-blueprint/docs/browser-legibility.md`
-- Reviewer agent definitions: `wip/big-blueprint/template/.claude/agents/` (to be populated)
+- Canonical methodology: `wip/blueprint/METHODOLOGY.md` (build-variant inherits from this verbatim)
+- v2 patch source: `wip/blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
+- v3 handoff: `wip/blueprint/HANDOFF-v3-variant-taxonomy.md`
+- Stage 0 reference: `wip/blueprint/docs/browser-legibility.md`
+- Reviewer agent definitions: `wip/blueprint/template/.claude/agents/` (to be populated)
 - Brownfield reference impl: `apps/website-nc-v3/blueprint/` (informal) and `apps/blog/blueprint/` (paused at Stage 1)
 - Midstream reference impl: `apps/rally-hq/blueprint/` (to be migrated from forced-greenfield)

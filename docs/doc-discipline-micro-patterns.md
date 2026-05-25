@@ -52,7 +52,7 @@
 
 **Trigger:** Before shipping a new template file in a template scaffold, classify its primary role using the 6-bucket taxonomy. If two roles fit, split into two template files.
 
-**Worked example:** `bc-subscriptions` STATE.md (added per big-blueprint retrofit) mixed decision register (D-01..D-17, duplicates ADRs) + session state ("Next Steps") + blocker tracking. Filed for retirement in Hive #929 with the rows split: ADR-eligible rows → ADRs; reframe rows → invalidated-paths entries; session state → derived from hive board + `_state.json`. The template version (in big-blueprint) was refactored with tiered guidance so the multi-role failure doesn't propagate to other downstream projects.
+**Worked example:** `bc-subscriptions` STATE.md (added per blueprint retrofit) mixed decision register (D-01..D-17, duplicates ADRs) + session state ("Next Steps") + blocker tracking. Filed for retirement in Hive #929 with the rows split: ADR-eligible rows → ADRs; reframe rows → invalidated-paths entries; session state → derived from hive board + `_state.json`. The template version (in blueprint) was refactored with tiered guidance so the multi-role failure doesn't propagate to other downstream projects.
 
 ---
 

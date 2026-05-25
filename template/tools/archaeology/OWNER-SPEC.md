@@ -11,7 +11,7 @@ convention_version: 1
 
 # Owner-spec: archaeology (template)
 
-> **Template OWNER-SPEC.** When a project is scaffolded from big-blueprint and enables `archaeology.enabled: true`, this OWNER-SPEC is the starting point. Bump `last_attested:` to scaffold-date; customize the project-specific sections (event counts, deployed Worker URL, ingester list) on first hydration.
+> **Template OWNER-SPEC.** When a project is scaffolded from blueprint and enables `archaeology.enabled: true`, this OWNER-SPEC is the starting point. Bump `last_attested:` to scaffold-date; customize the project-specific sections (event counts, deployed Worker URL, ingester list) on first hydration.
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 # Blueprint Portal Conventions
 
-**Version 2 (2026-05-23).** Canonical convention set for big-blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/BigDesign projects, use `template/prototype/` instead.
+**Version 2 (2026-05-23).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/BigDesign projects, use `template/prototype/` instead.
 
 ---
 
@@ -195,7 +195,7 @@ Notes are per-browser. Cross-stakeholder sync is a Phase-2 task — would add a 
 
 Three OWNER-SPEC.md files ship with the shell — `proto-nav.OWNER-SPEC.md`, `proto-annotate.OWNER-SPEC.md`, `functions/api/chat.OWNER-SPEC.md`. They document each tool's purpose, alternatives considered, failure modes seen, coupling, and maintainer playbook. Don't modify them unless you're modifying the underlying tool — the `last_attested` date in the frontmatter is mechanically lint-checked.
 
-For project-specific tools added on top of the shell, follow the same pattern: `tools/<tool-name>/OWNER-SPEC.md` per the upstream big-blueprint `owner-spec-pattern.md`.
+For project-specific tools added on top of the shell, follow the same pattern: `tools/<tool-name>/OWNER-SPEC.md` per the upstream blueprint `owner-spec-pattern.md`.
 
 ---
 

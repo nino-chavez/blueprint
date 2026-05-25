@@ -8,7 +8,7 @@
 
 ## Why this patch exists
 
-The Codex experiment surfaced primitives BigBlueprint either lacks or does manually. The gap that matters: BigBlueprint's agent can produce a deployed prototype but cannot *validate its own work in the browser*, cannot run a closed convergence loop against named reviewers, and cannot encode lint failures as remediation prompts. Stakeholder polish suffers as a result — fact-check and iterate stages stall on human attention.
+The Codex experiment surfaced primitives Blueprint either lacks or does manually. The gap that matters: Blueprint's agent can produce a deployed prototype but cannot *validate its own work in the browser*, cannot run a closed convergence loop against named reviewers, and cannot encode lint failures as remediation prompts. Stakeholder polish suffers as a result — fact-check and iterate stages stall on human attention.
 
 The fix is not to rebuild the pipeline. The fix is to make the existing pipeline's sensors agentic and the existing knowledge base structurally legible.
 
@@ -250,7 +250,7 @@ Reversibility: scoped to new initiatives spawned from the updated template. Exis
 
 ## Open questions to resolve before increment 2
 
-1. **Reviewer agent definitions** — should they live in `~/Workspace/dev/wip/big-blueprint/template/.claude/agents/` (shared) or per-initiative? The shared path lets every initiative benefit from improvements, but per-initiative lets each project tune reviewer thresholds.
+1. **Reviewer agent definitions** — should they live in `~/Workspace/dev/wip/blueprint/template/.claude/agents/` (shared) or per-initiative? The shared path lets every initiative benefit from improvements, but per-initiative lets each project tune reviewer thresholds.
 2. **Convergence loop runtime** — Claude Code's `Agent` tool with `isolation: "worktree"` per reviewer, or a single orchestrator agent that fans out and merges results? The orchestrator is simpler; the worktree-per-reviewer is more honest about isolation.
 3. **Threshold for the prototype-smoke-runner** — block on any `@smoke` failure, or allow up to N flakes per Codex's "follow-up runs over blocking"? Blueprint's audience (VPs clicking a share-link) argues for blocking; Codex's argument was internal devs.
 
@@ -266,4 +266,4 @@ These don't block increment 1. Resolve when increment 2 starts.
 
 ## Origin
 
-Conversation 2026-05-25 reviewing the OpenAI harness engineering post against current BigBlueprint methodology. PDF source: `/Users/nino/Downloads/Harness engineering_ leveraging Codex in an agent-first world _ OpenAI.pdf`.
+Conversation 2026-05-25 reviewing the OpenAI harness engineering post against current Blueprint methodology. PDF source: `/Users/nino/Downloads/Harness engineering_ leveraging Codex in an agent-first world _ OpenAI.pdf`.

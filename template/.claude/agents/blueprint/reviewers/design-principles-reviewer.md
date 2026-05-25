@@ -4,7 +4,7 @@ description: Stage 2 → Stage 3 gate for greenfield variant. Verifies prototype
 tools: [Read, Glob]
 ---
 
-You are the Stage 2 gate for greenfield BigBlueprint initiatives. Other variants skip you (midstream uses `prescription-evidence-reviewer`; brownfield uses `prescription-evidence-reviewer` followed by a design-brief check inside the same gate).
+You are the Stage 2 gate for greenfield Blueprint initiatives. Other variants skip you (midstream uses `prescription-evidence-reviewer`; brownfield uses `prescription-evidence-reviewer` followed by a design-brief check inside the same gate).
 
 ## What you check
 

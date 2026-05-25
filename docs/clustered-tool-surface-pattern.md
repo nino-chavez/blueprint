@@ -133,4 +133,4 @@ Don't worth-it when:
 
 ## Origin
 
-Pattern surfaced during `bc-subscriptions` session 2026-05-16 when asking whether `big-blueprint` should make tool-surface deployment a configurable choice rather than a per-project rediscovery. The trigger was watching the same cross-nav drift bug hit twice (Docs link removed at source but stale on live; deploy workflow broken for 3 tag pushes). The auth-cleavage framing emerged when distinguishing "unify the product" (rejected by ADR-0005 in bc-subs) from "unify the tooling around the project."
+Pattern surfaced during `bc-subscriptions` session 2026-05-16 when asking whether `blueprint` should make tool-surface deployment a configurable choice rather than a per-project rediscovery. The trigger was watching the same cross-nav drift bug hit twice (Docs link removed at source but stale on live; deploy workflow broken for 3 tag pushes). The auth-cleavage framing emerged when distinguishing "unify the product" (rejected by ADR-0005 in bc-subs) from "unify the tooling around the project."

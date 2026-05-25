@@ -1,6 +1,6 @@
 # Voice Template — Internal Strategy
 
-Canonical voice reference for BigBlueprint deliverables. Loaded on demand; not inlined into per-initiative `CLAUDE.md`. Reviewer agents (`doc-quality-auditor`, `terminology-linter`) enforce the rules in this doc.
+Canonical voice reference for Blueprint deliverables. Loaded on demand; not inlined into per-initiative `CLAUDE.md`. Reviewer agents (`doc-quality-auditor`, `terminology-linter`) enforce the rules in this doc.
 
 ## When to use which voice
 

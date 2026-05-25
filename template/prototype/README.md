@@ -1,6 +1,6 @@
 # Prototype Studio
 
-React + Vite + BigDesign harness for BigBlueprint prototype slices. Each slice is a self-contained directory under `prototypes/` with its own routes, pages, mock data, and config. The Studio Home page auto-discovers slices.
+React + Vite + BigDesign harness for Blueprint prototype slices. Each slice is a self-contained directory under `prototypes/` with its own routes, pages, mock data, and config. The Studio Home page auto-discovers slices.
 
 Companion to: `../docs/` (research + strategy docs), `DESIGN.md` (extracted design tokens + principles), `CONVENTIONS.md` (mandatory slice rules).
 

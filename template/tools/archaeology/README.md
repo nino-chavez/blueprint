@@ -43,7 +43,7 @@ tools/archaeology/
 ## Quick start
 
 ```bash
-# From the consuming project's root, after big-blueprint scaffold drops this in:
+# From the consuming project's root, after blueprint scaffold drops this in:
 cd tools/archaeology
 
 # 1. Provision + deploy (one-time)

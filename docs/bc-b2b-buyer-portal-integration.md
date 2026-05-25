@@ -325,9 +325,9 @@ These show up every time and need fact-checking against the specific merchant:
 
 ---
 
-## Relationship to BigBlueprint Methodology
+## Relationship to Blueprint Methodology
 
-This doc fits Stage 1 (Research → existing-product analysis) of the BigBlueprint pipeline. For any initiative integrating B2B Edition:
+This doc fits Stage 1 (Research → existing-product analysis) of the Blueprint pipeline. For any initiative integrating B2B Edition:
 
 1. Copy this doc into `research/current-state/`
 2. Customize §"Framework Port Table" with the columns relevant to your host

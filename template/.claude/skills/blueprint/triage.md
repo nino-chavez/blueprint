@@ -1,10 +1,10 @@
 # /blueprint-triage
 
-Triage stakeholder feedback after a BigBlueprint demo or doc review through a state machine of categories and dispositions.
+Triage stakeholder feedback after a Blueprint demo or doc review through a state machine of categories and dispositions.
 
 ## When to use
 
-After sharing a BigBlueprint deliverable (prototype walkthrough, doc package, deck) and collecting feedback. Run before deciding which feedback to act on.
+After sharing a Blueprint deliverable (prototype walkthrough, doc package, deck) and collecting feedback. Run before deciding which feedback to act on.
 
 ## Why a state machine
 
@@ -117,4 +117,4 @@ Plus updates to: `docs/content/deferred.md`, `docs/content/decisions.md`, `feedb
 
 ## Lineage
 
-State-machine pattern adapted from [matt-pocock/skills `triage`](https://github.com/mattpocock/skills) (MIT). The categories are tuned for stakeholder-feedback-after-demo (BigBlueprint context), not GitHub-issue triage. AI disclaimer is opt-in per the workspace `triage` skill; for internal-stakeholder feedback, generally skip it.
+State-machine pattern adapted from [matt-pocock/skills `triage`](https://github.com/mattpocock/skills) (MIT). The categories are tuned for stakeholder-feedback-after-demo (Blueprint context), not GitHub-issue triage. AI disclaimer is opt-in per the workspace `triage` skill; for internal-stakeholder feedback, generally skip it.

@@ -1,13 +1,13 @@
 # /blueprint-prototype
 
-Prototype phase of a BigBlueprint initiative. Three target paradigms; pick by reading `blueprint.yml prototype.host` + `prototype.design_system`.
+Prototype phase of a Blueprint initiative. Three target paradigms; pick by reading `blueprint.yml prototype.host` + `prototype.design_system`.
 
 ## Paradigm selector — read this first
 
 | `prototype.host` | `prototype.design_system` | Paradigm |
 |---|---|---|
 | `standalone` (or unset) | `bigdesign` | **BC-pattern SliceShell.** Slice-per-directory under `prototypes/<slice-name>/`; each slice wraps in `<SliceShell>` with `tools` / `notes` / `traces`. Harness chrome shipped per slice. Existing pattern; documented below. |
-| `standalone` (or unset) | `custom` | **Standalone custom-design-system prototype.** Whole-webapp shape, not slice-per-directory. Project owns its own harness chrome (reviewer drawer, strategy panels, annotations, traceability) per `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md` D-1..D-10. No SliceShell. |
+| `standalone` (or unset) | `custom` | **Standalone custom-design-system prototype.** Whole-webapp shape, not slice-per-directory. Project owns its own harness chrome (reviewer drawer, strategy panels, annotations, traceability) per `~/Workspace/dev/wip/blueprint/docs/design-system-audit.md` D-1..D-10. No SliceShell. |
 | `atelier` | `custom` | **Atelier-hosted prototype.** Project ships content + `.atelier/prototype.yaml` declaring `content_path` + `traceability_source` + `surfaces` mapping. **Harness chrome is provided by Atelier's `/prototype` route** (ADR-057). Annotations land as `contributions` with `kind: 'design'`; strategy notes via `log_decision`; traceability via `get_context(scope_files)`. Project does NOT re-implement these primitives. |
 
 If `prototype.host` is unset, default to `standalone`. If `prototype.design_system: custom` is set without `prototype.host: atelier`, that's the second row — project owns its own harness.
@@ -72,7 +72,7 @@ The Studio Home page rediscovers slices automatically — do not edit `src/pages
 - One primary CTA per page
 - Sidebar nav highlights the correct page; prev/next bar wires up correctly
 
-### Design-system completeness gates (per `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md`)
+### Design-system completeness gates (per `~/Workspace/dev/wip/blueprint/docs/design-system-audit.md`)
 
 Beyond scaffolding correctness, the prototype must answer **ten design-system decisions** (D-1..D-10) in `prototype/DESIGN.md` frontmatter AND apply them consistently in code:
 

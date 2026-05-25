@@ -1,6 +1,6 @@
 # /blueprint-research
 
-Research phase of a BigBlueprint initiative. Produces competitive analysis, codebase exploration, and market comparables.
+Research phase of a Blueprint initiative. Produces competitive analysis, codebase exploration, and market comparables.
 
 ## When to use
 At the start of an initiative, or when new competitive/market context is needed.
@@ -16,7 +16,7 @@ At the start of an initiative, or when new competitive/market context is needed.
    - What UI patterns and CSS frameworks are in use
    Save findings to `research/current-state/codebase-analysis.md`.
 
-3. **Competitive analysis** — For each competitor listed in `research.competitors`, cover the **five research dimensions** from `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md` (R-1 through R-5):
+3. **Competitive analysis** — For each competitor listed in `research.competitors`, cover the **five research dimensions** from `~/Workspace/dev/wip/blueprint/docs/design-system-audit.md` (R-1 through R-5):
    - **R-1 IA + dynamic-surface mechanics** — default-view logic, freshness contract, filter/sort affordances above the fold, scale budget, server-side filter/sort (per ux-ui-auditor Phase 8)
    - **R-2 Voice + microcopy** — imperative vs declarative; chrome vs framing; empty-state voice; CTA labels (audit actual UI copy, not marketing)
    - **R-3 Visual language** — palette anchors, type families + display/body split, density, elevation strategy, border strategy
@@ -56,5 +56,5 @@ If specchain is not available, the researcher agent performs all research sequen
 - Every claim cites a source (URL, screenshot reference, or code path)
 - Patterns are organized by category, not by source
 - Each pattern has a concrete "adopt/reject" recommendation
-- **R-1 through R-5 each have at least one per-anchor finding** (per `~/Workspace/dev/wip/big-blueprint/docs/design-system-audit.md`). A research pass that covers IA + behavior (R-1, R-2) but skips visual/motion/onboarding (R-3, R-4, R-5) is incomplete when `prototype.design_system: custom`.
+- **R-1 through R-5 each have at least one per-anchor finding** (per `~/Workspace/dev/wip/blueprint/docs/design-system-audit.md`). A research pass that covers IA + behavior (R-1, R-2) but skips visual/motion/onboarding (R-3, R-4, R-5) is incomplete when `prototype.design_system: custom`.
 - The synthesis includes a cross-cutting patterns section + a "what's distinctive to one anchor" section + recommended Design Principles (DP-N entries)

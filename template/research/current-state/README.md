@@ -10,7 +10,7 @@
 
 ## When to populate
 
-Stage 1 of the big-blueprint pipeline. Authoring this *before* design principles
+Stage 1 of the blueprint pipeline. Authoring this *before* design principles
 (Stage 2) means the design-principles "What this CAN'T do today" section can be
 grounded in mechanical evidence, not assumptions.
 

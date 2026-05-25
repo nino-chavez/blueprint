@@ -1,4 +1,4 @@
-// Demo storyboard renderer (big-blueprint template).
+// Demo storyboard renderer (blueprint template).
 // - Loads scenarios.json (content) + optional state-derive output (status overlay)
 // - Renders scenario cards with per-surface status badges
 // - Filter by category / surface / status / mode (demo-script vs guide)

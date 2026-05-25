@@ -6,7 +6,7 @@
  * the three pages can't drift visually — they all consume this file.
  *
  * Origin: extracted from Rally HQ 2026-05-24 polish pass after V3a/T6/V4a
- * JTBD dry-run session. Should be promoted to wip/big-blueprint/template
+ * JTBD dry-run session. Should be promoted to wip/blueprint/template
  * as the canonical going-forward template (see _shell-version below).
  *
  * Usage in any portal page:

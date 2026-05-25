@@ -1,6 +1,6 @@
 ---
 # ============================================================================
-# BigBlueprint Prototype DESIGN.md
+# Blueprint Prototype DESIGN.md
 # ============================================================================
 #
 # This file is a HYBRID: the frontmatter is MACHINE-AUTHORED during Stage 1
@@ -381,6 +381,6 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 ### Additional Reference
 
-- `~/Workspace/dev/tools/big-blueprint/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
-- `~/Workspace/dev/tools/big-blueprint/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
+- `~/Workspace/dev/tools/blueprint/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
+- `~/Workspace/dev/tools/blueprint/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
 - Multi-actor role pattern: `~/Workspace/dev/wip/bc-subscriptions/docs/decisions/0023-multi-actor-roles.md`

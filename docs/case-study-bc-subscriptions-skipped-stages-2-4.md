@@ -1,7 +1,7 @@
 # Case Study — bc-subscriptions: What Happens When Stages 2 and 4 Get Skipped
 
 > Sibling to `case-study-pp-cx.md` (positive precedent). This is the negative
-> precedent — a project that did NOT follow the big-blueprint pipeline and
+> precedent — a project that did NOT follow the blueprint pipeline and
 > accumulated systemic debt that took multi-day recovery work to surface and fix.
 
 ## Context
@@ -10,7 +10,7 @@ bc-subscriptions is a BigCommerce-native subscription management platform built
 incrementally over weeks across multiple Claude Code sessions. It accumulated
 substantial structural substrate — BRD / PRD / ARCHITECTURE / decision records
 (ADRs) / per-task handoff dossiers / state-derive capability registry — but
-**without** following the big-blueprint stages explicitly. In particular, the
+**without** following the blueprint stages explicitly. In particular, the
 project skipped:
 
 - **Stage 2 — Design Principles** ("codify what the prototype CAN'T do before building")
@@ -139,7 +139,7 @@ is not that persona work was wrong, but that **the walking skeleton
 should always come first**, and persona breadth should expand from a
 verified vertical slice, not in lieu of one.
 
-## Pre-completion checklist (apply to any big-blueprint initiative)
+## Pre-completion checklist (apply to any blueprint initiative)
 
 Before declaring an initiative complete (or even "v1 ready for review"),
 verify these artifacts exist and are current:
@@ -159,13 +159,13 @@ runtime-complete. That's the gap bc-subscriptions illustrates.
 - Sibling positive precedent: `docs/case-study-pp-cx.md` (pricing-packaging)
 - bc-subscriptions walking-skeleton recovery work: synthesis `7f0691f9` + `53bcde79`
 - bc-subscriptions retrofit Decision: `6db9cc0f` + synthesis `ad0346f5`
-- This contribution: feature/bc-subs-retrofit-contribution branch on big-blueprint
+- This contribution: feature/bc-subs-retrofit-contribution branch on blueprint
 
 ---
 
 > **What this case study is for**
 >
-> Adopters of big-blueprint who skip Stage 2 or Stage 4 because the artifacts
+> Adopters of blueprint who skip Stage 2 or Stage 4 because the artifacts
 > feel like ceremony should read this case study first. The "ceremony" is what
 > contains fixture-mode debt and prevents COMPLIANT-but-stubbed conflation.
 > Without those two stages, the project accumulates a recovery cost that's

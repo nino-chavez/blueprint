@@ -1,10 +1,10 @@
 # Blueprint Portal Template (Static HTML)
 
-The canonical big-blueprint portal shell as of 2026-05-23. Static HTML + Cloudflare Pages Functions. Replaces the React/BigDesign prototype model for non-BC projects.
+The canonical blueprint portal shell as of 2026-05-23. Static HTML + Cloudflare Pages Functions. Replaces the React/BigDesign prototype model for non-BC projects.
 
 ## When to use this
 
-- New big-blueprint initiative that isn't BC/BigDesign-bound
+- New blueprint initiative that isn't BC/BigDesign-bound
 - Stakeholder communication tool — interactive prototype + strategy docs + AI chat
 - Cloudflare-first infrastructure (Pages + Workers + R2)
 
@@ -72,5 +72,5 @@ The Rally HQ blueprint at `apps/rally-hq/blueprint/portal/` is the worked exampl
 ## See also
 
 - `template/portal/CONVENTIONS.md` — the contract for every page
-- `wip/big-blueprint/METHODOLOGY.md` — the 7-stage pipeline this fits into
+- `wip/blueprint/METHODOLOGY.md` — the 7-stage pipeline this fits into
 - Rally HQ blueprint commit history under `apps/rally-hq/` for end-to-end examples

@@ -1,6 +1,6 @@
 # BigCommerce B2B Edition Context
 
-**Purpose:** Captures everything known about BC B2B Edition's data model, APIs, surfaces, and integration mechanics — so future BigBlueprint initiatives targeting B2B don't have to re-discover this through docs and trial.
+**Purpose:** Captures everything known about BC B2B Edition's data model, APIs, surfaces, and integration mechanics — so future Blueprint initiatives targeting B2B don't have to re-discover this through docs and trial.
 
 **Last updated:** 2026-05-09
 
@@ -242,7 +242,7 @@ Reference: `bc-subscriptions/docs/decisions/0023-multi-actor-roles.md` formalize
 | Approval workflows | BC control panel + Buyer Portal | Workflow definition: control panel; UI: portal |
 | Marketplace App (admin) | Your app, embedded in BC iframe | Full — see `bc-marketplace-context.md` |
 
-**Implication for BigBlueprint prototype slices:** if your slice modifies a Buyer Portal surface, you need to either (a) accept the existing portal's UX and customize via config, (b) fork the portal, or (c) build the surface in your own host (storefront or marketplace app) instead. The decision is non-trivial — see `bc-b2b-buyer-portal-integration.md` §"Two Integration Paths" and ADR pattern in `bc-subscriptions/docs/decisions/`.
+**Implication for Blueprint prototype slices:** if your slice modifies a Buyer Portal surface, you need to either (a) accept the existing portal's UX and customize via config, (b) fork the portal, or (c) build the surface in your own host (storefront or marketplace app) instead. The decision is non-trivial — see `bc-b2b-buyer-portal-integration.md` §"Two Integration Paths" and ADR pattern in `bc-subscriptions/docs/decisions/`.
 
 ---
 
@@ -282,7 +282,7 @@ This is the most common breakage point in B2B integrations. If quote-checkout si
 
 ## 8. Required Environment Variables
 
-For any BigBlueprint initiative targeting B2B Edition, the host storefront needs:
+For any Blueprint initiative targeting B2B Edition, the host storefront needs:
 
 ```bash
 # BC Core (from BC control panel → Settings → API Accounts)
@@ -365,7 +365,7 @@ These show up in every B2B initiative; document and avoid:
 
 ---
 
-## 12. What Future BigBlueprint B2B Initiatives Don't Need to Re-Discover
+## 12. What Future Blueprint B2B Initiatives Don't Need to Re-Discover
 
 - ✅ B2B Edition data model (Companies / Buyers / Quotes / Contracts / Lists)
 - ✅ The two-API-host split (`api.bigcommerce.com` vs `api-b2b.bigcommerce.com`)
@@ -387,8 +387,8 @@ What's still discoverable per-initiative:
 
 ---
 
-## Relationship to BigBlueprint Methodology
+## Relationship to Blueprint Methodology
 
-This doc fits Stage 1 (Research → existing-product analysis) of the BigBlueprint pipeline. When an initiative targets BC B2B Edition, copy this doc into the initiative's `research/current-state/` directory as the starting baseline, then layer initiative-specific findings (B2B sandbox screenshots, merchant-specific Customer Groups, etc.) on top.
+This doc fits Stage 1 (Research → existing-product analysis) of the Blueprint pipeline. When an initiative targets BC B2B Edition, copy this doc into the initiative's `research/current-state/` directory as the starting baseline, then layer initiative-specific findings (B2B sandbox screenshots, merchant-specific Customer Groups, etc.) on top.
 
 Pair with `bc-marketplace-context.md` (if the initiative includes a marketplace app) and `bc-b2b-buyer-portal-integration.md` (always — it's the integration contract).

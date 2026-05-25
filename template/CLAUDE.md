@@ -1,4 +1,4 @@
-# BigBlueprint Project
+# Blueprint Project
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment. This file is a **map**, not a manual — pointers to canonical docs, not inlined content. See `blueprint.yml` for project configuration.
 
@@ -10,18 +10,18 @@ Every initiative declares a variant in `blueprint.yml`:
 variant: greenfield   # or: midstream | brownfield
 ```
 
-Canonical taxonomy: `~/Workspace/dev/wip/big-blueprint/docs/variant-selection.md` — pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Pick the variant before Stage 0 runs.
+Canonical taxonomy: `~/Workspace/dev/wip/blueprint/docs/variant-selection.md` — pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Pick the variant before Stage 0 runs.
 
 ## Optional capabilities (check `blueprint.yml`)
 
 | Flag | Reference doc | Read when starting |
 |---|---|---|
-| `b2b_edition.enabled: true` | `~/Workspace/dev/wip/big-blueprint/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
-| `hive.enabled: true` | `~/Workspace/dev/wip/big-blueprint/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
-| `cloudflare.enabled: true` | `~/Workspace/dev/wip/big-blueprint/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
-| `archaeology.enabled: true` | `~/Workspace/dev/wip/big-blueprint/docs/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
-| `owner_spec.enabled: true` | `~/Workspace/dev/wip/big-blueprint/docs/owner-spec-pattern.md` | When project has >3 substrate tools |
-| Marketplace app (any BC initiative) | `~/Workspace/dev/wip/big-blueprint/docs/bc-marketplace-context.md` | Stage 1 research |
+| `b2b_edition.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
+| `hive.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
+| `cloudflare.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
+| `archaeology.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
+| `owner_spec.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/owner-spec-pattern.md` | When project has >3 substrate tools |
+| Marketplace app (any BC initiative) | `~/Workspace/dev/wip/blueprint/docs/bc-marketplace-context.md` | Stage 1 research |
 
 ## Pipeline
 
@@ -40,7 +40,7 @@ export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
 # In Claude Code: /add-dir /Users/nino/Workspace/dev/tools/browse-tool
 ```
 
-Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `~/Workspace/dev/wip/big-blueprint/docs/browser-legibility.md`.
+Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `~/Workspace/dev/wip/blueprint/docs/browser-legibility.md`.
 
 ## Skills
 
@@ -79,7 +79,7 @@ Variant-aware gates that block premature stage completion. Full roster + behavio
 
 ## Document voice
 
-Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + citation rules + anti-patterns: `~/Workspace/dev/wip/big-blueprint/docs/voice-template.md`. B2B-specific addendum (loaded only when `b2b_edition.enabled: true`): `docs/voice-b2b-addendum.md`.
+Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + citation rules + anti-patterns: `~/Workspace/dev/wip/blueprint/docs/voice-template.md`. B2B-specific addendum (loaded only when `b2b_edition.enabled: true`): `docs/voice-b2b-addendum.md`.
 
 ## Prototype design
 

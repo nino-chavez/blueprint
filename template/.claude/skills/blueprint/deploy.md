@@ -1,6 +1,6 @@
 # /blueprint-deploy
 
-Deployment phase of a BigBlueprint initiative. Packages prototype + docs as a Vercel site.
+Deployment phase of a Blueprint initiative. Packages prototype + docs as a Vercel site.
 
 ## When to use
 After prototype and docs are built and validated.
