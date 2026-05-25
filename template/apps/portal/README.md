@@ -38,7 +38,7 @@ Outputs static-first build to `dist/`. Deployable to Cloudflare Pages, Netlify, 
 | `/inspect` | Inspect | Methodology, Hive substrate, decision lineage, derived state |
 | `/roadmap` | Roadmap | Ready queue, epic progress, swimlane visualization |
 
-The audience switcher (top-right) reorders lanes by audience priority — executive / discovery / internal — and persists to localStorage.
+The audience switcher (top-right) reorders lanes by audience priority — executive / evaluator / engineering — and persists to localStorage.
 
 ## What's in each slice
 

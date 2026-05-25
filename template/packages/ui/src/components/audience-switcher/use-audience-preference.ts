@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const AUDIENCES = ['executive', 'discovery', 'internal'] as const;
+export const AUDIENCES = ['executive', 'evaluator', 'engineering'] as const;
 export type Audience = (typeof AUDIENCES)[number];
 
 const STORAGE_KEY = 'bcs-audience';
@@ -26,7 +26,7 @@ export interface UseAudiencePreferenceOptions {
 export function useAudiencePreference(
   options: UseAudiencePreferenceOptions = {},
 ): [Audience, (next: Audience) => void] {
-  const { defaultValue = 'discovery' } = options;
+  const { defaultValue = 'evaluator' } = options;
   const [audience, setAudience] = useState<Audience>(defaultValue);
 
   useEffect(() => {
