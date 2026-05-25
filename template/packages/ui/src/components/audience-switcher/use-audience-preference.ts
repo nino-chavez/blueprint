@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 export const AUDIENCES = ['executive', 'evaluator', 'engineering'] as const;
 export type Audience = (typeof AUDIENCES)[number];
 
-const STORAGE_KEY = 'bcs-audience';
-const CHANGE_EVENT = 'bcs-audience-change';
+const STORAGE_KEY = 'blueprint-audience';
+const CHANGE_EVENT = 'blueprint-audience-change';
 const isAudience = (v: string | null): v is Audience =>
   v !== null && (AUDIENCES as readonly string[]).includes(v);
 
@@ -18,7 +18,7 @@ export interface UseAudiencePreferenceOptions {
  *
  * Cross-island sync: the portal renders the switcher (PortalNav) and its
  * consumers (HomeLanes etc.) as separate Astro islands. Each instance of
- * this hook listens to a `bcs-audience-change` CustomEvent dispatched on
+ * this hook listens to a `blueprint-audience-change` CustomEvent dispatched on
  * update, so toggling in one island re-renders the others. `storage` events
  * cover cross-tab sync but never fire on the same tab — the custom event
  * is what makes the homepage switcher feel live.
