@@ -1,10 +1,10 @@
-# the original employer-prefixed name Methodology
+# Blueprint Methodology
 
 Agent-assisted pipeline for product planning, prototyping, and stakeholder alignment
 
 ## Overview
 
-the original employer-prefixed name is a jig — a repeatable structure that shapes how an agent assists with product initiatives. The human provides context (screenshots, BRDs, codebase access, competitive intelligence). The agent executes a seven-stage pipeline that produces an interactive prototype, strategic documents, and a deployable stakeholder site.
+Blueprint is a jig — a repeatable structure that shapes how an agent assists with product initiatives. The human provides context (screenshots, BRDs, codebase access, competitive intelligence). The agent executes a seven-stage pipeline that produces an interactive prototype, strategic documents, and a deployable stakeholder site.
 
 The methodology integrates three existing tools:
 - **Specchain** — agent orchestration patterns and governance principles
@@ -30,7 +30,7 @@ When you hit an agent failure that isn't covered by an existing reviewer / invar
 
 ## Variant Selection
 
-the original employer-prefixed name serves three project lifecycles — **greenfield** / **midstream** / **brownfield** — each with its own stage sequence and reviewer gates. The pipeline described in the rest of this document is the **greenfield variant**; midstream and brownfield diverge per the canonical taxonomy at [docs/variant-selection.md](docs/variant-selection.md).
+Blueprint serves three project lifecycles — **greenfield** / **midstream** / **brownfield** — each with its own stage sequence and reviewer gates. The pipeline described in the rest of this document is the **greenfield variant**; midstream and brownfield diverge per the canonical taxonomy at [docs/variant-selection.md](docs/variant-selection.md).
 
 Declare at `blueprint.yml`: `variant: greenfield | midstream | brownfield`. Default is `greenfield`. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
 
@@ -296,9 +296,9 @@ After each iteration, capture what was learned:
 | **Current-state panel** | Screenshot comparison | `prototype/current-state-panel.js` |
 | **Chat widget** | AI agent for interactive exploration | `prototype/chat-widget.js` |
 
-## Naming Convention
+## Naming
 
-the original employer-prefixed name follows the commerce platform tooling naming: the platform design system, BigTools, the original employer-prefixed name.
+Originally **the original employer-prefixed name**, following the commerce platform tooling conventions (the platform design system, BigTools). Renamed to **Blueprint** on 2026-05-25 once the methodology proved project-agnostic across Rally HQ, Signal Dispatch, website-nc-v3, TNA, and the original BC work.
 
 ## Cross-Cutting Disciplines
 

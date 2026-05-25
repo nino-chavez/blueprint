@@ -1,14 +1,14 @@
-# the original employer-prefixed name
+# Blueprint
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment.
 
 ## A note on the name
 
-the original employer-prefixed name was extracted from a the commerce platform CX initiative in March 2026, and the "Big" prefix follows the commerce platform tooling conventions (the platform design system, BigTools, the original employer-prefixed name). **The methodology and template are project-agnostic** — currently in use on Rally HQ (tournament management), TNA (agency portfolio), and the commerce platform work. The naming is heritage; the structure isn't coupled to any vertical. If you fork this for a non-BC project, you don't need to rename it — but you can.
+Originally **the original employer-prefixed name** — the "Big" prefix followed the commerce platform tooling conventions (the platform design system, BigTools, the original employer-prefixed name) because the methodology was extracted from a the commerce platform CX initiative in March 2026. Renamed to **Blueprint** on 2026-05-25 once the methodology had proved general-purpose across Rally HQ (tournament management), Signal Dispatch (content platform audit), ninochavez.co v3 (personal portfolio brownfield), TNA (agency portfolio), and the original BC work. The methodology never required a vertical; the rename made that explicit.
 
 ## What This Is
 
-the original employer-prefixed name is a methodology and toolset for running product initiatives with AI assistance. You provide the context — screenshots, BRDs, codebase access, competitive intelligence. The agent does research, builds prototypes, writes strategic documents, validates claims against source code, and iterates based on stakeholder feedback.
+Blueprint is a methodology and toolset for running product initiatives with AI assistance. You provide the context — screenshots, BRDs, codebase access, competitive intelligence. The agent does research, builds prototypes, writes strategic documents, validates claims against source code, and iterates based on stakeholder feedback.
 
 The output is a deployable site that serves three audiences simultaneously:
 - **Leadership** — strategic documents (CX strategy, roadmap, risk register)
@@ -35,7 +35,7 @@ The key insight: **prototype and documents are built simultaneously.** The proto
 
 ## Built On
 
-| Tool | Role in the original employer-prefixed name |
+| Tool | Role in Blueprint |
 |------|---------------------|
 | **Specchain** | Agent orchestration patterns, execution profiles, governance principles |
 | **Forge Signal** | Content generation, voice taxonomy, quality validation |
@@ -125,7 +125,7 @@ GitHub: https://github.com/nino-chavez/specchain
 
 ### What works without either
 
-the original employer-prefixed name works standalone. Without Forge Signal, the doc-writer agent uses built-in internal-strategy voice rules. Without Specchain, there's no implementation spec generation — the initiative stays at the strategy/prototype/feasibility level. Both can be added at any point.
+Blueprint works standalone. Without Forge Signal, the doc-writer agent uses built-in internal-strategy voice rules. Without Specchain, there's no implementation spec generation — the initiative stays at the strategy/prototype/feasibility level. Both can be added at any point.
 
 ## The Three Layers of Every Prototype Page
 
@@ -186,7 +186,7 @@ Reusable Stage-1 baseline docs for common initiative targets. Copy the relevant 
 | [docs/bc-marketplace-context.md](docs/bc-marketplace-context.md) | Initiative includes a BC marketplace app (admin UI in iframe under `/manage/app/{appId}`) | iframe canvas behavior, install-flow ownership, scope-list source, the platform design system patterns, `an-internal-admin-app` and `an-internal-assistant-app` references |
 | [docs/bc-b2b-edition-context.md](docs/bc-b2b-edition-context.md) | Initiative integrates with BC B2B Edition (Companies, Buyers, Quotes, Customer Contracts) | Data model, two-API-host split, Buyer Portal SPA architecture, multi-actor role pattern, ownership boundaries |
 | [docs/bc-b2b-buyer-portal-integration.md](docs/bc-b2b-buyer-portal-integration.md) | Initiative embeds the B2B Buyer Portal in any host storefront | Framework-agnostic integration contract (5-step), port table for React/SvelteKit/Solid/Vue/Astro, env vars, troubleshooting |
-| [docs/hive-coordination-pattern.md](docs/hive-coordination-pattern.md) | Initiative needs multiple agents working in parallel | When to use Hive, bootstrap sequence, working rules, integration with the original employer-prefixed name stages |
+| [docs/hive-coordination-pattern.md](docs/hive-coordination-pattern.md) | Initiative needs multiple agents working in parallel | When to use Hive, bootstrap sequence, working rules, integration with Blueprint stages |
 | [docs/cloudflare-deployment-pattern.md](docs/cloudflare-deployment-pattern.md) | Initiative deploys on Cloudflare (Workers, Pages, D1, Workers AI, Vectorize, etc.) | Wrangler config conventions, path-scoped GitHub Actions, secrets, multi-environment, cost envelope |
 | [docs/browser-legibility.md](docs/browser-legibility.md) | Every initiative with a `prototype/` or `portal/` shell (Stage 0) | `browse-tool` as the default browser sensor (~few hundred tokens vs MCP's ~18k), four-trigger escalation rubric to Chrome DevTools MCP, per-worktree bootability via cwd-named profiles |
 | [docs/variant-selection.md](docs/variant-selection.md) | Every new initiative — picked at `blueprint.yml` init | Three-variant taxonomy (greenfield / midstream / brownfield), pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Wrong variant produces retrofit feel that cannot be un-retrofitted without restart. |

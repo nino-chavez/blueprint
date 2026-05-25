@@ -89,7 +89,7 @@ iteration order. Edges along the critical path render at `tone="brand"`
 ## Adoption sketch
 
 subs-initiative is the first adopter. Three layers can flow into
-`big-blueprint` on different time horizons:
+`blueprint` on different time horizons:
 
 ### Phase A — this doc (now)
 
@@ -101,7 +101,7 @@ Land the pattern. Cross-link from `hive-coordination-pattern.md` and
 Vendor `tools/dep-graph-emit/` to `template/tools/dep-graph-emit/`. The
 tool is already project-agnostic in shape — it reads `docs/hive/_board.json`
 and writes `docs/audits/derived/_dep-graph.json`, both of which are part of
-the Hive-substrate convention big-blueprint already prescribes.
+the Hive-substrate convention blueprint already prescribes.
 
 One swap required: the hardcoded GitHub repo URL (`nino-chavez/subs-initiative`)
 moves to a `blueprint.yml` field (`gh_repo`) and the tool reads it from there.
@@ -115,7 +115,7 @@ view lands there as a route under the operator-internal cluster.
 Two further questions to decide before Phase C:
 
 1. **Where does the React primitive live?** subs-initiative has it in
-   `packages/ui/`, but big-blueprint doesn't yet template a `packages/ui/`.
+   `packages/ui/`, but blueprint doesn't yet template a `packages/ui/`.
    Options:
    - Vendor the primitive directly into `template/apps/tool-shell/src/components/`
      (simple, no new templated package)

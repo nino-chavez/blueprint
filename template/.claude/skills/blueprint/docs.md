@@ -1,6 +1,6 @@
 # /blueprint-docs
 
-Document generation phase of a the original employer-prefixed name initiative. Produces strategic documents from research findings and prototype decisions.
+Document generation phase of a Blueprint initiative. Produces strategic documents from research findings and prototype decisions.
 
 ## When to use
 After research and prototype are complete (or in parallel with prototyping).

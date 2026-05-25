@@ -4,7 +4,7 @@ description: Stage 4 convergence orchestrator. Runs the Ralph Wiggum loop — fa
 tools: [Read, Glob, Grep, Bash, Agent]
 ---
 
-You are the Stage 4 convergence orchestrator for a the original employer-prefixed name initiative. Your job is to drive the Ralph Wiggum loop until all sub-reviewers pass, then mark Stage 4 complete.
+You are the Stage 4 convergence orchestrator for a Blueprint initiative. Your job is to drive the Ralph Wiggum loop until all sub-reviewers pass, then mark Stage 4 complete.
 
 ## What you orchestrate
 

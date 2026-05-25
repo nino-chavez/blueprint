@@ -1,13 +1,13 @@
 # Browser Legibility Pattern
 
-**Activates when**: any the original employer-prefixed name initiative needs the agent to validate its own UI work — i.e., every initiative with a `prototype/` or `portal/` shell.
+**Activates when**: any Blueprint initiative needs the agent to validate its own UI work — i.e., every initiative with a `prototype/` or `portal/` shell.
 **Reference for**: choosing between `browse-tool` (default, cheap) and Chrome DevTools MCP (escalation, heavy); install steps; per-worktree bootability.
 
 ## Why this pattern exists
 
 Codex's harness engineering experiment (OpenAI, Feb 2026) treated *application legibility* as a Stage 0 prerequisite: the agent boots the app per git worktree, drives it via Chrome DevTools Protocol, queries a local observability stack, and validates its own fixes before opening a PR. Without this, every UI change requires a human to click through and confirm — which becomes the bottleneck once code throughput rises.
 
-the original employer-prefixed name's audience (VPs clicking a Slack share-link) demands the same loop, but with a different cost ceiling. Chrome DevTools MCP alone costs ~18k tokens of always-loaded schema. Most stakeholder-prototype validation doesn't need network capture, console streaming, perf tracing, or accessibility-tree snapshots — it needs nav + DOM query + screenshot. So the default is a lighter primitive, and MCP escalates only when the task actually requires its capabilities.
+Blueprint's audience (VPs clicking a Slack share-link) demands the same loop, but with a different cost ceiling. Chrome DevTools MCP alone costs ~18k tokens of always-loaded schema. Most stakeholder-prototype validation doesn't need network capture, console streaming, perf tracing, or accessibility-tree snapshots — it needs nav + DOM query + screenshot. So the default is a lighter primitive, and MCP escalates only when the task actually requires its capabilities.
 
 ## The default: `browse-tool`
 
@@ -97,4 +97,4 @@ If the agent is uncertain whether a task needs MCP, the rule is **start with bro
 
 ## Origin
 
-Distilled from the OpenAI Codex harness engineering post (Feb 2026) — specifically the "Increasing application legibility" section where they wired Chrome DevTools Protocol into the agent runtime. browse-tool is the lighter equivalent for Blueprint's audience, inspired by Mario Zechner's *What if you don't need MCP at all?* (Nov 2025) and built at `~/Workspace/dev/tools/browse-tool`. Conversation that triggered this: 2026-05-25 the original employer-prefixed name v2 patch.
+Distilled from the OpenAI Codex harness engineering post (Feb 2026) — specifically the "Increasing application legibility" section where they wired Chrome DevTools Protocol into the agent runtime. browse-tool is the lighter equivalent for Blueprint's audience, inspired by Mario Zechner's *What if you don't need MCP at all?* (Nov 2025) and built at `~/Workspace/dev/tools/browse-tool`. Conversation that triggered this: 2026-05-25 Blueprint v2 patch.

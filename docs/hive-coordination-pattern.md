@@ -1,6 +1,6 @@
 # Hive Multi-Agent Coordination — When and How to Use
 
-**Purpose:** Captures when a the original employer-prefixed name initiative benefits from the Hive multi-agent coordination layer (originally developed in `subs-initiative`), and how to bootstrap it without re-deriving the pattern.
+**Purpose:** Captures when a Blueprint initiative benefits from the Hive multi-agent coordination layer (originally developed in `subs-initiative`), and how to bootstrap it without re-deriving the pattern.
 
 **Last updated:** 2026-05-08
 
@@ -135,9 +135,9 @@ If you face a decision the existing ADRs / specs don't cover:
 
 ---
 
-## Integration with the original employer-prefixed name Stages
+## Integration with Blueprint Stages
 
-Hive operates *across* the original employer-prefixed name's seven stages, not as a stage of its own:
+Hive operates *across* Blueprint's seven stages, not as a stage of its own:
 
 | Stage | Hive role |
 |---|---|
@@ -149,7 +149,7 @@ Hive operates *across* the original employer-prefixed name's seven stages, not a
 | 6. Deploy | Often one task; sometimes split per surface (preview vs. prod) |
 | 7. Iterate | Each iteration cycle is a new round of tasks, decisions, proposals |
 
-The dependency graph is the most useful Hive feature for the original employer-prefixed name: prototype tasks block on Stage-1-research-complete; document tasks block on prototype-complete; deploy task blocks on fact-check-complete.
+The dependency graph is the most useful Hive feature for Blueprint: prototype tasks block on Stage-1-research-complete; document tasks block on prototype-complete; deploy task blocks on fact-check-complete.
 
 ---
 
@@ -218,8 +218,8 @@ Over time, proposals accumulate where the GitHub issue is CLOSED but the Hive st
 
 ---
 
-## Relationship to the original employer-prefixed name Methodology
+## Relationship to Blueprint Methodology
 
 When `blueprint.yml` has `hive.enabled: true`, Stage 3 (Prototype) and Stage 5 (Documents) parallelize across multiple agents using the workflow above. CLAUDE.md adds the "register on session start" rule. Other stages benefit but to a lesser degree.
 
-When `hive.enabled: false`, the original employer-prefixed name runs in solo mode — TaskCreate handles single-session task tracking, and there's no coordination overhead.
+When `hive.enabled: false`, Blueprint runs in solo mode — TaskCreate handles single-session task tracking, and there's no coordination overhead.

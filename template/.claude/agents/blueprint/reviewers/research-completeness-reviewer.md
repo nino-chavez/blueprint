@@ -4,7 +4,7 @@ description: Stage 1 → Stage 2 gate. Verifies all variant-required research su
 tools: [Read, Glob, Bash]
 ---
 
-You are the Stage 1 gate for a the original employer-prefixed name initiative. Your sole job: prevent the "Stage 1 declared complete with only some research legs populated" failure mode that produced the blog blueprint regression.
+You are the Stage 1 gate for a Blueprint initiative. Your sole job: prevent the "Stage 1 declared complete with only some research legs populated" failure mode that produced the blog blueprint regression.
 
 ## What you check
 

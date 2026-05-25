@@ -1,4 +1,4 @@
-# Design System Audit — required coverage for the original employer-prefixed name initiatives
+# Design System Audit — required coverage for Blueprint initiatives
 
 **Status:** harness contract (referenced by `/blueprint-research` + `/blueprint-prototype` skills)
 **Codified from:** `wip/atelier-dashboard-blueprint/research/design-system-gap-audit.md` (2026-05-10)

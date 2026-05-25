@@ -234,7 +234,7 @@ Each account has its own `CLOUDFLARE_API_TOKEN`. Wrangler config differs (or use
 
 **Use when:** Production isolation matters (different team access, audit boundaries, blast-radius limits). Most enterprise rollouts go this way eventually.
 
-For the original employer-prefixed name initiatives:
+For Blueprint initiatives:
 - **Demo/POC:** single account, `[env.*]` overrides — fastest setup
 - **Production:** separate account — defer until promoting to ongoing operation
 
@@ -342,7 +342,7 @@ cd apps/storefront && API_URL=http://localhost:8787 pnpm dev
 
 ---
 
-## Relationship to the original employer-prefixed name Methodology
+## Relationship to Blueprint Methodology
 
 When `blueprint.yml` has `cloudflare.enabled: true`:
 

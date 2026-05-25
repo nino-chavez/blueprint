@@ -243,7 +243,7 @@ cat <<EOF
          # Then mount as a global island in your layout (see web/README.md):
          #   <ArchaeologyChat client:idle pageContext={currentPath} />
 
-  Pattern doc: ~/Workspace/dev/tools/big-blueprint/docs/archaeology-substrate-pattern.md
-  Chat README: ~/Workspace/dev/tools/big-blueprint/template/tools/archaeology/web/README.md
+  Pattern doc: ~/Workspace/dev/tools/blueprint/docs/archaeology-substrate-pattern.md
+  Chat README: ~/Workspace/dev/tools/blueprint/template/tools/archaeology/web/README.md
 ──────────────────────────────────────────────────────────────────────
 EOF

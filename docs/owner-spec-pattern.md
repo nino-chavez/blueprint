@@ -135,7 +135,7 @@ As OWNER-SPECs land, strike them from the inventory's "Inventory completed" tabl
 - 28 OWNER-SPEC files across 5 Tier-1 tools, 11 Tier-2 tools, 10 Tier-3 cohort tools, 2 cohort docs (workflows + harness hooks)
 - 5 Layer-B skills (one per Tier-1 tool)
 
-## Activation in big-blueprint projects
+## Activation in blueprint projects
 
 When a project enables the OWNER-SPEC pattern:
 

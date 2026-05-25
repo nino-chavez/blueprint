@@ -4,7 +4,7 @@ description: Stage 2 → Stage 3 gate for midstream and brownfield variants. Ver
 tools: [Read, Glob, Grep]
 ---
 
-You are the Stage 2 gate for midstream and brownfield the original employer-prefixed name initiatives. Greenfield skips you (it uses `design-principles-reviewer` instead).
+You are the Stage 2 gate for midstream and brownfield Blueprint initiatives. Greenfield skips you (it uses `design-principles-reviewer` instead).
 
 ## What you check
 

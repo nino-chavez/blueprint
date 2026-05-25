@@ -119,8 +119,8 @@ Both modes share the same `prerequisites`, `demo_url`, and `expected_outcome` �
 
 ## Cross-linking with the prototype harness
 
-If your project uses the big-blueprint prototype harness (`template/prototype/`), it includes a `DemoStoryboardPanel` on the Home page that links to this demos page. Update the `href` in `template/prototype/src/pages/Home.tsx` to point at your deployed demos URL (e.g., `https://<your-project>-demos.pages.dev`).
+If your project uses the blueprint prototype harness (`template/prototype/`), it includes a `DemoStoryboardPanel` on the Home page that links to this demos page. Update the `href` in `template/prototype/src/pages/Home.tsx` to point at your deployed demos URL (e.g., `https://<your-project>-demos.pages.dev`).
 
 ## Origin
 
-This pattern was extracted from `subs-initiative` (May 2026) where it answered "how do we demo across Stencil / Catalyst / custom-headless / BC Admin without each demo turning into a 'go ask Nino' moment." The schema-driven JSON + static renderer + CI-baked status overlay was the durable shape — codified here so future big-blueprint projects inherit it on day one.
+This pattern was extracted from `subs-initiative` (May 2026) where it answered "how do we demo across Stencil / Catalyst / custom-headless / BC Admin without each demo turning into a 'go ask Nino' moment." The schema-driven JSON + static renderer + CI-baked status overlay was the durable shape — codified here so future blueprint projects inherit it on day one.

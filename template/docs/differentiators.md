@@ -25,7 +25,7 @@ canonical: true
 - Quarterly review during release planning
 - New ADRs with `### Differentiator` content add an entry here as part of ratification
 
-**Source pattern:** See `~/Workspace/dev/tools/big-blueprint/docs/register-pattern.md` for the shared register discipline.
+**Source pattern:** See `~/Workspace/dev/tools/blueprint/docs/register-pattern.md` for the shared register discipline.
 
 ---
 

@@ -1,4 +1,4 @@
-# Handoff — the original employer-prefixed name v3 Variant Taxonomy
+# Handoff — Blueprint v3 Variant Taxonomy
 
 **Session date**: 2026-05-25
 **Status**: Open work. Predecessor session identified the failure; this session resolves it.
@@ -35,10 +35,10 @@ Both failures share a root cause: **no programmatic enforcement of stage complet
 
 | Artifact | Path | State |
 |---|---|---|
-| Canonical methodology | `wip/big-blueprint/METHODOLOGY.md` | Codifies build-variant only |
-| v2 patch (Stage 0 + reviewer agents + janitor + invariants) | `wip/big-blueprint/METHODOLOGY-v2-harness-engineering-patch.md` | Increment 1 landed; Increments 2-3 deferred |
-| Stage 0 reference | `wip/big-blueprint/docs/browser-legibility.md` | Done |
-| Template | `wip/big-blueprint/template/CLAUDE.md` | Has Stage 0 block; otherwise unchanged |
+| Canonical methodology | `wip/blueprint/METHODOLOGY.md` | Codifies build-variant only |
+| v2 patch (Stage 0 + reviewer agents + janitor + invariants) | `wip/blueprint/METHODOLOGY-v2-harness-engineering-patch.md` | Increment 1 landed; Increments 2-3 deferred |
+| Stage 0 reference | `wip/blueprint/docs/browser-legibility.md` | Done |
+| Template | `wip/blueprint/template/CLAUDE.md` | Has Stage 0 block; otherwise unchanged |
 | Rally HQ blueprint | `apps/rally-hq/blueprint/CLAUDE.md` | Stage 0 only |
 | website-nc-v3 blueprint | `apps/website-nc-v3/blueprint/CLAUDE.md` | Stage 0 only; project itself has informal 01/02/03 brownfield variant |
 | Blog blueprint | `apps/blog/blueprint/` | Stage 0 + first-pass Stage 1 (incomplete — 2 of 4 research legs done). **PAUSED.** |
@@ -60,7 +60,7 @@ A short decision tree the agent (or human) runs at project init to determine the
 - Does the product exist but the prototype is for active in-flight work? → Yes → Midstream
 - Does the product exist and the work is audit-first, possibly without prototype? → Yes → Brownfield
 
-These rules become a `wip/big-blueprint/docs/variant-selection.md` doc, the way `browser-legibility.md` is the canonical Stage 0 reference.
+These rules become a `wip/blueprint/docs/variant-selection.md` doc, the way `browser-legibility.md` is the canonical Stage 0 reference.
 
 ### 3. Stage definitions per variant
 
@@ -85,7 +85,7 @@ Six reviewer agents at minimum, mapping to stage gates:
 | `doc-quality-auditor` | Stage 5 → Stage 6 | All variants |
 | `prototype-smoke-runner` | Stage 4/Stage 6 ship gate | Build + midstream |
 
-Definitions live in `wip/big-blueprint/template/.claude/agents/`. The three open questions from the v2 patch (location, runtime, smoke-flake policy) need to be resolved here — they were deferred in the predecessor session.
+Definitions live in `wip/blueprint/template/.claude/agents/`. The three open questions from the v2 patch (location, runtime, smoke-flake policy) need to be resolved here — they were deferred in the predecessor session.
 
 ### 5. Re-apply the right variant to existing consumers
 
@@ -116,7 +116,7 @@ After the taxonomy lands:
    - Convergence loop runtime: single orchestrator vs worktree-per-reviewer. Recommendation: single orchestrator initially; promote to worktree-per-reviewer when stake increases.
    - Smoke-flake policy: block vs follow-up runs. Recommendation: block for share-link-to-stakeholder paths; follow-up runs for internal-only paths.
 
-5. **Draft reviewer agents** under `wip/big-blueprint/template/.claude/agents/`. Start with `research-completeness-reviewer` because it's the one that would have caught the blog Stage 1 failure.
+5. **Draft reviewer agents** under `wip/blueprint/template/.claude/agents/`. Start with `research-completeness-reviewer` because it's the one that would have caught the blog Stage 1 failure.
 
 6. **Define stage definitions for the midstream variant.** This is the new variant; needs the most design work. Look at what Rally HQ + subs-initiative actually needed and back-derive from there.
 
@@ -136,10 +136,10 @@ The test for the fresh session: at the end, opening any of the four consumers sh
 
 ## Cross-references
 
-- v2 patch source: `wip/big-blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
-- v2 handoff: `wip/big-blueprint/HANDOFF-v2-patch.md`
-- Stage 0 reference: `wip/big-blueprint/docs/browser-legibility.md`
-- Canonical methodology: `wip/big-blueprint/METHODOLOGY.md`
+- v2 patch source: `wip/blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
+- v2 handoff: `wip/blueprint/HANDOFF-v2-patch.md`
+- Stage 0 reference: `wip/blueprint/docs/browser-legibility.md`
+- Canonical methodology: `wip/blueprint/METHODOLOGY.md`
 - Blog blueprint (paused): `apps/blog/blueprint/`
 - Rally HQ blueprint: `apps/rally-hq/blueprint/`
 - website-nc-v3 blueprint: `apps/website-nc-v3/blueprint/`
