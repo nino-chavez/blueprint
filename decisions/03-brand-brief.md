@@ -1,7 +1,7 @@
 ---
 canonical: true
 stage: 2
-status: partially-ratified
+status: ratified
 date: 2026-05-26
 supersedes: none
 informs:
@@ -49,7 +49,7 @@ Audit-gap 2 status: **structurally closed.** L0 is no longer borrowed — Bluepr
 | B5 surface treatment | **closed** | Theme-scoped `--bg` + `--surface-{1,2}`. Each theme owns subtle bg shift matching its register reference (slate cool-near-white, coral warm-light, forest paper-tinted-green, minimal true-near-white). Commit `5a2528c`. |
 | B6 voice rules | **in-progress** (operator-grilled session) | Voice rules elicited via grilling questions; outputs land in `decisions/04-voice-rules.md` + `forge-brand generate voice` proposals. |
 | B7 logo / wordmark | **closed as-is** | Operator decision: "no important or actionable in terms of utility. assume what we have is satisfactory." Current canonical-chrome wordmark ("Blueprint" + accent treatment via `.logo` / `.logo-accent`) stands for v1. No new lockup, no glyph companion. Revisit if Blueprint distribution surfaces (npm package, README, social posts) reveal need for a mark. |
-| B8 media templates | **in-progress** | Operator decision: render "all" available templates via `forge-brand media list` + `media render`. Outputs land in `brand/media/`. |
+| B8 media templates | **closed** | All renderer-supported templates rendered to `brand/media/`. Kit `colors.primary` updated to slate (default theme) + surfaces to light, so media inherits the methodology-product register, not the inherited signal-dispatch-publication aesthetic. Rendered set: social-card (1200×675 OG), story (1080×1920 mobile), email-header (600×200), business-card (1050×600), favicon set (16/32/180/512). |
 
 When B6 + B8 resolve, this brief promotes from `partially-ratified` to `ratified`.
 

@@ -32,19 +32,19 @@
   },
   "colors": {
     "primary": {
-      "hex": "#e86c5d",
-      "name": "Signal Coral",
-      "usage": "Primary accent, links, emphasis"
+      "hex": "#2e5cb8",
+      "name": "Blueprint Slate",
+      "usage": "Default-theme brand color. hsl(225, 60%, 45%). Matches project-tokens.css [data-theme=slate] --brand-500."
     },
     "secondary": {
-      "hex": "#00ced1",
-      "name": "Signal Cyan",
-      "usage": "Secondary accent, highlights, data viz"
+      "hex": "#147274",
+      "name": "Blueprint Cyan",
+      "usage": "Secondary accent. Methodology-cyan for data/metadata."
     },
     "accent": {
-      "hex": "#e86c5d",
-      "name": "Signal Coral",
-      "usage": "Same as primary — single-accent brand"
+      "hex": "#2e5cb8",
+      "name": "Blueprint Slate",
+      "usage": "Single-accent brand — matches primary in default theme."
     },
     "neutral": {
       "50": "#f9fafb",
@@ -82,13 +82,13 @@
       }
     },
     "surfaces": {
-      "background": "#0a0a0b",
-      "foreground": "#ffffff",
-      "card": "#1a1a1d",
-      "cardForeground": "#ffffff",
-      "muted": "#121214",
-      "mutedForeground": "#9ca3af",
-      "border": "#374151"
+      "background": "#fbfbfd",
+      "foreground": "#13151a",
+      "card": "#ffffff",
+      "cardForeground": "#13151a",
+      "muted": "#f4f5f8",
+      "mutedForeground": "#5b6275",
+      "border": "#dbdde5"
     }
   },
   "typography": {
@@ -352,8 +352,8 @@
     "templates": [
       {
         "id": "social-card",
-        "name": "Blog Social Card",
-        "description": "OG image for blog posts",
+        "name": "Methodology Social Card",
+        "description": "OG image for methodology releases, ADRs, prescription announcements",
         "sizes": [
           {
             "width": 1200,
@@ -378,32 +378,37 @@
       }
     ],
     "creative": {
-      "basePrompt": "BRAND: Signal Dispatch — a strategic technology newsletter by Nino Chavez.\nAESTHETIC: Dark, professional, tech-focused. Minimalist with purpose.\n\nVISUAL LANGUAGE:\n- Signal waveforms, circuit-like patterns, geometric nodes\n- Abstract data visualization, flowing lines\n- Network topology patterns, subtle grid systems\n- Near-black backgrounds with coral/cyan accent highlights\n- Clean lines, no ornamental flourishes",
+      "basePrompt": "BRAND: Blueprint — production-quality methodology + scaffolding for initiative-scoped agent-assisted work.\nAESTHETIC: Solution Architecture register. Methodology product, not publication. Light surface, deliberate, diagram-friendly.\n\nVISUAL LANGUAGE:\n- Architectural blueprints, isometric grids, technical drawings\n- Abstract scaffold patterns, modular grid systems, structural lines\n- Stage-pipeline diagrams (subtle), atomic-design level visualizations\n- Light/warm or cool near-white backgrounds with brand-color accent\n- Clean lines, no decoration, no flourish",
       "conceptMap": {
-        "signal": "abstract signal waveform, frequency pattern, data stream",
-        "network": "network topology nodes and edges, connected systems",
-        "circuit": "circuit board patterns, technical traces, PCB aesthetic",
-        "data": "data visualization, flowing lines, abstract charts",
-        "grid": "subtle background grid, technical graph paper"
+        "blueprint": "architectural blueprint grid pattern, technical drawing aesthetic",
+        "scaffold": "modular grid scaffold, structural framework lines",
+        "pipeline": "stage-pipeline diagram, sequential blocks, methodology flow",
+        "layer": "atomic-design level stack, L0-L5 horizontal bands",
+        "compass": "drafting compass, ruler, T-square aesthetic"
       },
       "formatModifiers": {
         "web": "Standard web resolution. 1200x675px. Landscape format.",
-        "banner": "Newsletter banner. 1200x200px. Horizontal strip."
+        "banner": "README banner. 1200x300px. Horizontal strip.",
+        "cover": "Methodology cover. 1600x900px. Landscape format."
       },
       "visualKeywords": [
-        "dark",
+        "architectural",
         "minimal",
-        "technical",
-        "geometric",
-        "signal",
-        "network"
+        "deliberate",
+        "structural",
+        "diagram",
+        "scaffold",
+        "grid",
+        "methodical"
       ],
       "avoid": [
         "text in AI-generated images",
         "stock photo aesthetics",
-        "bright/cheerful colors",
+        "celebratory imagery (confetti, trophies, fireworks)",
         "corporate clip art",
-        "gratuitous gradients"
+        "gratuitous gradients",
+        "people / faces",
+        "abstract artistic flourishes"
       ]
     },
     "assets": []
