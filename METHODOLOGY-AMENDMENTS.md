@@ -12,6 +12,51 @@ This initiative is unique: it IS Blueprint applied to itself. Every methodology 
 
 <!-- Entries below, newest first. -->
 
+## 2026-05-26 — L0 brand decisions should be multi-theme registry, not single-palette pickup
+
+**Trigger**: During the L0 brand-work session on this initiative (commit `e26c98b`), the agent surfaced a fork-in-the-road question to the operator: which color family should Blueprint-the-product anchor on — slate, deeper coral, forest, or neutral-minimal? The agent expected a single-family pick. The operator's response was "make it a choice when using the blueprint. implement all four as options to apply." This reframed the entire L0 work from "pick one brand" to "implement a theme registry that consumer initiatives pick from at init time or runtime."
+
+**Scope**: Candidate for methodology promotion (medium priority — closes a real architectural gap in how Blueprint thinks about brand at the methodology level)
+**Status**: Structural closure proven in this initiative (`portal/project-tokens.css` § L0 theme registry + `portal/theme-switcher.js` + visual verification across all 4 themes). Methodology promotion deferred until this initiative lands per the freeze rule.
+
+The reason this matters: the methodology amendment from earlier today (§ Stage 1 missing design-discovery sub-track) named tool integration ("integrate `forge-brand` via `blueprint.yml` config; don't absorb") but framed brand as a single-decision flow — `brand_source: forge-brand | manual | imported`. The multi-theme reframe is structurally different. Blueprint itself owns a theme REGISTRY; consumer initiatives select from it; `forge-brand` is the tool that proposes NEW theme additions to the registry, not a tool that produces a one-shot consumer brand.
+
+This is a Layer 0 architectural decision Blueprint has been silently missing: methodology products serve multiple consumer initiatives with different brand register needs. Forcing every consumer to invoke `forge-brand` from scratch to produce its own palette reproduces the "agent fills void with templates" failure mode at scale (every consumer's first session would either invoke forge-brand for a one-off or, more likely, skip it and inherit canonical chrome defaults — which is what already happened across rally-hq, website-nc-v3, blog, and this initiative).
+
+Multi-theme registry shape (validated in this initiative):
+
+- **4 themes registered**: `slate` (cool methodology default, Linear/Vercel/Notion register), `coral` (warmth, signal-dispatch-adjacent but methodology-product), `forest` (craft-tool, Stripe-early register), `minimal` (type-led restraint, lethain shape).
+- **Implementation**: `[data-theme="X"]` selectors in `project-tokens.css` overriding `--brand-*` ramps. WCAG AA contrast validated per theme.
+- **Runtime selection**: query param + localStorage + switcher UI; switcher is initiative-side JS, NOT canonical chrome.
+- **Brand-kit shape**: each theme has its own `brand-kit.json` (a `forge-brand`-compatible structure); consumer initiatives pick by reference, not by forking.
+
+Candidate solutions for methodology promotion:
+
+1. **Theme registry as canonical chrome + `blueprint.yml` schema extension** (recommended). Concretely:
+
+   - **Canonical chrome `shared.css`**: declare the 4 themes' `--brand-*` overrides as `[data-theme="X"]` blocks. Themes ship with every Pattern B portal, byte-identical.
+   - **`blueprint.yml` schema**: add `design.theme: slate | coral | forest | minimal | custom`. Default = `slate`. `custom` means consumer-overrides theme tokens locally in `project-tokens.css`.
+   - **`stamp.mjs --pattern=B` substitution**: write `<html data-theme="{theme}">` into every Pattern B page at scaffold time + restamp time. The `prep-deploy.sh` build picks up the attribute via the manifest.
+   - **`@blueprint/cli init`**: surface the theme choice as one of the init questions (after variant + tier + pattern). Show a one-line description of each theme; operator picks.
+   - **`forge-brand` role**: shifts from "produce a consumer brand" to "propose a new theme for the registry." Adding a 5th theme is a methodology-level PR with `forge-brand` outputs; consumer initiatives don't fork brands ad-hoc.
+   - **Runtime switcher**: methodology promotes `portal/theme-switcher.js` to canonical chrome (`shared.theme-switcher.js`) so every Pattern B portal gets the preview-switcher for free. Stakeholders see all theme options regardless of consumer's default pick.
+   - **Operator override path**: if the 4 themes don't fit a consumer's brand needs (e.g., a brand client with mandated colors), the consumer sets `design.theme: custom` + writes their own `[data-theme="custom"]` block in `project-tokens.css`. `forge-brand export css --kit ...` outputs the right shape.
+
+2. **Theme registry as initiative-only (this initiative's current state)**. Don't promote to methodology. Each consumer initiative either inherits canonical chrome defaults (Rally HQ palette) or writes its own theme registry. This is the path of least change but reproduces the failure mode for every new consumer.
+
+3. **Hybrid — theme registry NOT in chrome but documented in methodology as an opt-in pattern**. Methodology ships a `template/portal/themes/` directory with the 4 theme `:root[data-theme]` blocks as a reference file; consumers can `@import` it from `project-tokens.css` if they want the multi-theme system, or ignore it. Lower-cost methodology change; consumer onboarding tax remains.
+
+Option 1 is the recommended shape because it closes the L0 borrowed-palette failure at the methodology layer rather than the consumer layer. The reason it matters: every consumer initiative since the rally-hq dogfood started has inherited Rally HQ's Midnight & Copper palette via canonical chrome. The cross-audit reconciliation flagged this as the L0 layer of the design-discipline gap. Theme registry as canonical chrome closes this once for all future consumers.
+
+**References**:
+- This initiative's implementation: commit `e26c98b` (`portal/project-tokens.css` § L0 theme registry + `portal/theme-switcher.js`)
+- Brand brief context: `decisions/03-brand-brief.md` § 2026-05-26 update — Multi-theme decision
+- Related earlier amendment: `METHODOLOGY-AMENDMENTS.md` § 2026-05-26 — Stage 1 missing design-discovery sub-track (the broader design-discipline gap; this entry is a Layer-0 specific extension)
+- `forge-brand` schema: `~/Workspace/dev/tools/forge-brand/presets/*.json` (existing presets are operator's other brands; methodology themes would live at `template/brand/themes/*.json` once promoted)
+- Operator's verbatim reframe: "make it a choice when using the blueprint. implement all four as options to apply" (2026-05-26 session)
+
+---
+
 ## 2026-05-26 — Stage 1 missing design-discovery sub-track; Stage 2 design-system work has no L4/L5 anchor
 
 **Trigger**: Two independent dogfood sessions on consumer initiatives (Signal Dispatch blog redesign and Rally HQ public-surface redesign) converged within hours on the same methodology gap from different starting points. The blog session, after generating an 8-surface "page builder" derived from design principles, discovered on operator pushback that production actually carries 20 distinct page types across 24 routes (fiction, presentations, tutorials, research notes, tag taxonomy, drafts, private-share, logout — entire categories absent from the derivation). The Rally HQ session worked through seven reactive CSS patches before the operator pulled the camera back; the audit that followed identified L4 templates as entirely absent across 95 routes / 11 archetypes, with every page negotiating its own shell.
