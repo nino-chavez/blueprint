@@ -215,6 +215,42 @@ prototype:
                                     # time so the default applies before JS loads.
                                     # Runtime switcher (theme-switcher.js) lets stakeholders preview any
                                     # of the 4 themes regardless of consumer's default pick.
+                                    #
+                                    # Single-axis shorthand: `theme: <name>` is the simple form for
+                                    # consumers whose brand model is one chrome theme. For multi-tenant
+                                    # or multi-axis brand models, use the brand_axes block below instead.
+  brand_axes: []                    # Optional. Long-form schema for multi-axis brand models.
+                                    # Default empty = single-axis (use `theme:` above).
+                                    # Added 2026-05-27 wave 16 per rally-hq amendment 2026-05-26 §3.
+                                    #
+                                    # Use when the consumer is multi-tenant or has orthogonal brand
+                                    # axes (e.g., Rally HQ: chrome theme (Midnight & Indigo) × per-
+                                    # tournament accent (D-family routes get tournament-specific
+                                    # --tournament-accent override). The 4-theme registry addresses
+                                    # axis 1 only; brand_axes lets the consumer declare additional
+                                    # axes the registry has no shape for.
+                                    #
+                                    # Shape:
+                                    #   brand_axes:
+                                    #     - id: chrome
+                                    #       scope: operator-surface       # which audience/routes this axis applies to
+                                    #       source: project-tokens.css    # where the tokens for this axis live
+                                    #     - id: tenant-accent
+                                    #       scope: tenant-surface
+                                    #       source: --tournament-accent runtime CSS variable
+                                    #       per_route_override: true       # tenant-side routes set their own value
+                                    #
+                                    # Methodology consumers of brand_axes (current = documentation
+                                    # only; stamp.mjs does not enforce a schema yet; future waves may
+                                    # add CLI flags for axis-aware substitution):
+                                    #   - chrome-canonical-reviewer can skip files declared as
+                                    #     consumer-owned via axis source paths
+                                    #   - audit-chrome can interpret expected divergence on files
+                                    #     declared as carrying axis content
+                                    #
+                                    # If brand_axes is non-empty, `theme:` becomes the default for the
+                                    # axis with id=chrome (back-compat); explicit per-axis declarations
+                                    # in brand_axes override.
   comparison_enabled: true          # show current-state panel (◀ drawer)
   strategy_panel_enabled: true      # show strategy panel (▶ drawer)
   chat_enabled: false               # embed AI chat agent
