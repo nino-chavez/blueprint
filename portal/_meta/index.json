@@ -56,7 +56,8 @@
         "designed": false,
         "docs": [
           { "id": "research-current-state-ai-hive-as-companion", "title": "01 — ai-hive as companion", "source": "research/current-state/01-ai-hive-as-companion.md" },
-          { "id": "research-current-state-blueprint-production-quality-gaps", "title": "02 — Blueprint production-quality gaps", "source": "research/current-state/02-blueprint-production-quality-gaps.md" }
+          { "id": "research-current-state-blueprint-production-quality-gaps", "title": "02 — Blueprint production-quality gaps", "source": "research/current-state/02-blueprint-production-quality-gaps.md" },
+          { "id": "research-current-state-portal-surface-audit", "title": "03 — Portal surface audit (first L5 inventory)", "source": "research/current-state/03-portal-surface-audit.md" }
         ]
       },
       {
