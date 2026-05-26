@@ -1,13 +1,26 @@
-/* Blueprint Portal — Shared CSS
+/* Blueprint Portal — Shared CSS (CANONICAL CHROME — DO NOT EDIT IN A CONSUMER REPO)
  *
- * Static-HTML portal shell (per CONVENTIONS.md). Replace the token values
- * below with your project's brand colors + type. The rest of this file
- * (layout primitives, components, brand bar, slice header, slice sidebar,
- * compare toggle, drawers, flow breadcrumb, annotation overlay) is
- * project-agnostic.
+ * Static-HTML portal shell (per CONVENTIONS.md). This file is the canonical
+ * Pattern B chrome: design tokens with default values, layout primitives,
+ * components, brand bar, slice header, slice sidebar, compare toggle,
+ * drawers, flow breadcrumb, annotation overlay.
  *
- * Default tokens are from Rally HQ's Midnight & Copper system as a
- * reference. Override in :root for your project.
+ * Source of truth: ~/Workspace/dev/wip/blueprint/template/portal/shared.css
+ * Re-stamp into a consumer with:
+ *   node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+ *     --mode=restamp-chrome --pattern=B --target=<initiative-root>
+ *
+ * To override tokens for your project, edit `project-tokens.css` (loaded
+ * after this file). Never edit this file in a consumer repo — the
+ * `portal-chrome-canonical-reviewer` gate diffs against template canonical
+ * and fails the build if the consumer's copy has drifted. Drift here means
+ * the next methodology bump won't propagate, and a downstream consumer
+ * mistaking your deployed shared.css for the canonical (the 2026-05-25 v3
+ * bug) re-runs the failure.
+ *
+ * Default tokens below are Rally HQ's Midnight & Copper system as a
+ * reference baseline. Your project's `:root` overrides in project-tokens.css
+ * will win because the cascade loads it after this file.
  */
 
 /* ─────────────── tokens ─────────────── */
