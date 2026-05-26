@@ -37,6 +37,7 @@
         "docs": [
           { "id": "decisions-01-prescription", "title": "01 — Prescription (two wedges + three items)", "source": "decisions/01-prescription.md" },
           { "id": "decisions-02-design-system", "title": "02 — Design System (L0–L4 dictionary for portal v1)", "source": "decisions/02-design-system.md" },
+          { "id": "decisions-03-brand-brief", "title": "03 — Brand Brief (operator-blocked decision points + forge-brand invocation)", "source": "decisions/03-brand-brief.md" },
           { "id": "decisions-adr-0001-dual-protocol-distribution", "title": "ADR-0001 — Dual-protocol distribution", "source": "decisions/ADR-0001-dual-protocol-distribution.md" },
           { "id": "decisions-adr-0002-reviewers-as-executable-plugins", "title": "ADR-0002 — Reviewers as executable plugins", "source": "decisions/ADR-0002-reviewers-as-executable-plugins.md" }
         ]
