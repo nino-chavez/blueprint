@@ -124,6 +124,95 @@
   --transition-slow:  300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ─────────────── L0 theme registry (added 2026-05-26 wave 9) ─────────────── *
+ *
+ * Blueprint exposes 4 brand families as consumer-selectable themes. Consumer
+ * initiatives pick one via blueprint.yml (design.theme: slate|coral|forest|
+ * minimal|custom), which the stamper writes as <html data-theme="X"> at
+ * scaffold + restamp time. Default = slate.
+ *
+ * Each theme overrides --brand-* + --bg + --surface-{1,2}. Inverted-surface
+ * tokens (--cta-bg, --header-bg) stay theme-neutral. WCAG AA contrast
+ * validated per theme.
+ *
+ * For custom themes: set design.theme: custom in blueprint.yml and declare
+ * your own [data-theme="custom"] block in project-tokens.css. forge-brand
+ * export css produces the right shape.
+ *
+ * Origin: blueprint-redesign dogfood (commit e26c98b on dogfood/self-redesign
+ * @ dogfood-v1). Methodology amendment 2026-05-26 — multi-theme registry.
+ */
+
+/* Slate / indigo — cool neutral, methodology-product default
+ * Register: Linear / Vercel / Notion-adjacent. Confident, deliberate.
+ */
+:root[data-theme="slate"],
+:root:not([data-theme]) {
+  --brand-50:  hsl(225, 60%, 96%);
+  --brand-100: hsl(225, 55%, 88%);
+  --brand-300: hsl(225, 55%, 65%);
+  --brand-500: hsl(225, 60%, 45%);
+  --brand-600: hsl(225, 65%, 38%);
+  --brand-700: hsl(225, 70%, 28%);
+  --brand-900: hsl(225, 75%, 14%);
+  --bg:        hsl(220, 18%, 99%);
+  --surface-1: hsl(220, 14%, 99.5%);
+  --surface-2: hsl(220, 16%, 96%);
+}
+
+/* Deeper coral — keep warmth, force contrast
+ * Register: editorial-publication-adjacent but methodology-product.
+ * Warmth-carrying brand against warm-white paper.
+ */
+:root[data-theme="coral"] {
+  --brand-50:  hsl(8, 80%, 96%);
+  --brand-100: hsl(8, 75%, 88%);
+  --brand-300: hsl(8, 70%, 62%);
+  --brand-500: hsl(8, 65%, 42%);
+  --brand-600: hsl(8, 70%, 35%);
+  --brand-700: hsl(8, 75%, 26%);
+  --brand-900: hsl(8, 80%, 14%);
+  --bg:        hsl(35, 25%, 98%);
+  --surface-1: hsl(35, 20%, 99%);
+  --surface-2: hsl(35, 15%, 96%);
+}
+
+/* Forest / olive — warm earthy, distinctive
+ * Register: craft-tool / Stripe-early / Linear-deep-mode.
+ * Paper-tinted with subtle green undertone.
+ */
+:root[data-theme="forest"] {
+  --brand-50:  hsl(150, 45%, 95%);
+  --brand-100: hsl(150, 42%, 86%);
+  --brand-300: hsl(150, 40%, 55%);
+  --brand-500: hsl(150, 42%, 32%);
+  --brand-600: hsl(150, 45%, 26%);
+  --brand-700: hsl(150, 50%, 18%);
+  --brand-900: hsl(150, 55%, 10%);
+  --bg:        hsl(80, 18%, 98%);
+  --surface-1: hsl(80, 15%, 99%);
+  --surface-2: hsl(80, 18%, 95%);
+}
+
+/* Neutral + amber accent — minimal, type-led
+ * Register: maximum restraint. Body type carries identity; brand color
+ * appears only on emphasis. lethain.com / Stratechery shape.
+ */
+:root[data-theme="minimal"] {
+  --brand-50:  hsl(220, 12%, 96%);
+  --brand-100: hsl(220, 12%, 90%);
+  --brand-300: hsl(220, 12%, 60%);
+  --brand-500: hsl(220, 12%, 32%);
+  --brand-600: hsl(220, 14%, 24%);
+  --brand-700: hsl(220, 16%, 16%);
+  --brand-900: hsl(220, 18%, 8%);
+  --accent-500: hsl(35, 90%, 45%);
+  --accent-700: hsl(35, 95%, 30%);
+  --bg:        hsl(0, 0%, 99%);
+  --surface-1: hsl(0, 0%, 99.5%);
+  --surface-2: hsl(220, 8%, 96%);
+}
+
 /* ─────────────── reset & base ─────────────── */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

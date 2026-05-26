@@ -43,12 +43,19 @@ const VARIANT_TIER_MATRIX = {
 // chat-widget.js (added 2026-05-25 evening): the prior version's Rally HQ
 // brand string in the header comment was excised; the widget itself was
 // always project-agnostic. Now canonical.
+//
+// theme-switcher.js (added 2026-05-26 wave 9 — multi-theme registry): runtime
+// theme picker that reads ?theme= query param + localStorage and applies one
+// of the 4 canonical themes (slate / coral / forest / minimal) declared in
+// shared.css [data-theme] blocks. Initiative-side switcher promoted to chrome
+// so every Pattern B portal gets the preview-switcher for free.
 const PATTERN_B_CHROME_FILES = [
   "shared.css",
   "_portal-shell.js",
   "proto-nav.js",
   "proto-annotate.js",
   "chat-widget.js",
+  "theme-switcher.js",
   "_headers",
   "_redirects",
   "docs/index.html",
