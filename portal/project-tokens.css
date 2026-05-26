@@ -20,6 +20,16 @@
   /* Default theme: slate. Switch via <html data-theme="slate|coral|forest|minimal">
    * or the portal's runtime theme switcher.
    */
+
+  /* B4 — Type stack override (audit-gap 2 partial closure):
+   * Drop Anton (Rally HQ's condensed-uppercase hero face — sport poster
+   * register; wrong for Solution Architecture methodology product).
+   * Use Inter throughout including hero treatments; weight 800 +
+   * tracking handles display moments without a separate face.
+   * Type stack is single-brand across all 4 themes — methodology product
+   * has one type stack regardless of color family.
+   */
+  --font-hero: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ─────────────── L0 theme registry ─────────────── *
