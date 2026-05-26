@@ -690,7 +690,25 @@
       try {
         const res = await fetch(`/_docs/${docId}.md`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const md = await res.text();
+        let md = await res.text();
+
+        // Cloudflare Pages SPA-fallback returns the root index.html with
+        // HTTP 200 when a static asset is missing — without this sentinel
+        // the home HTML gets parsed as markdown and renders gibberish.
+        // Real markdown never starts with a doctype/html tag. Caught in
+        // the blog consumer session 2026-05-25; encoded here.
+        const looksLikeHtml = /^\s*<(!doctype|html|head|body)/i.test(md);
+        if (looksLikeHtml || md.trim().length === 0) {
+          throw new Error(`No such document: ${docId}`);
+        }
+
+        // Strip YAML frontmatter from the top before marked parses.
+        // Stage artifacts open with --- frontmatter --- blocks; without
+        // stripping, marked treats the delimiters as thematic breaks
+        // and renders the keys as a wall of paragraphs in headline type.
+        // Conservative regex: only strips if file starts with --- on
+        // its own line and contains a closing ---. Standard YAML shape.
+        md = md.replace(/^---\s*\n[\s\S]*?\n---\s*\n+/, '');
 
         // Configure marked: GFM, breaks off, smartypants off
         marked.setOptions({ gfm: true, breaks: false, headerIds: false, mangle: false });
