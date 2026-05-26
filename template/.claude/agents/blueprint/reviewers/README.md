@@ -12,6 +12,7 @@ Canonical reference: `wip/blueprint/docs/variant-selection.md`.
 | `research-completeness-reviewer` | Stage 1 → Stage 2 | All |
 | `design-principles-reviewer` | Stage 2 → Stage 3 | Greenfield |
 | `prescription-evidence-reviewer` | Stage 2 → Stage 3 | Midstream, Brownfield |
+| `prescription-jtbd-traceability-reviewer` | Stage 2 → Stage 3 (runs alongside `prescription-evidence-reviewer`) | Midstream, Brownfield |
 | `portal-pattern-a-conformance-reviewer` | Stage 3 completion (Pattern A) **and** any commit touching `apps/portal/` | All initiatives at Tier 1+ on Pattern A |
 | `portal-pattern-b-conformance-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B |
 | `portal-chrome-canonical-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B (Pattern A audit deferred) |
