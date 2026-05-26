@@ -69,3 +69,26 @@ Per the [methodology freeze rule](../../template/CLAUDE.md), this lands in the m
 ## Follow-ups
 
 - **ADR-0003 (open)**: should `--bcs-*` CSS variables in `template/packages/design-tokens/` rename to `--blueprint-*`? Decision pivots on whether the BC-collision-avoidance rationale still applies in the project-agnostic methodology context. Defer until a non-BC consumer initiative actually adopts the design-tokens package and surfaces collision data.
+
+## Addendum — 2026-05-25 evening: Pattern B parallel rename
+
+The ADR above was scoped to Pattern A (`template/apps/portal/` + `template/packages/ui/audience-switcher`). Audit of `template/portal/` (Pattern B) on the same day surfaced an analogous storage-key leak class — Pattern B chrome carried Rally-HQ-prefixed identifiers from its extraction:
+
+| File | Before | After |
+|---|---|---|
+| `template/portal/index.html` | `'rally-bp-audience'` | `'blueprint-audience'` |
+| `template/portal/proto-nav.js` | `'rally-hq-blueprint-chrome-preview'` | `'blueprint-chrome-preview'` |
+| `template/portal/proto-annotate.js` | `'rally-anno-enabled'` | `'blueprint-anno-enabled'` |
+| `template/portal/proto-annotate.js` | `'rally-anno-notes-v1'` | `'blueprint-anno-notes-v1'` |
+| `template/portal/proto-annotate.js` | `window.rallyAnno` | `window.blueprintAnno` |
+
+Same convention (`blueprint-` prefix), same rationale (consistency with the methodology name; canonical chrome must ship with zero project-specific identifiers). Treated as application of this ADR's convention, not a new decision — no separate ADR.
+
+**Reused storage key (`blueprint-audience`) across patterns**: Pattern A and Pattern B both use `blueprint-audience` as the localStorage key for audience selection. The valid VALUES differ — Pattern A: `executive / evaluator / engineering`; Pattern B: `reviewer / engineer / operator`. A user who has both pattern-A and pattern-B portals in the same browser will see Pattern B's `isAudience` guard reject Pattern A's stored value and default to `reviewer`. Acceptable cost — same default-reset behavior this ADR already established. Pill-naming unification across patterns is a separate decision (not in scope here).
+
+Additional non-storage Rally HQ leaks excised in the same audit (not ADR-worthy, just cleanup):
+
+- `template/portal/index.html` footer line + GitHub link were hardcoded Rally HQ content; now manifest-driven via new `footer: { line, repo_url }` block in `_meta/index.json`
+- `template/portal/proto-annotate.js` header comment said "Rally HQ Blueprint — Annotation overlay"; now "Blueprint — Annotation overlay (canonical chrome)"
+- `template/portal/chat-widget.js` header comment said "Rally HQ Blueprint — AI chat widget"; now "Blueprint — AI chat widget (canonical chrome)"
+- `template/portal/functions/api/chat.js` OpenRouter `HTTP-Referer: 'https://blueprint.rallyhq.app'` and `X-Title: 'Rally HQ Blueprint'` were hardcoded; now derived from request URL + manifest at runtime

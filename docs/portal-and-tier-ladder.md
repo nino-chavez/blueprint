@@ -98,6 +98,26 @@ Every Pattern A portal exposes the same six verbs and the same audience switcher
 
 Routes ship with placeholder content if not yet authored. An empty `/operate` signals operate-mode hasn't been authored, not that it's been removed from the contract.
 
+### Voice mode per route (mandatory)
+
+Each Pattern A route has a default voice mode declared at the IA level. Pages under that route inherit it unless the page frontmatter overrides. The mode determines cadence, hedge tolerance, sentence shape, and which voice guide applies.
+
+| Route | Default voice mode | Voice guide |
+|---|---|---|
+| `/` (overview) | Executive Advisory | confident consultant, outcome-focused, scannable |
+| `/discover` | Executive Advisory | strategy-deck voice — same as above |
+| `/try` | Documentation | instructional, imperative, copy-paste ready (the demo is the load-bearing thing; copy serves the demo) |
+| `/build` | Solution Architecture | precise, definitive, code-referenced, diagram-heavy |
+| `/operate` | Documentation | instructional, runbook cadence |
+| `/inspect` | Thought Leadership (methodology subtype) | narrative, evidence-led, self-interrogating — methodology IS the work being shown |
+| `/roadmap` | Executive Advisory | outcome-focused, confidence about ordering |
+
+The voice taxonomy comes from `forge-signal/docs/voice/` (when Forge Signal is enabled) or `template/docs/voice-template.md` (Blueprint's built-in fallback). Per-page override: add `voice_mode: <name>` to the page's frontmatter. The override is rare — most pages on a route share the route's mode.
+
+Enforced by `terminology-linter` + `doc-quality-auditor` at Stage 5 → 6. Pages whose copy doesn't match the declared mode (executive-advisory text on `/inspect`, methodology-narrative text on `/discover`) get flagged for rewrite. Both reviewers read the route → mode map above.
+
+Why per-route: the rally-hq + blog reconciliation surfaced that "the portal voice" isn't a single thing — `/discover` and `/inspect` should sound different even when written by the same agent. Declaring the mode at the IA level prevents drift toward the agent's path-of-least-resistance voice (which trends generic-thoughtful-LinkedIn).
+
 ### Pattern A is not a deliberation venue
 
 The portal is the stakeholder deliverable. It is not a workshop. It is not where you walk variant A / B / C side by side and ask "which one?" That work belongs in `blueprint/prototype/` (Tier 0 design-principles scratch) or in `decisions/` (ADRs).

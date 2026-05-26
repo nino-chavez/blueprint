@@ -8,11 +8,13 @@ Canonical reference: `wip/blueprint/docs/variant-selection.md`.
 
 | Agent | Gate | Variants |
 |---|---|---|
+| `pilot-profile-lock-reviewer` | Stage 0 → Stage 1 | All |
 | `research-completeness-reviewer` | Stage 1 → Stage 2 | All |
 | `design-principles-reviewer` | Stage 2 → Stage 3 | Greenfield |
 | `prescription-evidence-reviewer` | Stage 2 → Stage 3 | Midstream, Brownfield |
 | `portal-pattern-a-conformance-reviewer` | Stage 3 completion (Pattern A) **and** any commit touching `apps/portal/` | All initiatives at Tier 1+ on Pattern A |
 | `portal-pattern-b-conformance-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B |
+| `portal-chrome-canonical-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B (Pattern A audit deferred) |
 | `fact-check-loop-reviewer` | Stage 4 convergence orchestrator | All |
 | `doc-quality-auditor` | Stage 5 → Stage 6 | All |
 | `terminology-linter` | Stage 5 → Stage 6 (parallel with doc-quality-auditor) | All |
@@ -23,6 +25,12 @@ Canonical reference: `wip/blueprint/docs/variant-selection.md`.
 Run exactly one of the two portal-conformance reviewers per initiative — whichever matches the pattern declared in `blueprint.yml` (or inferred from the directory layout: `apps/portal/` ⇒ Pattern A, `portal/` or `blueprint/portal/` ⇒ Pattern B). Running both is a configuration error; running neither at Stage 3 on a Tier 1+ initiative is a methodology violation (the failure mode is the v1-with-deliberation-shape, 11-variants-walking portal the blog session shipped pre-2026-05-25).
 
 The "any portal-touching commit" trigger applies to midstream and brownfield variants — those variants can edit a portal anywhere along the pipeline, not just at Stage 3. Greenfield gets the gate at Stage 3 completion only (no portal exists earlier).
+
+### Chrome-canonical pairing (Pattern B)
+
+`portal-chrome-canonical-reviewer` runs *alongside* `portal-pattern-b-conformance-reviewer`, not in place of it. They check different things: the conformance reviewer checks whether the consumer's portal has the right *shape* (required files exist, drawers are populated, comparison toggle is wired, I-2/I-3/I-5 invariants hold). The chrome-canonical reviewer checks whether the consumer's chrome files (`shared.css`, `_portal-shell.js`, `proto-nav.js`, `proto-annotate.js`, `_headers`, `_redirects`) are byte-identical to `template/portal/` canonical. The shape can be conformant while the chrome has silently drifted — and the silent-chrome-drift case is the 2026-05-25 v3 bug that motivated this reviewer's existence.
+
+Run order: `portal-pattern-b-conformance-reviewer` first (shape), then `portal-chrome-canonical-reviewer` (chrome). If shape is broken, chrome drift is irrelevant; if shape passes, chrome must match.
 
 ## Behavior model
 

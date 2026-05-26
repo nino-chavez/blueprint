@@ -30,6 +30,10 @@ Sequenced, not parallel. The methodology repo holds one "live consumer" lock at 
 
 Operator check before starting a Blueprint-touching session: `git -C ~/Workspace/dev/wip/blueprint status` and any in-flight consumer worktree should both be clean of methodology edits, or one of them is paused.
 
+## Per-initiative methodology amendments
+
+`METHODOLOGY-AMENDMENTS.md` at the initiative root captures methodology learnings specific to this initiative — gaps you worked around, hooks you added, stages you skipped, candidates for methodology promotion. Append-only, reverse-chronological. Convention: `~/Workspace/dev/wip/blueprint/template/docs/methodology/methodology-amendments-convention.md`.
+
 ## Variant declaration (read this first)
 
 Every initiative declares a variant in `blueprint.yml`:
@@ -98,11 +102,12 @@ Variant-aware gates that block premature stage completion. Full roster + behavio
 
 | Gate | Reviewer(s) |
 |---|---|
+| Stage 0 → 1 | `pilot-profile-lock-reviewer` |
 | Stage 1 → 2 | `research-completeness-reviewer` |
 | Stage 2 → 3 (greenfield) | `design-principles-reviewer` |
 | Stage 2 → 3 (midstream / brownfield) | `prescription-evidence-reviewer` |
 | Stage 3 completion (Pattern A) + any `apps/portal/` commit | `portal-pattern-a-conformance-reviewer` |
-| Stage 3 completion (Pattern B) + any `portal/` or `blueprint/portal/` commit | `portal-pattern-b-conformance-reviewer` |
+| Stage 3 completion (Pattern B) + any `portal/` or `blueprint/portal/` commit | `portal-pattern-b-conformance-reviewer` + `portal-chrome-canonical-reviewer` |
 | Stage 4 convergence | `fact-check-loop-reviewer` (orchestrator) |
 | Stage 5 → 6 | `doc-quality-auditor` + `terminology-linter` (parallel) |
 | Stage 6 ship | `prototype-smoke-runner` |
