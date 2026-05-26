@@ -61,13 +61,19 @@ pre.code {
   overflow-x: auto;
 }
 pre.code { padding: var(--space-4); font-size: 12px; line-height: 1.55; border-radius: 6px; }
-pre.terminal .prompt,
-pre.code .key   { color: #f1fa8c; }
-pre.terminal .arrow,
-pre.code .str   { color: #50fa7b; }
-pre.terminal .dim,
-pre.code .com   { color: #6272a4; font-style: italic; }
-pre.terminal .warn { color: #f1fa8c; }
+
+/* pre.terminal palette — cyan prompts, green arrows, muted dim, yellow warn.
+ * pre.code palette — yellow keys, green strings, muted italic comments.
+ * The two share the dark background + mono shape, NOT the syntax colors.
+ */
+pre.terminal .prompt { color: #8be9fd; }
+pre.terminal .arrow  { color: #50fa7b; }
+pre.terminal .dim    { color: #6272a4; }
+pre.terminal .warn   { color: #f1fa8c; }
+
+pre.code .key { color: #f1fa8c; }
+pre.code .str { color: #50fa7b; }
+pre.code .com { color: #6272a4; font-style: italic; }
 
 /* M-extension — ASCII diagram block (cross-surface)
  * Mono whitespace-pre block on muted background. Was declared as `.stack`
