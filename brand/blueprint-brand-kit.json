@@ -242,114 +242,103 @@
   "voice": {
     "attributes": [
       {
-        "trait": "self-interrogating",
-        "description": "Questions its own assumptions mid-argument",
-        "example": "But wait — is that actually true, or is it just what we've been told?"
+        "trait": "methodology-as-actor",
+        "description": "Role-named subjects (the methodology / the CLI / the stamper) act on the page; reader is observer, not actor",
+        "example": "The methodology declares variants in blueprint.yml. The stamper writes the chrome at scaffold time."
       },
       {
-        "trait": "technically-deep",
-        "description": "Goes beyond surface-level analysis",
-        "example": "The cache invalidation problem isn't technical — it's organizational."
+        "trait": "grounded-not-zero-hedged",
+        "description": "Settled facts are declarative; proposals are named as proposals; recommended paths are named as recommended",
+        "example": "Wedge 1 is the proposed closure for Gap 1. The recommended path is npx @blueprint/cli init."
       },
       {
-        "trait": "provocative",
-        "description": "Opens with uncomfortable truths or counterintuitive claims",
-        "example": "Most platform teams exist to justify headcount, not serve developers."
+        "trait": "precise",
+        "description": "Solution Architecture register — diagram-friendly, deliberate, no ambiguity in role naming",
+        "example": "Brownfield initiatives run a current-state diagnose stage before prescription."
       },
       {
-        "trait": "conversational",
-        "description": "Reads like talking to a smart colleague at a bar",
-        "example": "Look, I've built three of these. The third one was worse than the first."
+        "trait": "audience-tuned-cadence",
+        "description": "Same voice principles across CLI / docs / portal but length and explanatory depth tune to audience",
+        "example": "CLI: 'Variant: brownfield.' Docs: 'The variant declaration constrains which stages apply.'"
       },
       {
-        "trait": "provisional",
-        "description": "Holds ideas tentatively, signals epistemic humility",
-        "example": "This might be wrong, but the pattern I keep seeing is..."
+        "trait": "understated",
+        "description": "Success messages state the result, not the celebration; no 'great' / 'awesome' / 'perfect'",
+        "example": "Stamp complete. 8 files written. 0 conflicts."
       }
     ],
     "antiPatterns": [
       {
+        "category": "reader-as-actor",
+        "patterns": ["You declare", "You name", "You produce", "You write the"],
+        "severity": "error",
+        "suggestion": "Replace with role-subject. 'The methodology declares' / 'The CLI asks' / 'The stamper writes'."
+      },
+      {
+        "category": "brand-name-as-subject",
+        "patterns": ["Blueprint declares", "Blueprint asks", "Blueprint produces", "Blueprint writes"],
+        "severity": "error",
+        "suggestion": "Use role-name as subject. Brand-name labels the system, not the verbs. 'The methodology declares' / 'The CLI asks'."
+      },
+      {
+        "category": "academic-hedge-stack",
+        "patterns": ["may", "might", "could", "would tend to", "typically", "generally", "often", "usually", "depending on", "it is possible that"],
+        "severity": "error",
+        "suggestion": "Replace with grounded markers. 'The proposed' / 'The recommended' / 'For X, the path is' / 'structurally closes' / 'defers to'."
+      },
+      {
         "category": "corporate-jargon",
-        "patterns": [
-          "leverage",
-          "synergy",
-          "holistic approach",
-          "paradigm shift",
-          "circle back",
-          "deep dive",
-          "unpack",
-          "drive value"
-        ],
+        "patterns": ["leverage", "synergy", "holistic", "paradigm shift", "circle back", "deep dive", "unpack", "drive value"],
         "severity": "error",
-        "suggestion": "Say the actual thing. 'Use' not 'leverage'. 'Examine' not 'deep dive'."
+        "suggestion": "Inherits operator's published-prose anti-patterns. Say the actual thing."
       },
       {
-        "category": "academic-distance",
-        "patterns": [
-          "In this essay",
-          "This paper examines",
-          "The author contends",
-          "It can be observed that",
-          "Research indicates"
-        ],
+        "category": "celebration",
+        "patterns": ["great", "awesome", "perfect", "absolutely", "amazing"],
         "severity": "error",
-        "suggestion": "Write in first person. 'I think' not 'It can be observed'."
-      },
-      {
-        "category": "humble-bragging",
-        "patterns": [
-          "I was fortunate to",
-          "I had the privilege of",
-          "humble opinion"
-        ],
-        "severity": "warning",
-        "suggestion": "Just state the experience directly."
-      },
-      {
-        "category": "prescriptive-authority",
-        "patterns": [
-          "you must",
-          "you should always",
-          "the right way",
-          "best practice is"
-        ],
-        "severity": "warning",
-        "suggestion": "Offer perspective, not prescriptions. 'What's worked for me' not 'you must'."
+        "suggestion": "Stating the result IS the celebration. Drop the praise word."
       }
     ],
     "structuralPatterns": [
       {
-        "name": "question-first-opening",
-        "description": "Open with a question that frames the tension",
-        "required": false,
-        "example": "What happens when the tool you built to save time starts costing more than it saves?"
+        "name": "role-subject-opening",
+        "description": "Open declarative sentences with the role-name subject performing the action",
+        "required": true,
+        "example": "The methodology declares variants. The CLI asks three questions at init."
       },
       {
-        "name": "evolution-not-revolution",
-        "description": "Track how thinking changed over time, not just the endpoint",
-        "required": false
+        "name": "grounded-proposal-naming",
+        "description": "When stating a proposal, name it as a proposal explicitly",
+        "required": true,
+        "example": "Wedge 1 is the proposed closure for Gap 1."
       },
       {
-        "name": "compare-contrast",
-        "description": "Place two approaches side by side and examine tradeoffs",
-        "required": false
+        "name": "audience-tuned-length",
+        "description": "Match length and depth to the surface — terse for CLI, methodical for docs, neutral for portal",
+        "required": true
       },
       {
-        "name": "provisional-thinking",
-        "description": "Signal when ideas are tentative vs confident",
-        "required": false
+        "name": "understated-success",
+        "description": "Success messages state results without celebration language",
+        "required": true,
+        "example": "Stamp complete. 8 files written. 0 conflicts."
       }
     ],
     "examples": [
       {
-        "intent": "Introduce a technical topic",
-        "good": "I keep seeing teams build internal developer platforms that nobody uses. The pattern is always the same: someone reads a Gartner report, gets budget, hires 12 people, and ships a portal that developers route around.",
-        "bad": "In this comprehensive analysis, we will examine the emerging paradigm of internal developer platforms and their transformative impact on engineering velocity."
+        "intent": "Introduce a methodology stage",
+        "good": "The methodology runs Stage 1 (research) before Stage 2 (prescription). For brownfield variants, Stage 1 includes a current-state diagnose. For greenfield variants, the diagnose stage is skipped.",
+        "bad": "Blueprint can typically be used to do research before prescription, depending on whether you have an existing codebase. You might run a diagnose first if it seems useful."
       },
       {
-        "intent": "Share a recommendation",
-        "good": "Start with a Makefile. Seriously. Before you build a platform, put your common commands in a Makefile and see if that's enough. It usually is.",
-        "bad": "Organizations should holistically evaluate their developer experience maturity before leveraging platform engineering as a strategic capability."
+        "intent": "Confirm a CLI action completed",
+        "good": "Stamp complete. 8 files written. 0 conflicts.",
+        "bad": "Great job! The stamp was successfully completed and 8 files were written without any conflicts."
+      },
+      {
+        "intent": "Document a closed audit-gap",
+        "good": "Audit-gap 2 closed via the theme registry. L0 is no longer borrowed; the methodology declares its own 4-theme palette.",
+        "bad": "Blueprint may have closed the borrowed-palette issue by implementing a multi-theme system. Depending on adoption, this should help with the L0 layer."
       }
     ],
     "minimumScore": 75

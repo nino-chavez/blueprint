@@ -41,15 +41,17 @@ Audit-gap 2 status: **structurally closed.** L0 is no longer borrowed — Bluepr
 - Does not extend themes to type stack (B4), voice (B6), logo (B7), or media (B8). Those remain single-brand decisions across all themes — methodology product has one type stack, one voice, one logo regardless of theme. Updates to those decisions still flow through the original B1–B8 sequence below.
 - Does not propose methodology-level changes to `blueprint.yml` schema for theme selection at `init` time. That belongs to a future methodology wave after this initiative lands.
 
-## What still needs operator decisions (remaining from original B-list)
+## 2026-05-26 (later session) — B4, B5, B7 closed; B6 + B8 in progress
 
-- **B4 (type stack)** — currently Inter + JetBrains Mono inherited from canonical chrome + Anton as hero font (questionable for methodology product). Decide: keep / replace Anton / drop hero font entirely.
-- **B5 (surface treatment)** — currently `--bg: hsl(35, 25%, 98%)` warm-light inherited from Rally HQ's Midnight & Copper. Methodology-doc convention reads against warm-light backgrounds; likely retain shape, recalibrate to Blueprint-specific neutral. Could be theme-scoped but currently shared.
-- **B6 (voice rules)** — Blueprint-the-product voice rules for docs / CLI output / portal microcopy. Currently undecided.
-- **B7 (logo / wordmark)** — currently "Blueprint Redesign" wordmark + accent rendered as canonical chrome. Decide: just "Blueprint"? Glyph + wordmark lockup? Canonical files for distribution.
-- **B8 (media templates)** — what artifacts does Blueprint ship? Social cards, OG images, README banner. Set TBD.
+| Decision | Status | Closure |
+|---|---|---|
+| B4 type stack | **closed** | Anton dropped; Inter throughout via `--font-hero` override in `project-tokens.css`. Methodology-product register doesn't need a poster-display face. Commit `1a42f0e`. |
+| B5 surface treatment | **closed** | Theme-scoped `--bg` + `--surface-{1,2}`. Each theme owns subtle bg shift matching its register reference (slate cool-near-white, coral warm-light, forest paper-tinted-green, minimal true-near-white). Commit `5a2528c`. |
+| B6 voice rules | **in-progress** (operator-grilled session) | Voice rules elicited via grilling questions; outputs land in `decisions/04-voice-rules.md` + `forge-brand generate voice` proposals. |
+| B7 logo / wordmark | **closed as-is** | Operator decision: "no important or actionable in terms of utility. assume what we have is satisfactory." Current canonical-chrome wordmark ("Blueprint" + accent treatment via `.logo` / `.logo-accent`) stands for v1. No new lockup, no glyph companion. Revisit if Blueprint distribution surfaces (npm package, README, social posts) reveal need for a mark. |
+| B8 media templates | **in-progress** | Operator decision: render "all" available templates via `forge-brand media list` + `media render`. Outputs land in `brand/media/`. |
 
-When ready, invoke the forge-brand path documented below for B4–B8.
+When B6 + B8 resolve, this brief promotes from `partially-ratified` to `ratified`.
 
 ---
 
