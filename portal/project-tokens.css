@@ -45,8 +45,24 @@
  * against --bg from shared.css (hsl 35 25% 98%, the warm-white default).
  */
 
+/* B5 — Surface treatment (theme-scoped):
+ *
+ * Each theme owns a subtle bg shift matching its register. Surface
+ * variation kept within near-white space (97-99% lightness) so text/bg
+ * contrast against shared.css --text-primary (arena-900, hsl 220 30 12)
+ * stays well above WCAG AA 4.5:1.
+ *
+ * --bg          page surface (most visible)
+ * --surface-1   slight elevation (cards on bg)
+ * --surface-2   secondary surface (muted blocks, code dim states)
+ *
+ * Inverted-surface tokens (--cta-bg, --header-bg) stay theme-neutral —
+ * darkest-navy inverted treatment reads correctly across all 4 themes.
+ */
+
 /* Slate / indigo — cool neutral, methodology-product default
  * Register: Linear / Vercel / Notion-adjacent. Confident, deliberate.
+ * Surface: cool-near-white (Linear's app surface register).
  */
 :root[data-theme="slate"],
 :root:not([data-theme]) {
@@ -57,10 +73,16 @@
   --brand-600: hsl(225, 65%, 38%);
   --brand-700: hsl(225, 70%, 28%);
   --brand-900: hsl(225, 75%, 14%);
+
+  --bg:        hsl(220, 18%, 99%);
+  --surface-1: hsl(220, 14%, 99.5%);
+  --surface-2: hsl(220, 16%, 96%);
 }
 
 /* Deeper coral — keep warmth, force contrast
  * Register: Signal-Dispatch-adjacent but methodology-product, not publication.
+ * Surface: warm-light (inherits shared.css Rally HQ baseline; the coral
+ * brand register lands naturally against warm-white paper).
  * Risk: visually similar to operator's other coral-anchored properties.
  */
 :root[data-theme="coral"] {
@@ -71,11 +93,17 @@
   --brand-600: hsl(8, 70%, 35%);
   --brand-700: hsl(8, 75%, 26%);
   --brand-900: hsl(8, 80%, 14%);
+
+  --bg:        hsl(35, 25%, 98%);
+  --surface-1: hsl(35, 20%, 99%);
+  --surface-2: hsl(35, 15%, 96%);
 }
 
 /* Forest / olive — warm earthy, distinctive
  * Register: craft-tool / artisanal-methodical. Echoes Stripe-early /
  * Linear-deep-mode register; distinctive from operator's other properties.
+ * Surface: paper-tinted with subtle green undertone — reads as
+ * "documentation on warm paper," matching craft-tool register.
  */
 :root[data-theme="forest"] {
   --brand-50:  hsl(150, 45%, 95%);
@@ -85,11 +113,16 @@
   --brand-600: hsl(150, 45%, 26%);
   --brand-700: hsl(150, 50%, 18%);
   --brand-900: hsl(150, 55%, 10%);
+
+  --bg:        hsl(80, 18%, 98%);
+  --surface-1: hsl(80, 15%, 99%);
+  --surface-2: hsl(80, 18%, 95%);
 }
 
 /* Neutral + amber accent — minimal, type-led
  * Register: maximum restraint. Body type carries identity; brand color
  * appears only on emphasis. Closest to lethain.com / Stratechery shape.
+ * Surface: true near-white — minimum chromatic noise; type does the work.
  */
 :root[data-theme="minimal"] {
   --brand-50:  hsl(220, 12%, 96%);
@@ -102,6 +135,10 @@
   /* Amber accent for emphasis-only use (links, key callouts) */
   --accent-500: hsl(35, 90%, 45%);
   --accent-700: hsl(35, 95%, 30%);
+
+  --bg:        hsl(0, 0%, 99%);
+  --surface-1: hsl(0, 0%, 99.5%);
+  --surface-2: hsl(220, 8%, 96%);
 }
 
 /* ─────────────── project components (L2 molecules) ─────────────── *
