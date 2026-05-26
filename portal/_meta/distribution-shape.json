@@ -1,0 +1,27 @@
+{
+  "id": "distribution-shape",
+  "title": "npx @blueprint/cli init",
+  "group": "wedge",
+  "surface": "v1 operator-facing distribution",
+  "phase": "Stage 2 — Prescription Wedge 1",
+  "route": "/pages/distribution-shape.html",
+  "summary": "Wedge 1 of the prescription. One npm package, one interactive command, semver versioning, Pattern A + Pattern B stampers. Closes Gaps 1, 2, 7, 9.",
+  "strategy": {
+    "decision": "Ship `@blueprint/cli` on npm as the canonical adoption path. `npx @blueprint/cli init` walks the variant + tier + pattern decision tree, invokes the stamper, writes blueprint.yml with a methodology_version pin, installs the SessionStart hook.",
+    "why": "Universal across scaffolder tooling (CRA, Vite, Yeoman, Cookiecutter, Backstage) for a reason: zero-install, parameterized, idempotent. The current filesystem-path-coupled distribution (`~/Workspace/dev/wip/blueprint`) only works for operators who mirror Nino's workspace layout. ai-hive already proves this shape works in Nino's stack — Mode A is a one-line `claude mcp add` invocation. See decisions/01-prescription.md § Wedge 1.",
+    "shipped": "Current adoption: clone the repo, set BLUEPRINT_HOME env var or replicate the filesystem path, paste docs/prompts/add-blueprint-to-project.md, manually edit blueprint.yml. Path-coupled and ritual-driven.",
+    "gap": "From `clone + path + paste` (3 steps, breaks for non-Nino layouts) to `npx @blueprint/cli init` (1 command, works anywhere).",
+    "question": "Should the CLI also ship a hosted-server mode in v1 (`@blueprint/cli init --server=blueprint-mcp.<tld>`) or stay filesystem + npm only? Deferred to v2 per the prescription."
+  },
+  "currentState": {
+    "route": "wip/blueprint/template/.claude/hooks/blueprint-session-start.py + docs/prompts/add-blueprint-to-project.md",
+    "summary": "Adoption flow is a documented prompt the operator pastes into Claude Code after cloning the methodology repo to a specific filesystem path. The SessionStart hook auto-loads canonical docs only after BLUEPRINT_HOME is set correctly.",
+    "sourceFiles": [
+      "wip/blueprint/template/.claude/hooks/blueprint-session-start.py",
+      "wip/blueprint/template/.claude/settings.json.example",
+      "wip/blueprint/docs/prompts/add-blueprint-to-project.md",
+      "wip/blueprint/template/tools/blueprint-init/stamp.mjs"
+    ],
+    "annotation": "The L5 stamper (Pattern A) is the foundation for what the CLI's `init` subcommand wraps. The CLI adds: interactive flow, npm distribution, semver awareness, automatic hook install. Pattern B copy-stamp remains until a Pattern B stamper lands (deferred per L5)."
+  }
+}

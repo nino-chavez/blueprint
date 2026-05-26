@@ -1,0 +1,26 @@
+{
+  "id": "gap-inventory",
+  "title": "Eight production-quality gaps",
+  "group": "why",
+  "surface": "Stage 1 research synthesis",
+  "phase": "Stage 1 — Diagnose",
+  "route": "/pages/gap-inventory.html",
+  "summary": "What blocks Blueprint from being production-quality today (nine gaps as of late 2026-05-25 — Gap 9 surfaced during this initiative's Stage 3 portal work). Each gap maps to a named pattern from primary sources.",
+  "strategy": {
+    "decision": "Enumerate the eight gaps, name the pattern that closes each, collapse them into two load-bearing prescription wedges plus three independent items.",
+    "why": "Blueprint's first principle says agent struggle is a missing capability — encode it. Eight named struggles from real adoption (or non-adoption) attempts are the source material for the prescription. Without enumerating them, the prescription would be aspirational instead of evidence-grounded. See research/current-state/02-blueprint-production-quality-gaps.md.",
+    "shipped": "Current Blueprint has no gap inventory. The 2026-05-25 three-session reconciliation surfaced four-way root-doc drift implicitly; the eight-gap framing was authored as part of this redesign.",
+    "gap": "Implicit pain (a session gets stuck and can't articulate why) becomes explicit framework (gap N, pattern P closes it, lands in wedge W).",
+    "question": "Are there gaps consumers experience that aren't in this inventory? Validation needed once v1 ships and adoption signal exists."
+  },
+  "currentState": {
+    "route": "GitHub repo browsing — no current-state inventory exists",
+    "summary": "Operators learn about Blueprint's limitations by hitting them. No published surface enumerates the gaps.",
+    "sourceFiles": [
+      "research/current-state/02-blueprint-production-quality-gaps.md",
+      "research/competitive/01-lopopolo-harness-engineering.md",
+      "research/competitive/02-appleton-zero-alignment.md"
+    ],
+    "annotation": "The proposed gap inventory exists as research artifacts in this initiative; the redesign promotes them to the portal so stakeholders + future operators can read them directly without git archaeology."
+  }
+}

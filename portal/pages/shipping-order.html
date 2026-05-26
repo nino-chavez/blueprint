@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Shipping order — Blueprint Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .timeline { margin-top: var(--space-6); }
+    .step { display: grid; grid-template-columns: 60px 1fr; gap: var(--space-4); align-items: start; padding: var(--space-6) 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: 0; }
+    .step-num { font-family: var(--font-mono); font-size: 28px; font-weight: 800; color: var(--brand-500); line-height: 1; }
+    .step h3 { margin: 0; }
+    .step .meta { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: var(--space-1); }
+    .step .body { margin-top: var(--space-3); }
+    .defer-list { list-style: none; padding: 0; margin-top: var(--space-3); }
+    .defer-list li { padding: var(--space-2) 0; border-bottom: 1px dashed var(--border); display: flex; gap: var(--space-3); align-items: baseline; }
+    .defer-list li:last-child { border-bottom: 0; }
+    .defer-list .tag { font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--bg-muted); color: var(--text-muted); white-space: nowrap; }
+  </style>
+</head>
+<body data-compare-root data-view="proposed">
+
+  <section class="proposed-view">
+    <header class="header">
+      <div class="container">
+        <a href="../index.html" class="logo">Blueprint<span class="logo-accent">Redesign</span></a>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
+      <div style="max-width: 760px;">
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Stage 2 prescription — rollout</p>
+        <h1 style="margin-top: var(--space-2);">Shipping order</h1>
+        <p class="mt-4">Two wedges plus three independent items don't ship in parallel. Five steps, ~15-20 working days of methodology-repo engineering plus Stage 3-6 work on this initiative's portal.</p>
+      </div>
+
+      <div class="timeline" style="max-width: 800px;">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <h3>Self-applying redesign portal</h3>
+            <div class="meta">This initiative · Stage 3 starts now</div>
+            <div class="body">
+              <p>The portal you're reading. Ships first because the artifact stakeholders use to evaluate the prescription must exist before the rest. Closes Gap 3 (discoverability) by being its own deliverable. Deploys to <code>blueprint-redesign.pages.dev</code>; eventually graduates to a custom domain when v1 lands.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>Wedge 2 — executable reviewers</h3>
+            <div class="meta">Methodology repo · ~5-7 days</div>
+            <div class="body">
+              <p>Each existing reviewer markdown spec gets a paired <code>.mjs</code> implementation. Migration order: Pattern A + B conformance reviewers first (clearest pass/fail signal); then research-completeness; then design-principles + prescription-evidence; then doc-quality + terminology-linter; then prototype-smoke-runner; then fact-check-loop orchestrator. Each PR includes contract tests.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>Wedge 1 — @blueprint/cli</h3>
+            <div class="meta">Methodology repo · ~5-7 days</div>
+            <div class="body">
+              <p>The npm package with <code>init</code> + <code>review</code> + <code>upgrade</code> + <code>mcp serve</code> + <code>doctor</code>. Lands after Wedge 2 because <code>review</code> needs executable reviewers to exist. Semver from v1.0.0; conventional-commit changelog generation; methodology_version pin in blueprint.yml.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <h3>Contract tests in CI (continuous)</h3>
+            <div class="meta">Methodology repo · continuous</div>
+            <div class="body">
+              <p>Not a discrete step — accumulates with each reviewer migration. By the time Wedge 2 completes, every reviewer has its passing fixture + per-failure-mode fixtures + assertion tests. CI runs the suite on every methodology-repo PR. Stamper gets integration tests.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div>
+            <h3>Methodology-gardening agent</h3>
+            <div class="meta">Methodology repo · ~3-5 days, activates on schedule</div>
+            <div class="body">
+              <p>Scheduled Claude Code task scans for drift between <code>METHODOLOGY.md</code>, reviewer specs, and stamper behavior. Opens fix-up PRs per Lopopolo's doc-gardening pattern. Lower priority for v1 (consumer scale is small today); ships as a stub that runs on demand; activates on schedule once 3+ external consumers exist.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-12" style="max-width: 760px;">
+        <h3>What v1 defers</h3>
+        <ul class="defer-list mt-4">
+          <li><span class="tag">v2+</span><span>Hosted methodology MCP server (<code>blueprint-mcp.&lt;tld&gt;</code>). v1 trust model is npm + filesystem.</span></li>
+          <li><span class="tag">v2+</span><span>Third-party plugin SDK for reviewers. Forking is the v1 extension path.</span></li>
+          <li><span class="tag">v2+</span><span>Custom-stack Pattern A variants (<code>@blueprint/ui-svelte</code>, <code>@blueprint/ui-next</code>). Wait for demand.</span></li>
+          <li><span class="tag">v2+</span><span>Linear / Jira / Slack integrations. GitHub Actions covers the highest-leverage integration in v1.</span></li>
+          <li><span class="tag">v2+</span><span>Anonymous opt-in CLI telemetry. Adds infra complexity; defer until consumer count exceeds 10.</span></li>
+        </ul>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>What v1 places out of scope</h3>
+        <ul class="defer-list mt-4">
+          <li><span class="tag">out</span><span>Multiplayer real-time alignment workspace — Appleton's Ace's territory.</span></li>
+          <li><span class="tag">out</span><span>Production-grade hosted SaaS (multi-tenant, billing, SOC2). Blueprint's value is distributable methodology, not hosted service.</span></li>
+          <li><span class="tag">out</span><span>Service catalog (Backstage's primary surface). Blueprint scaffolds initiatives, not services.</span></li>
+          <li><span class="tag">out</span><span>Code-only scaffolders (CRA / Vite / Yeoman territory). When operators need code-only scaffold, they reach for those tools directly.</span></li>
+        </ul>
+      </div>
+    </main>
+  </section>
+
+  <section class="shipped-view container mt-8">
+    <div class="card">
+      <h3>Shipped equivalent — ad-hoc commits to main</h3>
+      <p class="mt-4">Today's methodology evolution: conventional-commit-prefixed PRs land on main; consumers pull-latest manually; no migration guidance per version because there are no versions. The L8 "methodology freeze during consumer migration" rule (added 2026-05-25) is the only procedural mitigation against parallel-evolution drift.</p>
+      <p class="mt-4">The pickup-updates prompt at <code>wip/blueprint/docs/prompts/pick-up-blueprint-updates.md</code> is the only consumer-facing migration mechanism. It's a paste-prompt; the redesigned <code>blueprint upgrade</code> CLI subcommand replaces it with semver-aware programmatic migration. The L8 freeze rule stays as procedural backstop.</p>
+    </div>
+  </section>
+
+  <script>
+    window.PROTO_PAGE = { id: 'shipping-order' };
+  </script>
+  <script src="../proto-nav.js"></script>
+  <script src="../chat-widget.js" defer></script>
+  <script src="../proto-annotate.js" defer></script>
+</body>
+</html>

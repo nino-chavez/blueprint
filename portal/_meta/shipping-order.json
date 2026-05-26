@@ -1,0 +1,26 @@
+{
+  "id": "shipping-order",
+  "title": "Shipping order — what lands when",
+  "group": "timeline",
+  "surface": "Stage 2 prescription timeline",
+  "phase": "Stage 2 — Prescription rollout",
+  "route": "/pages/shipping-order.html",
+  "summary": "The two wedges plus three independent items don't ship in parallel. Five-step order, ~15-20 working days of methodology-repo engineering plus the Stage 3-6 work on this initiative's portal.",
+  "strategy": {
+    "decision": "Five-step order: (1) self-applying redesign portal — this initiative; (2) Wedge 2 — executable reviewers; (3) Wedge 1 — @blueprint/cli with init + review subcommands; (4) contract tests in CI; (5) methodology-gardening agent. Self-applying portal first because the artifact stakeholders use to evaluate the prescription must exist before the rest.",
+    "why": "The portal is the production-quality reference deploy that closes Gap 3 (discoverability) by being its own deliverable. Wedge 2 ships before Wedge 1 because the CLI's `review` subcommand needs executable reviewers to exist; building the CLI without them produces a vacuous binary. Contract tests + gardening agent are continuous-payment work per Lopopolo — accumulate alongside the wedges, not after.",
+    "shipped": "No shipping order today — methodology evolves via ad-hoc git commits with no version-pinning, no rollout sequencing, no consumer-migration discipline beyond the L8 freeze rule.",
+    "gap": "From `methodology drifts under live consumer sessions, mitigated by procedural freeze` to `methodology ships in versioned releases with named order, contract tests, and gardening-agent drift detection`.",
+    "question": "When does v2 work start? Open question per the prescription: hosted methodology server + plugin SDK + custom-stack variants all defer to v2; the trigger is consumer-scale demand. v2 ADR lands when ≥5 external consumers exist."
+  },
+  "currentState": {
+    "route": "git log on wip/blueprint/main",
+    "summary": "Methodology updates land as conventional-commit-prefixed PRs to main. Consumers pull-latest manually; no migration guidance per version because there are no versions. The L8 'methodology freeze during consumer migration' rule (added 2026-05-25) is the only procedural mitigation against parallel-evolution drift.",
+    "sourceFiles": [
+      "wip/blueprint/METHODOLOGY.md",
+      "wip/blueprint/template/CLAUDE.md (§ Methodology freeze during consumer migration)",
+      "wip/blueprint/docs/prompts/pick-up-blueprint-updates.md"
+    ],
+    "annotation": "The pickup-updates prompt is the migration mechanism. It's a paste-prompt; production-quality Blueprint replaces it with `npx @blueprint/cli upgrade` invoking semver-aware migration. The L8 freeze rule stays as the procedural backstop."
+  }
+}

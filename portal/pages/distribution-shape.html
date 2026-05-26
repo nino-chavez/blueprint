@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>npx @blueprint/cli init — Blueprint Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    pre.terminal { background: #0a0a0a; color: #e8e8e8; padding: var(--space-6); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; overflow-x: auto; }
+    pre.terminal .prompt { color: #8be9fd; }
+    pre.terminal .arrow { color: #50fa7b; }
+    pre.terminal .dim { color: #6272a4; }
+    pre.terminal .warn { color: #f1fa8c; }
+    .surface-table { width: 100%; border-collapse: collapse; margin-top: var(--space-6); }
+    .surface-table th, .surface-table td { padding: var(--space-3); border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    .surface-table th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .surface-table td.surface-name { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--brand-700); }
+  </style>
+</head>
+<body data-compare-root data-view="proposed">
+
+  <section class="proposed-view">
+    <header class="header">
+      <div class="container">
+        <a href="../index.html" class="logo">Blueprint<span class="logo-accent">Redesign</span></a>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
+      <div style="max-width: 760px;">
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Wedge 1 — distribution shape</p>
+        <h1 style="margin-top: var(--space-2);">npx @blueprint/cli init</h1>
+        <p class="mt-4">One package on npm. One interactive command. Pattern A + Pattern B stampers ship together. Closes Gaps 1, 2, 7, 9.</p>
+      </div>
+
+      <div class="mt-8" style="max-width: 720px;">
+        <h3>The operator experience</h3>
+        <pre class="terminal mt-4"><span class="prompt">$</span> npx @blueprint/cli init
+
+  <span class="dim">Blueprint canonical methodology v1.0.0</span>
+
+  <span class="arrow">?</span> Which variant fits this initiative?
+    Answer the questions in variant-selection.md.
+    <span class="dim">▸ greenfield   — new product, no live surfaces yet</span>
+      midstream    — live product, in-flight feature work
+    <span class="arrow">▸ brownfield   — live product, audit-driven redesign</span>
+
+  <span class="arrow">?</span> Tier?
+    <span class="dim">Variant × Tier matrix says brownfield default is Tier 1.</span>
+    <span class="arrow">▸ 1  — portal is the only deliverable (default)</span>
+      2  — portal + product surface ships alongside
+
+  <span class="arrow">?</span> Portal pattern?
+    <span class="dim">Brownfield audit/redesign with current-state vs proposed comparison → Pattern B.</span>
+    <span class="arrow">▸ B  — redesign-review portal (recommended)</span>
+      A  — platform-portal (override only if multi-audience platform shape)
+
+  <span class="arrow">?</span> Project slug: <span class="warn">my-project</span>
+  <span class="arrow">?</span> Display name: <span class="warn">My Project</span>
+  <span class="arrow">?</span> Repo URL:    <span class="warn">https://github.com/me/my-project</span>
+  <span class="arrow">?</span> Tagline:     <span class="warn">One-line description of the redesign</span>
+
+  <span class="arrow">✓</span> Stamped Pattern B portal into ./portal/
+  <span class="arrow">✓</span> Wrote blueprint.yml (variant=brownfield, tier=1, pattern=B, methodology_version=1.0.0)
+  <span class="arrow">✓</span> Installed SessionStart hook at ~/.claude/hooks/blueprint-session-start.py
+  <span class="arrow">✓</span> Merged settings.json SessionStart entry
+
+  <span class="dim">Next: open Claude Code, the methodology auto-loads.</span>
+  <span class="dim">Stage 1 — Diagnose. Begin with research/current-state/</span>
+</pre>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>Three subcommands cover the v1 surface</h3>
+        <table class="surface-table">
+          <thead>
+            <tr><th>Subcommand</th><th>What it does</th><th>Replaces</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="surface-name">init</td>
+              <td>Interactive scaffold flow. Wraps the L5 stamper for Pattern A; copy-stamps template/portal/ for Pattern B. Validates variant + tier against the matrix.</td>
+              <td>Filesystem clone + paste-prompt ritual.</td>
+            </tr>
+            <tr>
+              <td class="surface-name">review</td>
+              <td>Invokes a reviewer (or `--all`) against the current initiative. Loads the executable .mjs paired with each markdown spec. Output structured (`--json`) or human (default).</td>
+              <td>Claude-Code-only agent invocation. Now runs in CI, shell scripts, anywhere.</td>
+            </tr>
+            <tr>
+              <td class="surface-name">upgrade</td>
+              <td>Pulls latest methodology, runs migration if methodology_version changed, surfaces what's new per the changelog.</td>
+              <td>Pasting docs/prompts/pick-up-blueprint-updates.md into a session.</td>
+            </tr>
+            <tr>
+              <td class="surface-name">mcp serve</td>
+              <td>Spawns an MCP server over stdio exposing the reviewer set as tools. `claude mcp add --transport stdio blueprint 'npx @blueprint/cli mcp serve'`.</td>
+              <td>The current markdown-reviewer-invoked-by-Agent-tool pattern. Still works as fallback; MCP-tool is canonical.</td>
+            </tr>
+            <tr>
+              <td class="surface-name">doctor</td>
+              <td>Diagnostics. Checks SessionStart hook installed, methodology_version compatible, reviewer registry intact.</td>
+              <td>Manual verification by reading the repo + running things.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>Why npm distribution + semver</h3>
+        <ul class="mt-4">
+          <li><strong>Universal.</strong> Every adjacent tool ships this way — create-next-app, Vite, Yeoman, Cookiecutter, Backstage's scaffolder. The pattern is the production-quality baseline.</li>
+          <li><strong>Versioned upgrades.</strong> Consumer pins methodology_version; CLI's upgrade subcommand applies migration steps deterministically.</li>
+          <li><strong>Trust model is npm.</strong> Operators already trust the npm registry; Blueprint doesn't have to build its own.</li>
+          <li><strong>Parallel to ai-hive.</strong> Both tools converge on the same npm + Cloudflare-hosted-Worker shape. ADR-0001 ratifies this.</li>
+        </ul>
+      </div>
+    </main>
+  </section>
+
+  <section class="shipped-view container mt-8">
+    <div class="card">
+      <h3>Shipped equivalent — paste-prompt + filesystem clone</h3>
+      <p class="mt-4">Today's adoption flow: clone the repo, set BLUEPRINT_HOME or replicate the filesystem path, open Claude Code, paste the contents of <code>docs/prompts/add-blueprint-to-project.md</code>, confirm the pattern-match, scaffold by hand. Path-coupled, ritual-driven, no versioning.</p>
+      <p class="mt-4">The paste-prompt was just updated this morning to encode the brownfield-redesign pattern-match correctly. That fixed the prompt's content; it didn't fix the distribution shape.</p>
+    </div>
+  </section>
+
+  <script>
+    window.PROTO_PAGE = { id: 'distribution-shape' };
+  </script>
+  <script src="../proto-nav.js"></script>
+  <script src="../chat-widget.js" defer></script>
+  <script src="../proto-annotate.js" defer></script>
+</body>
+</html>

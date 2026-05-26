@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>ai-hive companion — Blueprint Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .stack { font-family: var(--font-mono); font-size: 13px; line-height: 1.9; white-space: pre; padding: var(--space-6); background: var(--bg-muted); border-radius: 8px; overflow-x: auto; }
+    .stack .layer { color: var(--brand-700); font-weight: 700; }
+    .stack .scope { color: var(--text-muted); }
+    .integration-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-6); }
+    .integration { padding: var(--space-4); border: 1px solid var(--border); border-radius: 8px; }
+    .integration h4 { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand-700); margin: 0 0 var(--space-2); }
+  </style>
+</head>
+<body data-compare-root data-view="proposed">
+
+  <section class="proposed-view">
+    <header class="header">
+      <div class="container">
+        <a href="../index.html" class="logo">Blueprint<span class="logo-accent">Redesign</span></a>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
+      <div style="max-width: 760px;">
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Stack positioning</p>
+        <h1 style="margin-top: var(--space-2);">ai-hive is the alignment-layer companion</h1>
+        <p class="mt-4">Blueprint sits in a four-layer stack between Appleton's Ace and Lopopolo's harness engineering. ai-hive occupies the layer directly above Blueprint — async blackboard alignment at initiative scope. subs-initiative proves the composition.</p>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>The four-layer stack</h3>
+        <div class="stack mt-4">
+<span class="layer">Appleton's Ace</span>           <span class="scope">— multiplayer real-time alignment   (general code dev)</span>
+<span class="layer">ai-hive</span>                  <span class="scope">— async blackboard alignment        (initiative scope)</span>  ← companion
+<span class="layer">Blueprint</span>                <span class="scope">— methodology + scaffolding         (initiative deliverables)</span>
+<span class="layer">Lopopolo's harness</span>       <span class="scope">— repo-discipline for agent code    (production codebase)</span>
+<span class="layer">Codex / Claude Code</span>      <span class="scope">— agent runtime</span>
+        </div>
+        <p class="mt-4">Each layer addresses a different failure mode. Ace: multiple agents in parallel without shared context (general code). ai-hive: multiple agent sessions on the same initiative without shared blackboard. Blueprint: initiative deliverables drift across stages. Lopopolo's harness: agent-generated codebase entropy.</p>
+      </div>
+
+      <div class="mt-8" style="max-width: 800px;">
+        <h3>How subs-initiative composes both at Tier 2</h3>
+        <p class="mt-4">subs-initiative is the canonical reference for Blueprint + ai-hive at full depth. Four named integration points:</p>
+        <div class="integration-grid">
+          <div class="integration">
+            <h4>1. Substrate</h4>
+            <p style="font-size: 14px; margin-top: var(--space-2);">Multiple sessions register via <code>hive_register_session</code>, propose via <code>hive_propose</code>, react/synthesize on the blackboard, only spawn tasks once a synthesis is approved. Locks prevent file edit collisions. This is build-time only — disappears at ship.</p>
+          </div>
+          <div class="integration">
+            <h4>2. Derive</h4>
+            <p style="font-size: 14px; margin-top: var(--space-2)"><code>tools/hive-board-derive/index.ts</code> pulls live D1 state + GitHub issues, classifies by lifecycle bucket (Shipped-not-closed / In-flight / Awaiting-synthesis / Reference / Stale), writes deterministic markdown + JSON to <code>docs/hive/</code>. The derived files are checked into the repo — agent-legible per Lopopolo's pattern.</p>
+          </div>
+          <div class="integration">
+            <h4>3. Portal surface</h4>
+            <p style="font-size: 14px; margin-top: var(--space-2);">Pattern A portal's Inspect routes (<code>gates.astro</code>, <code>coverage.astro</code>, <code>dependencies.astro</code>) read <code>docs/hive/_board.json</code> + <code>docs/audits/_state.json</code> and render dashboards. Stakeholders open <code>private-demo.example/inspect/</code> and see live-derived progress without touching the hive dashboard directly.</p>
+          </div>
+          <div class="integration">
+            <h4>4. Ship-disappear</h4>
+            <p style="font-size: 14px; margin-top: var(--space-2);">Hive worker is deprovisioned at ship. The derived markdown + JSON stay as historical record. The portal continues to surface them — "shell is throwaway; artifacts are forever" (L7 from this morning's encoding).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>What changes in production-quality Blueprint</h3>
+        <ul class="mt-4">
+          <li><strong>ai-hive is named explicitly as the load-bearing companion</strong>, not buried as opt-in <code>hive.enabled: true</code>. When an initiative declares multi-operator + brownfield/midstream, ai-hive becomes mandatory.</li>
+          <li><strong>Same dual-protocol architecture in both tools.</strong> ai-hive adds a CLI alongside its MCP surface; Blueprint v1 distribution mirrors the shape. Single Worker pattern across both tools. ADR-0001 ratifies this.</li>
+          <li><strong>The CLI vs MCP investigation</strong> at <code>research/architecture/01-hive-cli-vs-mcp-with-optionality.md</code> recommends a 2-3 day minimum-viable wedge for ai-hive's CLI (board export, proposal list, doctor, auth) to validate the architecture on real load before Blueprint adopts it.</li>
+        </ul>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>What's out of scope</h3>
+        <p class="mt-4">Blueprint does not try to become Ace. Multiplayer real-time alignment is Appleton's territory; the 2026-05-25 reconciliation that triggered this redesign was a zero-alignment failure at the methodology layer, but the response is procedural (SessionStart hook + methodology freeze) plus async-blackboard (ai-hive when multi-operator), not real-time-workspace. Operators who need Ace-shaped multiplayer alignment bring their own.</p>
+      </div>
+    </main>
+  </section>
+
+  <section class="shipped-view container mt-8">
+    <div class="card">
+      <h3>Shipped equivalent — ai-hive as opt-in capability</h3>
+      <p class="mt-4">Current Blueprint treats ai-hive as one of seven optional capabilities behind a blueprint.yml flag. The hive-coordination-pattern doc names the litmus test ("if you're about to spin up two Claude Code sessions on the same repo in parallel, you need Hive") but the composition is documented as substrate, not as load-bearing alignment.</p>
+      <p class="mt-4">subs-initiative is the only Blueprint reference project that runs both at Tier 2. The other three reference projects (rally-hq, website-nc-v3, blog) skip ai-hive because they're solo. That's correct shape for those initiatives — ai-hive should not be forced on solo work — but the methodology should name the multi-operator case explicitly, which it currently does only as a footnote.</p>
+    </div>
+  </section>
+
+  <script>
+    window.PROTO_PAGE = { id: 'ai-hive-companion' };
+  </script>
+  <script src="../proto-nav.js"></script>
+  <script src="../chat-widget.js" defer></script>
+  <script src="../proto-annotate.js" defer></script>
+</body>
+</html>

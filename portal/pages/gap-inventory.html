@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Gap inventory — Blueprint Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .gap-grid { display: grid; grid-template-columns: 60px 1fr 1fr 1fr; gap: var(--space-3); align-items: start; }
+    .gap-grid > div { padding: var(--space-3); border-bottom: 1px solid var(--border); }
+    .gap-grid .head { font-weight: 600; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid var(--border); }
+    .gap-grid .num { font-family: var(--font-mono); font-weight: 700; color: var(--brand-500); }
+    .wedge-label { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--brand-50); color: var(--brand-700); font-weight: 600; }
+    .wedge-label.distribution { background: rgba(120, 70, 200, 0.12); color: rgba(120, 70, 200, 1); }
+    .wedge-label.portability { background: rgba(50, 140, 90, 0.12); color: rgba(50, 140, 90, 1); }
+    .wedge-label.independent { background: var(--bg-muted); color: var(--text-muted); }
+  </style>
+</head>
+<body data-compare-root data-view="proposed">
+
+  <section class="proposed-view">
+    <header class="header">
+      <div class="container">
+        <a href="../index.html" class="logo">Blueprint<span class="logo-accent">Redesign</span></a>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
+      <div style="max-width: 760px;">
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Stage 1 — Diagnose</p>
+        <h1 style="margin-top: var(--space-2);">Nine gaps blocking production quality</h1>
+        <p class="mt-4">Each gap maps to a named pattern from primary sources (Lopopolo, Appleton, Backstage, Shape Up, ai-hive). Six collapse into two prescription wedges; three are independent items. Gap 9 surfaced during this initiative's Stage 3 portal work — the rally-hq leakage you may have noticed in this portal's first render is the evidence.</p>
+      </div>
+
+      <div class="gap-grid mt-8">
+        <div class="head">#</div>
+        <div class="head">Gap</div>
+        <div class="head">Named pattern that closes it</div>
+        <div class="head">Lands in</div>
+
+        <div class="num">1</div>
+        <div><strong>Filesystem-coupled distribution.</strong> Methodology lives at `~/Workspace/dev/wip/blueprint/` — breaks for anyone who doesn't mirror the path.</div>
+        <div>`npx <name> init` — universal across CRA, Vite, Yeoman, Cookiecutter, Backstage. ai-hive's Mode A is the runtime-substrate equivalent.</div>
+        <div><span class="wedge-label distribution">Distribution wedge</span></div>
+
+        <div class="num">2</div>
+        <div><strong>No versioning.</strong> No semver, no changelog beyond git log, no migration guides between methodology revisions.</div>
+        <div>Semver + conventional-commit-driven changelog. Consumer pins `methodology_version` in blueprint.yml; SessionStart hook checks compatibility.</div>
+        <div><span class="wedge-label distribution">Distribution wedge</span></div>
+
+        <div class="num">3</div>
+        <div><strong>Discoverability is "Nino tells someone about it."</strong> No marketing surface, no hosted docs, no example gallery.</div>
+        <div>Hosted reference deploy that demonstrates the tool on itself — ai-hive's `ai-hive-mcp.example-account.workers.dev` pattern.</div>
+        <div><span class="wedge-label independent">Self-applying portal</span></div>
+
+        <div class="num">4</div>
+        <div><strong>Reviewers are Claude-Code-locked.</strong> Markdown specs invoked by Agent tool; non-Claude consumers + CI workflows have no path.</div>
+        <div>Lopopolo's "custom linters with remediation injection." Executable .mjs paired with markdown specs; invokable from CLI + MCP + GitHub Actions.</div>
+        <div><span class="wedge-label portability">Portability wedge</span></div>
+
+        <div class="num">5</div>
+        <div><strong>No tests on stamper or reviewers.</strong> One smoke test on the stamper; reviewers verified by reading them.</div>
+        <div>Contract tests per reviewer (passing fixture + per-failure-mode fixtures) + integration tests on the stamper. CI runs the suite on every methodology-repo PR.</div>
+        <div><span class="wedge-label independent">Contract tests in CI</span></div>
+
+        <div class="num">6</div>
+        <div><strong>No telemetry / feedback loop.</strong> Methodology evolves only via Nino's direct observation. The 2026-05-25 reconciliation was caught manually.</div>
+        <div>Lopopolo's "doc-gardening agent" — recurring background task scanning for drift between docs, reviewer specs, and stamper behavior; opens fix-up PRs.</div>
+        <div><span class="wedge-label independent">Gardening agent</span></div>
+
+        <div class="num">7</div>
+        <div><strong>Onboarding is "paste the right prompt."</strong> Methodology hides behind a UX cliff — operators have to know which paste-prompt to use.</div>
+        <div>Interactive CLI flow replaces paste-prompt. `npx @blueprint/cli init` walks the variant + tier + pattern decisions inline.</div>
+        <div><span class="wedge-label distribution">Distribution wedge</span></div>
+
+        <div class="num">8</div>
+        <div><strong>No integration surface.</strong> Blueprint doesn't talk to Linear/Jira/Slack/PR-comments. Artifacts are durable; workflow integration isn't.</div>
+        <div>GitHub Actions runner that invokes the conformance reviewers on every PR — closes half of Gap 8 + connects to Gap 4's portability wedge.</div>
+        <div><span class="wedge-label portability">Portability wedge</span> (partial)</div>
+
+        <div class="num">9</div>
+        <div><strong>Pattern B template is rally-hq with placeholders.</strong> The methodology repo's <code>template/portal/</code> is rally-hq's portal copy-pasted with three placeholder strings. Lane cards, chat system prompt, doc taxonomy, navigation hrefs, CSS variable names — all rally-hq specifics carried verbatim into "the template." Discovered late on 2026-05-25 during this initiative's Stage 3 portal work.</div>
+        <div>Mechanically-checkable Pattern B stamper. Substitution surface wider than the L5 deferral named — must cover lane cards, chat backend, doc index, nav hrefs, CSS variable names. <code>template/portal/</code> regenerates as generic substrate before the stamper can work.</div>
+        <div><span class="wedge-label distribution">Distribution wedge</span></div>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>Collapsed structure</h3>
+        <ul class="mt-4">
+          <li><strong>Distribution wedge</strong> — Gaps 1, 2, 7, 9.</li>
+          <li><strong>Agent-portability wedge</strong> — Gap 4, half of Gap 8.</li>
+          <li><strong>Self-applying portal</strong> (this initiative) — Gap 3.</li>
+          <li><strong>Contract tests in CI</strong> — Gap 5.</li>
+          <li><strong>Methodology-gardening agent</strong> — Gap 6.</li>
+        </ul>
+        <p class="mt-4">Strategy drawer (right) cites the source artifacts. Current-state drawer (left) shows what the gap inventory looks like in the current methodology — which is to say, it doesn't exist.</p>
+      </div>
+    </main>
+  </section>
+
+  <section class="shipped-view container mt-8">
+    <div class="card">
+      <h3>Shipped equivalent — none</h3>
+      <p class="mt-4">The current Blueprint methodology has no equivalent gap inventory. Operators learn about Blueprint's limitations by hitting them. This page is the externalization of pain that previously lived implicitly in Nino's head + scattered across session transcripts.</p>
+    </div>
+  </section>
+
+  <script>
+    window.PROTO_PAGE = { id: 'gap-inventory' };
+  </script>
+  <script src="../proto-nav.js"></script>
+  <script src="../chat-widget.js" defer></script>
+  <script src="../proto-annotate.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+# Blueprint Configuration — wip/blueprint-redesign
+# Created 2026-05-25 as Blueprint applied to itself.
+#
+# Current-state product:  ~/Workspace/dev/wip/blueprint/
+# Proposed-state product: production-quality Blueprint distribution
+
+project:
+  name: "blueprint-redesign"
+  description: "Apply Blueprint methodology to itself — graduate the methodology repo into a production-quality distributable companion in the Ace/ai-hive/Blueprint/harness stack."
+  product: "Blueprint methodology"
+  audience:
+    leadership: []
+    engineering: []
+    broader: ["Future operators adopting Blueprint", "AI-first builder community"]
+
+# ──────────────────────────────────────────────────────────────────
+# Pilot profile (REQUIRED — Stage 0 → Stage 1 gate, added 2026-05-25)
+# Reference: ~/Workspace/dev/wip/blueprint/template/docs/methodology/pilot-profile-template.md
+# Reviewer:  pilot-profile-lock-reviewer
+# ──────────────────────────────────────────────────────────────────
+pilot_profile:
+  slug: "blueprint-methodology-operator"
+  display_name: "Blueprint methodology operator (solo, multi-initiative)"
+  pain_point: "Methodology drift accumulates across concurrent consumer initiatives (rally-hq, website-nc-v3, blog, subs-initiative) when there is no production-quality distribution surface — operators re-derive shape from source rather than picking up canonical guidance."
+  monetization_side: "operator"
+  walkthrough_citation: "research/current-state/02-blueprint-production-quality-gaps.md"
+  competitors_in_scope:
+    - "Backstage (Spotify) — internal-developer platform / golden-path patterns"
+    - "Yeoman / CRA-Vite / Cookiecutter / Hygen — code scaffolders"
+    - "Shape Up / Linear / Jira — methodology + tracker shape"
+    - "Spec Kit (OpenAI) — spec-first AI engineering toolkit"
+    - "Ace (Appleton) — zero-alignment AI engineering positioning"
+  out_of_scope_pilots:
+    - "End-user of the consumer products built with Blueprint (e.g., volleyball coach using rally-hq) — those are pilots for the consumer initiatives, not for Blueprint itself"
+    - "Enterprise platform team adopting Blueprint for many engineers — defer until single-operator shape is solid"
+    - "AI agent itself as the pilot — agent is the executor, the human operator is the pilot"
+
+# Pipeline shape — brownfield because the current Blueprint methodology is live
+# (used by subs-initiative, rally-hq, website-nc-v3, blog). The redesign
+# audits the current state, prescribes production-quality changes, and ships a
+# Pattern B redesign-review portal as the deliverable.
+# See: ~/Workspace/dev/wip/blueprint/docs/variant-selection.md
+variant: brownfield
+
+# Deliverable sophistication — Tier 1 (portal is the only deliverable for now;
+# graduates to Tier 2 once a real new product surface — e.g. an `npx blueprint`
+# CLI or a hosted methodology Worker — ships alongside).
+# See: ~/Workspace/dev/wip/blueprint/docs/portal-and-tier-ladder.md
+tier: 1
+
+# Portal pattern — B (redesign-review-portal). Strategy drawer per route
+# explains why the proposed state diverges from current state; current-state
+# drawer shows the existing methodology surface for comparison.
+portal_pattern: B
+
+execution:
+  depth: thorough
+  # thorough: full research + prototype + strategy + feasibility + integration
+  #           plan + cross-industry comparables. Required because the deliverable
+  #           informs how Blueprint itself ships going forward.
+
+# Companions
+hive:
+  enabled: false
+  # Solo for now. Flip true when a second operator joins. The hive-cli vs
+  # hive-mcp investigation is itself one of the Stage 1 research artifacts.
+
+cloudflare:
+  enabled: true
+  # Pattern B portals deploy as Cloudflare Pages projects. Paired-deploy:
+  # `blueprint-redesign.pages.dev` (the portal) — eventually a custom domain.

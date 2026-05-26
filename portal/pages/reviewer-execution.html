@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Reviewers as executable plugins — Blueprint Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .arch-diagram { font-family: var(--font-mono); font-size: 12px; line-height: 1.7; white-space: pre; padding: var(--space-6); background: var(--bg-muted); border-radius: 8px; overflow-x: auto; }
+    pre.code { background: #0a0a0a; color: #e8e8e8; padding: var(--space-4); border-radius: 6px; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; overflow-x: auto; }
+    pre.code .key { color: #f1fa8c; }
+    pre.code .str { color: #50fa7b; }
+    pre.code .com { color: #6272a4; font-style: italic; }
+    .surfaces { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); margin-top: var(--space-6); }
+    .surface { padding: var(--space-4); background: var(--bg-muted); border-radius: 8px; border: 1px solid var(--border); }
+    .surface h4 { font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-700); margin: 0 0 var(--space-2); }
+  </style>
+</head>
+<body data-compare-root data-view="proposed">
+
+  <section class="proposed-view">
+    <header class="header">
+      <div class="container">
+        <a href="../index.html" class="logo">Blueprint<span class="logo-accent">Redesign</span></a>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-12);">
+      <div style="max-width: 760px;">
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Wedge 2 — agent portability</p>
+        <h1 style="margin-top: var(--space-2);">Reviewers as executable plugins</h1>
+        <p class="mt-4">Each reviewer ships as a paired markdown spec + executable .mjs. Same business logic feeds three invocation surfaces. Closes Gap 4 and half of Gap 8.</p>
+      </div>
+
+      <div class="mt-8" style="max-width: 800px;">
+        <h3>Architecture — one logic, three surfaces</h3>
+        <div class="arch-diagram mt-4">
+                       ┌─────────────────────────────────────────┐
+                       │  Reviewer business logic                │
+                       │  (one .mjs per reviewer, in template/)  │
+                       │                                         │
+                       │  default export: async function review  │
+                       │   ({ targetDir, blueprintYml,           │
+                       │      methodologyHome }) → ReviewResult  │
+                       └────────┬───────────┬──────────┬─────────┘
+                                │           │          │
+                  ┌─────────────┘           │          └──────────────┐
+                  │                         │                         │
+                  ▼                         ▼                         ▼
+        ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────────┐
+        │  CLI subcommand  │    │  MCP tool        │    │  GitHub Action       │
+        │                  │    │                  │    │                      │
+        │  blueprint       │    │  blueprint_      │    │  uses: actions/      │
+        │   review         │    │   review_        │    │   checkout@v4        │
+        │   portal-        │    │   portal_        │    │  run: npx blueprint  │
+        │   pattern-a      │    │   pattern_a      │    │       review --all   │
+        │                  │    │                  │    │       --format=      │
+        │  exit code +     │    │  schema-driven   │    │       github-actions │
+        │  json | human    │    │  structured      │    │                      │
+        │  output          │    │  output          │    │  PR annotations      │
+        └──────────────────┘    └──────────────────┘    └──────────────────────┘
+        </div>
+      </div>
+
+      <div class="surfaces" style="max-width: 800px;">
+        <div class="surface">
+          <h4>CLI</h4>
+          <p style="font-size: 14px; margin-top: var(--space-2);">For operators in a terminal. For agent harnesses that don't speak MCP. For cron jobs. For pre-commit hooks. The shell surface.</p>
+        </div>
+        <div class="surface">
+          <h4>MCP</h4>
+          <p style="font-size: 14px; margin-top: var(--space-2);">For agents reasoning in-session. Schema-validated, structured. Claude Code, Cursor, anything that mounts MCP. Replaces markdown-reviewer-invoked-by-Agent-tool as canonical path.</p>
+        </div>
+        <div class="surface">
+          <h4>GitHub Actions</h4>
+          <p style="font-size: 14px; margin-top: var(--space-2);">For CI. Runs on every PR. Findings post as PR-diff annotations. Blocking findings fail the check. Workflow template ships in the scaffold.</p>
+        </div>
+      </div>
+
+      <div class="mt-12" style="max-width: 800px;">
+        <h3>What a finding looks like</h3>
+        <p class="mt-4">Per Lopopolo: <em>"the lints are custom; we write the error messages to inject remediation instructions into agent context."</em></p>
+        <pre class="code mt-4">{
+  <span class="key">"severity"</span>: <span class="str">"BLOCK"</span>,
+  <span class="key">"location"</span>: <span class="str">"apps/portal/src/layouts/Layout.astro"</span>,
+  <span class="key">"message"</span>: <span class="str">"AudienceSwitcher component not rendered in layout"</span>,
+  <span class="key">"remediation"</span>: <span class="str">"Import { AudienceSwitcher } from '@blueprint/ui/audience-switcher'</span>
+<span class="str">                   at the top of Layout.astro, then render &lt;AudienceSwitcher /&gt;</span>
+<span class="str">                   inside the navbar slot. The IA contract requires the switcher</span>
+<span class="str">                   on every page; placeholder labels are fine for routes not yet</span>
+<span class="str">                   authored."</span>,
+  <span class="key">"reference"</span>: <span class="str">"docs/portal-and-tier-ladder.md#pattern-a-the-ia-contract-mandatory"</span>
+}</pre>
+        <p class="mt-4">An agent reading "BLOCK: AudienceSwitcher missing. Fix: import + render in Layout.astro navbar slot" can act on it directly. A human reading the same output gets the same actionable text. The finding is a remediation instruction, not just an error message.</p>
+      </div>
+
+      <div class="mt-8" style="max-width: 760px;">
+        <h3>The pair shape</h3>
+        <p class="mt-4">Each reviewer at <code>template/.claude/agents/blueprint/reviewers/</code> gets two files:</p>
+        <ul class="mt-4">
+          <li><strong><code>&lt;name&gt;.md</code></strong> — the canonical human description. What it checks, why, when it fires.</li>
+          <li><strong><code>&lt;name&gt;.mjs</code></strong> — the executable lint. Default export with the standard signature. The single source of business logic for all three surfaces.</li>
+        </ul>
+        <p class="mt-4">When the two drift, the methodology-gardening agent (independent item 3 in the prescription) catches the mismatch and opens a fix-up PR. Continuous payment, not painful bursts. Migration order: Pattern A + B conformance reviewers first; then research-completeness; then design-principles + prescription-evidence; then doc-quality + terminology-linter; then prototype-smoke-runner; then fact-check-loop orchestrator. ADR-0002 has the full plan.</p>
+      </div>
+    </main>
+  </section>
+
+  <section class="shipped-view container mt-8">
+    <div class="card">
+      <h3>Shipped equivalent — markdown specs only</h3>
+      <p class="mt-4">Today's reviewers exist as nine markdown files under <code>wip/blueprint/template/.claude/agents/blueprint/reviewers/</code>. Each spec describes what to check, when, and how to report. A Claude Code agent reads the spec, pattern-matches against the repo, and emits findings.</p>
+      <p class="mt-4">The pattern works when Claude Code is the runtime. It fails for: non-Claude consumers (Cursor without Claude, Codex CLI, custom GPT-API harnesses), CI workflows (no agent session in GitHub Actions), automation (no shell access), the methodology-gardening agent (no programmatic way to verify reviewer behavior).</p>
+      <p class="mt-4">The L6 encoding from earlier this morning wired the two portal-pattern conformance reviewers into the gate table — they fire at Stage 3 + any portal-touching commit. But "firing" today means "an agent in a Claude Code session is supposed to read the markdown and invoke the Agent tool." That's the lock-in this wedge breaks.</p>
+    </div>
+  </section>
+
+  <script>
+    window.PROTO_PAGE = { id: 'reviewer-execution' };
+  </script>
+  <script src="../proto-nav.js"></script>
+  <script src="../chat-widget.js" defer></script>
+  <script src="../proto-annotate.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "id": "reviewer-execution",
+  "title": "Reviewers as executable plugins",
+  "group": "wedge",
+  "surface": "v1 agent-portability layer",
+  "phase": "Stage 2 — Prescription Wedge 2",
+  "route": "/pages/reviewer-execution.html",
+  "summary": "Wedge 2 of the prescription. Each reviewer spec gets a paired .mjs implementation callable via CLI + MCP + GitHub Actions. Closes Gap 4 and half of Gap 8.",
+  "strategy": {
+    "decision": "Each existing reviewer markdown spec at template/.claude/agents/blueprint/reviewers/ gets a paired executable .mjs. The .mjs is the single source of business logic; the .md is the canonical human description. Three invocation surfaces — CLI subcommand, MCP tool, GitHub Action — all consume the same .mjs. Error messages inject remediation instructions per Lopopolo's pattern.",
+    "why": "Current reviewers are markdown specs invoked by Claude Code's Agent tool. Non-Claude consumers (Cursor, Codex, custom harnesses) have no path. CI workflows have no path. The reviewers are audit specs an agent reads; they're not lint-shaped invocable tools. Lopopolo's OpenAI team showed the production-grade pattern: custom linters with structural tests + error-injection of remediation instructions. See decisions/ADR-0002-reviewers-as-executable-plugins.md.",
+    "shipped": "Reviewers exist as 9 markdown files. A Claude Code agent reads the spec, pattern-matches against the repo, returns structured output. Works in-session; fails everywhere else.",
+    "gap": "From `markdown invoked by Claude Code agent only` to `executable .mjs called via CLI + MCP + GitHub Actions, with paired markdown spec as canonical description`.",
+    "question": "Should the plugin SDK pattern (third-party reviewers as installable npm packages) ship in v1 or defer to v2? Deferred per the prescription — no external plugin authors yet; SDK design without a real consumer over-engineers the contract."
+  },
+  "currentState": {
+    "route": "wip/blueprint/template/.claude/agents/blueprint/reviewers/",
+    "summary": "Nine markdown reviewers covering Stage 1→2, 2→3 (variant-aware), portal-pattern-A/B conformance, Stage 5→6, and Stage 6 ship gate. The Agent tool's behavior is the only way they fire.",
+    "sourceFiles": [
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/README.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/portal-pattern-a-conformance-reviewer.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/portal-pattern-b-conformance-reviewer.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/research-completeness-reviewer.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/design-principles-reviewer.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/prescription-evidence-reviewer.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/doc-quality-auditor.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/terminology-linter.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/prototype-smoke-runner.md",
+      "wip/blueprint/template/.claude/agents/blueprint/reviewers/fact-check-loop-reviewer.md"
+    ],
+    "annotation": "Each .md gets a paired .mjs at the same path. Migration order in ADR-0002 § Migration plan; portal-pattern conformance reviewers go first because they have the clearest pass/fail signal."
+  }
+}

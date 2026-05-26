@@ -1,0 +1,29 @@
+{
+  "id": "ai-hive-companion",
+  "title": "ai-hive as the alignment-layer companion",
+  "group": "companion",
+  "surface": "Stack positioning + companion architecture",
+  "phase": "Stage 1 — research synthesis",
+  "route": "/pages/ai-hive-companion.html",
+  "summary": "Blueprint sits in a four-layer stack: Ace (multiplayer real-time) > ai-hive (async blackboard) > Blueprint (methodology) > Lopopolo's harness (codebase discipline). ai-hive is the load-bearing companion; subs-initiative proves the composition.",
+  "strategy": {
+    "decision": "Name ai-hive explicitly as the alignment-layer companion in production-quality Blueprint distribution. When an initiative declares multi-operator + brownfield/midstream, ai-hive becomes mandatory, not opt-in (`hive.enabled: true`). The CLI vs MCP investigation (research/architecture/01-hive-cli-vs-mcp-with-optionality.md) recommends both tools converge on the same dual-protocol architecture.",
+    "why": "Appleton's 'zero alignment' failure mode at the methodology layer is exactly what triggered the 2026-05-25 three-session reconciliation (three sessions reasoning in parallel without shared alignment → four-way root-doc drift → 8 encoded responses). ai-hive solves it at initiative scope via async blackboard; Ace solves it at general code scope via multiplayer real-time. Blueprint doesn't have to become Ace — it has to compose with ai-hive correctly and stay narrow on its wedge.",
+    "shipped": "ai-hive exists as productized installable kit at ~/Workspace/dev/wip/ai-hive/ with Mode A (join existing) + Mode B (bootstrap own) onboarding. subs-initiative composes Blueprint + ai-hive at full depth (Tier 2): substrate, hive-board-derive script, Pattern A portal Inspect routes surfacing derived state, hive disappears at ship.",
+    "gap": "From `ai-hive treated as opt-in capability behind blueprint.yml hive.enabled flag` to `ai-hive named as the canonical multi-operator companion with shared dual-protocol architecture (CLI + MCP) — neither tool reinventing the alignment surface`.",
+    "question": "Should Blueprint's portal templates ship hive-substrate-aware out of the box (Inspect routes that render placeholder content when no substrate wired) or stay substrate-agnostic? Currently the substrate-aware components in template/apps/portal/ are subs-initiative-specific."
+  },
+  "currentState": {
+    "route": "wip/blueprint/docs/hive-coordination-pattern.md + wip/blueprint/docs/hive-closure-drift-sync-pattern.md + wip/ai-hive/ + wip/subs-initiative/.hive/",
+    "summary": "ai-hive is documented as an optional capability. The hive-coordination-pattern doc names the litmus test ('if you're about to spin up two Claude Code sessions on the same repo in parallel, you need Hive') but the composition with Blueprint is documented as substrate, not as load-bearing alignment layer.",
+    "sourceFiles": [
+      "wip/blueprint/docs/hive-coordination-pattern.md",
+      "wip/blueprint/docs/hive-closure-drift-sync-pattern.md",
+      "wip/ai-hive/README.md",
+      "wip/ai-hive/ONBOARDING.md",
+      "wip/subs-initiative/.hive/README.md",
+      "wip/subs-initiative/tools/hive-board-derive/index.ts"
+    ],
+    "annotation": "The four-layer stack framing is new in this redesign; previously ai-hive was treated as 'optional capability,' not as 'the alignment-layer companion in a named stack.' Production-quality Blueprint surfaces this explicitly."
+  }
+}
