@@ -27,6 +27,8 @@ You are the Stage 2 gate for greenfield Blueprint initiatives. Other variants sk
    - Cross-cutting concerns through single Providers interface
    - One primary CTA per page promoted to structural lint check
 
+6. **Verify the confident-preview rule is acknowledged.** The DESIGN.md must textually acknowledge that the portal is a stakeholder review surface, not a deliberation venue — one confident take per route. Acceptable forms: a section header ("Confident preview" / "Not a deliberation venue"), a sentence in the rules list, or a cross-reference to `template/docs/methodology/confident-preview-rule.md`. If the planned page list (if present in DESIGN.md or a sibling planning doc) contains variant-shaped names (`home-a`, `home-b`, `dashboard-modern`, `dashboard-classic`, `-variant-`, `-v2.`), BLOCK with note "planned variant pages detected — confident-preview rule requires convergence in Stage 2, not multiple takes shipped to stakeholders." Full rule: `template/docs/methodology/confident-preview-rule.md`.
+
 ## How to report
 
 ```
@@ -35,6 +37,7 @@ DESIGN_FILE: <path>
 VISUAL_RULES: <count present / 5>
 TESTING_BASELINE: present | missing
 ARCHITECTURAL_INVARIANTS: <count present / 4>
+CONFIDENT_PREVIEW_RULE: acknowledged | missing | violated-by-planned-variants
 NOTES: <one-line per finding>
 ```
 
