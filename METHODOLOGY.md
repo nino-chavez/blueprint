@@ -121,6 +121,25 @@ research/
 
 For each pattern found: what it is, who does it, how it maps to your problem, and a concrete recommendation. Organize by pattern category (invoice presentation, plan comparison, usage dashboards, etc.) not by source.
 
+### Design-discovery sub-track (added 2026-05-26 wave 8 — design-discipline track)
+
+Persona / funnel / evidence research is inventory-naive. Design work is inventory-led. The reason this matters: three independent consumer dogfoods (rally-hq, signal-dispatch blog, blueprint-redesign) converged on the same finding — L4 templates were absent because Stage 1 produced no L5 surface inventory to derive them from. Stage 2 design-system work then filled the void with templates (shadcn defaults, ad-hoc per-page CSS), missing entire content types and surfaces that existed in production.
+
+For brownfield variants, Stage 1 produces four additional artifacts:
+
+| Artifact | What it inventories |
+|---|---|
+| `research/surface-audit.md` | Every route + purpose + auth state + content source |
+| `research/component-audit.md` | Every UI primitive in use, classified by atomic-design level (L0-L5) with ✓ / ✗ / partial markers |
+| `research/content-type-taxonomy.md` | Every content collection + frontmatter shape + rendering contract + cross-collection bindings |
+| `research/auth-boundary-map.md` | Public / token-gated / authenticated tiers + the design treatment for each tier |
+
+For greenfield variants: a planned surface map covering the same fields ahead of build.
+
+**Diagnostic test (codified)**: when a cluster of layout or composition bugs surfaces on a single page in a single session, the signal is that L4 templates are missing, NOT that L1 atoms are wrong. Patching at L1 when the missing primitive is at L4 produces a sequence where the bug "moves" — each fix shifts the symptom to a new surface rather than closing it.
+
+Canonical audit template at `template/methodology/design/audit-template.md`. Canonical example at `template/methodology/design/EXAMPLE-surface-audit.md` (from blueprint-redesign's own portal audit).
+
 ## Stage 2: Design Principles
 
 Before building anything, codify the rules. These prevent the prototype from inventing components, using jargon, or misrepresenting what's buildable.
@@ -136,6 +155,22 @@ Before building anything, codify the rules. These prevent the prototype from inv
 ### Codify early
 
 Write `prototype/DESIGN.md` before building the first page. Every design decision during prototyping should be checkable against these rules.
+
+### Design-system dictionary (added 2026-05-26 wave 8)
+
+The five rules above name BEHAVIOR. Stage 2 also produces a STRUCTURAL dictionary at the atomic-design layer, derived deterministically from the Stage 1 design-discovery audit:
+
+| Level | Artifact |
+|---|---|
+| L0 | Tokens (color, type, spacing) — brand kit via `forge-brand` OR theme registry per the multi-theme amendment |
+| L1 | Atom dictionary — every primitive in use + extraction gaps |
+| L2 | Molecule dictionary — cross-surface patterns named as primitives |
+| L3 | Organism dictionary — composed sections + cross-surface usage |
+| L4 | Template dictionary — page archetypes the L5 inventory revealed |
+
+L4 cannot be authored without L5 (the audit). Without an L4 dictionary, every page becomes a one-off. The methodology amendment captured this finding across three independent consumer audits (rally-hq, blog, blueprint-redesign).
+
+Canonical example at `template/methodology/design/EXAMPLE-design-system.md` (from blueprint-redesign's own design-system definition).
 
 ### Testing baseline
 
@@ -222,6 +257,17 @@ Before writing strategic documents, validate every claim against reality:
 ### The credibility rule
 
 If a VP reads your document and opens the product to check one claim, and it's wrong, they stop trusting the rest. Fact-check everything.
+
+### Solo-initiative degrade-path (added 2026-05-26 wave 8)
+
+Stage 4 is designed for external review. The reason this matters: the agent's most common failure mode is self-attestation ("looks done to me"), and the same author that produced an artifact rarely catches the gaps the artifact has.
+
+For solo initiatives with no second-operator reviewer, the gate degrades to:
+
+1. **Mechanical verification of every ratified claim** — file existence, grep counts, structural matches. Self-fact-check is bounded to mechanical claims because the author can honestly evaluate them.
+2. **Judgment claims carry-forward to ratification gates** — claims like "does the prose actually read as Solution Architecture register?" or "is the design system complete enough?" cannot be self-judged. Each ratifiable artifact's `status: ratified` requires a named reviewer; for solo dogfoods, the reviewer is the next consumer initiative that exercises the artifact.
+
+Canonical example at `template/methodology/design/EXAMPLE-stage4-fact-check.md` (from blueprint-redesign's own Stage 4 run).
 
 ## Stage 5: Documents
 
