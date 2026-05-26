@@ -50,7 +50,7 @@ portal/
 3. Replace remaining `PROJECT_SLUG` / `PROJECT_NAME` placeholders in:
    - `wrangler.toml` — Cloudflare Pages project name
    - `pages/example.html` — placeholder copy in the example page (replace whole file when you author your first real page)
-   - `<title>` tags in `index.html` and `prototype/index.html` — browser tab titles (the brand bar updates from manifest, but `<title>` is server-rendered before JS runs)
+   - `<title>` tags in `index.html` and `prototype/index.html` — browser tab titles (the brand bar updates from manifest, but `<title>` is server-rendered before JS runs). Titles do NOT include a trailing " Blueprint" suffix — that's by design so consumers whose names already end in "Blueprint" (e.g., the dogfooding `blueprint-redesign` initiative) don't get "Blueprint Redesign Blueprint" in the tab. The brand bar's runtime `_portal-shell.js` `deriveProductName` strips " Blueprint" from `_meta/index.json` `name` for display, so the full "X Blueprint" identity still surfaces in manifests and metadata.
 4. **Override design tokens in `project-tokens.css`** (NOT in `shared.css`). The canonical chrome at `shared.css` is template-owned and re-stamped from the methodology repo. Project token overrides live in the overlay file; the cascade picks them up.
 5. **Populate `_meta/index.json` `docs.tiers`** with the docs your portal should expose. Each tier (Strategic / Working / Audits / whatever you name) is a sidebar group; each entry is `{ id, title }` where `id` is the markdown filename (without `.md`) in `_docs/`. The viewer is data-driven — no JS edits needed. See CONVENTIONS.md § "Docs viewer manifest."
 6. Write your first page:
