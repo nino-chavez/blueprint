@@ -1,15 +1,59 @@
 ---
 canonical: true
 stage: 2
-status: operator-blocked
+status: partially-ratified
 date: 2026-05-26
 supersedes: none
 informs:
-  - portal/project-tokens.css (the destination for ratified brand decisions)
+  - portal/project-tokens.css (destination for ratified brand decisions; now contains the 4-theme registry)
+  - portal/theme-switcher.js (initiative-side runtime theme switcher)
 sources:
   - 02-design-system.md (§ L0 Class B — deferred brand tokens)
   - ../research/current-state/03-portal-surface-audit.md (§ audit-gap 2)
 ---
+
+# Stage 2 Brand Brief — Blueprint-the-product
+
+## 2026-05-26 update — Multi-theme decision (B1 + B2 + reframing of B3)
+
+Operator-ratified during the L0 brand-work session:
+
+- **B1 (one-sentence identity)**: "Production-quality methodology + scaffolding for initiative-scoped agent-assisted work" (outcome-led framing chosen from the three candidates).
+- **B2 (register)**: Solution-architecture register — methodology product, not publication.
+- **B3 (palette) — REFRAMED**: instead of picking ONE palette, Blueprint exposes **four brand-color families as consumer-selectable themes**. Consumer initiatives pick one at `blueprint init` time (forward) or at runtime via the theme switcher (now). This is a methodology-level structural decision that supersedes the single-palette B3 framing.
+
+The four registered themes (implemented in `portal/project-tokens.css` § L0 theme registry):
+
+| Theme | Primary family | Register reference |
+|---|---|---|
+| `slate` (default) | hsl(225, 60%, 45%) — cool slate-indigo | Linear / Vercel / Notion-adjacent — confident, methodical |
+| `coral` | hsl(8, 65%, 42%) — deep coral | Warmth-carrying, contrast-passing variant of inherited signal-dispatch coral |
+| `forest` | hsl(150, 42%, 32%) — deep forest | Craft-tool / Stripe-early / Linear-deep-mode register |
+| `minimal` | hsl(220, 12%, 32%) + amber accent (hsl 35, 90%, 45%) | Maximum restraint — type-led; lethain.com / Stratechery shape |
+
+Runtime selection (this initiative): `?theme=<name>` query param OR persistent `localStorage['blueprint-theme']`, switcher UI in bottom-left of every wedge page + front door.
+
+Audit-gap 2 status: **structurally closed.** L0 is no longer borrowed — Blueprint declares its own theme registry. Specific palette + theme selection is now an operator/consumer choice, not a single methodology-level decision.
+
+## What this update does NOT do
+
+- Does not invoke forge-brand's generators. The 4 theme primaries were hand-seeded based on register references (Linear, Vercel, Stripe, lethain); each was contrast-validated. Generators can refine these post-pickup.
+- Does not extend themes to type stack (B4), voice (B6), logo (B7), or media (B8). Those remain single-brand decisions across all themes — methodology product has one type stack, one voice, one logo regardless of theme. Updates to those decisions still flow through the original B1–B8 sequence below.
+- Does not propose methodology-level changes to `blueprint.yml` schema for theme selection at `init` time. That belongs to a future methodology wave after this initiative lands.
+
+## What still needs operator decisions (remaining from original B-list)
+
+- **B4 (type stack)** — currently Inter + JetBrains Mono inherited from canonical chrome + Anton as hero font (questionable for methodology product). Decide: keep / replace Anton / drop hero font entirely.
+- **B5 (surface treatment)** — currently `--bg: hsl(35, 25%, 98%)` warm-light inherited from Rally HQ's Midnight & Copper. Methodology-doc convention reads against warm-light backgrounds; likely retain shape, recalibrate to Blueprint-specific neutral. Could be theme-scoped but currently shared.
+- **B6 (voice rules)** — Blueprint-the-product voice rules for docs / CLI output / portal microcopy. Currently undecided.
+- **B7 (logo / wordmark)** — currently "Blueprint Redesign" wordmark + accent rendered as canonical chrome. Decide: just "Blueprint"? Glyph + wordmark lockup? Canonical files for distribution.
+- **B8 (media templates)** — what artifacts does Blueprint ship? Social cards, OG images, README banner. Set TBD.
+
+When ready, invoke the forge-brand path documented below for B4–B8.
+
+---
+
+# Original brief (pre-2026-05-26-update)
 
 # Stage 2 Brand Brief — Blueprint-the-product
 

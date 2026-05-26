@@ -1,6 +1,7 @@
 # Session debris — playwright traces, console logs, ad-hoc screenshots
 .playwright-mcp/
 slice*.png
+theme-*.png
 *-screenshot.png
 
 # OS / editor noise

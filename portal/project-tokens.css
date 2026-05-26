@@ -17,10 +17,81 @@
  */
 
 :root {
-  /* L0 Class B brand tokens deferred — see decisions/02-design-system.md § L0.
-   * Until forge-brand or operator-led brand decisions land, the inherited
-   * Rally HQ palette from shared.css is in effect. Flagged, not papered over.
+  /* Default theme: slate. Switch via <html data-theme="slate|coral|forest|minimal">
+   * or the portal's runtime theme switcher.
    */
+}
+
+/* ─────────────── L0 theme registry ─────────────── *
+ *
+ * Blueprint exposes 4 brand families as consumer-selectable themes per the
+ * 2026-05-26 operator decision (decisions/03-brand-brief.md § Multi-theme
+ * decision). Consumer initiatives pick one at init time or runtime.
+ *
+ * Each theme overrides --brand-* tokens (and where needed surface tokens).
+ * Inherited tokens from shared.css remain untouched.
+ *
+ * Contrast policy: every theme's --brand-700 must pass WCAG AA (≥4.5:1)
+ * against --bg from shared.css (hsl 35 25% 98%, the warm-white default).
+ */
+
+/* Slate / indigo — cool neutral, methodology-product default
+ * Register: Linear / Vercel / Notion-adjacent. Confident, deliberate.
+ */
+:root[data-theme="slate"],
+:root:not([data-theme]) {
+  --brand-50:  hsl(225, 60%, 96%);
+  --brand-100: hsl(225, 55%, 88%);
+  --brand-300: hsl(225, 55%, 65%);
+  --brand-500: hsl(225, 60%, 45%);
+  --brand-600: hsl(225, 65%, 38%);
+  --brand-700: hsl(225, 70%, 28%);
+  --brand-900: hsl(225, 75%, 14%);
+}
+
+/* Deeper coral — keep warmth, force contrast
+ * Register: Signal-Dispatch-adjacent but methodology-product, not publication.
+ * Risk: visually similar to operator's other coral-anchored properties.
+ */
+:root[data-theme="coral"] {
+  --brand-50:  hsl(8, 80%, 96%);
+  --brand-100: hsl(8, 75%, 88%);
+  --brand-300: hsl(8, 70%, 62%);
+  --brand-500: hsl(8, 65%, 42%);
+  --brand-600: hsl(8, 70%, 35%);
+  --brand-700: hsl(8, 75%, 26%);
+  --brand-900: hsl(8, 80%, 14%);
+}
+
+/* Forest / olive — warm earthy, distinctive
+ * Register: craft-tool / artisanal-methodical. Echoes Stripe-early /
+ * Linear-deep-mode register; distinctive from operator's other properties.
+ */
+:root[data-theme="forest"] {
+  --brand-50:  hsl(150, 45%, 95%);
+  --brand-100: hsl(150, 42%, 86%);
+  --brand-300: hsl(150, 40%, 55%);
+  --brand-500: hsl(150, 42%, 32%);
+  --brand-600: hsl(150, 45%, 26%);
+  --brand-700: hsl(150, 50%, 18%);
+  --brand-900: hsl(150, 55%, 10%);
+}
+
+/* Neutral + amber accent — minimal, type-led
+ * Register: maximum restraint. Body type carries identity; brand color
+ * appears only on emphasis. Closest to lethain.com / Stratechery shape.
+ */
+:root[data-theme="minimal"] {
+  --brand-50:  hsl(220, 12%, 96%);
+  --brand-100: hsl(220, 12%, 90%);
+  --brand-300: hsl(220, 12%, 60%);
+  --brand-500: hsl(220, 12%, 32%);
+  --brand-600: hsl(220, 14%, 24%);
+  --brand-700: hsl(220, 16%, 16%);
+  --brand-900: hsl(220, 18%, 8%);
+  /* Amber accent for emphasis-only use (links, key callouts) */
+  --accent-500: hsl(35, 90%, 45%);
+  --accent-700: hsl(35, 95%, 30%);
 }
 
 /* ─────────────── project components (L2 molecules) ─────────────── *
