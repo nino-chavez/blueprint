@@ -78,7 +78,7 @@ The chat is the "Ask the substrate" affordance — borrowed from subs-initiative
 3. Push to Cloudflare:
    ```bash
    op item get "blueprint-global" --vault "Developer Secrets" --fields credential --reveal | \
-     wrangler pages secret put OPENROUTER_API_KEY --project-name rally-hq-blueprint
+     wrangler pages secret put OPENROUTER_API_KEY --project-name <PROJECT_SLUG>-blueprint
    ```
 4. Test by hitting the live chat from the portal.
 

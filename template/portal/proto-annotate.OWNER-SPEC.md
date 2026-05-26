@@ -12,7 +12,7 @@ convention_version: 1
 
 ## Purpose
 
-Opt-in stakeholder annotation overlay. Lets a reviewer (or anyone with browser access) click any non-chrome element on a prototype page and leave a note. Notes persist in browser localStorage keyed by page id. Provides the per-page markers, a list-panel viewer, popover edit/delete/resolve flow, and a small console API (`window.rallyAnno`).
+Opt-in stakeholder annotation overlay. Lets a reviewer (or anyone with browser access) click any non-chrome element on a prototype page and leave a note. Notes persist in browser localStorage keyed by page id. Provides the per-page markers, a list-panel viewer, popover edit/delete/resolve flow, and a small console API (`window.blueprintAnno`).
 
 This is the Stage 7 (Iterate) load-bearing piece — without it, stakeholder feedback exists only in Slack / docs and never round-trips back to the prototype.
 
@@ -30,17 +30,17 @@ This is the Stage 7 (Iterate) load-bearing piece — without it, stakeholder fee
 
 **Reads at runtime:**
 - `window.PROTO_PAGE.id` — to scope notes to the current page.
-- `localStorage.getItem('rally-anno-enabled')` — only initializes if this is `'true'`.
-- `localStorage.getItem('rally-anno-notes-v1')` — the notes corpus.
+- `localStorage.getItem('blueprint-anno-enabled')` — only initializes if this is `'true'`.
+- `localStorage.getItem('blueprint-anno-notes-v1')` — the notes corpus.
 
 **Writes:**
-- `localStorage.setItem('rally-anno-notes-v1', ...)` — every CRUD operation persists.
+- `localStorage.setItem('blueprint-anno-notes-v1', ...)` — every CRUD operation persists.
 - DOM: appends `.anno-fab`, `.anno-list-panel`, `.anno-marker` (one per note), `.anno-popover` (transient).
 - Adds/removes `.anno-mode-active` class on `<body>` while in annotate mode (changes cursor to crosshair).
 
 **Side effects:**
 - Captures `document.addEventListener('click', ..., true)` while in annotate mode — capture phase so it intercepts before page click handlers.
-- Exposes `window.rallyAnno` global with `{enable, disable, export, clear}` methods.
+- Exposes `window.blueprintAnno` global with `{enable, disable, export, clear}` methods.
 
 ## Note schema
 
@@ -77,7 +77,7 @@ interface Note {
 
 1. In the stakeholder's browser DevTools console:
    ```js
-   localStorage.setItem('rally-anno-enabled', 'true')
+   localStorage.setItem('blueprint-anno-enabled', 'true')
    location.reload()
    ```
 2. The 💬 FAB appears bottom-left. Walk them through clicking "+ Add" then clicking any element.
@@ -85,7 +85,7 @@ interface Note {
 **Export notes for sharing:**
 
 ```js
-window.rallyAnno.export() // returns JSON string of all notes
+window.blueprintAnno.export() // returns JSON string of all notes
 ```
 
 Paste into a doc or commit to the repo for asynchronous review.
@@ -93,14 +93,14 @@ Paste into a doc or commit to the repo for asynchronous review.
 **Clear all notes (destructive):**
 
 ```js
-window.rallyAnno.clear() // wipes localStorage, reloads
+window.blueprintAnno.clear() // wipes localStorage, reloads
 ```
 
 **Add a new field to the note schema:**
 
 1. Update the `addNote()` function to capture the new field.
 2. Update `buildListItem()` and the popover to render/edit it.
-3. Bump the localStorage key from `rally-anno-notes-v1` → `rally-anno-notes-v2` AND write a one-time migration that reads the old key on init.
+3. Bump the localStorage key from `blueprint-anno-notes-v1` → `blueprint-anno-notes-v2` AND write a one-time migration that reads the old key on init.
 4. **Don't change v1 in place** — existing notes would lose data.
 
 **Danger zones:**
