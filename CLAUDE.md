@@ -26,6 +26,7 @@ Methodology changes ship in waves so consumers can sync coherently:
 - Wave 3 (`ecedef3`) — Pattern B chrome canonical split + restamp + reviewer
 - Wave 4 (`86baf7c`) — manifest-driven Pattern B chrome + Rally HQ leak excision
 - Wave 5 (`53fe1f0`) — 6 chrome/docs bug fixes from blog consumer
+- Wave 6 (`0cc1f9b` → `b9ecc90`, 4 fixes) — amendments from blueprint-redesign consumer: repo-role declaration convention, `<title>` suffix dedupe, prose-doc audit for stale `rally-*` storage keys, manifest-driven `prep-deploy.sh` + ADR-0003
 
 Each wave includes a freeze-rule acknowledgment in the commit message and a recommended consumer-sync command.
 
