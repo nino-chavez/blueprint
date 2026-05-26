@@ -231,11 +231,16 @@
 
   <script>
     (async function () {
-      const manifestRes = await fetch('/_meta/index.json');
+      // Cache-bust per session — manifest + per-page + per-slice JSONs change as
+      // the methodology pipeline advances; HTTP cache otherwise serves stale data.
+      // Same pattern as proto-nav.js CACHE_BUST (which derives from script ?v=);
+      // this script is inline so it uses a session-load timestamp.
+      const CB = `?_=${Date.now()}`;
+      const manifestRes = await fetch(`/_meta/index.json${CB}`);
       const manifest = await manifestRes.json();
       const pages = await Promise.all(
         (manifest.pages || []).map(async id => {
-          const r = await fetch(`/_meta/${id}.json`);
+          const r = await fetch(`/_meta/${id}.json${CB}`);
           return r.ok ? await r.json() : null;
         })
       );
@@ -244,7 +249,7 @@
       // Load slice metadata
       const slices = await Promise.all(
         (manifest.slices || []).map(async id => {
-          const r = await fetch(`/_meta/slices/${id}.json`);
+          const r = await fetch(`/_meta/slices/${id}.json${CB}`);
           return r.ok ? await r.json() : null;
         })
       );

@@ -2,8 +2,9 @@
   "id": "ai-hive-companion",
   "title": "ai-hive as the alignment-layer companion",
   "group": "companion",
+  "slice": "companion-rollout",
   "surface": "Stack positioning + companion architecture",
-  "phase": "Stage 1 — research synthesis",
+  "phase": "Phase 1",
   "route": "/pages/ai-hive-companion.html",
   "summary": "Blueprint sits in a four-layer stack: Ace (multiplayer real-time) > ai-hive (async blackboard) > Blueprint (methodology) > Lopopolo's harness (codebase discipline). ai-hive is the load-bearing companion; subs-initiative proves the composition.",
   "strategy": {

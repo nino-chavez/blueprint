@@ -2,8 +2,9 @@
   "id": "distribution-shape",
   "title": "npx @blueprint/cli init",
   "group": "wedge",
+  "slice": "mvp-wedges",
   "surface": "v1 operator-facing distribution",
-  "phase": "Stage 2 — Prescription Wedge 1",
+  "phase": "MVP",
   "route": "/pages/distribution-shape.html",
   "summary": "Wedge 1 of the prescription. One npm package, one interactive command, semver versioning, Pattern A + Pattern B stampers. Closes Gaps 1, 2, 7, 9.",
   "strategy": {

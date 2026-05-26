@@ -1,0 +1,9 @@
+{
+  "id": "mvp-wedges",
+  "label": "Stage 2 — Prescription wedges (v1 MVP)",
+  "phase": "MVP",
+  "summary": "Two load-bearing prescription wedges that collapse five of the eight gaps. Distribution wedge ships @blueprint/cli; portability wedge ships executable reviewers via CLI + MCP + GitHub Actions.",
+  "production_surface": "decisions/01-prescription.md + ADR-0001 + ADR-0002",
+  "findings_cited": ["Gap-1", "Gap-2", "Gap-4", "Gap-7", "Gap-9"],
+  "principles_cited": ["dual-protocol distribution", "reviewers as executable plugins"]
+}

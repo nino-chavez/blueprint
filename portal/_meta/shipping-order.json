@@ -2,8 +2,9 @@
   "id": "shipping-order",
   "title": "Shipping order — what lands when",
   "group": "timeline",
+  "slice": "companion-rollout",
   "surface": "Stage 2 prescription timeline",
-  "phase": "Stage 2 — Prescription rollout",
+  "phase": "Phase 1",
   "route": "/pages/shipping-order.html",
   "summary": "The two wedges plus three independent items don't ship in parallel. Five-step order, ~15-20 working days of methodology-repo engineering plus the Stage 3-6 work on this initiative's portal.",
   "strategy": {

@@ -2,8 +2,9 @@
   "id": "reviewer-execution",
   "title": "Reviewers as executable plugins",
   "group": "wedge",
+  "slice": "mvp-wedges",
   "surface": "v1 agent-portability layer",
-  "phase": "Stage 2 — Prescription Wedge 2",
+  "phase": "MVP",
   "route": "/pages/reviewer-execution.html",
   "summary": "Wedge 2 of the prescription. Each reviewer spec gets a paired .mjs implementation callable via CLI + MCP + GitHub Actions. Closes Gap 4 and half of Gap 8.",
   "strategy": {

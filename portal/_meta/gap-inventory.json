@@ -2,8 +2,9 @@
   "id": "gap-inventory",
   "title": "Eight production-quality gaps",
   "group": "why",
+  "slice": "diagnose",
   "surface": "Stage 1 research synthesis",
-  "phase": "Stage 1 — Diagnose",
+  "phase": "Phase 2",
   "route": "/pages/gap-inventory.html",
   "summary": "What blocks Blueprint from being production-quality today (nine gaps as of late 2026-05-25 — Gap 9 surfaced during this initiative's Stage 3 portal work). Each gap maps to a named pattern from primary sources.",
   "strategy": {
