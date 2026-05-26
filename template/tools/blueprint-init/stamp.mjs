@@ -24,6 +24,44 @@ const VARIANT_TIER_MATRIX = {
   brownfield: { 0: "doc-only-audit", 1: "default", 2: "audit-ships-product" },
 };
 
+// ── Pattern B canonical chrome manifest ──────────────────────────────────────
+// Files in template/portal/ that are CANONICAL CHROME — methodology-owned,
+// consumer-uneditable. `--mode=restamp-chrome --pattern=B` overwrites these
+// files in the consumer's portal from template canonical; anything not in
+// this list (project-tokens.css, _meta/*, pages/*, index.html, etc.) is left
+// untouched.
+//
+// Adding a file here: the file must be byte-identical to template canonical
+// after stamp (no PROJECT_NAME-style substitutions). If the file needs any
+// per-project substitution, it does not belong in chrome — move it to the
+// project-owned overlay surface (project-tokens.css, _meta, etc.).
+//
+// docs/index.html (added 2026-05-25 evening): data-driven from
+// _meta/index.json `docs.tiers`, so the viewer JS/CSS/HTML structure is now
+// truly canonical chrome with zero project-specific defaults.
+//
+// chat-widget.js (added 2026-05-25 evening): the prior version's Rally HQ
+// brand string in the header comment was excised; the widget itself was
+// always project-agnostic. Now canonical.
+const PATTERN_B_CHROME_FILES = [
+  "shared.css",
+  "_portal-shell.js",
+  "proto-nav.js",
+  "proto-annotate.js",
+  "chat-widget.js",
+  "_headers",
+  "_redirects",
+  "docs/index.html",
+];
+
+// Candidate locations a Pattern B consumer might place its portal. Resolve in
+// order; first existing directory wins. Reflects the path-drift observed
+// across rally-hq (blueprint/portal/) and the canonical (portal/) shapes.
+const PATTERN_B_PORTAL_CANDIDATES = [
+  "portal",
+  "blueprint/portal",
+];
+
 // ── Substitution surface (mirrors README "Substitution table" exactly) ────────
 function substitutions({ name, displayName, repoUrl, tagline }) {
   const shortPrefix = name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 4) || "bp";
@@ -263,8 +301,100 @@ function printReport(log) {
   }
 }
 
+async function resolvePatternBPortalDir(target) {
+  for (const cand of PATTERN_B_PORTAL_CANDIDATES) {
+    const p = path.join(target, cand);
+    const stat = await fs.stat(p).catch(() => null);
+    if (stat && stat.isDirectory()) return p;
+  }
+  return null;
+}
+
+async function restampChromePatternB({ target, dryRun, log }) {
+  const portalDir = await resolvePatternBPortalDir(target);
+  if (!portalDir) {
+    fail(
+      `--mode=restamp-chrome --pattern=B: no portal directory found under ${target}. ` +
+      `Looked for: ${PATTERN_B_PORTAL_CANDIDATES.join(", ")}. ` +
+      `If your portal lives elsewhere, add an ADR justifying the path divergence and update PATTERN_B_PORTAL_CANDIDATES.`
+    );
+  }
+  const srcRoot = path.join(BLUEPRINT_ROOT, "template/portal");
+  const missing = [];
+  for (const rel of PATTERN_B_CHROME_FILES) {
+    const src = path.join(srcRoot, rel);
+    const dst = path.join(portalDir, rel);
+    const srcExists = await fs.stat(src).catch(() => null);
+    if (!srcExists) {
+      missing.push(`canonical missing in template: ${rel}`);
+      continue;
+    }
+    const dstExists = await fs.stat(dst).catch(() => null);
+    if (!dstExists) {
+      log.skipped.push(`${rel} (no consumer copy; not creating — re-run full stamp for first-time setup)`);
+      continue;
+    }
+    if (dryRun) {
+      log.stamped.push(`${rel} (dry-run; would overwrite from canonical)`);
+      continue;
+    }
+    await fs.mkdir(path.dirname(dst), { recursive: true });
+    const content = await fs.readFile(src, "utf8");
+    await fs.writeFile(dst, content, "utf8");
+    log.stamped.push(`${rel} (chrome refreshed from canonical)`);
+  }
+  if (missing.length) {
+    console.error("error: canonical chrome files missing from template (methodology repo broken):");
+    for (const m of missing) console.error(`  - ${m}`);
+    process.exit(2);
+  }
+  // Ensure project-tokens.css exists in the consumer's portal so the overlay
+  // contract holds. Create it from canonical if absent; never overwrite.
+  const overlayDst = path.join(portalDir, "project-tokens.css");
+  const overlayExists = await fs.stat(overlayDst).catch(() => null);
+  if (!overlayExists) {
+    const overlaySrc = path.join(srcRoot, "project-tokens.css");
+    if (await fs.stat(overlaySrc).catch(() => null)) {
+      if (!dryRun) {
+        const content = await fs.readFile(overlaySrc, "utf8");
+        await fs.writeFile(overlayDst, content, "utf8");
+      }
+      log.stamped.push(`project-tokens.css (created from canonical — your project tokens go here)`);
+    }
+  } else {
+    log.skipped.push(`project-tokens.css (preserved; consumer overlay)`);
+  }
+  console.log(`blueprint-init: restamped ${PATTERN_B_CHROME_FILES.length} chrome files in ${portalDir}`);
+}
+
+async function modeRestampChrome(args) {
+  const pattern = (args["pattern"] || "").toUpperCase();
+  const target = args["target"] ? path.resolve(args["target"].replace(/^~/, process.env.HOME || "")) : null;
+  const dryRun = args["dry-run"] === "true";
+  if (!target) fail(`--mode=restamp-chrome: --target is required`);
+  if (pattern !== "A" && pattern !== "B") fail(`--mode=restamp-chrome: --pattern must be A or B; got "${args["pattern"]}"`);
+  const targetStat = await fs.stat(target).catch(() => null);
+  if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
+
+  const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
+  if (pattern === "B") {
+    await restampChromePatternB({ target, dryRun, log });
+  } else {
+    fail(`--mode=restamp-chrome --pattern=A not yet implemented. The Pattern A canonical chrome surface (packages/ui, packages/design-tokens, src/styles) needs an audit before a manifest can be declared. See README §"Restamping Pattern A chrome".`);
+  }
+  printReport(log);
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  const mode = args["mode"] || "stamp";
+
+  if (mode === "restamp-chrome") {
+    await modeRestampChrome(args);
+    return;
+  }
+  if (mode !== "stamp") fail(`unknown --mode=${mode} (valid: stamp, restamp-chrome)`);
+
   const required = ["name", "display-name", "repo-url", "tagline", "variant", "tier", "pattern", "target"];
   const missing = required.filter((k) => !args[k]);
   if (missing.length) fail(`missing required flags: ${missing.join(", ")}`);
@@ -289,7 +419,7 @@ async function main() {
     );
   }
   if (pattern !== "A" && pattern !== "B") fail(`pattern must be A or B; got ${pattern}`);
-  if (pattern === "B") fail(`pattern B stamper not yet implemented — see README §"Pattern B stamper"`);
+  if (pattern === "B") fail(`pattern B initial stamp not yet implemented. For chrome refresh on an existing Pattern B portal, run with --mode=restamp-chrome --pattern=B --target=<path>. See README §"Pattern B stamper".`);
 
   const targetStat = await fs.stat(target).catch(() => null);
   if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
