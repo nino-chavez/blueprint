@@ -70,7 +70,7 @@ const PATTERN_B_PORTAL_CANDIDATES = [
 ];
 
 // ── Substitution surface (mirrors README "Substitution table" exactly) ────────
-function substitutions({ name, displayName, repoUrl, tagline }) {
+function substitutions({ name, displayName, repoUrl, tagline, theme }) {
   const shortPrefix = name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 4) || "bp";
   return [
     // Order matters: longer specific strings before shorter generic ones.
@@ -81,6 +81,11 @@ function substitutions({ name, displayName, repoUrl, tagline }) {
     { from: "/subs-logo.png", to: "/project-logo.png" },
     { from: "--bcs-", to: `--${shortPrefix}-` },
     { from: "bc-subscriptions", to: name },
+    // Multi-theme registry (2026-05-26 wave 11): the stamper writes the
+    // initiative's chosen theme into <html> as data-theme so the default applies
+    // before JS loads. Runtime theme-switcher.js can override at the operator's
+    // choosing (it reads ?theme= query param + localStorage first).
+    { from: '<html lang="en">', to: `<html lang="en" data-theme="${theme}">` },
   ];
 }
 
@@ -416,6 +421,11 @@ async function main() {
   const target = path.resolve(args["target"].replace(/^~/, process.env.HOME || ""));
   const dryRun = args["dry-run"] === "true";
   const logoSrc = args["logo"] || null;
+  const theme = (args["theme"] || "slate").toLowerCase();
+  const VALID_THEMES = new Set(["slate", "coral", "forest", "minimal", "custom"]);
+  if (!VALID_THEMES.has(theme)) {
+    fail(`--theme must be one of: ${[...VALID_THEMES].join(", ")}; got ${theme}`);
+  }
 
   if (!VARIANT_TIER_MATRIX[variant]) fail(`unknown variant: ${variant}`);
   if (!VARIANT_TIER_MATRIX[variant][tier]) fail(`unknown tier: ${tier}`);
@@ -431,7 +441,7 @@ async function main() {
   const targetStat = await fs.stat(target).catch(() => null);
   if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
 
-  const subs = substitutions({ name, displayName, repoUrl, tagline });
+  const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
   const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
 
   console.log(`blueprint-init: stamping Pattern A scaffold into ${target}`);
