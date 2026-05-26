@@ -1,5 +1,7 @@
 # Blueprint Project
 
+**Repo role: I am a Blueprint consumer initiative.** The methodology source lives at `~/Workspace/dev/wip/blueprint/` — do not edit that repo from this session unless the operator has explicitly granted a methodology-freeze waiver (see `~/Workspace/dev/wip/blueprint/CLAUDE.md`). Verify `pwd` does NOT end in `wip/blueprint` before any commit; if it does, stop and switch sessions.
+
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment. This file is a **map**, not a manual — pointers to canonical docs, not inlined content. See `blueprint.yml` for project configuration.
 
 ## Operating invariants (read before any methodology-shaped work)
