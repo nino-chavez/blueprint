@@ -27,6 +27,7 @@ Methodology changes ship in waves so consumers can sync coherently:
 - Wave 4 (`86baf7c`) — manifest-driven Pattern B chrome + Rally HQ leak excision
 - Wave 5 (`53fe1f0`) — 6 chrome/docs bug fixes from blog consumer
 - Wave 6 (`0cc1f9b` → `b9ecc90`, 4 fixes) — amendments from blueprint-redesign consumer: repo-role declaration convention, `<title>` suffix dedupe, prose-doc audit for stale `rally-*` storage keys, manifest-driven `prep-deploy.sh` + ADR-0003
+- Wave 7 (`4a4aa7e` → `1072308`, 4 fixes) — amendments from website-nc-v3 consumer (two failures, one root cause): ADR-0004 JTBD continuity + forge-pipeline provenance, `research-completeness-reviewer` JTBD-per-persona extension, new `prescription-jtbd-traceability-reviewer` (Stage 2→3), new `prototype-forge-provenance-reviewer` (Stage 3 completion)
 
 Each wave includes a freeze-rule acknowledgment in the commit message and a recommended consumer-sync command.
 
