@@ -12,6 +12,63 @@ This initiative is unique: it IS Blueprint applied to itself. Every methodology 
 
 <!-- Entries below, newest first. -->
 
+## 2026-05-26 — Stage 1 missing design-discovery sub-track; Stage 2 design-system work has no L4/L5 anchor
+
+**Trigger**: Two independent dogfood sessions on consumer initiatives (Signal Dispatch blog redesign and Rally HQ public-surface redesign) converged within hours on the same methodology gap from different starting points. The blog session, after generating an 8-surface "page builder" derived from design principles, discovered on operator pushback that production actually carries 20 distinct page types across 24 routes (fiction, presentations, tutorials, research notes, tag taxonomy, drafts, private-share, logout — entire categories absent from the derivation). The Rally HQ session worked through seven reactive CSS patches before the operator pulled the camera back; the audit that followed identified L4 templates as entirely absent across 95 routes / 11 archetypes, with every page negotiating its own shell.
+
+**Scope**: Candidate for methodology promotion (highest priority of any 2026-05-25/26 amendment because the failure mode is silent — it ships partial systems without the agent or operator noticing)
+**Status**: Open
+
+The reason this matters is that it's a categorical gap, not a scope gap. Blueprint's current shape was built for functional discipline (BRD → PRD → spec → implementation), where research is interview-led — personas, funnels, evidence catalogs, current-state diagnose. Design discipline is structurally different: it is **inventory-led**, not interview-led. Every Stage 2 design-system attempt across recent dogfood sessions has produced a partial system because the inventory Stage 1 should have produced never existed. The agent fills the void with shadcn defaults and theory-derived component dictionaries, the operator catches the gap on review, the session loops, and the cost compounds across initiatives.
+
+**Atomic-design vocabulary makes the gap precise** (vocabulary borrowed from the 2026-05-26 Rally HQ session because it gives Blueprint a missing grammar — composition levels are orthogonal to workflow stages and Blueprint only declares the latter):
+
+| Level | What it is | Blueprint coverage today | Canonical tool when integrated |
+|---|---|---|---|
+| L0 | Tokens (color, type, spacing) | Brand kit (Gap 11 closure) ✓ | `forge-brand` |
+| L1 | Atoms | Partial (shadcn defaults; tool integration not declared) | `forge-brand` |
+| L2 | Molecules | Ad-hoc, per-page | — |
+| L3 | Organisms | None named | `forge-site` modules |
+| L4 | Templates / page archetypes | **None — the load-bearing gap** | `forge-site` archetypes |
+| L5 | Pages (instances + audit) | None required as Stage 1 artifact | Surface audit (manual / brownfield) |
+
+L4 cannot be authored without L5 (you cannot name templates without auditing the surfaces they generalize). Brownfield audits L5 from production; greenfield plans L5 from the surface map. Either way, L5 is a required *input* to L4, and Blueprint's Stage 1 does not currently ask for it. This is the same failure mode as Gap 11 closure (agent fills void with templates because the required earlier-stage artifact does not exist) but at the structural/architecture layer rather than the brand layer.
+
+**Diagnostic test that belongs in methodology prose** (from the Rally HQ session's process-gap analysis): when a cluster of layout or composition bugs surfaces on a single page in a single session, the signal is that L4 is missing, NOT that L1 is wrong. Patching at L1 when the missing primitive is at L4 produces a sequence where the bug "moves" — each fix shifts the symptom to a new surface rather than closing it — which is exactly the trajectory of the seven Rally HQ CSS patches before the audit.
+
+**Tool integration question** (operator raised 2026-05-26): "Is this a gap in `forge-brand`/`forge-signal`, and should those tools fold into Blueprint instead of staying separate?"
+
+Investigation finding: the capability mostly already exists. `forge-site` literally contains archetypes (L4) and modules (L3) as prose knowledge artifacts (no runtime — `~/Workspace/dev/tools/forge-site/playbook/*.md`, `archetypes/*.md`, `modules/*.md`). Agents in both dogfood sessions never reached for it because Blueprint methodology never declared the integration. The gap is integration/declaration, not capability — and not tool consolidation.
+
+Folding `forge-brand` / `forge-signal` / `gen-images` into Blueprint would solve the wrong problem because each has use cases outside Blueprint initiatives (brand work that isn't an initiative; content generation against a finished brand kit; one-off social cards). Coupling their release cadence to Blueprint forces non-Blueprint consumers to pull a methodology repo for a brand kit generator. `forge-site` is the exception — it is prose, not code, and shares the shape of methodology documentation.
+
+Candidate solutions for methodology promotion:
+
+1. **Declare the design-discipline track in methodology with surface audit as a required Stage 1 artifact; integrate (not absorb) `forge-brand`/`forge-signal` via `blueprint.yml` config; fold `forge-site` prose into `blueprint/methodology/design/`**. Concretely:
+
+   - **METHODOLOGY.md amendment**: add a design-discipline sub-track to Stage 1 that produces L5 artifacts. For brownfield: `surface-audit.md` (every route + purpose + auth state), `component-audit.md` (every UI primitive in use), `content-type-taxonomy.md` (every frontmatter shape + rendering contract), `auth-boundary-map.md` (public / token-gated / authenticated surfaces). For greenfield: planned surface map covering the same fields ahead of build.
+   - **Stage 2 amendment**: declare L3 organism + L4 template dictionary as required artifacts derived deterministically from the L5 audit. Stage 2 design-system definition becomes "name what exists + close named gaps," not "derive from principles."
+   - **`blueprint.yml` schema extension**: add a `design:` block declaring sources for each level — `brand_source: forge-brand | manual | imported`, `archetype_source: forge-site | custom`, `content_source: forge-signal | manual`, `surface_audit_required: true | false` (default true for brownfield variant, true for greenfield Tier 2+).
+   - **forge-site relocation**: move `~/Workspace/dev/tools/forge-site/` content into `~/Workspace/dev/wip/blueprint/template/methodology/design/` (archetypes/modules/playbook). Delete `tools/forge-site/` after the move because it is reference prose, not a tool. The global CLAUDE.md description ("knowledge artifact, no runtime") confirms this is a methodology-side artifact misfiled as a tool.
+   - **Diagnostic test in methodology prose**: codify the "bug cluster on one page = L4 missing, not L1 wrong" test in the brownfield variant guide and METHODOLOGY.md § "Stage 2 design system."
+
+2. **Declare the design-discipline track as above but leave `forge-site` where it is**, with a methodology-side `INTEGRATIONS.md` page that points to `~/Workspace/dev/tools/forge-site/` as the canonical L3/L4 reference. Lower-cost migration; preserves the existing tool-directory convention; pays an ongoing discoverability tax (two paths to read).
+
+3. **Methodology-side prose only — no tool integration declared.** Add the Stage 1 audit requirement and Stage 2 template-dictionary requirement, but leave operators to choose tools per initiative. Lowest-cost methodology change; highest-cost consumer onboarding (every initiative re-derives the toolchain).
+
+Option 1 is the right shape because it closes the gap at both the artifact layer (required audits + template dictionary) AND the discoverability layer (config flags + folded forge-site prose). Option 2 is a viable incremental landing if the operator wants to defer the forge-site relocation pending validation that the L3/L4 reference is load-bearing. Option 3 is insufficient — it reproduces the same discoverability failure that produced this amendment in the first place.
+
+**References**:
+- Blog dogfood session producing `surface-audit-live.md` (2026-05-26): 20 page types, 25+ components, 8 content collections, 3 auth tiers
+- Rally HQ dogfood session producing `audits/page-system-audit-2026-05-26.md`: 95 routes, 11 archetypes, 8 first-principles gaps, 9-phase migration plan
+- Atomic design vocabulary: Brad Frost, *Atomic Design* (the L0-L5 framing this amendment adopts)
+- forge-site canonical location (candidate for relocation under option 1): `~/Workspace/dev/tools/forge-site/`
+- Global CLAUDE.md describing forge-site as "knowledge artifact, no runtime": `~/.claude/CLAUDE.md` § Tools table
+- Related closure precedent (Gap 11, brand-anchor layer): the existing brand-kit requirement closed the same failure mode at L0; this amendment closes it at L3/L4/L5
+- Methodology freeze rule: any wave-commit closing this amendment must wait for this initiative to land first per `~/Workspace/dev/wip/blueprint/template/CLAUDE.md` § "Methodology freeze during consumer migration"
+
+---
+
 ## 2026-05-25 — Pattern B `prototype/index.html` title template collides when project name contains "Blueprint"
 
 **Trigger**: The canonical template at `~/Workspace/dev/wip/blueprint/template/portal/prototype/index.html` line 7 declares `<title>Prototype Studio — PROJECT_NAME Blueprint</title>`. When `PROJECT_NAME` is substituted with this consumer's display name "Blueprint Redesign", the rendered title becomes "Prototype Studio — Blueprint Redesign Blueprint" — a visible duplication in the browser tab.
