@@ -16,6 +16,7 @@ Canonical reference: `wip/blueprint/docs/variant-selection.md`.
 | `portal-pattern-a-conformance-reviewer` | Stage 3 completion (Pattern A) **and** any commit touching `apps/portal/` | All initiatives at Tier 1+ on Pattern A |
 | `portal-pattern-b-conformance-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B |
 | `portal-chrome-canonical-reviewer` | Stage 3 completion (Pattern B) **and** any commit touching `portal/` or `blueprint/portal/` | All initiatives at Tier 1+ on Pattern B (Pattern A audit deferred) |
+| `prototype-forge-provenance-reviewer` | Stage 3 completion (after portal-conformance + chrome-canonical pass) | All initiatives with substantive prototype (≥500 HTML/CSS lines); skips on explicit `forge_pipeline.skip: true` declaration |
 | `fact-check-loop-reviewer` | Stage 4 convergence orchestrator | All |
 | `doc-quality-auditor` | Stage 5 → Stage 6 | All |
 | `terminology-linter` | Stage 5 → Stage 6 (parallel with doc-quality-auditor) | All |
@@ -31,7 +32,11 @@ The "any portal-touching commit" trigger applies to midstream and brownfield var
 
 `portal-chrome-canonical-reviewer` runs *alongside* `portal-pattern-b-conformance-reviewer`, not in place of it. They check different things: the conformance reviewer checks whether the consumer's portal has the right *shape* (required files exist, drawers are populated, comparison toggle is wired, I-2/I-3/I-5 invariants hold). The chrome-canonical reviewer checks whether the consumer's chrome files (`shared.css`, `_portal-shell.js`, `proto-nav.js`, `proto-annotate.js`, `_headers`, `_redirects`) are byte-identical to `template/portal/` canonical. The shape can be conformant while the chrome has silently drifted — and the silent-chrome-drift case is the 2026-05-25 v3 bug that motivated this reviewer's existence.
 
-Run order: `portal-pattern-b-conformance-reviewer` first (shape), then `portal-chrome-canonical-reviewer` (chrome). If shape is broken, chrome drift is irrelevant; if shape passes, chrome must match.
+Run order: `portal-pattern-b-conformance-reviewer` first (shape), then `portal-chrome-canonical-reviewer` (chrome), then `prototype-forge-provenance-reviewer` (provenance + JTBD satisfaction). Each layer checks something the others don't — shape, chrome integrity, and content origin / JTBD trace respectively. All three must pass for Stage 3 completion on a substantive prototype.
+
+### Forge-provenance pairing with JTBD-trace
+
+`prototype-forge-provenance-reviewer` (Stage 3) closes the loop opened by `prescription-jtbd-traceability-reviewer` (Stage 2 → 3). The Stage 2 reviewer verifies prescription items trace to Stage 1 JTBDs via `serves_jtbd:` fields; the Stage 3 reviewer verifies the prototype contains surfaces that COULD plausibly satisfy those same JTBDs (structural check; behavioral verification is Stage 6 `prototype-smoke-runner`). Both run under the same ADR-0004 decision — together they prevent JTBD discontinuity end-to-end. See ADR-0004 for the full decision and the website-nc-v3 failures that motivated both reviewers.
 
 ## Behavior model
 
