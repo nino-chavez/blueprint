@@ -177,6 +177,26 @@ Eight patterns observed on ≥2 surfaces that are not currently declared as name
 7. **Sticky top-nav** — prototype studio defines `.top-nav` per-page; the front door and wedge pages use a non-sticky `.header`. Two top-nav patterns, no canonical.
 8. **Wedge-label / tag pill** — declared once in `gap-inventory.html` `<style>` block, never promoted to shared chrome.
 
+## Per-archetype profile table
+
+Bridge from L5 inventory → L4 template extraction. For each archetype identified in the surface inventory, declare: who reads it, primary job, shell variant, hero pattern, section structure, nav presence, footer presence. (Section backfilled 2026-05-26 per the cross-audit reconciliation in `research/architecture/02-stage1-design-audit-template.md` — the original audit version missed this section; the cross-audit promoted it as universal.)
+
+| Archetype | Instances | Who reads | Job | Shell variant | Hero | Sections | Nav | Footer |
+|---|---|---|---|---|---|---|---|---|
+| Front door | 1 (`index.html`) | New stakeholder | Pick a flow / audience | `frontdoor` — full-width, audience-pill switcher | Required (problem-led + pill switcher) | 1 (flow card grid) | `.header` brand strip | Brand footer with repo link |
+| Wedge page | 5 (`gap-inventory`, `distribution-shape`, `reviewer-execution`, `ai-hive-companion`, `shipping-order`) | Reviewing stakeholder | Compare current vs proposed | `wedge` — body width, compare-toggle root | None (page-title header only) | 2+ (`.current-view` + `.proposed-view` mutually exclusive) | `.header` brand strip + proto-nav chrome (top nav + drawers) | Brand footer |
+| Docs viewer | 1 (`docs/index.html`) | Stakeholder doing deep read | Read tiered docs (Stage 1 research + Stage 2 prescription + ADRs) | `docs` — two-column sidebar + main pane | None | Sidebar tiers (manifest-driven) + main markdown pane | Sidebar serves as nav | Brand footer |
+| Prototype studio | 1 (`prototype/index.html`) | Stakeholder reviewing UI prototype | Inspect prototype iframes against design grid | `studio` — sticky top-nav + design grid + iframe slot | None | Iframe payload (currently empty) | Sticky `.top-nav` (per-page, NOT shared with chrome) | None |
+
+**L4 template candidates** ordered by extraction leverage (count of instances × cross-archetype shape similarity):
+
+1. **`WedgePageTemplate`** — 5 instances, identical structural shape (header + compare-toggle root + current/proposed view pair + body sections + footer). Strongest extraction candidate; would close audit-gap 1 single-handedly.
+2. **`DocsViewerTemplate`** — 1 instance but Pattern B chrome treats it as canonical (`shared.css` declares the layout primitives). Could be promoted as a canonical archetype since the methodology repo already encodes it.
+3. **`PrototypeStudioTemplate`** — 1 instance, also Pattern B chrome canonical. Same promotion path as docs viewer.
+4. **`FrontDoorTemplate`** — 1 instance, distinctive layout (audience-pill switcher). Lowest extraction leverage unless multiple consumer initiatives need front-door archetypes; deferred.
+
+The wedge-page archetype is the highest-leverage L4 extraction because it captures the cross-surface composition that 5 separate `.html` files currently rebuild from atoms. The other three archetypes are single-instance canonical chrome that could be declared as templates with no migration cost.
+
 ## Named gaps the audit reveals
 
 Listed in order of leverage (closing each gap shortens the next):

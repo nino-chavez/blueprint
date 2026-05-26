@@ -65,7 +65,8 @@
         "blurb": "Implementation investigation. Feeds back into Blueprint's distribution shape.",
         "designed": false,
         "docs": [
-          { "id": "research-architecture-hive-cli-vs-mcp-with-optionality", "title": "01 — hive CLI vs MCP (with optionality)", "source": "research/architecture/01-hive-cli-vs-mcp-with-optionality.md" }
+          { "id": "research-architecture-hive-cli-vs-mcp-with-optionality", "title": "01 — hive CLI vs MCP (with optionality)", "source": "research/architecture/01-hive-cli-vs-mcp-with-optionality.md" },
+          { "id": "research-architecture-stage1-design-audit-template", "title": "02 — Stage 1 design-discovery audit template (cross-audit reconciliation)", "source": "research/architecture/02-stage1-design-audit-template.md" }
         ]
       }
     ],
