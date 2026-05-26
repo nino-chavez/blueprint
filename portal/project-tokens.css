@@ -28,6 +28,50 @@
  * implements one of M1–M8 from the L2 molecule dictionary.
  */
 
+/* M3 — Section meta-strip
+ * Mono uppercase tracked-out label used at the top of wedge bodies to
+ * locate the page in the document hierarchy ("Stage 1 — Diagnose",
+ * "Wedge 1 — distribution shape", etc.).
+ * Previously inlined identically across all 5 wedge pages.
+ */
+.meta-strip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* M4 — Cross-reference block (forward-compatibility)
+ * Currently no wedge page renders explicit cross-references; primitive
+ * declared so that when xref content lands (informs / derived-from /
+ * see-also), the visual treatment is consistent.
+ */
+.xref-block {
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.xref-block .xref-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.xref-block .xref-label.informs       { color: var(--brand-700); }
+.xref-block .xref-label.derived-from  { color: var(--text-muted); }
+.xref-block .xref-link {
+  display: block;
+  padding: var(--space-2) 0;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--border);
+}
+.xref-block .xref-link:hover { color: var(--brand-700); }
+.xref-block .xref-link:last-child { border-bottom: 0; }
+
 /* M7 — Format / tag pill (wedge-label variant)
  * Used in cross-references across wedge pages to denote wedge ownership.
  * Variants encode the three prescription wedges from decisions/01-prescription.md.

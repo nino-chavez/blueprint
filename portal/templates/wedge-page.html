@@ -16,10 +16,26 @@
   └──────────────────────────────────────────────────────────────────────┘
 
   Composition (per decisions/02-design-system.md § L4 T1):
+
     M1 — Header brand strip      (the <header class="header"> block)
+
     M2 — Compare-toggle root     (the data-compare-root + data-view attrs)
-    M3 — Section meta-strip      (drop into the {{PROPOSED_BODY}} as needed)
-    M4 — Cross-reference block   (drop into the {{PROPOSED_BODY}} as needed)
+         Contract: <body data-compare-root data-view="proposed|shipped|split">
+           - "proposed" (default): .proposed-view visible, .shipped-view hidden
+           - "shipped": .shipped-view visible, .proposed-view hidden
+           - "split": both visible side-by-side with ::before labels
+         Behavior fully owned by canonical chrome (shared.css lines ~514-543
+         + proto-nav.js). Pages declare the contract via the body attributes
+         + the two named sections; do NOT override the toggle CSS in
+         project-tokens.css.
+
+    M3 — Section meta-strip      (the <p class="meta-strip"> line in body)
+         Mono uppercase tracked-out label locating the page in the document
+         hierarchy. Use class="meta-strip", NEVER inline style="font-family...".
+
+    M4 — Cross-reference block   (forward-compat; place after main content)
+         Use .xref-block > .xref-label.{informs|derived-from} + .xref-link[]
+         when wedge body cross-references other docs in the portal.
 
   Per-page styles: do NOT add an inline <style> block. Promote page-specific
   declarations to portal/project-tokens.css "page-specific components"
