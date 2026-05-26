@@ -4,6 +4,31 @@ What wave 2 of "Blueprint applied to itself" will audit when it runs. Captured a
 
 The reason this artifact exists: wave 1 derived its discovery target from scratch (Stage 1 portal surface audit, etc.). Wave 2 should NOT re-derive — the wave-1 work explicitly named what's open, deferred, and awaiting evidence. Future-session-self reads this backlog as the wave-2 starting point.
 
+## Status update — 2026-05-27 (rally-hq trigger fired)
+
+Wave 2 is now running. Rally-hq session against methodology waves 8-13 produced 3 substantive amendments and 1 reverse-validation of the canonical audit template. Trigger condition #1 fired; cross-audit corpus also grew by 1.
+
+Rally-hq's findings (captured in `~/Workspace/dev/apps/rally-hq/blueprint/METHODOLOGY-AMENDMENTS.md`, awaiting commit on rally-hq side):
+
+1. **`restamp-chrome` is unsafe for brownfield consumers** (HIGH PRIORITY — silent destruction risk against 4 consumers: rally-hq, website-nc-v3, blog, subs-initiative). Three gaps: portal path candidates encode `portal/` or `blueprint/portal/` only (rally-hq's lives at `blueprint/prototype/`); `shared.css` byte-identical canonical-chrome contract assumes pristine baseline (rally-hq's `shared.css` IS the Midnight & Indigo design system, not chrome surrounding one); all chrome files diverged with no diagnostic to distinguish version-lag from customization from rot. Recommends `--mode=audit-chrome` diff command + `blueprint.yml portal.dir` schema field + per-file divergence classification via git-history lookup.
+
+2. **Canonical audit template reverse-validates** — 5 of 8 sections direct fit; 1 acceptable conditional absence (content-type taxonomy); 1 acceptable fold (auth-boundary into archetype inventory); 1 ⚠ collapsed (component inventory merged with atomic-coverage in rally-hq) — and 2 sections in rally-hq's source audit had NO canonical mapping because the canonical's non-goals cap explicitly excludes them (§5 proposed system, §6 migration plan = Stage 2/3 work). Validates wave 10's non-goals cap as load-bearing. Rally HQ's marker convention + archetype profile table promoted to canonical as wave 1 claimed. No new methodology change recommended; per-initiative evidence captured.
+
+3. **Multi-theme registry composes against, not with, rally-hq's two-axis brand model** (MEDIUM PRIORITY). Wave 9-11 registry treats consumers as single-axis (chrome theme). Rally HQ is two-axis: Rally HQ chrome (single, Midnight & Indigo) + per-tournament accent (16 D-family routes, ~80% of traffic). The registry has no shape for axis 2. Other likely-affected multi-tenant consumers: subs-initiative, future Hive deployments, photography gallery. Recommends `prototype.brand_axes` schema extension (back-compat: `theme:` stays as chrome-axis shorthand; `brand_axes:` is the long-form for multi-axis consumers).
+
+**Wave 2 audit shape, revised**: the original audit shape (§ Wave 2 audit shape below) predicted wave 2 would be "meaningfully smaller than wave 1 because wave 1 established the architecture." Rally-hq's amendment 1 invalidates this prediction. The architecture itself has structural holes that wave 1 didn't model (canonical-chrome boundary, multi-axis brand support, portal-path config). Wave 2 is at minimum equal-size to wave 1 and possibly larger.
+
+**Wave 2 work items, ordered**:
+
+1. ✓ Trigger fired (rally-hq, 2026-05-27)
+2. ✓ Integrate rally-hq findings into this backlog (this section)
+3. **Pending rally-hq commit**: methodology promotion of rally-hq's 3 amendments as waves 14/15/16
+4. Pending: revise `decisions/02-design-system.md` § audit-gap closure for multi-axis consumers
+5. Pending: append a 2026-05-27 amendment entry to dogfood's own `METHODOLOGY-AMENDMENTS.md` capturing the dogfood-side observations the rally-hq session surfaced
+6. Pending: Stage 4 re-run against post-waves-8-13 methodology state
+7. Pending: cross-audit refresh including rally-hq's reverse-validation as new input
+8. Pending: punted-item closures from wave-1 backlog (most still pending; rally-hq did NOT touch CLI/reviewer/forge-site/voice-generator/prototype-iframes)
+
 ## Trigger conditions
 
 Wave 2 runs productively when ONE of these events occurs (not before):

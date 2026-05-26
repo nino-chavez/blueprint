@@ -279,7 +279,7 @@ If this initiative ever gains authenticated surfaces (admin panel, internal revi
 | Audit-gap | Closed by | Status |
 |---|---|---|
 | Audit-gap 1 — L4 absent | L4 template dictionary (T1 `WedgePageTemplate` is load-bearing) | **Closed structurally** (Stage 3 migration ships the visible closure) |
-| Audit-gap 2 — L0 borrowed | L0 § Class B decision points named + flagged | **Deferred** to brand work (out of scope here) |
+| Audit-gap 2 — L0 borrowed | L0 § Class B decision points named + flagged | **Closed for single-axis consumers** via 4-theme registry (commit `e26c98b` + methodology waves 9 + 11). **Open for multi-axis consumers** — rally-hq's 2026-05-27 amendment surfaced that the registry treats consumers as single-axis (chrome theme), but multi-tenant consumers (rally-hq, subs-initiative, Hive, gallery) have orthogonal brand axes (Rally HQ chrome × per-tournament accent in rally-hq's case). Closure for axis-2 needs methodology extension (`prototype.brand_axes` schema). |
 | Audit-gap 3 — L3 sparsity | L3 organism dictionary (7 organisms named, 3 inherited + 4 initiative-specific) | **Closed structurally** |
 | Audit-gap 4 — L2 implicit contracts | L2 molecule dictionary (M2 compare-toggle contract named) | **Closed** |
 | Audit-gap 5 — Per-page `<style>` proliferation | L2/L3 dictionary absorbs the cross-surface patterns; remaining per-page styles move to `project-tokens.css` component blocks | **Closed structurally** (Stage 3 migration enacts the per-page cleanup) |

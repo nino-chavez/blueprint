@@ -12,6 +12,57 @@ This initiative is unique: it IS Blueprint applied to itself. Every methodology 
 
 <!-- Entries below, newest first. -->
 
+## 2026-05-27 — Rally-hq reverse-validation surfaces three wave-9/10 envelope gaps
+
+**Trigger**: First wave-2 trigger fired. Rally-hq session (the cited natural external reviewer per HANDOFF.md) attempted to consume methodology waves 8–13 via the documented `restamp-chrome --pattern=B --target=<rally-hq> --theme=slate` consumer-sync command. The restamp deferred at path-resolution before touching any file; investigation surfaced three structural envelope gaps in the wave 9/10/11 outputs. Rally-hq captured findings in `~/Workspace/dev/apps/rally-hq/blueprint/METHODOLOGY-AMENDMENTS.md` (pending commit).
+
+**Scope**: Dogfood-side capture of consumer-surfaced envelope gaps. Methodology promotion is rally-hq's amendments file (waves 14/15/16 pending rally-hq commit); this entry captures the dogfood-side observation that rally-hq's findings invalidate three wave-1 assumptions.
+
+**Status**: Active; methodology promotion pending rally-hq commit.
+
+### Wave-1 assumptions rally-hq invalidated
+
+The reason these matter: wave 1 shipped to methodology as canonical changes (chrome, schema, CLI flag, reference artifacts) on premises rally-hq's reverse-validation showed to be incomplete. Methodology-side correction needs to follow each premise:
+
+1. **Wave 9–11 multi-theme registry assumed single-axis consumers.** The 4-theme `[data-theme]` registry covers chrome theming on the assumption that a consumer initiative has one brand axis (its chrome theme). Rally HQ — and likely subs-initiative, future Hive deployments, photography gallery — is multi-axis: chrome theme is one axis; per-tenant accent (`--tournament-accent` in rally-hq's case, applied to 16 D-family routes covering ~80% of traffic) is an orthogonal axis the registry has no shape for. The registry's `theme:` config doesn't express this; picking `theme: slate` makes a statement about axis 1 and silently flattens axis 2.
+
+2. **Wave 10 chrome-canonical-reviewer assumed pristine canonical baseline.** The reviewer enforces byte-identity of `PATTERN_B_CHROME_FILES` against `template/portal/`. Rally HQ's `shared.css` is its Midnight & Indigo design system (not chrome surrounding a design system); 5 of 8 chrome files diverged from canonical with line-count drift. The reviewer either never ran on rally-hq, ran but was bypassed, or the divergence happened during a wave-update that didn't trip the gate. Wave 10 cited Rally HQ's audit as one of 3 inputs to the canonical-template synthesis without checking whether rally-hq's chrome state matched the canonical baseline being synthesized into.
+
+3. **Wave 8 portal-path resolver assumed two locations.** `PATTERN_B_PORTAL_CANDIDATES` in `stamp.mjs` hard-codes `portal/` and `blueprint/portal/`. Rally HQ's portal lives at `blueprint/prototype/` because the directory predates the canonical Pattern B contract (terminology evolved after the rally-hq portal was created). Wave 8's design-discipline track promotion didn't audit whether existing consumers conformed to the path-candidate assumption before shipping the canonical chrome refresh as a consumer-sync command.
+
+### Why all three came from one consumer
+
+Rally HQ is unusual among current consumers: its portal predates Pattern B canonicalization. The dogfood (blueprint-redesign) started from canonical baseline because it was authored during methodology wave 4. Blog and website-nc-v3 are also recent consumers. Rally HQ is the first consumer to attempt a methodology-wave-pull against a portal that started pre-canonical. The three envelope gaps are real for the four current brownfield consumers and will be real for any future "Pattern B before canonical" consumer.
+
+### Closure pathway
+
+Methodology-side closures track rally-hq's three amendments directly:
+
+| Wave-1 premise | Rally-hq amendment | Methodology change needed |
+|---|---|---|
+| Path resolver = 2 candidates | RH §1 gap 1 | `blueprint.yml portal.dir` schema field; resolver reads it before falling back to candidates |
+| `shared.css` = byte-identical chrome | RH §1 gap 2 | `--mode=audit-chrome` read-only diff command; `restamp-chrome` refuses on diverged files without `--accept-overwrite=` |
+| Chrome divergence = atomic | RH §1 gap 3 | Per-file divergence classification via git-history lookup (lag vs customization vs rot) |
+| Multi-theme = single-axis | RH §3 | `prototype.brand_axes` schema extension (back-compat: `theme:` stays as chrome-axis shorthand) |
+
+Each promotes as a methodology wave once rally-hq's amendments file commits. Wave 14 = audit-chrome + portal.dir (RH §1). Wave 15 = chrome divergence classification (RH §1 gap 3). Wave 16 = brand_axes (RH §3). Wave 14 is the highest-priority load-bearing change (silent destruction risk against 4 consumers).
+
+### Dogfood-side rebuttable claims
+
+Wave-1 claims that rally-hq's findings call into question (the dogfood's status fields for the affected claims should reflect the post-validation state):
+
+- `decisions/02-design-system.md` audit-gap 2 closure mapping — was "Closed structurally via 4-theme registry"; revised this commit to "Closed for single-axis; open for multi-axis."
+- `WAVE-2-BACKLOG.md` audit shape — was "wave 2 meaningfully smaller than wave 1"; revised this commit to "wave 2 at minimum equal-size, possibly larger; architecture has structural holes wave 1 didn't model."
+
+### References
+
+- Rally-hq amendments: `~/Workspace/dev/apps/rally-hq/blueprint/METHODOLOGY-AMENDMENTS.md` (3 entries, 2026-05-26 + 2026-05-27).
+- Cross-audit reconciliation that synthesized waves 8/10: `research/architecture/02-stage1-design-audit-template.md` (used rally-hq audit as one of 3 inputs; did not validate rally-hq's chrome state).
+- Methodology waves 8-13 affected: `~/Workspace/dev/wip/blueprint/CLAUDE.md` § Wave log.
+- Wave-2 backlog updated this commit: `WAVE-2-BACKLOG.md`.
+
+---
+
 ## 2026-05-26 — L0 brand decisions should be multi-theme registry, not single-palette pickup
 
 **Trigger**: During the L0 brand-work session on this initiative (commit `e26c98b`), the agent surfaced a fork-in-the-road question to the operator: which color family should Blueprint-the-product anchor on — slate, deeper coral, forest, or neutral-minimal? The agent expected a single-family pick. The operator's response was "make it a choice when using the blueprint. implement all four as options to apply." This reframed the entire L0 work from "pick one brand" to "implement a theme registry that consumer initiatives pick from at init time or runtime."
