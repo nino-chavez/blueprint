@@ -284,9 +284,9 @@ If this initiative ever gains authenticated surfaces (admin panel, internal revi
 | Audit-gap 4 — L2 implicit contracts | L2 molecule dictionary (M2 compare-toggle contract named) | **Closed** |
 | Audit-gap 5 — Per-page `<style>` proliferation | L2/L3 dictionary absorbs the cross-surface patterns; remaining per-page styles move to `project-tokens.css` component blocks | **Closed structurally** (Stage 3 migration enacts the per-page cleanup) |
 | Audit-gap 6 — Cross-surface patterns un-named | L2 molecule dictionary (8 patterns → M1–M8) | **Closed** |
-| Audit-gap 7 — Prototype studio empty | Out of scope for this artifact (Stage 3+ work — author prototype iframes) | Deferred |
+| Audit-gap 7 — Prototype studio empty | Studio's slice mechanism populated — 3 slices (`diagnose` / `mvp-wedges` / `companion-rollout`) registered in `_meta/index.json` + `_meta/slices/*.json` + per-page slice/phase references. Studio cache-bust fix shipped. | **Closed structurally** |
 
-5 of 7 audit-gaps closed structurally by this artifact. Audit-gap 2 deferred to brand work. Audit-gap 7 deferred to Stage 3+ prototype authoring.
+7 of 7 audit-gaps closed structurally as of commit `abe7a7f`. Audit-gap 2 closed via the 4-theme registry (`decisions/03-brand-brief.md` § 2026-05-26 update). Audit-gap 7 closed via slice-metadata population in `_meta/index.json` + `_meta/slices/*.json` + per-page slice references + studio cache-bust fix.
 
 ## Implementation order (Stage 3 — not this artifact)
 

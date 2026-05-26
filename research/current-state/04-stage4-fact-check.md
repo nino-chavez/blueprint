@@ -70,7 +70,7 @@ Each claim from the ratified decisions is matched against actual repo state. A c
 | Audit-gap 5 (per-page `<style>` proliferation) | **visibly closed** via slice 1 | ✓ |
 | Audit-gap 6 (cross-surface patterns un-named) | **closed** via L2 dictionary (M3 meta-strip + M4 xref + M5 num-badge + M7 wedge-label + M8 disclosure) | ✓ |
 | Audit-gap 2 (L0 borrowed palette) | **structurally closed** via 4-theme registry | ✓ |
-| Audit-gap 7 (prototype studio empty) | **still open** — `portal/prototype/index.html` has shell, no iframes | ✗ open, deferred to Stage 3+ |
+| Audit-gap 7 (prototype studio empty) | **closed** as of commit `abe7a7f` — `manifest.slices[]` populated (3 slices) + per-page `slice` + `phase` fields rewritten to studio-expected enum + cache-bust fix in studio script. Visual verification: studio renders Slices=3 / Pages=5 / Flows=2 / MVP=2 / Phase 1=2 / Phase 2=1 with all 3 slice sections + cards + findings/principles badges. | ✓ |
 
 ### From methodology amendments
 
@@ -99,11 +99,11 @@ Candidate amendment (to land in METHODOLOGY-AMENDMENTS later):
 
 > Stage 4 fact-check for solo initiatives degrades to **mechanical verification of every ratified claim against repo state**, with **judgment claims explicitly carry-forwarded to ratification gates** (each ratifiable artifact's `status: ratified` requires a named reviewer; for solo dogfoods, the reviewer is the next consumer initiative that exercises the artifact).
 
-## Spot-check summary
+## Spot-check summary (updated 2026-05-26 post-audit-gap-7-closure)
 
-10 of 12 ratified claims pass mechanical verification cleanly. 1 passes with a documented exception (academic-hedge match in quoted material). 1 fails — audit-gap 7 (prototype studio empty) is correctly flagged as open in the design system + brand brief, so the failure is documented-and-deferred, not undetected.
+12 of 12 ratified claims pass mechanical verification cleanly. 1 passes with a documented exception (academic-hedge match in quoted material; voice-rules audit policy: quoted material exempt).
 
-**Net result**: ratified Stage 1–3 outputs are mechanically consistent with the actual repo state. Self-attestation is bounded; judgment claims flagged for external review.
+**Net result**: ratified Stage 1–3 outputs are mechanically consistent with the actual repo state. All 7 audit-gaps from the L5 surface audit are structurally closed (gap-7 closed via the slice-metadata + cache-bust commit on the same day this fact-check ran). Self-attestation is bounded; judgment claims (does prose actually read as Solution Architecture? is the design system complete enough?) flagged for external review per the methodology Stage 4 degrade-path.
 
 ## Closure path
 
