@@ -197,6 +197,16 @@ voices:
 # Prototype configuration
 prototype:
   design_system: existing           # existing | bigdesign | custom
+  theme: slate                      # slate | coral | forest | minimal | custom
+                                    # Multi-theme registry added 2026-05-26 wave 9.
+                                    # Each theme overrides --brand-* + --bg + --surface-* tokens in
+                                    # template/portal/shared.css [data-theme] blocks. Default = slate.
+                                    # `custom` = consumer declares its own [data-theme="custom"] block
+                                    # in project-tokens.css (use forge-brand export css to produce shape).
+                                    # The stamper writes <html lang="en" data-theme="{theme}"> at scaffold
+                                    # time so the default applies before JS loads.
+                                    # Runtime switcher (theme-switcher.js) lets stakeholders preview any
+                                    # of the 4 themes regardless of consumer's default pick.
   comparison_enabled: true          # show current-state panel (◀ drawer)
   strategy_panel_enabled: true      # show strategy panel (▶ drawer)
   chat_enabled: false               # embed AI chat agent
