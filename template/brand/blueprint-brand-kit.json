@@ -1,0 +1,417 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "id": "blueprint",
+    "created": "2026-05-26T00:00:00.000Z",
+    "updated": "2026-05-26T00:00:00.000Z",
+    "author": "Nino Chavez",
+    "version": "0.1.0"
+  },
+  "identity": {
+    "name": "Blueprint",
+    "tagline": "Production-quality methodology + scaffolding for initiative-scoped agent-assisted work",
+    "mission": "Make agent-assisted product work produce stakeholder-aligned deliverables, not just code",
+    "audience": [
+      "product architects",
+      "engineering leads adopting agent-assisted work",
+      "stakeholders reviewing initiative deliverables",
+      "agents reading methodology docs"
+    ],
+    "personality": [
+      "precise",
+      "definitive",
+      "methodical",
+      "deliberate",
+      "diagram-heavy"
+    ],
+    "positioning": "Solution-architecture register — methodology product, not publication",
+    "domain": "agent-assisted product methodology",
+    "links": {
+      "repo": "https://github.com/nino-chavez/blueprint"
+    }
+  },
+  "colors": {
+    "primary": {
+      "hex": "#2e5cb8",
+      "name": "Blueprint Slate",
+      "usage": "Default-theme brand color. hsl(225, 60%, 45%). Matches project-tokens.css [data-theme=slate] --brand-500."
+    },
+    "secondary": {
+      "hex": "#147274",
+      "name": "Blueprint Cyan",
+      "usage": "Secondary accent. Methodology-cyan for data/metadata."
+    },
+    "accent": {
+      "hex": "#2e5cb8",
+      "name": "Blueprint Slate",
+      "usage": "Single-accent brand — matches primary in default theme."
+    },
+    "neutral": {
+      "50": "#f9fafb",
+      "100": "#f3f4f6",
+      "200": "#e5e7eb",
+      "300": "#d1d5db",
+      "400": "#9ca3af",
+      "500": "#6b7280",
+      "600": "#4b5563",
+      "700": "#374151",
+      "800": "#1f2937",
+      "900": "#121214",
+      "950": "#0a0a0b"
+    },
+    "semantic": {
+      "success": {
+        "hex": "#22c55e",
+        "name": "Green",
+        "usage": "Positive signals"
+      },
+      "warning": {
+        "hex": "#f59e0b",
+        "name": "Amber",
+        "usage": "Caution signals"
+      },
+      "error": {
+        "hex": "#ef4444",
+        "name": "Red",
+        "usage": "Critical signals"
+      },
+      "info": {
+        "hex": "#00ced1",
+        "name": "Cyan",
+        "usage": "Informational — matches secondary"
+      }
+    },
+    "surfaces": {
+      "background": "#fbfbfd",
+      "foreground": "#13151a",
+      "card": "#ffffff",
+      "cardForeground": "#13151a",
+      "muted": "#f4f5f8",
+      "mutedForeground": "#5b6275",
+      "border": "#dbdde5"
+    }
+  },
+  "typography": {
+    "display": {
+      "family": "Rival Sans",
+      "fallbacks": [
+        "system-ui",
+        "sans-serif"
+      ],
+      "classification": "sans-serif",
+      "weights": [
+        400,
+        500,
+        700
+      ],
+      "variable": false,
+      "typekitId": "tjp7ihm",
+      "localPath": "fonts/RivalSans-Regular.ttf",
+      "cssVariable": "--font-display",
+      "textTransform": "none",
+      "letterSpacing": -0.02
+    },
+    "body": {
+      "family": "Inter",
+      "fallbacks": [
+        "system-ui",
+        "sans-serif"
+      ],
+      "classification": "sans-serif",
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "variable": true,
+      "googleFonts": "Inter:wght@400;500;600;700",
+      "cssVariable": "--font-body",
+      "textTransform": "none",
+      "letterSpacing": 0
+    },
+    "mono": {
+      "family": "JetBrains Mono",
+      "fallbacks": [
+        "Menlo",
+        "monospace"
+      ],
+      "classification": "monospace",
+      "weights": [
+        400,
+        500,
+        700
+      ],
+      "variable": true,
+      "googleFonts": "JetBrains+Mono:wght@400;500;700",
+      "cssVariable": "--font-mono",
+      "textTransform": "none",
+      "letterSpacing": 0
+    },
+    "scale": {
+      "baseSizePx": 16,
+      "ratio": "major-third",
+      "steps": [
+        {
+          "name": "hero",
+          "sizeRem": 3.5,
+          "sizeMobileRem": 2.5,
+          "lineHeight": 1.1,
+          "weight": 700,
+          "font": "display"
+        },
+        {
+          "name": "h2",
+          "sizeRem": 2.25,
+          "sizeMobileRem": 1.75,
+          "lineHeight": 1.2,
+          "weight": 700,
+          "font": "display"
+        },
+        {
+          "name": "h3",
+          "sizeRem": 1.5,
+          "sizeMobileRem": 1.25,
+          "lineHeight": 1.3,
+          "weight": 500,
+          "font": "display"
+        },
+        {
+          "name": "body-lg",
+          "sizeRem": 1.125,
+          "lineHeight": 1.7,
+          "weight": 400,
+          "font": "body"
+        },
+        {
+          "name": "body",
+          "sizeRem": 1,
+          "lineHeight": 1.6,
+          "weight": 400,
+          "font": "body"
+        },
+        {
+          "name": "caption",
+          "sizeRem": 0.875,
+          "lineHeight": 1.5,
+          "weight": 400,
+          "font": "body"
+        },
+        {
+          "name": "code",
+          "sizeRem": 0.875,
+          "lineHeight": 1.6,
+          "weight": 400,
+          "font": "mono"
+        }
+      ]
+    }
+  },
+  "spacing": {
+    "1": 0.25,
+    "2": 0.5,
+    "3": 0.75,
+    "4": 1,
+    "6": 1.5,
+    "8": 2,
+    "12": 3,
+    "16": 4,
+    "24": 6
+  },
+  "radius": {
+    "none": 0,
+    "sm": 0.125,
+    "md": 0.375,
+    "lg": 0.5,
+    "xl": 0.75,
+    "2xl": 1,
+    "full": 9999
+  },
+  "layout": {
+    "maxContentWidth": 48,
+    "breakpoints": {
+      "sm": 640,
+      "md": 768,
+      "lg": 1024,
+      "xl": 1280,
+      "2xl": 1536
+    },
+    "sectionPadding": "16",
+    "containerPadding": "6"
+  },
+  "voice": {
+    "attributes": [
+      {
+        "trait": "methodology-as-actor",
+        "description": "Role-named subjects (the methodology / the CLI / the stamper) act on the page; reader is observer, not actor",
+        "example": "The methodology declares variants in blueprint.yml. The stamper writes the chrome at scaffold time."
+      },
+      {
+        "trait": "grounded-not-zero-hedged",
+        "description": "Settled facts are declarative; proposals are named as proposals; recommended paths are named as recommended",
+        "example": "Wedge 1 is the proposed closure for Gap 1. The recommended path is npx @blueprint/cli init."
+      },
+      {
+        "trait": "precise",
+        "description": "Solution Architecture register — diagram-friendly, deliberate, no ambiguity in role naming",
+        "example": "Brownfield initiatives run a current-state diagnose stage before prescription."
+      },
+      {
+        "trait": "audience-tuned-cadence",
+        "description": "Same voice principles across CLI / docs / portal but length and explanatory depth tune to audience",
+        "example": "CLI: 'Variant: brownfield.' Docs: 'The variant declaration constrains which stages apply.'"
+      },
+      {
+        "trait": "understated",
+        "description": "Success messages state the result, not the celebration; no 'great' / 'awesome' / 'perfect'",
+        "example": "Stamp complete. 8 files written. 0 conflicts."
+      }
+    ],
+    "antiPatterns": [
+      {
+        "category": "reader-as-actor",
+        "patterns": ["You declare", "You name", "You produce", "You write the"],
+        "severity": "error",
+        "suggestion": "Replace with role-subject. 'The methodology declares' / 'The CLI asks' / 'The stamper writes'."
+      },
+      {
+        "category": "brand-name-as-subject",
+        "patterns": ["Blueprint declares", "Blueprint asks", "Blueprint produces", "Blueprint writes"],
+        "severity": "error",
+        "suggestion": "Use role-name as subject. Brand-name labels the system, not the verbs. 'The methodology declares' / 'The CLI asks'."
+      },
+      {
+        "category": "academic-hedge-stack",
+        "patterns": ["may", "might", "could", "would tend to", "typically", "generally", "often", "usually", "depending on", "it is possible that"],
+        "severity": "error",
+        "suggestion": "Replace with grounded markers. 'The proposed' / 'The recommended' / 'For X, the path is' / 'structurally closes' / 'defers to'."
+      },
+      {
+        "category": "corporate-jargon",
+        "patterns": ["leverage", "synergy", "holistic", "paradigm shift", "circle back", "deep dive", "unpack", "drive value"],
+        "severity": "error",
+        "suggestion": "Inherits operator's published-prose anti-patterns. Say the actual thing."
+      },
+      {
+        "category": "celebration",
+        "patterns": ["great", "awesome", "perfect", "absolutely", "amazing"],
+        "severity": "error",
+        "suggestion": "Stating the result IS the celebration. Drop the praise word."
+      }
+    ],
+    "structuralPatterns": [
+      {
+        "name": "role-subject-opening",
+        "description": "Open declarative sentences with the role-name subject performing the action",
+        "required": true,
+        "example": "The methodology declares variants. The CLI asks three questions at init."
+      },
+      {
+        "name": "grounded-proposal-naming",
+        "description": "When stating a proposal, name it as a proposal explicitly",
+        "required": true,
+        "example": "Wedge 1 is the proposed closure for Gap 1."
+      },
+      {
+        "name": "audience-tuned-length",
+        "description": "Match length and depth to the surface — terse for CLI, methodical for docs, neutral for portal",
+        "required": true
+      },
+      {
+        "name": "understated-success",
+        "description": "Success messages state results without celebration language",
+        "required": true,
+        "example": "Stamp complete. 8 files written. 0 conflicts."
+      }
+    ],
+    "examples": [
+      {
+        "intent": "Introduce a methodology stage",
+        "good": "The methodology runs Stage 1 (research) before Stage 2 (prescription). For brownfield variants, Stage 1 includes a current-state diagnose. For greenfield variants, the diagnose stage is skipped.",
+        "bad": "Blueprint can typically be used to do research before prescription, depending on whether you have an existing codebase. You might run a diagnose first if it seems useful."
+      },
+      {
+        "intent": "Confirm a CLI action completed",
+        "good": "Stamp complete. 8 files written. 0 conflicts.",
+        "bad": "Great job! The stamp was successfully completed and 8 files were written without any conflicts."
+      },
+      {
+        "intent": "Document a closed audit-gap",
+        "good": "Audit-gap 2 closed via the theme registry. L0 is no longer borrowed; the methodology declares its own 4-theme palette.",
+        "bad": "Blueprint may have closed the borrowed-palette issue by implementing a multi-theme system. Depending on adoption, this should help with the L0 layer."
+      }
+    ],
+    "minimumScore": 75
+  },
+  "media": {
+    "logos": {
+      "variations": [],
+      "clearSpace": 0.25,
+      "minSizePx": 24
+    },
+    "templates": [
+      {
+        "id": "social-card",
+        "name": "Methodology Social Card",
+        "description": "OG image for methodology releases, ADRs, prescription announcements",
+        "sizes": [
+          {
+            "width": 1200,
+            "height": 675,
+            "dpi": 72,
+            "label": "OG Image"
+          }
+        ],
+        "format": "png",
+        "dataFields": [
+          {
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "string",
+            "required": false
+          }
+        ]
+      }
+    ],
+    "creative": {
+      "basePrompt": "BRAND: Blueprint — production-quality methodology + scaffolding for initiative-scoped agent-assisted work.\nAESTHETIC: Solution Architecture register. Methodology product, not publication. Light surface, deliberate, diagram-friendly.\n\nVISUAL LANGUAGE:\n- Architectural blueprints, isometric grids, technical drawings\n- Abstract scaffold patterns, modular grid systems, structural lines\n- Stage-pipeline diagrams (subtle), atomic-design level visualizations\n- Light/warm or cool near-white backgrounds with brand-color accent\n- Clean lines, no decoration, no flourish",
+      "conceptMap": {
+        "blueprint": "architectural blueprint grid pattern, technical drawing aesthetic",
+        "scaffold": "modular grid scaffold, structural framework lines",
+        "pipeline": "stage-pipeline diagram, sequential blocks, methodology flow",
+        "layer": "atomic-design level stack, L0-L5 horizontal bands",
+        "compass": "drafting compass, ruler, T-square aesthetic"
+      },
+      "formatModifiers": {
+        "web": "Standard web resolution. 1200x675px. Landscape format.",
+        "banner": "README banner. 1200x300px. Horizontal strip.",
+        "cover": "Methodology cover. 1600x900px. Landscape format."
+      },
+      "visualKeywords": [
+        "architectural",
+        "minimal",
+        "deliberate",
+        "structural",
+        "diagram",
+        "scaffold",
+        "grid",
+        "methodical"
+      ],
+      "avoid": [
+        "text in AI-generated images",
+        "stock photo aesthetics",
+        "celebratory imagery (confetti, trophies, fireworks)",
+        "corporate clip art",
+        "gratuitous gradients",
+        "people / faces",
+        "abstract artistic flourishes"
+      ]
+    },
+    "assets": []
+  },
+  "defaultMode": "light"
+}
