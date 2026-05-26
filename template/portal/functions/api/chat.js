@@ -96,14 +96,35 @@ export async function onRequestPost(context) {
   const system = (await loadContext(env, request.url)) +
     (page ? `\n\nUser is currently viewing the "${pageTitle || page}" prototype page (id: ${page}).` : '');
 
+  // Derive OpenRouter attribution headers from the request URL + the
+  // manifest's project name. Prior version hardcoded
+  // 'https://blueprint.rallyhq.app' and 'Rally HQ Blueprint' — a stamp leak
+  // that propagated to every Pattern B consumer that copied this file
+  // verbatim (case: docs/case-study-v3-portal-css-gap.md "docs viewer Rally HQ
+  // leak"). Now project-agnostic.
+  let httpReferer = 'https://blueprint.example.com';
+  let xTitle = 'Blueprint';
+  try {
+    const reqUrl = new URL(request.url);
+    httpReferer = `${reqUrl.protocol}//${reqUrl.host}`;
+    // Read project name from manifest if available; fall back to host-derived
+    const manifestRes = await fetch(new URL('/_meta/index.json', request.url).toString());
+    if (manifestRes.ok) {
+      const manifest = await manifestRes.json();
+      if (manifest && manifest.name) xTitle = manifest.name;
+    }
+  } catch {
+    // Stay with defaults; attribution is non-critical
+  }
+
   try {
     const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://blueprint.rallyhq.app',
-        'X-Title': 'Rally HQ Blueprint'
+        'HTTP-Referer': httpReferer,
+        'X-Title': xTitle
       },
       body: JSON.stringify({
         model: 'anthropic/claude-haiku-4.5',

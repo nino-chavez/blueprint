@@ -103,6 +103,7 @@ The `slice` field links the page to a slice (which renders the per-slice sidebar
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/project-tokens.css">
 </head>
 <body data-compare-root data-view="proposed">
   <section class="proposed-view">
@@ -121,15 +122,84 @@ The `slice` field links the page to a slice (which renders the per-slice sidebar
 </html>
 ```
 
-**Use absolute paths (`/shared.css`, `/proto-nav.js`)** — relative paths break when Cloudflare Pages serves the file from a different URL than expected.
+**Use absolute paths (`/shared.css`, `/project-tokens.css`, `/proto-nav.js`)** — relative paths break when Cloudflare Pages serves the file from a different URL than expected.
+
+---
+
+## Docs viewer manifest
+
+The docs viewer (`docs/index.html`) renders its sidebar from `_meta/index.json` `docs.tiers[]`. The viewer itself is canonical chrome — never edit its HTML, JS, or styles in a consumer repo. To add docs to your portal, edit the manifest:
+
+```json
+{
+  "name": "Your Project Blueprint",
+  "...": "...",
+  "docs": {
+    "tiers": [
+      {
+        "label": "Strategic artifacts",
+        "blurb": "Positional briefs — read these to understand <em>why</em>.",
+        "designed": true,
+        "docs": [
+          { "id": "strategy", "title": "Strategy" },
+          { "id": "research-synthesis", "title": "Research Synthesis" }
+        ]
+      },
+      {
+        "label": "Working documents",
+        "blurb": "Operational scaffolds — read these to understand <em>how the work happens</em>.",
+        "designed": false,
+        "docs": [
+          { "id": "validation-plan", "title": "Validation Plan" }
+        ]
+      }
+    ],
+    "default": "strategy"
+  }
+}
+```
+
+Schema fields:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `docs.tiers[]` | yes | Ordered list of sidebar groups. Empty tiers render no label. |
+| `docs.tiers[].label` | yes | Tier header (e.g., "Strategic artifacts"). |
+| `docs.tiers[].blurb` | no | One-line explainer under the label. Limited HTML allowed (`<em>`). |
+| `docs.tiers[].designed` | no, default `false` | If `true`, docs in this tier get the designed treatment (hero block + structured callouts + proto-ref styling) when rendered. Strategic-tier docs typically use `true`; operational scaffolds use `false`. |
+| `docs.tiers[].docs[]` | yes | List of `{ id, title }`. The `id` is the markdown filename (without `.md`) in `_docs/`; the `title` is the human label. |
+| `docs.default` | no | Slug of the doc to open when no `?doc=` param is given. Falls back to the first doc in the first non-empty tier. |
+
+Each `id` must correspond to a markdown file at `_docs/<id>.md` (or `<initiative>/_docs/<id>.md` per your build script's prep step).
+
+**Why data-driven, not hardcoded**: prior versions of the docs viewer shipped with 13 doc slugs baked into the HTML, the TITLES map, and the STRATEGIC_DOCS Set. Consumer projects copied the template and shipped a docs viewer full of project-specific vocabulary from whichever flagship project the template was extracted from. The data-driven shape means the canonical template ships with zero project-specific defaults — every consumer gets a working viewer by editing one manifest. Full incident: `docs/case-study-v3-portal-css-gap.md` § "Follow-up — docs viewer".
+
+---
+
+## One confident preview, not a deliberation venue
+
+The portal is a stakeholder review surface. Each route shows ONE confident take of what the team is proposing — not three competing variants walked through page-by-page, and not a tour of every option considered. The PROPOSED / COMPARE / SHIPPED toggle is the comparison primitive (proposed vs what exists today). It is not variant-walking.
+
+If you want to ship `home-a.html` + `home-b.html` as side-by-side variants, the answer is: complete the convergence in Stage 2, write the ADR explaining why one was chosen, ship the chosen one. Variant deliberation belongs in `decisions/` ADRs and `prototype/DESIGN.md` — not in the portal.
+
+Full methodology rule + Pattern A/B specifics: `template/docs/methodology/confident-preview-rule.md`. Enforced at Stage 2 → 3 by `design-principles-reviewer` (greenfield) and at Stage 3 completion by `portal-pattern-b-conformance-reviewer`.
 
 ---
 
 ## Tokens & typography
 
-All visual tokens come from `shared.css`. Never hardcode hex colors or px values in a page's `<style>` block.
+Visual tokens split across two files. Both load on every page; the cascade picks the override.
 
-**Default fonts** in the template: Inter (display + body) + JetBrains Mono (data). For projects that need a hero display font (sport, editorial, etc.), add `--font-hero` and reserve it for h1 / hero moments — never for body or small headings.
+| File | Owner | Editable in a consumer repo? |
+|---|---|---|
+| `shared.css` | Blueprint methodology (canonical chrome — tokens + layout primitives + chrome components) | **No.** Re-stamped from `~/Workspace/dev/wip/blueprint/template/portal/shared.css` via `stamp.mjs --mode=restamp-chrome --pattern=B`. `portal-chrome-canonical-reviewer` diffs your copy against canonical and fails the gate on drift. |
+| `project-tokens.css` | Initiative (token overrides + project-specific components) | **Yes.** Loaded after `shared.css`, so any `:root { --brand-600: ... }` here wins. New project components live here. |
+
+Why this split exists: on 2026-05-25 a Blueprint consumer (website-nc-v3) truncated 268 lines from its `shared.css` mid-edit, then restored the missing chrome by `curl`-ing from a peer consumer's deploy (`blueprint.rallyhq.app`). That promoted the peer's project-specific drift into a "canonical" position no doc declared and the methodology bump path didn't propagate. The overlay split makes the canonical file mechanically diffable and re-stampable; consumer overrides have a clean home.
+
+**Rule of thumb:** if it's a token, override in `project-tokens.css :root`. If it's a new component, add it in `project-tokens.css`. If you want to edit chrome itself (button base styles, drawer behavior), the change belongs upstream in `template/portal/shared.css` via a methodology PR — not in your consumer copy.
+
+**Default fonts** in the template: Inter (display + body) + JetBrains Mono (data). For projects that need a hero display font (sport, editorial, etc.), override `--font-hero` in `project-tokens.css :root` and reserve it for h1 / hero moments — never for body or small headings.
 
 ---
 
@@ -163,12 +233,14 @@ Flows declared in `flows_touching_this_slice` on a slice get listed in that slic
 | Anti-pattern | Why it fails |
 |---|---|
 | Inline `font-family: var(--font-hero)` on body text | Display fonts are unreadable at small sizes. Never. |
-| Hardcoded hex colors | Tokens in `shared.css` exist for a reason. |
+| Hardcoded hex colors | Token defaults in `shared.css`, overrides in `project-tokens.css`. |
+| Direct edits to `shared.css` in a consumer repo | Canonical chrome. `portal-chrome-canonical-reviewer` will fail the gate. Re-stamp via `stamp.mjs --mode=restamp-chrome --pattern=B`; put overrides in `project-tokens.css`. |
+| `curl`-ing a peer consumer's deployed CSS to "restore canonical" | The deployed sibling is not canonical — it has the peer's project drift baked in. Re-stamp from `~/Workspace/dev/wip/blueprint/template/portal/shared.css` instead. |
 | "This is a mock" framing inside `.proposed-view` | Product UI must look like production. Put framing in the strategy panel via per-page JSON. |
 | Page-level `@media (prefers-color-scheme: dark)` blocks | Theme handling belongs in tokens. |
 | Full PROTO_PAGE data inline | Whole point of `_meta/*.json` is centralization. |
 | Hard-coded path arrays in nav code | `proto-nav.js` derives nav from `_meta/index.json`. Don't reinvent. |
-| Relative paths to shell assets (`./shared.css`, `../proto-nav.js`) | Pages serves the same file at multiple URLs; relative paths break. Absolute only. |
+| Relative paths to shell assets (`./shared.css`, `../project-tokens.css`, `../proto-nav.js`) | Pages serves the same file at multiple URLs; relative paths break. Absolute only. |
 | Heavy JS deps (React, Vue) | Portal is plain HTML / CSS / vanilla JS. Adding a framework requires explicit conversation. |
 | Real customer data anywhere | Synthetic personas only. No real PII even in placeholders. |
 | Direct edits to `_docs/` | `_docs/` is auto-copied by `scripts/prep-deploy.sh`. Edit canonical source. |

@@ -19,5 +19,26 @@
       "summary": "Replace with your primary persona's end-to-end flow across pages.",
       "pages": ["example"]
     }
-  ]
+  ],
+  "docs": {
+    "tiers": [
+      {
+        "label": "Strategic artifacts",
+        "blurb": "Positional briefs — the thinking that justifies the prototype. Read these to understand <em>why</em>.",
+        "designed": true,
+        "docs": []
+      },
+      {
+        "label": "Working documents",
+        "blurb": "Operational scaffolds — tracked, edited, queried. Read these to understand <em>how the work happens</em>.",
+        "designed": false,
+        "docs": []
+      }
+    ],
+    "default": null
+  },
+  "footer": {
+    "line": "",
+    "repo_url": ""
+  }
 }

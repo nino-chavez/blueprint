@@ -7,6 +7,9 @@
 /shared.css
   Cache-Control: public, max-age=60, must-revalidate
 
+/project-tokens.css
+  Cache-Control: public, max-age=60, must-revalidate
+
 /proto-nav.js
   Cache-Control: public, max-age=60, must-revalidate
 
