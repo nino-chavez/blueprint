@@ -12,6 +12,9 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFile as execFileCb } from "node:child_process";
+import { promisify } from "node:util";
+const execFile = promisify(execFileCb);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BLUEPRINT_ROOT = path.resolve(__dirname, "..", "..", "..");
@@ -375,6 +378,64 @@ function failPortalDirNotFound(target) {
   );
 }
 
+// Wave 15 (2026-05-27): classify a diverged chrome file against the canonical
+// file's git history. If the consumer's content matches any recent canonical
+// version, the divergence is LAG (restamp safe — consumer is N waves behind).
+// If no canonical version matches in the last HISTORY_LOOKBACK commits, the
+// divergence is CUSTOMIZATION-OR-ROT (operator review required before
+// restamp). Source: rally-hq amendment 2026-05-26 gap 3 — extends wave 14
+// audit-chrome with the diagnostic step that distinguishes the three causes.
+const HISTORY_LOOKBACK = 30; // commits per file; covers ~10 methodology waves with headroom
+
+async function classifyDivergenceCause({ relFromTemplateRoot, consumerContent }) {
+  // The canonical file's path inside the methodology repo (relative to repo root).
+  const fileInRepo = path.join("template/portal", relFromTemplateRoot);
+
+  // Walk the file's git history. `git log --format=%H -n N -- <path>` returns
+  // commit SHAs that touched the file, newest first. We then fetch each
+  // historical version via `git show <SHA>:<path>` and compare against the
+  // consumer's current content.
+  let logOut;
+  try {
+    const r = await execFile("git", ["log", `--format=%H %ct`, "-n", String(HISTORY_LOOKBACK), "--", fileInRepo], { cwd: BLUEPRINT_ROOT });
+    logOut = r.stdout;
+  } catch (e) {
+    return { kind: "unknown", reason: `git log failed: ${e.message.split("\n")[0]}` };
+  }
+
+  const entries = logOut.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+    const [sha, ts] = line.split(/\s+/);
+    return { sha, ts };
+  });
+
+  if (entries.length === 0) {
+    // File never appeared in canonical history — either added in working tree
+    // or canonical path mismatch. Treat as unknown.
+    return { kind: "unknown", reason: "no canonical history for this path" };
+  }
+
+  for (const { sha, ts } of entries) {
+    let historical;
+    try {
+      const r = await execFile("git", ["show", `${sha}:${fileInRepo}`], { cwd: BLUEPRINT_ROOT, maxBuffer: 16 * 1024 * 1024 });
+      historical = r.stdout;
+    } catch {
+      // File may not have existed at this commit (renames, additions). Skip.
+      continue;
+    }
+    if (historical === consumerContent) {
+      // Match — consumer is on this exact canonical version. LAG.
+      const date = new Date(parseInt(ts, 10) * 1000).toISOString().split("T")[0];
+      return { kind: "lag", commit: sha.substring(0, 7), date };
+    }
+  }
+
+  // No historical match within lookback window. Either customization (consumer
+  // intentionally diverged) or rot (unintentional drift from a prior canonical
+  // state that's beyond the lookback). Operator review required.
+  return { kind: "customization-or-rot", lookback: HISTORY_LOOKBACK };
+}
+
 // Compute a per-file divergence classification by comparing consumer content
 // against canonical. Returns one of: byte-identical, diverged, missing-consumer,
 // missing-canonical. Diverged entries include line +/- counts for the audit
@@ -499,6 +560,13 @@ async function auditChromePatternB({ target, portalDirOverride }) {
   const rows = [];
   for (const rel of PATTERN_B_CHROME_FILES) {
     const cls = await classifyChromeFile(path.join(srcRoot, rel), path.join(portalDir, rel));
+    // Wave 15: for diverged files, run git-history classification to distinguish
+    // lag from customization from rot. Only call the classifier when divergence
+    // is established; byte-identical / missing don't need it.
+    if (cls.status === "diverged") {
+      const consumerContent = await fs.readFile(path.join(portalDir, rel), "utf8");
+      cls.cause = await classifyDivergenceCause({ relFromTemplateRoot: rel, consumerContent });
+    }
     rows.push({ rel, ...cls });
   }
 
@@ -508,28 +576,51 @@ async function auditChromePatternB({ target, portalDirOverride }) {
     "missing-consumer": 0,
     "missing-canonical": 0,
   };
+  const causeTally = { lag: 0, "customization-or-rot": 0, unknown: 0 };
   for (const r of rows) {
     tally[r.status]++;
-    const label = r.status === "diverged"
-      ? `diverged (canonical=${r.srcLines}, consumer=${r.dstLines}, Δ=${r.delta >= 0 ? "+" : ""}${r.delta})`
-      : r.status;
+    if (r.cause) causeTally[r.cause.kind] = (causeTally[r.cause.kind] || 0) + 1;
+
+    let label;
+    if (r.status === "diverged") {
+      const causeStr = r.cause?.kind === "lag"
+        ? `LAG (matches canonical @ ${r.cause.commit} ${r.cause.date})`
+        : r.cause?.kind === "customization-or-rot"
+          ? `CUSTOMIZATION-OR-ROT (no canonical match in last ${r.cause.lookback} commits)`
+          : `UNKNOWN (${r.cause?.reason || "no classification"})`;
+      label = `diverged Δ=${r.delta >= 0 ? "+" : ""}${r.delta} :: ${causeStr}`;
+    } else {
+      label = r.status;
+    }
+
     const icon = r.status === "byte-identical" ? "✓" : r.status === "diverged" ? "⚠" : "✗";
     console.log(`  ${icon} ${r.rel.padEnd(28)} ${label}`);
   }
   console.log(``);
   console.log(`  Tally: ${tally["byte-identical"]} byte-identical · ${tally["diverged"]} diverged · ${tally["missing-consumer"]} missing-consumer · ${tally["missing-canonical"]} missing-canonical`);
-  console.log(``);
   if (tally["diverged"] > 0) {
-    console.log(`  Diverged files need operator review before restamp:`);
-    console.log(`  - LAG: consumer is behind canonical (rare with recent pulls). Restamp safe.`);
-    console.log(`  - CUSTOMIZATION: consumer intentionally diverged (e.g., shared.css = design system). Restamp would erase work; preserve via --accept-overwrite= only after migrating the customization.`);
-    console.log(`  - ROT: drift from a prior canonical state. Restamp restores correctness.`);
+    console.log(`  Divergence causes: ${causeTally.lag} LAG · ${causeTally["customization-or-rot"]} CUSTOMIZATION-OR-ROT · ${causeTally.unknown || 0} UNKNOWN`);
+  }
+  console.log(``);
+
+  if (tally["diverged"] > 0) {
+    const lagFiles = rows.filter((r) => r.cause?.kind === "lag").map((r) => r.rel);
+    const customFiles = rows.filter((r) => r.cause?.kind === "customization-or-rot").map((r) => r.rel);
+
+    console.log(`  Divergence interpretation (wave 15 git-history classification):`);
+    console.log(`  - LAG: consumer's file matches an older canonical version. Restamp is safe — it pulls the consumer forward to current canonical.`);
+    console.log(`  - CUSTOMIZATION-OR-ROT: no canonical version in the last ${HISTORY_LOOKBACK} commits matches consumer's file. Either intentional customization (e.g., shared.css carries the design system) or drift beyond lookback. Restamp would erase consumer's content — manual review required.`);
     console.log(``);
-    console.log(`  Per-file classification (lag vs customization vs rot) requires git-history lookup — wave 15 will codify this. Manual diff against canonical history is the workaround until then.`);
-    console.log(``);
-    console.log(`  To proceed with restamp, run:`);
-    console.log(`    --mode=restamp-chrome --pattern=B --target=${target} --accept-overwrite=<comma-separated-files>`);
-    console.log(`    (or --accept-overwrite=ALL to overwrite every diverged file — destructive, use only after audit)`);
+    if (lagFiles.length) {
+      console.log(`  Restamp safely (LAG-classified, can pass --accept-overwrite without losing work):`);
+      console.log(`    --mode=restamp-chrome --pattern=B --target=${target} --accept-overwrite=${lagFiles.join(",")}`);
+      console.log(``);
+    }
+    if (customFiles.length) {
+      console.log(`  Manual review required (CUSTOMIZATION-OR-ROT — do NOT add to --accept-overwrite without diffing):`);
+      for (const f of customFiles) console.log(`    - ${f}`);
+      console.log(`  Diff each against canonical: git diff $(git -C ${BLUEPRINT_ROOT} rev-parse HEAD):template/portal/<file> -- ${portalDir}/<file>`);
+    }
   } else {
     console.log(`  No divergence. Restamp is safe to run without --accept-overwrite.`);
   }
