@@ -167,10 +167,22 @@ Schema fields:
 | `docs.tiers[].label` | yes | Tier header (e.g., "Strategic artifacts"). |
 | `docs.tiers[].blurb` | no | One-line explainer under the label. Limited HTML allowed (`<em>`). |
 | `docs.tiers[].designed` | no, default `false` | If `true`, docs in this tier get the designed treatment (hero block + structured callouts + proto-ref styling) when rendered. Strategic-tier docs typically use `true`; operational scaffolds use `false`. |
-| `docs.tiers[].docs[]` | yes | List of `{ id, title }`. The `id` is the markdown filename (without `.md`) in `_docs/`; the `title` is the human label. |
+| `docs.tiers[].docs[]` | yes | List of `{ id, title, source? }`. The `id` is the markdown filename (without `.md`) in `_docs/`; the `title` is the human label; `source` is an optional repo-relative path (see "Source field" below). |
 | `docs.default` | no | Slug of the doc to open when no `?doc=` param is given. Falls back to the first doc in the first non-empty tier. |
 
-Each `id` must correspond to a markdown file at `_docs/<id>.md` (or `<initiative>/_docs/<id>.md` per your build script's prep step).
+Each `id` must correspond to a markdown file at `_docs/<id>.md`. Either author the file directly there, OR declare a `source` field and let `scripts/prep-deploy.sh` sync it from the canonical authoring path at build time.
+
+**Source field — canonical-path authoring**
+
+When your strategic artifacts live in the canonical doc-discipline directories (`decisions/`, `research/`, `content/`) instead of directly in `_docs/`, add a `source` field to each `docs.tiers[].docs[]` entry:
+
+```json
+{ "id": "01-prescription", "title": "Prescription", "source": "decisions/01-prescription.md" }
+```
+
+`source` is resolved against the portal's parent directory. For a portal at `<repo>/portal/`, the source above resolves to `<repo>/decisions/01-prescription.md`. For a portal at `<repo>/blueprint/portal/`, it resolves to `<repo>/blueprint/decisions/01-prescription.md`. The sync script (`scripts/prep-deploy.sh`) copies each source → `_docs/<id>.md` at build time. Entries without a `source` field are assumed to already exist at `_docs/<id>.md` and are not synced.
+
+Full rationale: methodology repo `docs/decisions/0003-portal-docs-manifest-driven-sync.md`.
 
 **Why data-driven, not hardcoded**: prior versions of the docs viewer shipped with 13 doc slugs baked into the HTML, the TITLES map, and the STRATEGIC_DOCS Set. Consumer projects copied the template and shipped a docs viewer full of project-specific vocabulary from whichever flagship project the template was extracted from. The data-driven shape means the canonical template ships with zero project-specific defaults — every consumer gets a working viewer by editing one manifest. Full incident: `docs/case-study-v3-portal-css-gap.md` § "Follow-up — docs viewer".
 
