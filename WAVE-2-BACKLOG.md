@@ -22,12 +22,14 @@ Rally-hq's findings (captured in `~/Workspace/dev/apps/rally-hq/blueprint/METHOD
 
 1. ✓ Trigger fired (rally-hq, 2026-05-27)
 2. ✓ Integrate rally-hq findings into this backlog (this section)
-3. **Pending rally-hq commit**: methodology promotion of rally-hq's 3 amendments as waves 14/15/16
-4. Pending: revise `decisions/02-design-system.md` § audit-gap closure for multi-axis consumers
-5. Pending: append a 2026-05-27 amendment entry to dogfood's own `METHODOLOGY-AMENDMENTS.md` capturing the dogfood-side observations the rally-hq session surfaced
-6. Pending: Stage 4 re-run against post-waves-8-13 methodology state
-7. Pending: cross-audit refresh including rally-hq's reverse-validation as new input
-8. Pending: punted-item closures from wave-1 backlog (most still pending; rally-hq did NOT touch CLI/reviewer/forge-site/voice-generator/prototype-iframes)
+3. ✓ Methodology promotion complete — waves 14/15/16 landed on methodology main (`9c91d36`, `b7b3495`, `5c877c2`). Rally-hq amendments commit `1aa3c35` was the stable git ref cited.
+4. ✓ Revised `decisions/02-design-system.md` § audit-gap closure for multi-axis consumers (commit `a0ed3f8`)
+5. ✓ Appended 2026-05-27 amendment entry to dogfood's own `METHODOLOGY-AMENDMENTS.md` capturing the dogfood-side observations
+6. Pending: Stage 4 re-run against post-waves-14-16 methodology state — would re-verify mechanical claims against new methodology surface (audit-chrome + brand_axes schema). Lower priority because the wave-1 mechanical claims are about dogfood internals, not methodology touchpoints.
+7. Pending: cross-audit refresh including rally-hq's reverse-validation as new input — could update `research/architecture/02-stage1-design-audit-template.md` with the 5-of-8 direct-fit + 1 collapsed + 1 diffused finding from rally-hq §2. Refines the cross-audit precision; not load-bearing for wave 3 trigger.
+8. Pending: punted-item closures from wave-1 backlog (most still pending; rally-hq did NOT touch CLI/reviewer/forge-site/voice-generator/prototype-iframes; these wait on their own triggers).
+
+**Wave 2 steady-state**: with items 1-5 complete, wave 2's core promotion work is done. Items 6-8 are refinements that can ride along or defer to wave 3. The promotion arc waves 8-16 (6 amendments from 2 consumers) has reached steady state.
 
 ## Trigger conditions
 
