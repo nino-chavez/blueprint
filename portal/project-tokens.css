@@ -1,59 +1,245 @@
 /* Blueprint Portal — Project Tokens Overlay
  *
- * This file is the consumer-editable seam over `shared.css`. Override design
- * tokens, add project-specific component variants, and define any
- * brand-specific chrome here. The cascade loads this file AFTER shared.css,
- * so any `:root` override below wins over the default.
- *
- * Why this file exists: shared.css is canonical chrome — it must remain
- * byte-identical to the template so `portal-chrome-canonical-reviewer` can
- * mechanically detect drift. Project-specific styling belongs here so the
- * canonical can be re-stamped (`stamp.mjs --mode=restamp-chrome --pattern=B`)
- * without losing your overrides.
+ * Consumer-editable seam over `shared.css`. Loads AFTER shared.css so any
+ * `:root` override or component declaration below wins over the canonical
+ * defaults.
  *
  * Rule of thumb:
  *   - Token override (color, spacing, font, radius) → :root block below
- *   - New component (project-specific UI not in chrome) → component block below
- *   - Variation on an existing chrome component (button hover color, badge
- *     palette extension, etc.) → component-override block below
- *   - Anything that should ship in the chrome for ALL Blueprint consumers →
- *     upstream into template/portal/shared.css via a methodology PR, not here
+ *   - L2 molecule from the design-system dictionary → "project components" block
+ *   - Page-specific component absorbed from inline <style> blocks → "page-specific" block
+ *   - Anything universal across Blueprint consumers → upstream into shared.css via a methodology PR, not here
  *
- * Examples (commented; uncomment + adapt for your project):
+ * See `decisions/02-design-system.md` for the dictionary this file implements.
+ * See `research/current-state/03-portal-surface-audit.md` § audit-gap 5 for
+ * why the page-specific block exists (consolidating proliferating per-page
+ * inline <style> declarations into one named location).
  */
 
 :root {
-  /* Brand override — replace with your project palette */
-  /* --brand-50:  hsl(...);
-     --brand-100: hsl(...);
-     --brand-500: hsl(...);
-     --brand-600: hsl(...);
-     --brand-700: hsl(...);
-     --brand-900: hsl(...); */
-
-  /* Type override — replace with your project type stack */
-  /* --font-hero:    'YourHero', 'Impact', sans-serif;
-     --font-display: 'YourDisplay', ui-sans-serif, system-ui, sans-serif;
-     --font-body:    'YourBody', ui-sans-serif, system-ui, sans-serif; */
-
-  /* Surface override — replace if your brand is dark-mode-default or
-     uses a non-warm-neutral background system */
-  /* --bg:        hsl(...);
-     --surface-1: hsl(...);
-     --surface-2: hsl(...); */
+  /* L0 Class B brand tokens deferred — see decisions/02-design-system.md § L0.
+   * Until forge-brand or operator-led brand decisions land, the inherited
+   * Rally HQ palette from shared.css is in effect. Flagged, not papered over.
+   */
 }
 
-/* ─────────────── project components ─────────────── *
- * Net-new components specific to this initiative. If a component would be
- * useful to every Blueprint consumer, upstream it into shared.css instead.
+/* ─────────────── project components (L2 molecules) ─────────────── *
+ * Cross-surface patterns named in decisions/02-design-system.md. Each
+ * implements one of M1–M8 from the L2 molecule dictionary.
  */
 
-/* (none yet) */
+/* M7 — Format / tag pill (wedge-label variant)
+ * Used in cross-references across wedge pages to denote wedge ownership.
+ * Variants encode the three prescription wedges from decisions/01-prescription.md.
+ */
+.wedge-label {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+  font-weight: 600;
+}
+.wedge-label.distribution { background: rgba(120, 70, 200, 0.12); color: rgba(120, 70, 200, 1); }
+.wedge-label.portability  { background: rgba(50, 140, 90, 0.12);  color: rgba(50, 140, 90, 1); }
+.wedge-label.independent  { background: var(--bg-muted);           color: var(--text-muted); }
+
+/* M-extension — Terminal / code block (cross-surface)
+ * Used on distribution-shape (terminal flow) and reviewer-execution (code
+ * snippets). Same shape, was duplicated across both pages as pre.terminal +
+ * pre.code. Consolidated here.
+ */
+pre.terminal,
+pre.code {
+  background: #0a0a0a;
+  color: #e8e8e8;
+  padding: var(--space-6);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+pre.code { padding: var(--space-4); font-size: 12px; line-height: 1.55; border-radius: 6px; }
+pre.terminal .prompt,
+pre.code .key   { color: #f1fa8c; }
+pre.terminal .arrow,
+pre.code .str   { color: #50fa7b; }
+pre.terminal .dim,
+pre.code .com   { color: #6272a4; font-style: italic; }
+pre.terminal .warn { color: #f1fa8c; }
+
+/* M-extension — ASCII diagram block (cross-surface)
+ * Mono whitespace-pre block on muted background. Was declared as `.stack`
+ * in ai-hive-companion (colliding with the canonical chrome `.stack`
+ * vertical-rhythm utility) and as `.arch-diagram` in reviewer-execution.
+ * Consolidated here as `.diagram-ascii` — the canonical name. Old `.stack`
+ * usage in ai-hive-companion migrated to `.diagram-ascii` in this slice.
+ */
+.diagram-ascii {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre;
+  padding: var(--space-6);
+  background: var(--bg-muted);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.diagram-ascii .layer { color: var(--brand-700); font-weight: 700; }
+.diagram-ascii .scope { color: var(--text-muted); }
+
+/* ─────────────── page-specific components ─────────────── *
+ * Absorbed from previously-inline <style> blocks (audit-gap 5 closure).
+ * Each block is page-scoped — promote to "project components" above if a
+ * second surface adopts the pattern.
+ */
+
+/* gap-inventory page */
+.gap-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+.gap-grid > div {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.gap-grid .head {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--border);
+}
+.gap-grid .num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brand-500);
+}
+
+/* distribution-shape page */
+.surface-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-6);
+}
+.surface-table th,
+.surface-table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.surface-table th {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.surface-table td.surface-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-700);
+}
+
+/* reviewer-execution page */
+.surfaces {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+.surface {
+  padding: var(--space-4);
+  background: var(--bg-muted);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.surface h4 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brand-700);
+  margin: 0 0 var(--space-2);
+}
+
+/* shipping-order page */
+.timeline { margin-top: var(--space-6); }
+.step {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--border);
+}
+.step:last-child { border-bottom: 0; }
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--brand-500);
+  line-height: 1;
+}
+.step h3 { margin: 0; }
+.step .meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+.step .body { margin-top: var(--space-3); }
+
+.defer-list { list-style: none; padding: 0; margin-top: var(--space-3); }
+.defer-list li {
+  padding: var(--space-2) 0;
+  border-bottom: 1px dashed var(--border);
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+.defer-list li:last-child { border-bottom: 0; }
+.defer-list .tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ai-hive-companion page */
+.integration-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+.integration {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.integration h4 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand-700);
+  margin: 0 0 var(--space-2);
+}
 
 /* ─────────────── component overrides ─────────────── *
  * Variations on chrome components (button hover, badge color extensions,
- * card border-radius bump). Use sparingly — the more you override, the
- * more your portal visually diverges from peer Blueprint deploys.
+ * card border-radius bump). None currently — use sparingly.
  */
 
 /* (none yet) */

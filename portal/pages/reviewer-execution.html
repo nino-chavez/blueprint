@@ -9,16 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared.css">
-  <style>
-    .arch-diagram { font-family: var(--font-mono); font-size: 12px; line-height: 1.7; white-space: pre; padding: var(--space-6); background: var(--bg-muted); border-radius: 8px; overflow-x: auto; }
-    pre.code { background: #0a0a0a; color: #e8e8e8; padding: var(--space-4); border-radius: 6px; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; overflow-x: auto; }
-    pre.code .key { color: #f1fa8c; }
-    pre.code .str { color: #50fa7b; }
-    pre.code .com { color: #6272a4; font-style: italic; }
-    .surfaces { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); margin-top: var(--space-6); }
-    .surface { padding: var(--space-4); background: var(--bg-muted); border-radius: 8px; border: 1px solid var(--border); }
-    .surface h4 { font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-700); margin: 0 0 var(--space-2); }
-  </style>
+  <link rel="stylesheet" href="../project-tokens.css">
 </head>
 <body data-compare-root data-view="proposed">
 
@@ -38,7 +29,7 @@
 
       <div class="mt-8" style="max-width: 800px;">
         <h3>Architecture — one logic, three surfaces</h3>
-        <div class="arch-diagram mt-4">
+        <div class="diagram-ascii mt-4">
                        ┌─────────────────────────────────────────┐
                        │  Reviewer business logic                │
                        │  (one .mjs per reviewer, in template/)  │
