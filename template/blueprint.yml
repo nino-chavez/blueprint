@@ -10,6 +10,34 @@ project:
     engineering: []                 # e.g., ["platform team"]
     broader: []                     # e.g., ["All stakeholders"]
 
+# ──────────────────────────────────────────────────────────────────
+# Pilot profile (REQUIRED — Stage 0 → Stage 1 gate)
+# Reference: docs/methodology/pilot-profile-template.md
+# Reviewer:  pilot-profile-lock-reviewer (blocks Stage 1 until this is filled)
+# ──────────────────────────────────────────────────────────────────
+#
+# Why this is required: on 2026-05-22 (rally-hq vs-volleyballlife walkthrough)
+# an initiative drifted from its declared pilot ("competitive scan against
+# vs-volleyballlife") to a different pilot ("Let's Pepper feature comparison")
+# without the operator noticing — because the original pilot was never locked
+# in a structured field. Stage 1 research went deep on the wrong target.
+#
+# The lock prevents implicit pilot substitution. Stage 1 research must derive
+# from this profile; any pivot to a different pilot requires an explicit ADR.
+pilot_profile:
+  slug: ""                          # short id, e.g., "tournament-organizer"
+  display_name: ""                  # e.g., "Tournament Organizer (regional, multi-court)"
+  pain_point: ""                    # one-sentence specific pain this initiative addresses
+  monetization_side: ""             # player | coach | organizer | buyer | seller | operator | (other — name it)
+  walkthrough_citation: ""          # path to a real artifact: interview transcript, competitive
+                                    # walkthrough doc, observation notes, screenshot set. NOT
+                                    # "I imagined this user." A real artifact you can cite.
+  competitors_in_scope: []          # competitors derived FROM this pilot, not arbitrary picks
+                                    # e.g., ["VolleyballLife.com", "AdvancedEventSystems", "Let's Pepper"]
+  out_of_scope_pilots: []           # other pilots the initiative could have targeted but won't
+                                    # naming them prevents accidental drift
+                                    # e.g., ["Player searching for team", "Coach managing roster"]
+
 # Execution depth
 execution:
   depth: standard                   # lean | standard | thorough
