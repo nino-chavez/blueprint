@@ -1,7 +1,7 @@
-/* Rally HQ Blueprint — Annotation overlay
+/* Blueprint — Annotation overlay (canonical chrome)
  *
  * Opt-in stakeholder note-taking. Enable per-session via:
- *   localStorage.setItem('rally-anno-enabled', 'true')
+ *   localStorage.setItem('blueprint-anno-enabled', 'true')
  *   then reload.
  *
  * Or click the bottom-left "💬" FAB and toggle "annotation mode" → click
@@ -15,8 +15,8 @@
  * (FAB + popover + list panel are all fixed-position overlays).
  */
 (function () {
-  const STORAGE_KEY = 'rally-anno-notes-v1';
-  const ENABLED_KEY = 'rally-anno-enabled';
+  const STORAGE_KEY = 'blueprint-anno-notes-v1';
+  const ENABLED_KEY = 'blueprint-anno-enabled';
   let MODE_ON = false;
   let PAGE_ID = null;
   let NOTES = [];           // [{ id, pageId, selector, x, y, body, createdAt, resolved }]
@@ -383,7 +383,7 @@
     loadNotes();
 
     // If never enabled on this device, don't show anything yet.
-    // Tester flow: open devtools, run `localStorage.setItem('rally-anno-enabled','true')`, reload.
+    // Tester flow: open devtools, run `localStorage.setItem('blueprint-anno-enabled','true')`, reload.
     if (localStorage.getItem(ENABLED_KEY) !== 'true') return;
 
     buildListPanel();
@@ -400,7 +400,10 @@
   }
 
   // Expose a console helper so testers can enable it from any page
-  window.rallyAnno = {
+  // Global handle for the annotation overlay. Renamed 2026-05-25 from
+  // `window.rallyAnno` (Rally HQ stamp leak) to project-agnostic name.
+  // ADR-0002 convention extended.
+  window.blueprintAnno = {
     enable: () => { localStorage.setItem(ENABLED_KEY, 'true'); location.reload(); },
     disable: () => { localStorage.setItem(ENABLED_KEY, 'false'); location.reload(); },
     export: () => JSON.stringify(NOTES, null, 2),

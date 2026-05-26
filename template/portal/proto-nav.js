@@ -377,7 +377,7 @@
     // Wire chrome toggle (sticky preference in localStorage)
     const toggle = bar.querySelector('.chrome-toggle');
     if (toggle) {
-      const KEY = 'rally-hq-blueprint-chrome-preview';
+      const KEY = 'blueprint-chrome-preview';
       if (localStorage.getItem(KEY) === '1') {
         document.body.classList.add('show-production-chrome');
       }

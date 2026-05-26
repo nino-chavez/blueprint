@@ -1,14 +1,20 @@
-/* Rally HQ Blueprint — AI chat widget
+/* Blueprint — AI chat widget (canonical chrome)
  *
- * Stakeholder exploration tool. Calls /api/chat (Vercel function) which
- * proxies to Claude with the blueprint docs preloaded as system context.
+ * Stakeholder exploration tool. Calls /api/chat (Cloudflare Pages Function,
+ * or Vercel function — endpoint contract is the same) which proxies to an
+ * LLM with the blueprint docs preloaded as system context.
  *
- * Usage: include <script src="./chat-widget.js" defer></script> on any page.
+ * Usage: include <script src="/chat-widget.js" defer></script> on any page.
  * No-op on pages where window.PROTO_CHAT_DISABLED is true.
  *
- * Endpoint: /api/chat — see ./api/chat.js (deployed as Vercel function).
- * Without that endpoint deployed (e.g., local file:// serving), the widget
- * shows a "not configured" message instead of attempting requests.
+ * Endpoint: /api/chat — see ./functions/api/chat.js (Cloudflare Pages
+ * Function). Without that endpoint deployed (e.g., local file:// serving),
+ * the widget shows a "not configured" message instead of attempting requests.
+ *
+ * Origin: extracted from Rally HQ 2026-05-24 polish pass. Promoted to canonical
+ * chrome 2026-05-25 after the Rally HQ string in the header was excised (it
+ * was the last Rally-HQ-leak in the Pattern B chrome surface). Added to
+ * PATTERN_B_CHROME_FILES manifest the same day.
  */
 (function () {
   if (window.PROTO_CHAT_DISABLED) return;

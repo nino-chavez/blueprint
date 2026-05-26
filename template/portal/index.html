@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared.css?v=20260524-1400">
+  <link rel="stylesheet" href="/shared.css?v=20260525-overlay">
+  <link rel="stylesheet" href="/project-tokens.css?v=20260525-overlay">
   <style>
     body { background: var(--bg); }
     main.container { padding-top: var(--space-12); padding-bottom: var(--space-12); }
@@ -324,9 +325,12 @@
       </div>
     </section>
 
-    <footer class="footer-note">
-      <span>rally-hq-blueprint · synthetic design study · personas + competitive findings need primary-research validation before structural recommendations ship</span>
-      <a href="https://github.com/nino-chavez/rally-hq" target="_blank" rel="noopener">github ↗</a>
+    <footer class="footer-note" id="footer-note">
+      <!-- Populated from _meta/index.json `name`, `tagline`, and `repo_url`.
+           Prior version had Rally HQ project content baked in (2026-05-25
+           leak). Now project-agnostic; consumer edits the manifest only. -->
+      <span data-footer-line>—</span>
+      <a data-footer-repo target="_blank" rel="noopener" style="display:none">github ↗</a>
     </footer>
   </main>
 
@@ -399,13 +403,13 @@
           b.classList.toggle('is-active', on);
           b.setAttribute('aria-selected', on ? 'true' : 'false');
         });
-        try { sessionStorage.setItem('rally-bp-audience', currentAudience); } catch {}
+        try { sessionStorage.setItem('blueprint-audience', currentAudience); } catch {}
         renderPaths();
       });
     });
 
     try {
-      const saved = sessionStorage.getItem('rally-bp-audience');
+      const saved = sessionStorage.getItem('blueprint-audience');
       if (saved && ['reviewer', 'engineer', 'operator'].includes(saved)) {
         currentAudience = saved;
         document.querySelectorAll('.audience-pills button').forEach(b => {
@@ -425,6 +429,19 @@
         document.getElementById('stat-pages').textContent = (m.pages || []).length;
         const slicesEl = document.getElementById('stat-slices');
         if (slicesEl) slicesEl.textContent = (m.slices || []).length;
+
+        // Populate footer from manifest. footer.line falls back to tagline.
+        // repo_url is optional — anchor stays hidden if absent.
+        const slug = (m.name || 'Project').replace(/\s+Blueprint\s*$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const footerLine = (m.footer && m.footer.line) || m.tagline || `${slug}-blueprint`;
+        const repoUrl = (m.footer && m.footer.repo_url) || m.repo_url || '';
+        const lineEl = document.querySelector('[data-footer-line]');
+        const repoEl = document.querySelector('[data-footer-repo]');
+        if (lineEl) lineEl.textContent = footerLine;
+        if (repoEl && repoUrl) {
+          repoEl.href = repoUrl;
+          repoEl.style.display = '';
+        }
       } catch {
         document.getElementById('stat-pages').textContent = '—';
         const slicesEl = document.getElementById('stat-slices');
@@ -434,7 +451,11 @@
   </script>
 
   <script>
-    window.PORTAL_SHELL_CONFIG = { productName: 'PROJECT_NAME' };
+    // PORTAL_SHELL_CONFIG intentionally omitted — _portal-shell.js reads
+    // productName from _meta/index.json `name` automatically (2026-05-25
+    // refactor). The previous PROJECT_NAME placeholder pattern relied on
+    // consumer-side find-and-replace; the manifest-driven path removes that
+    // surface area. See template/portal/CONVENTIONS.md § "Docs viewer manifest".
     window.PROTO_PAGE = { id: 'index', title: 'Front Door' };
     window.PROTO_CHAT_DISABLED = false;
   </script>
