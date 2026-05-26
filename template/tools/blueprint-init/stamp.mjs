@@ -64,6 +64,13 @@ const PATTERN_B_CHROME_FILES = [
 // Candidate locations a Pattern B consumer might place its portal. Resolve in
 // order; first existing directory wins. Reflects the path-drift observed
 // across rally-hq (blueprint/portal/) and the canonical (portal/) shapes.
+//
+// 2026-05-27 wave 14: the resolver now reads `prototype.portal_dir` from the
+// consumer's blueprint.yml first; this candidate list is the fallback for
+// first-time stamps and for consumers that haven't declared portal_dir. Source:
+// rally-hq amendment 2026-05-26 (gap 1) — rally-hq's portal at blueprint/prototype/
+// was outside this candidate list because the directory predates the canonical
+// Pattern B contract.
 const PATTERN_B_PORTAL_CANDIDATES = [
   "portal",
   "blueprint/portal",
@@ -313,47 +320,143 @@ function printReport(log) {
   }
 }
 
-async function resolvePatternBPortalDir(target) {
-  for (const cand of PATTERN_B_PORTAL_CANDIDATES) {
-    const p = path.join(target, cand);
-    const stat = await fs.stat(p).catch(() => null);
-    if (stat && stat.isDirectory()) return p;
+// Minimal yaml field extractor — reads a single `prototype.portal_dir: <value>`
+// key from blueprint.yml without a full yaml dependency. Returns null if the
+// file or the key is absent. Tolerates trailing comments and indentation
+// variations. Strict enough: any quoting / multi-line value falls back to null
+// and the resolver continues to the candidate list.
+async function readPortalDirFromBlueprintYml(target) {
+  const yml = await fs.readFile(path.join(target, "blueprint.yml"), "utf8").catch(() => null);
+  if (!yml) return null;
+  // Look for `portal_dir:` inside the `prototype:` block. We don't enforce
+  // block-scope rigorously; if any top-level-or-nested `portal_dir:` appears
+  // with a string value, we take it. Real conflicts will surface as
+  // "no portal directory found" errors downstream — preferred shape over
+  // silent multi-key drift.
+  const lines = yml.split("\n");
+  for (const raw of lines) {
+    const stripped = raw.replace(/#.*$/, "").trimEnd();
+    const m = stripped.match(/^\s*portal_dir:\s*["']?([^"'\s]+)["']?\s*$/);
+    if (m && m[1] && m[1] !== '""' && m[1] !== "''") return m[1];
   }
   return null;
 }
 
-async function restampChromePatternB({ target, dryRun, log }) {
-  const portalDir = await resolvePatternBPortalDir(target);
-  if (!portalDir) {
-    fail(
-      `--mode=restamp-chrome --pattern=B: no portal directory found under ${target}. ` +
-      `Looked for: ${PATTERN_B_PORTAL_CANDIDATES.join(", ")}. ` +
-      `If your portal lives elsewhere, add an ADR justifying the path divergence and update PATTERN_B_PORTAL_CANDIDATES.`
-    );
+async function resolvePatternBPortalDir(target, { portalDirOverride } = {}) {
+  // Priority 1: explicit --portal-dir CLI flag (operator escape hatch).
+  // Priority 2: prototype.portal_dir in target's blueprint.yml.
+  // Priority 3: PATTERN_B_PORTAL_CANDIDATES fallback list.
+  // This shape closes rally-hq amendment 2026-05-26 gap 1: consumers whose
+  // portal directory predates the canonical contract declare their path
+  // explicitly rather than rename or fork the resolver.
+  const sources = [];
+  if (portalDirOverride) sources.push({ src: "--portal-dir flag", val: portalDirOverride });
+  const fromYml = await readPortalDirFromBlueprintYml(target);
+  if (fromYml) sources.push({ src: "blueprint.yml prototype.portal_dir", val: fromYml });
+  for (const cand of PATTERN_B_PORTAL_CANDIDATES) sources.push({ src: "candidate fallback", val: cand });
+
+  for (const { src, val } of sources) {
+    const p = path.isAbsolute(val) ? val : path.join(target, val);
+    const stat = await fs.stat(p).catch(() => null);
+    if (stat && stat.isDirectory()) {
+      // Trace resolution source for the report — helps debug "wrong portal
+      // found" cases without re-running the resolver in verbose mode.
+      return { dir: p, source: src };
+    }
   }
+  return null;
+}
+
+function failPortalDirNotFound(target) {
+  fail(
+    `--mode=restamp-chrome --pattern=B: no portal directory found under ${target}. ` +
+    `Resolver tried in order: --portal-dir CLI flag, blueprint.yml prototype.portal_dir, fallback candidates [${PATTERN_B_PORTAL_CANDIDATES.join(", ")}]. ` +
+    `If your portal lives elsewhere, declare prototype.portal_dir in blueprint.yml (recommended) or pass --portal-dir=<relpath> on the CLI.`
+  );
+}
+
+// Compute a per-file divergence classification by comparing consumer content
+// against canonical. Returns one of: byte-identical, diverged, missing-consumer,
+// missing-canonical. Diverged entries include line +/- counts for the audit
+// report. Source: rally-hq amendment 2026-05-26 gap 3 — without per-file
+// classification, the operator can't distinguish lag from customization from rot.
+async function classifyChromeFile(srcPath, dstPath) {
+  const [srcExists, dstExists] = await Promise.all([
+    fs.stat(srcPath).catch(() => null),
+    fs.stat(dstPath).catch(() => null),
+  ]);
+  if (!srcExists) return { status: "missing-canonical" };
+  if (!dstExists) return { status: "missing-consumer" };
+  const [srcContent, dstContent] = await Promise.all([
+    fs.readFile(srcPath, "utf8"),
+    fs.readFile(dstPath, "utf8"),
+  ]);
+  if (srcContent === dstContent) return { status: "byte-identical" };
+  const srcLines = srcContent.split("\n").length;
+  const dstLines = dstContent.split("\n").length;
+  return { status: "diverged", srcLines, dstLines, delta: dstLines - srcLines };
+}
+
+async function restampChromePatternB({ target, dryRun, acceptOverwrite, portalDirOverride, log }) {
+  const resolved = await resolvePatternBPortalDir(target, { portalDirOverride });
+  if (!resolved) failPortalDirNotFound(target);
+  const { dir: portalDir, source: portalDirSource } = resolved;
+  console.log(`  portal resolved: ${portalDir} (source: ${portalDirSource})`);
+
   const srcRoot = path.join(BLUEPRINT_ROOT, "template/portal");
-  const missing = [];
+
+  // Wave 14 (2026-05-27): pre-flight divergence check. Block destructive
+  // overwrite of customized chrome unless operator explicitly accepts.
+  // Source: rally-hq amendment 2026-05-26 gap 2 — shared.css byte-identical
+  // contract assumes pristine canonical baseline; rally-hq's shared.css IS
+  // the design system, not chrome surrounding one. Without this gate, a
+  // restamp silently overwrites the consumer's design system.
+  const classifications = [];
   for (const rel of PATTERN_B_CHROME_FILES) {
+    const cls = await classifyChromeFile(path.join(srcRoot, rel), path.join(portalDir, rel));
+    classifications.push({ rel, ...cls });
+  }
+  const diverged = classifications.filter((c) => c.status === "diverged");
+  const acceptedSet = new Set((acceptOverwrite || "").split(",").map((s) => s.trim()).filter(Boolean));
+  const blockedDiverged = diverged.filter((c) => !acceptedSet.has(c.rel) && !acceptedSet.has("ALL"));
+  if (blockedDiverged.length && !dryRun) {
+    console.error(`\nerror: --mode=restamp-chrome --pattern=B refusing to overwrite diverged chrome.`);
+    console.error(`The following files diverge from canonical (the chrome you'd be replacing):`);
+    for (const c of blockedDiverged) {
+      console.error(`  - ${c.rel} (consumer=${c.dstLines} lines, canonical=${c.srcLines} lines, Δ=${c.delta >= 0 ? "+" : ""}${c.delta})`);
+    }
+    console.error(``);
+    console.error(`Run --mode=audit-chrome --pattern=B --target=${target} first to classify each divergence (lag / customization / rot).`);
+    console.error(`To force overwrite anyway, re-run with --accept-overwrite=<file1>,<file2>,... or --accept-overwrite=ALL.`);
+    console.error(`This gate exists because canonical-baseline assumption can silently overwrite a consumer's design system.`);
+    process.exit(3);
+  }
+
+  const missing = [];
+  for (const c of classifications) {
+    const { rel, status } = c;
     const src = path.join(srcRoot, rel);
     const dst = path.join(portalDir, rel);
-    const srcExists = await fs.stat(src).catch(() => null);
-    if (!srcExists) {
+    if (status === "missing-canonical") {
       missing.push(`canonical missing in template: ${rel}`);
       continue;
     }
-    const dstExists = await fs.stat(dst).catch(() => null);
-    if (!dstExists) {
+    if (status === "missing-consumer") {
       log.skipped.push(`${rel} (no consumer copy; not creating — re-run full stamp for first-time setup)`);
       continue;
     }
     if (dryRun) {
-      log.stamped.push(`${rel} (dry-run; would overwrite from canonical)`);
+      const stamp = status === "byte-identical"
+        ? `${rel} (dry-run; would re-write byte-identical content)`
+        : `${rel} (dry-run; would overwrite — Δ=${c.delta >= 0 ? "+" : ""}${c.delta} lines${acceptedSet.has(rel) || acceptedSet.has("ALL") ? "; accepted" : ""})`;
+      log.stamped.push(stamp);
       continue;
     }
     await fs.mkdir(path.dirname(dst), { recursive: true });
     const content = await fs.readFile(src, "utf8");
     await fs.writeFile(dst, content, "utf8");
-    log.stamped.push(`${rel} (chrome refreshed from canonical)`);
+    const tag = status === "byte-identical" ? "" : ` (was diverged; overwrite accepted)`;
+    log.stamped.push(`${rel} (chrome refreshed from canonical)${tag}`);
   }
   if (missing.length) {
     console.error("error: canonical chrome files missing from template (methodology repo broken):");
@@ -379,10 +482,65 @@ async function restampChromePatternB({ target, dryRun, log }) {
   console.log(`blueprint-init: restamped ${PATTERN_B_CHROME_FILES.length} chrome files in ${portalDir}`);
 }
 
+// Wave 14 (2026-05-27): read-only divergence audit. Outputs per chrome file
+// status without modifying anything. Source: rally-hq amendment 2026-05-26 —
+// "introduce a --mode=audit-chrome read-only diff command BEFORE restamp-chrome."
+async function auditChromePatternB({ target, portalDirOverride }) {
+  const resolved = await resolvePatternBPortalDir(target, { portalDirOverride });
+  if (!resolved) failPortalDirNotFound(target);
+  const { dir: portalDir, source: portalDirSource } = resolved;
+  console.log(`\n— blueprint-init audit-chrome —`);
+  console.log(`  target:         ${target}`);
+  console.log(`  portal:         ${portalDir} (source: ${portalDirSource})`);
+  console.log(`  canonical from: ${path.join(BLUEPRINT_ROOT, "template/portal")}`);
+  console.log(`  manifest:       ${PATTERN_B_CHROME_FILES.length} chrome files in PATTERN_B_CHROME_FILES\n`);
+
+  const srcRoot = path.join(BLUEPRINT_ROOT, "template/portal");
+  const rows = [];
+  for (const rel of PATTERN_B_CHROME_FILES) {
+    const cls = await classifyChromeFile(path.join(srcRoot, rel), path.join(portalDir, rel));
+    rows.push({ rel, ...cls });
+  }
+
+  const tally = {
+    "byte-identical": 0,
+    "diverged": 0,
+    "missing-consumer": 0,
+    "missing-canonical": 0,
+  };
+  for (const r of rows) {
+    tally[r.status]++;
+    const label = r.status === "diverged"
+      ? `diverged (canonical=${r.srcLines}, consumer=${r.dstLines}, Δ=${r.delta >= 0 ? "+" : ""}${r.delta})`
+      : r.status;
+    const icon = r.status === "byte-identical" ? "✓" : r.status === "diverged" ? "⚠" : "✗";
+    console.log(`  ${icon} ${r.rel.padEnd(28)} ${label}`);
+  }
+  console.log(``);
+  console.log(`  Tally: ${tally["byte-identical"]} byte-identical · ${tally["diverged"]} diverged · ${tally["missing-consumer"]} missing-consumer · ${tally["missing-canonical"]} missing-canonical`);
+  console.log(``);
+  if (tally["diverged"] > 0) {
+    console.log(`  Diverged files need operator review before restamp:`);
+    console.log(`  - LAG: consumer is behind canonical (rare with recent pulls). Restamp safe.`);
+    console.log(`  - CUSTOMIZATION: consumer intentionally diverged (e.g., shared.css = design system). Restamp would erase work; preserve via --accept-overwrite= only after migrating the customization.`);
+    console.log(`  - ROT: drift from a prior canonical state. Restamp restores correctness.`);
+    console.log(``);
+    console.log(`  Per-file classification (lag vs customization vs rot) requires git-history lookup — wave 15 will codify this. Manual diff against canonical history is the workaround until then.`);
+    console.log(``);
+    console.log(`  To proceed with restamp, run:`);
+    console.log(`    --mode=restamp-chrome --pattern=B --target=${target} --accept-overwrite=<comma-separated-files>`);
+    console.log(`    (or --accept-overwrite=ALL to overwrite every diverged file — destructive, use only after audit)`);
+  } else {
+    console.log(`  No divergence. Restamp is safe to run without --accept-overwrite.`);
+  }
+}
+
 async function modeRestampChrome(args) {
   const pattern = (args["pattern"] || "").toUpperCase();
   const target = args["target"] ? path.resolve(args["target"].replace(/^~/, process.env.HOME || "")) : null;
   const dryRun = args["dry-run"] === "true";
+  const acceptOverwrite = args["accept-overwrite"] || null;
+  const portalDirOverride = args["portal-dir"] || null;
   if (!target) fail(`--mode=restamp-chrome: --target is required`);
   if (pattern !== "A" && pattern !== "B") fail(`--mode=restamp-chrome: --pattern must be A or B; got "${args["pattern"]}"`);
   const targetStat = await fs.stat(target).catch(() => null);
@@ -390,11 +548,23 @@ async function modeRestampChrome(args) {
 
   const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
   if (pattern === "B") {
-    await restampChromePatternB({ target, dryRun, log });
+    await restampChromePatternB({ target, dryRun, acceptOverwrite, portalDirOverride, log });
   } else {
     fail(`--mode=restamp-chrome --pattern=A not yet implemented. The Pattern A canonical chrome surface (packages/ui, packages/design-tokens, src/styles) needs an audit before a manifest can be declared. See README §"Restamping Pattern A chrome".`);
   }
   printReport(log);
+}
+
+// Wave 14 (2026-05-27): audit-chrome mode handler. Read-only; no writes.
+async function modeAuditChrome(args) {
+  const pattern = (args["pattern"] || "").toUpperCase();
+  const target = args["target"] ? path.resolve(args["target"].replace(/^~/, process.env.HOME || "")) : null;
+  const portalDirOverride = args["portal-dir"] || null;
+  if (!target) fail(`--mode=audit-chrome: --target is required`);
+  if (pattern !== "B") fail(`--mode=audit-chrome: --pattern=B is required (Pattern A audit not yet implemented)`);
+  const targetStat = await fs.stat(target).catch(() => null);
+  if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
+  await auditChromePatternB({ target, portalDirOverride });
 }
 
 async function main() {
@@ -405,7 +575,11 @@ async function main() {
     await modeRestampChrome(args);
     return;
   }
-  if (mode !== "stamp") fail(`unknown --mode=${mode} (valid: stamp, restamp-chrome)`);
+  if (mode === "audit-chrome") {
+    await modeAuditChrome(args);
+    return;
+  }
+  if (mode !== "stamp") fail(`unknown --mode=${mode} (valid: stamp, restamp-chrome, audit-chrome)`);
 
   const required = ["name", "display-name", "repo-url", "tagline", "variant", "tier", "pattern", "target"];
   const missing = required.filter((k) => !args[k]);
