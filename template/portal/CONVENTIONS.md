@@ -23,7 +23,7 @@ Every prototype page (not the front door / studio catalog) renders with this chr
 5. **Slice sidebar** (240px, light) — fixed at left, visible ≥1080px. Pages-in-slice list with active highlight + flows-through-slice with start-flow buttons.
 6. **Drawer triggers** — Strategy and Shipped drawers open from buttons in the slice header.
 7. **AI chat FAB** — bottom-right, always available.
-8. **Annotation FAB** — bottom-left, opt-in (`localStorage.setItem('rally-anno-enabled','true')`).
+8. **Annotation FAB** — bottom-left, opt-in (`localStorage.setItem('blueprint-anno-enabled','true')`).
 
 This stack is built by `proto-nav.js` + `proto-annotate.js` + `chat-widget.js`. Pages don't render any of it directly.
 
@@ -253,11 +253,11 @@ Flows declared in `flows_touching_this_slice` on a slice get listed in that slic
 Stakeholders enable per-browser annotation mode via:
 
 ```js
-localStorage.setItem('rally-anno-enabled', 'true')
+localStorage.setItem('blueprint-anno-enabled', 'true')
 location.reload()
 ```
 
-A 💬 FAB appears bottom-left. Toggle "Annotating" then click any element on the page to drop a note. Notes persist in localStorage keyed by page id. Console helpers: `window.rallyAnno.export()`, `window.rallyAnno.clear()`.
+A 💬 FAB appears bottom-left. Toggle "Annotating" then click any element on the page to drop a note. Notes persist in localStorage keyed by page id. Console helpers: `window.blueprintAnno.export()`, `window.blueprintAnno.clear()`.
 
 Notes are per-browser. Cross-stakeholder sync is a Phase-2 task — would add a Pages Function backed by Cloudflare KV.
 
