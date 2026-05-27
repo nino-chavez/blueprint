@@ -1,7 +1,23 @@
 ---
 import * as Shell from '@blueprint/ui/shell';
 import { PortalNav } from '@/components/PortalNav';
-import { ArchaeologyChat } from '@/components/ArchaeologyChat';
+// ArchaeologyChat is suppressed by default at the operator-decision layer.
+// Wave 17 (the bc-promo-rules amendment commit 74fa02f) closes the leak at
+// stamp time (WORKER_URL blanked) and at component time (renders a disabled
+// "substrate not configured" button when WORKER_URL is empty). This gate adds
+// the third layer — even with WORKER_URL configured, the widget mounts only
+// when the operator has explicitly flipped ARCHAEOLOGY_READY to true.
+// Flip to true ONLY when ALL of the following are met:
+//   1. blueprint.yml sets `archaeology.enabled: true`
+//   2. `bash tools/archaeology/scaffold.sh` has deployed the project's Worker + ingested sources
+//   3. WORKER_URL in src/components/ArchaeologyChat.tsx points at THIS project's substrate
+// See docs/archaeology-substrate-pattern.md + METHODOLOGY.md § "Stage S-A".
+// Wave 18 (2026-05-27).
+const ARCHAEOLOGY_READY = false;
+// Conditional import keeps the disabled bundle clean (build-time tree-shake).
+const ArchaeologyChat = ARCHAEOLOGY_READY
+  ? (await import('@/components/ArchaeologyChat')).ArchaeologyChat
+  : null;
 import '@/styles/global.css';
 
 export interface Props {
@@ -47,6 +63,6 @@ const fullTitle = title === 'bc-subscriptions' ? title : `${title} — bc-subscr
         </div>
       </Shell.Footer>
     </Shell.Root>
-    <ArchaeologyChat client:idle pageContext={currentPath} />
+    {ARCHAEOLOGY_READY && ArchaeologyChat && <ArchaeologyChat client:idle pageContext={currentPath} />}
   </body>
 </html>
