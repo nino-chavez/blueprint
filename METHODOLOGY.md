@@ -415,8 +415,9 @@ The seven pipeline stages above describe *what to produce*. The following patter
 | [docs/tiered-orchestration-pattern.md](docs/tiered-orchestration-pattern.md) | Work > one operator-week + parallel-safe PRs | Orchestrator/Specialist/Implementer/Janitor tiering, wave sequencing, calibration discipline |
 | [docs/inventory-as-evidence-pattern.md](docs/inventory-as-evidence-pattern.md) | Cleanup/reorg on >50 items | Read-only walk → classify → file as [Spec] body's evidence |
 | [docs/doc-discipline-micro-patterns.md](docs/doc-discipline-micro-patterns.md) | Always (low overhead) | Small disciplines — surface-existing, capture-ambiguity, wrong-copy-is-signal, avoid multi-role templates |
+| [docs/prototype-vs-production-traceability-sweep.md](docs/prototype-vs-production-traceability-sweep.md) | Post-major-arc closure OR quarterly baseline (initiatives with a `destination: product` meta cohort) | Recurring 4-link chain walk (research → meta → prototype HTML → production code) per product-destination meta; 5-verdict taxonomy (bug / refinement / open-question / already-reconciled / structural-divergence); meta-schema extensions; feeds prescription P-items |
 
-These disciplines emerged from `subs-initiative` (May 2026). When they apply, they belong cross-cutting (not as a pipeline stage) — the pipeline produces the deliverables; the disciplines keep the surface around the deliverables coherent.
+These disciplines emerged from `subs-initiative` (May 2026) and the rally-hq 17-meta fan-out (May 2026). When they apply, they belong cross-cutting (not as a pipeline stage) — the pipeline produces the deliverables; the disciplines keep the surface around the deliverables coherent.
 
 The archaeology substrate, while it ingests artifacts the cross-cutting disciplines produce, is NOT a cross-cutting discipline — it has a discrete lifecycle and a stamp-gated UI surface. See "Optional Capability Stages" → Stage S-A above.
 
