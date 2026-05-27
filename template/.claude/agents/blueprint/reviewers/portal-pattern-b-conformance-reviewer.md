@@ -161,6 +161,19 @@ If multiple variant pages of the same base name exist (`home-a.html` + `home-b.h
 
 Per the blog session's diagnosis on 2026-05-25, the variant-walking shape is correct for Stage 2 design-principles deliberation. It is not correct for Stage 6 stakeholder portal review.
 
+### 11. Verify no REPLACE_FOR_PROJECT banner remains
+
+Wave 19 (2026-05-27) enforces what wave 17 declared. Wave 17's `stamp.mjs` upgraded the banner text from "warning" to "block" — but neither conformance reviewer grep'd for the banner, so the declaration was words without a gate. This step is the Pattern B gate. Pattern B portals consume the same `template/portal/` source as Pattern A's `template/apps/portal/`, so the same banner can appear in any stamped Pattern B page that originated as bc-subs example content.
+
+Grep for the banner string across the portal source:
+
+```bash
+grep -rln "REPLACE_FOR_PROJECT" blueprint/portal/
+grep -rln "REPLACE_FOR_PROJECT" portal/ 2>/dev/null
+```
+
+Any match BLOCKS at the Stage 3 → Stage 4 gate. A passing portal has zero `REPLACE_FOR_PROJECT` markers. Pages the initiative does not need should be deleted, not left with the banner intact.
+
 ## How to report
 
 ```
@@ -178,6 +191,7 @@ I-5_ORPHAN_CSS: <list>
 COMPARISON_TOGGLE: present | missing | partial
 CHAT_FAB: present | missing | unconfigured
 DELIBERATION_VENUE_FLAG: clean | suspect | confirmed
+REPLACE_FOR_PROJECT_BANNERS: <count remaining; >0 BLOCKS>
 NOTES: <one line per finding>
 ```
 
