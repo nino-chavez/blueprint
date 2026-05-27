@@ -252,7 +252,11 @@ The wave-22 chain (research → meta → prototype HTML → production) maps ont
 
 ### Reference implementation
 
-`tools/state-derive/` in subs-initiative (canonical at `~/Workspace/dev/wip/subs-initiative/tools/state-derive/`) is the reference. The template should ship a generalized version at `template/tools/state-derive/` when the next consumer adopts the pattern — premature to lift now (one-consumer shape; need a second adoption to know which parts are general vs subs-initiative-shaped). See `apps/rally-hq/blueprint/scripts/check-prototype-traceability.sh` (proposed, not yet built) as the second candidate — that one would automate the wave-22 chain walk; state-derive would be its mechanical prefilter.
+The lift to `template/tools/state-derive/` already happened (commit `780932b`, *"canonical state-derive tool for shipped-vs-spec audits"*). The template version ships the engine — check primitives (`file_exists`, `grep_count`, `schema_has_table`, `commit_message_grep`), the catalog loader, the `_state.json` + `_state.md` renderers — with the subs-initiative-specific capability catalog stripped out. Consumers add their own `catalog/*.ts` files; the loader auto-imports every `.ts` file under `catalog/` (recursively), excluding `_`-prefixed scratch files.
+
+Consumer-side reference: `~/Workspace/dev/wip/subs-initiative/tools/state-derive/catalog/` shows the originating capability set (BigEng conventions, Phase-1 ADR commitments, external-system-features inventory). A new consumer adopting the pattern starts from the template engine and authors their own catalog files at the same path.
+
+Second-candidate domain (not yet built): `apps/rally-hq/blueprint/scripts/check-prototype-traceability.sh` would automate the wave-22 chain walk for rally-hq; state-derive would be its mechanical prefilter — surfacing what's already COMPLIANT so the sweep agents focus on MANUAL_REVIEW + PARTIAL items.
 
 ### Activation order for a consumer running both layers
 
