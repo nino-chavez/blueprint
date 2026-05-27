@@ -68,17 +68,17 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 **Promotion shape (wave 27)**: doc-only — new canonical doc `docs/amendment-classification-pattern.md` documents the taxonomy + decision tree + manual→automated flip criteria. Tool defer to second-consumer adoption of automated triage; build-when-triggered path is GitHub Copilot SDK shipped as a GitHub Action (per market-comparison C4 verdict — matches per-developer pricing model; closed-taxonomy SaaS options don't fit). Doc includes the tool sketch for the future build.
 
-### Candidate 5 — Multi-operator collaboration substrate [real gap, no Blueprint motion]
+### Candidate 5 — Multi-operator collaboration pattern [PROMOTED wave 28, 2026-05-27 — doc-only; substrate deferred to platform-feature dogfood]
 
 **Loom analog**: comment-on-this-specific-thing async — timestamped comments on a shared artifact.
 
-**Blueprint analog**: portal sections accept inline amendment proposals that bubble up to `METHODOLOGY-AMENDMENTS.md` with section anchor as context.
+**Blueprint analog**: pattern doc naming three sub-patterns (attribution-loss / cross-context-confusion / parallel-work-workaround) + deferred architectural shape (inline annotations on portal sections → structured bubble-up to AMENDMENTS via wave 27's 4-bucket taxonomy).
 
-**Why this is the only candidate that scales across operators**: candidates 1-4 scale operator work *within* a session. This one scales work *across* operators. The Loom transcript at 07:10-07:43 articulates this exact concern as unresolved: "How would that work if someone else was doing it?... does it scale once you add agents and you lose the context that integration is?"
+**Why this is the only candidate that scales across operators**: candidates 1-4 scale operator work *within* a session. This one scales work *across* operators.
 
-**Why it carries more risk than 1-4**: requires accepting *input back into the artifact* (comments, amendment proposals), which is a new direction for Blueprint. All other candidates extend existing artifact-generation patterns. The substrate needs auth, identity, persistence — none of which Blueprint currently owns.
+**Promotion evidence (2026-05-27 extended audit)**: three consumers across three distinct sub-patterns — rally-hq `0c074d5` commit-attribution loss + blueprint-redesign wrong-directory amendment + portal/CONVENTIONS.md peer-canonical-contamination + blog pilot success-criterion #3 explicitly naming parallel-work failure mode. The three-consumer threshold exceeded the candidates-doc's "1 strong consumer" borderline verdict.
 
-**What would validate promotion**: a multi-operator initiative (≥2 operators collaborating on one Blueprint application) reports that out-of-band commenting (Slack, AMENDMENTS.md hand-edits, Loom comments) was lossy enough that they needed a structured in-artifact channel. Promotion shape: new optional capability stage S-? alongside S-A; new portal mode; new schema field in `blueprint.yml`.
+**Promotion shape (wave 28)**: doc-only — substrate deferred. New canonical doc `docs/multi-operator-collab-pattern.md` names the pattern, the sub-patterns, the deferred architectural shape, and three lightweight conventions consumers can adopt today (per-repo role declaration, worktree isolation per parallel agent, no-workaround success criterion). Substrate build (annotation surface + routing + identity layer) deferred because it expands Blueprint into auth/identity/persistence scope — real-product-scope, not methodology-scope. Three named substrate-promotion criteria documented; none met today.
 
 ## Video-script generation angle (secondary, raised mid-conversation)
 
