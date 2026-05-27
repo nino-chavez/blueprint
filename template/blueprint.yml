@@ -207,6 +207,32 @@ prototype:
                                     # Added 2026-05-27 wave 14 per rally-hq amendment 2026-05-26 gap 1.
   theme: slate                      # slate | coral | forest | minimal | custom
                                     # Multi-theme registry added 2026-05-26 wave 9.
+
+# ──────────────────────────────────────────────────────────────────
+# Initiative type — current-state research shape (wave 20, 2026-05-27)
+# Added per bc-promo-rules amendment (wave 17, commit 74fa02f) — the
+# wave-17 promotion added the research-prompt + architect-challenge
+# docs but no schema field to declare which initiatives need the
+# platform-feature treatment. Default consumer-app; existing consumers
+# without this field are implicitly consumer-app. References:
+#   template/docs/methodology/current-state-research-prompt.md
+#   template/docs/methodology/architect-challenge-pattern.md
+# Enforcement: research-completeness-reviewer step 8 fires when
+# initiative_type = platform-feature.
+# ──────────────────────────────────────────────────────────────────
+
+initiative_type: consumer-app       # consumer-app | platform-feature
+# consumer-app:    Building a user-facing surface against an existing product.
+#                  Stage 1 research inventories existing screens / routes /
+#                  flows + competitive UX patterns. (Default; matches the
+#                  greenfield consumer-app pipeline the methodology was
+#                  originally extracted from.)
+# platform-feature: Proposing a new capability the platform itself doesn't
+#                   have (new condition type for an existing engine, new
+#                   evaluation primitive, new API surface). Stage 1 research
+#                   must run the "what needs to be true" frame AND the
+#                   architect-challenge pattern; Stage 1 → 2 gate enforces
+#                   the existence + completeness of the comparison artifact.
                                     # Each theme overrides --brand-* + --bg + --surface-* tokens in
                                     # template/portal/shared.css [data-theme] blocks. Default = slate.
                                     # `custom` = consumer declares its own [data-theme="custom"] block
