@@ -103,7 +103,29 @@ If multiple route variants exist with names like `*-a.astro`, `*-b.astro`, `*-va
 
 Reason: the portal is the stakeholder deliverable. Deliberation belongs in design-principles work, not in the surface stakeholders are asked to walk.
 
-### 7. Verify legacy invariants are honored or graduated
+### 7. Verify no REPLACE_FOR_PROJECT banner remains
+
+Wave 19 (2026-05-27) enforces what wave 17 declared. Wave 17's `stamp.mjs` upgraded the banner text from "warning" to "block" — but the conformance reviewer never actually grep'd for the banner, so the "block" declaration was words without a gate. This step is the gate.
+
+The promo-initiative failure mode: scaffold pages carrying subs-initiative example content (a 20-row native-shape gap matrix, an ENTRIES array with Jordan Sim attribution, suggested archaeology questions) shipped to a live stakeholder deploy because the banner was previously documented as a warning rather than a gate AND no reviewer enforced even the warning.
+
+Grep for the banner string across the portal source:
+
+```bash
+grep -rln "REPLACE_FOR_PROJECT" apps/portal/src/
+grep -rln "REPLACE_FOR_PROJECT" packages/ui/preview/ 2>/dev/null
+```
+
+Any match BLOCKS at the Stage 3 → Stage 4 gate. The banner is intentionally stamped onto subs-initiative-content-carrying files by `template/tools/blueprint-init/stamp.mjs`; the operator's job is to delete the banner (and replace or strip the surrounding content) before the portal goes to stakeholders. A passing portal has zero `REPLACE_FOR_PROJECT` markers.
+
+The seven files that ship with the banner (per `BANNER_FILES` in `stamp.mjs`):
+- `apps/portal/src/pages/inspect/{gates,coverage,attestations,dependencies}.astro`
+- `apps/portal/src/pages/strategy/{delivery-fork,index}.astro`
+- `packages/ui/preview/dep-graph-data.js`
+
+If the initiative does not need a given page (e.g. no strategic fork yet), delete the file. The conformance reviewer permits a strategy/ directory with only `index.astro`; the canonical IA does not mandate `delivery-fork.astro`.
+
+### 8. Verify legacy invariants are honored or graduated
 
 The v1 static shell encoded three invariants:
 
@@ -131,6 +153,7 @@ AUDIENCE_SWITCHER: present | missing | local-shadow
 SHELL_SOURCING: @blueprint/ui=<count> @blueprint/design-tokens=<count> local-shadow=<list>
 PACKAGE_WIRING: astro=<ok|missing> react=<ok|missing> ui-pkg=<ok|missing> tokens-pkg=<ok|missing>
 DELIBERATION_VENUE_FLAG: clean | suspect | confirmed
+REPLACE_FOR_PROJECT_BANNERS: <count remaining; >0 BLOCKS>
 INVARIANTS: I-2=<ok|warn|block> I-3=<ok|warn|block> I-5=<ok|warn|block>
 NOTES: <one line per finding>
 ```
