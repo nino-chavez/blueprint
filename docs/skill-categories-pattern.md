@@ -1,10 +1,10 @@
 ---
-status: pattern-pending-validation
+canonical: true
 ---
 
 # Skill Categories Pattern — Stage vs Routine
 
-**Status**: Pattern-pending-validation. Single-example for the ROUTINE category (`/blueprint-handoff`); promotion to canonical wave-level shape gated on ≥1 additional routine skill authored against this pattern.
+**Status**: Promoted 2026-05-27 wave 29 from two-example evidence (`/blueprint-handoff` + `/blueprint-amendment`). The two-example bar named in the pattern-pending-validation precursor doc is met; pattern now canonical.
 
 **Last updated**: 2026-05-27
 
@@ -74,14 +74,15 @@ The first routine skill (`/blueprint-handoff`) establishes the shape. Future rou
 
 The "what cannot be derived" line is load-bearing. Routine skills are valuable precisely because they automate the mechanical 80% of a convention-fill, leaving the operator-judgment 20%. If a routine skill tries to automate the judgment (e.g., decide "what's pending" without asking), it produces wrong output. The shape should always be: derive state → ask for judgment → compose → write.
 
-## When this pattern lands as a wave
+## Promotion history
 
-This pattern is currently single-example for the ROUTINE category. The wave-promotion bar (matching the discipline applied to inspiration-candidates this session):
+This pattern was first authored as `pattern-pending-validation` alongside `/blueprint-handoff` (commit `cf6103d`). The bar named at that time: ≥1 additional routine skill authored against this pattern.
 
-- Authored ≥1 additional routine skill that follows this pattern (`/blueprint-amendment` is the most likely next; `/blueprint-sweep` and `/blueprint-dispatch` are also candidates)
-- The category-distinction has cross-consumer evidence (at least one consumer has invoked both a STAGE and a ROUTINE skill in the same session and reported back on whether the discovery mechanisms work)
+`/blueprint-amendment` is that second example. Both skills follow the routine-skill shape: derive state mechanically (git for handoff; the 4-bucket decision tree for amendment), ask operator for judgment that cannot be derived, compose, write. The pattern is now canonical.
 
-Until both bars are met, this doc stays at `status: pattern-pending-validation`. The single existing routine skill remains useful in its own right; this pattern doc records the architectural observation so future skill-authoring decisions land in the right category instead of bolting routines onto the pipeline-stage set arbitrarily.
+Future routine skills should mirror this shape; future skill-category additions (e.g., REVIEWER skills, CADENCE skills) would require their own pattern-pending-validation → two-example promotion arc.
+
+The second promotion-bar named at first-author time (cross-consumer evidence that a single consumer invokes both a STAGE and a ROUTINE skill in one session and reports on whether discovery mechanisms work) is NOT yet met. This wave promotes the category pattern based on methodology-internal evidence (two routine skills successfully authored). If a consumer later reports the discovery mechanism is insufficient — they didn't find the routine skill when they needed it — that finding would drive a follow-on amendment to this doc rather than invalidate the wave-29 promotion.
 
 ## Inventory
 
@@ -95,11 +96,11 @@ As of 2026-05-27:
 - `deploy.md` (`/blueprint-deploy`)
 - `triage.md` (`/blueprint-triage`)
 
-**ROUTINE skills** (1, in `template/.claude/skills/blueprint/`):
-- `handoff.md` (`/blueprint-handoff`)
+**ROUTINE skills** (2, in `template/.claude/skills/blueprint/`):
+- `handoff.md` (`/blueprint-handoff`) — generates HANDOFF.md by deriving state from git + pwd; asks operator for "what's pending" + sequencing
+- `amendment.md` (`/blueprint-amendment`) — files a METHODOLOGY-AMENDMENTS entry via wave 27's 4-bucket decision tree; initializes the amendments file from template if absent
 
-**Routine candidates** (deferred until category pattern validates):
-- `/blueprint-amendment` — wraps wave 27's 4-bucket taxonomy + amendments-file append
-- `/blueprint-sweep` — orchestrates wave 22 + 24 two-layer drift-detection recipe
-- `/blueprint-dispatch` — runs `parallel-dispatch-check` as pre-flight before parallel-agent dispatch
-- `/blueprint-archaeology-ready` — verifies all 4 wave 21 preconditions before flipping the operator gate
+**Routine candidates** (deferred — each awaits its own promotion-evidence threshold):
+- `/blueprint-sweep` — orchestrates wave 22 + 24 two-layer drift-detection recipe (state-derive prefilter + sweep on MANUAL_REVIEW remainder + per-verdict draft emission). Defer until a consumer runs the two-layer recipe and reports back on whether the orchestration adds value vs the manual workflow.
+- `/blueprint-dispatch` — runs `parallel-dispatch-check` as pre-flight before parallel-agent dispatch. Defer until a second parallel-dispatch failure mode surfaces (the first was rally-hq's `0c074d5`; need cross-consumer evidence the routine is recurring before automating).
+- `/blueprint-archaeology-ready` — verifies all 4 wave 21 preconditions before flipping the operator gate. Defer until a consumer actually deploys Stage S-A end-to-end and reports back on whether the manual gate-flip carries enough cognitive load to need automation.
