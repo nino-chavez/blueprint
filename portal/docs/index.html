@@ -252,6 +252,12 @@
 
     /* .doc-meta rules moved up next to .doc-content for cohesion */
 
+    /* Docs sidebar tier grouping — structural wrapper added by Fix 3 (STRUCT-02).
+       Keeps each tier's label, blurb, and links as a cohesive visual block. */
+    .docs-sidebar-tier { border-bottom: 1px solid var(--card-border); padding-bottom: var(--space-4); }
+    .docs-sidebar-tier:last-child { border-bottom: none; padding-bottom: 0; }
+    .docs-tier-docs { list-style: none; padding: 0; margin: 0; }
+
     .doc-empty { padding: var(--space-12); text-align: center; color: var(--text-muted); }
     .doc-error { padding: var(--space-6); background: hsl(0 85% 97%); border: 1px solid hsl(0 85% 80%); border-radius: var(--radius-md); color: hsl(0 70% 30%); }
 
@@ -484,23 +490,27 @@
       }
       // Build sidebar HTML from manifest. Skip empty tiers (don't show a
       // header for "Working documents" if there are none yet).
+      // Each tier is wrapped in a .docs-sidebar-tier container so the label,
+      // blurb, and doc links are a discrete DOM group — easier to style and
+      // read as a navigational section rather than a flat list.
       const parts = [];
       let isFirst = true;
       tiers.forEach(tier => {
         const docs = tier.docs || [];
         if (!docs.length) return;
         const designed = !!tier.designed;
-        const tierStyle = isFirst ? '' : ' style="margin-top: var(--space-6)"';
+        const tierMargin = isFirst ? '' : 'margin-top:var(--space-6);';
         isFirst = false;
-        parts.push(`<div class="tier-label"${tierStyle}>${escapeHtml(tier.label || '')}</div>`);
-        if (tier.blurb) {
-          // blurb may contain limited HTML (<em>); template trusts manifest authoring.
-          parts.push(`<p class="tier-blurb">${tier.blurb}</p>`);
-        }
-        docs.forEach(d => {
+        const docsHtml = docs.map(d => {
           const tierAttr = designed ? 'strategic' : 'working';
-          parts.push(`<a href="./?doc=${encodeURIComponent(d.id)}" data-doc="${escapeAttr(d.id)}" data-tier="${tierAttr}">${escapeHtml(d.title || d.id)}</a>`);
-        });
+          return `<li style="list-style:none;padding:0;margin:0"><a href="./?doc=${encodeURIComponent(d.id)}" data-doc="${escapeAttr(d.id)}" data-tier="${tierAttr}">${escapeHtml(d.title || d.id)}</a></li>`;
+        }).join('');
+        parts.push(`
+          <div class="docs-sidebar-tier" style="${tierMargin}">
+            <div class="tier-label">${escapeHtml(tier.label || '')}</div>
+            ${tier.blurb ? `<p class="tier-blurb">${tier.blurb}</p>` : ''}
+            <ul class="docs-tier-docs" style="list-style:none;padding:0;margin:0">${docsHtml}</ul>
+          </div>`);
       });
       mount.innerHTML = parts.join('');
 

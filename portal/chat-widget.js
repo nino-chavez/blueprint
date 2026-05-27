@@ -54,6 +54,10 @@
       transition: transform 200ms;
     }
     .chat-fab:hover { transform: scale(1.05); }
+    @media (max-width: 767px) {
+      .chat-fab { bottom: 16px; right: 16px; width: 48px; height: 48px; font-size: 20px; }
+      .chat-window { bottom: 76px; right: 12px; width: calc(100vw - 24px); height: calc(100vh - 120px); }
+    }
     .chat-window {
       position: fixed;
       bottom: 158px; right: 16px;

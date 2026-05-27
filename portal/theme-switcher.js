@@ -105,6 +105,9 @@
       .bp-theme-swatch-coral   { background: hsl(8, 65%, 42%); }
       .bp-theme-swatch-forest  { background: hsl(150, 42%, 32%); }
       .bp-theme-swatch-minimal { background: hsl(220, 12%, 32%); }
+      @media (max-width: 767px) {
+        .bp-theme-switcher { display: none; }
+      }
     `;
     document.head.appendChild(style);
   }

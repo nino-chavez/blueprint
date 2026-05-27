@@ -17,10 +17,10 @@ All six methodology stages have run end-to-end against this initiative. Stage 6 
 | 2 Design system | `decisions/02-design-system.md` (L0–L4 dictionary) | seeded; mechanical fact-check passes |
 | 2 Brand | `decisions/03-brand-brief.md` (B1–B8) | ratified |
 | 2 Voice | `decisions/04-voice-rules.md` (4-axis spine) | seeded |
-| 3 Prototype | Pattern B portal at `portal/` — 11 surfaces, 4 themes, voice-audited prose | substantively complete (audit-gap 7 prototype studio empty remains) |
+| 3 Prototype | Pattern B portal at `portal/` — 11 surfaces, 4 themes, voice-audited prose | complete — `/prototype/` studio is a populated landing surface (audit-gap 7 closed structurally; iframe-stub framing in prior docs is stale) |
 | 4 Fact-check | `research/current-state/04-stage4-fact-check.md` | seeded — mechanical-pass; judgment claims carry-forwarded to ratification gates |
-| 5 Docs | `README.md` (this file) + `HANDOFF.md` | in-progress |
-| 6 Deploy | Cloudflare Pages → `methodology.ninochavez.co` | deployed 2026-05-27 (branch `dogfood/deploy`, project `blueprint-methodology`) |
+| 5 Docs | `README.md` (this file) + `HANDOFF.md` | done |
+| 6 Deploy | Cloudflare Pages → `methodology.ninochavez.co` | deployed 2026-05-27; post-deploy audit-fix wave landed same day (16 voice fixes + 8 CSS polish + citation manifest + cross-page nav + next/prev CTA + docs sidebar tier labels) |
 
 ## Stage 1 — Research (seeded + new design-discovery)
 

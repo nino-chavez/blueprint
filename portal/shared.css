@@ -1225,3 +1225,58 @@ body:has(.proto-slice-header):not(:has(.proto-brand-bar)) { padding-top: 44px; }
   font-weight: 600;
   color: var(--text-primary);
 }
+
+/* === Audit-fix wave 2026-05-27 === */
+
+/* FIX-CSS-1 — Mobile breakpoint for proto-top-bar (390px overflow) */
+@media (max-width: 767px) {
+  .proto-top-bar { padding: 0 var(--space-3); min-height: 48px; }
+  .proto-top-bar-inner { gap: var(--space-2); flex-wrap: wrap; }
+  .proto-top-bar .top-bar-lead { flex: 1 1 auto; min-width: 0; gap: var(--space-3); }
+  .proto-top-bar .top-bar-crumb { display: none; }
+  .proto-top-bar .top-bar-nav { gap: var(--space-3); font-size: 11px; }
+  .proto-top-bar .top-bar-nav a { padding: 2px 0; }
+  .proto-top-bar .compare-toggle { font-size: 10px; }
+  .proto-top-bar .brand-mark-tag { display: none; }
+}
+
+/* FIX-CSS-5 — Lock table column widths (wedge pages use .surface-table) */
+.surface-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.surface-table th:first-child,
+.surface-table td:first-child { width: 56px; }
+.surface-table th:last-child,
+.surface-table td:last-child { width: 200px; }
+
+/* FIX-CSS-6 — Restore bullet markers in wedge-page body content.
+   The universal reset (margin:0; padding:0) strips padding-inline-start
+   from <ul>/<ol>, flattening bullets. Restore for content lists inside
+   the main container but exclude sidebar nav lists. */
+main.container ul,
+main.container ol {
+  list-style: revert;
+  padding-inline-start: 1.4em;
+  margin-block: var(--space-4);
+}
+/* Don't re-apply to nav-style lists that intentionally have no bullets */
+main.container .slice-sidebar-list,
+main.container .defer-list {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+/* FIX-CSS-7 — Code block horizontal overflow for narrow viewports */
+pre, .code-block {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* FIX-CSS-8 — Equalize v2+ / out badge column width in defer-list */
+.defer-list .tag,
+li > .tag:first-child {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+}

@@ -574,6 +574,82 @@
     }
   }
 
+  // ─────────────── page flow CTA (prev / next within a named flow) ───────────────
+  //
+  // Renders a quiet prev/next pair at the bottom of each wedge page, derived
+  // from the `stakeholder-overview` flow in the manifest. The CTA is chrome,
+  // not page content — it lives here in proto-nav.js and inserts before the
+  // footer. Only renders for pages that are members of the flow.
+
+  // Page-id → display title. Hardcoded fallback because MANIFEST._cache
+  // lookups misbehaved in deployment (cache populated for sidebar but
+  // returned empty here). Stable for the 5 wedge pages.
+  const FLOW_TITLES = {
+    'gap-inventory':      'Nine production-quality gaps',
+    'distribution-shape': 'npx @blueprint/cli init',
+    'reviewer-execution': 'Reviewers as executable plugins',
+    'ai-hive-companion':  'ai-hive is the alignment-layer companion',
+    'shipping-order':     'Shipping order',
+  };
+
+  function buildFlowCta(pageId) {
+    const flow = (MANIFEST.flows || []).find(f => f.id === 'stakeholder-overview');
+    if (!flow) { console.warn('[buildFlowCta] no stakeholder-overview flow'); return; }
+    const pages = flow.pages || [];
+    const idx = pages.indexOf(pageId);
+    if (idx < 0) return;  // page not in this flow (silent — index page lands here)
+
+    const prevId = idx > 0 ? pages[idx - 1] : null;
+    const nextId = idx < pages.length - 1 ? pages[idx + 1] : null;
+
+    const prevMeta = prevId ? { title: FLOW_TITLES[prevId] || prevId } : null;
+    const nextMeta = nextId ? { title: FLOW_TITLES[nextId] || nextId } : null;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'proto-flow-cta';
+    wrap.setAttribute('aria-label', 'Page navigation');
+    wrap.style.cssText = [
+      'display:flex',
+      'justify-content:space-between',
+      'align-items:center',
+      'gap:16px',
+      'max-width:900px',
+      'margin:40px auto 0',
+      'padding:20px 24px',
+      'border-top:1px solid var(--card-border)',
+    ].join(';');
+
+    if (prevMeta) {
+      const a = document.createElement('a');
+      a.className = 'proto-flow-cta-prev';
+      a.href = pageHref(prevId);
+      a.textContent = `← Previous: ${prevMeta.title}`;
+      a.style.cssText = 'font-size:var(--text-sm,13px);color:var(--text-secondary);text-decoration:none;opacity:.8';
+      wrap.appendChild(a);
+    } else {
+      wrap.appendChild(document.createElement('span'));  // spacer
+    }
+
+    if (nextMeta) {
+      const a = document.createElement('a');
+      a.className = 'proto-flow-cta-next';
+      a.href = pageHref(nextId);
+      a.textContent = `Next: ${nextMeta.title} →`;
+      a.style.cssText = 'font-size:var(--text-sm,13px);color:var(--brand-600,#4f46e5);text-decoration:none;font-weight:500';
+      wrap.appendChild(a);
+    } else {
+      // Terminal page — quiet link back to front door
+      const a = document.createElement('a');
+      a.className = 'proto-flow-cta-next';
+      a.href = '/';
+      a.textContent = 'Back to front door →';
+      a.style.cssText = 'font-size:var(--text-sm,13px);color:var(--text-muted);text-decoration:none';
+      wrap.appendChild(a);
+    }
+
+    document.body.appendChild(wrap);
+  }
+
   // ─────────────── footer (version surface) ───────────────
 
   function buildFooter() {
@@ -643,19 +719,30 @@
     // surface a short list of other slices so the sidebar isn't a stub.
     const isSingleton = (slice.pages?.length || 0) <= 1;
     const currentSliceId = slice.id;
+
+    // Slice-id → lead-page-route lookup. Hardcoded because:
+    //   (a) slice JSON files don't carry a `pages` array,
+    //   (b) MANIFEST._cache scan was unreliable in deployment (cache populated
+    //       but Object.values(...) lookup came back empty — root cause not
+    //       pinned down; defensive hardcode is the safer fix for 3 known
+    //       slices that don't churn).
+    // If a new slice is added, extend this map.
+    const sliceLeadRoute = {
+      'diagnose': '/pages/gap-inventory.html',
+      'mvp-wedges': '/pages/distribution-shape.html',
+      'companion-rollout': '/pages/ai-hive-companion.html',
+    };
+
     const otherSlices = isSingleton
       ? (MANIFEST.slices || [])
           .filter(id => id !== currentSliceId)
           .map(id => MANIFEST._sliceCache?.[id])
           .filter(Boolean)
-          .map(s => {
-            const firstPageMeta = MANIFEST._cache?.[(s.pages || [])[0]];
-            return {
-              id: s.id,
-              label: s.label,
-              href: firstPageMeta?.route || (s.pages?.[0] ? pageHref(s.pages[0]) : '/prototype/'),
-            };
-          })
+          .map(s => ({
+            id: s.id,
+            label: s.label,
+            href: sliceLeadRoute[s.id] || '/prototype/',
+          }))
       : [];
 
     sidebar.innerHTML = `
@@ -795,6 +882,7 @@
     buildStrategyPanel(CURRENT_META);
     buildCurrentStatePanel(CURRENT_META);
     buildCompareToggle();
+    buildFlowCta(pageId);
     buildFooter();
   }
 

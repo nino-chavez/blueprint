@@ -264,6 +264,15 @@
       border-bottom: 1px solid var(--card-border);
     }
     .footer-note a:hover { color: var(--text-primary); border-bottom-color: var(--text-secondary); }
+
+    .audience-pill-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 var(--space-2);
+    }
   </style>
 </head>
 <body>
@@ -273,9 +282,11 @@
     <div class="hero-row">
       <div class="hero-lead">
         <span class="label">Blueprint applied to itself</span>
-        <h1>Production-quality<br/>Blueprint — v1 shape.</h1>
+        <h1>Production-quality<br/>Blueprint — v1 shape</h1>
       </div>
-      <div class="audience-pills" role="tablist" aria-label="Reorder paths by audience">
+      <div>
+        <p class="audience-pill-eyebrow">Reorder by audience.</p>
+        <div class="audience-pills" role="tablist" aria-label="Reorder paths by audience">
         <button class="is-active" data-audience="reviewer" role="tab" aria-selected="true">
           <svg class="pill-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
           Stakeholder
@@ -288,12 +299,13 @@
           <svg class="pill-icon" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h14M18 18h2"/></svg>
           Operator
         </button>
+        </div><!-- /.audience-pills -->
       </div>
     </div>
 
     <p class="hero-lede">
       Blueprint methodology applied to itself. Brownfield audit of the live methodology repo at <code>wip/blueprint/</code>;
-      Pattern B redesign-review portal showing the eight production-quality gaps, the two prescription wedges that close five
+      Pattern B redesign-review portal showing the nine production-quality gaps, the two prescription wedges that close five
       of them, and the shipping order for v1.
     </p>
 
@@ -323,7 +335,7 @@
     <section class="paths-section">
       <div class="paths-grid" id="paths-grid"></div>
       <div class="audience-note">
-        <strong>The three pills above reorder the cards for whoever's looking.</strong>
+        <strong>The three pills reorder the cards by audience.</strong>
         Stakeholder (default) leads with Why + When. Engineer leads with the two wedges. Operator leads with When + Companion.
         Selection persists in this session.
       </div>
@@ -338,7 +350,7 @@
   <script>
     const PATHS = [
       {
-        id: 'gap-inventory', title: 'Eight gaps', status: 'ready',
+        id: 'gap-inventory', title: 'Nine gaps', status: 'ready',
         icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
         description: 'Nine production-quality blockers (Gap 9 surfaced during this portal\'s Stage 3 work). Each maps to a named pattern from Lopopolo, Appleton, Backstage, Shape Up, ai-hive that closes it.',
         links: '<a href="/pages/gap-inventory.html">Read the inventory</a>',
@@ -348,21 +360,21 @@
         id: 'distribution-shape', title: 'Distribution wedge', status: 'ready',
         icon: '<svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg>',
         description: 'npx @blueprint/cli init. One npm package, one interactive command, semver versioning, Pattern A + B stampers. Closes Gaps 1, 2, 7, 9.',
-        links: '<a href="/pages/distribution-shape.html">Wedge 1</a> · <a href="/decisions/ADR-0001-dual-protocol-distribution.html">ADR-0001</a>',
+        links: '<a href="/pages/distribution-shape.html">Read the prescription →</a><br/><span>Wedge 1 · ADR-0001</span>',
         priority: { reviewer: 3, engineer: 1, operator: 4 }
       },
       {
         id: 'reviewer-execution', title: 'Portability wedge', status: 'ready',
         icon: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><circle cx="7" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="7" cy="17" r="1" fill="currentColor" stroke="none"/></svg>',
         description: 'Reviewers as executable plugins. Each markdown spec gets a paired .mjs callable via CLI + MCP + GitHub Actions. Closes Gap 4 and half of Gap 8.',
-        links: '<a href="/pages/reviewer-execution.html">Wedge 2</a> · <a href="/decisions/ADR-0002-reviewers-as-executable-plugins.html">ADR-0002</a>',
+        links: '<a href="/pages/reviewer-execution.html">Read the prescription →</a><br/><span>Wedge 2 · ADR-0002</span>',
         priority: { reviewer: 4, engineer: 2, operator: 5 }
       },
       {
         id: 'ai-hive-companion', title: 'ai-hive companion', status: 'ready',
         icon: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 6l6 6 6-6M6 18l6-6 6 6"/></svg>',
         description: 'Four-layer stack: Ace > ai-hive > Blueprint > Lopopolo harness. ai-hive is the load-bearing alignment-layer companion; subs-initiative proves the composition at Tier 2.',
-        links: '<a href="/pages/ai-hive-companion.html">Stack positioning</a>',
+        links: '<a href="/pages/ai-hive-companion.html">Read the companion →</a>',
         priority: { reviewer: 5, engineer: 5, operator: 3 }
       },
       {

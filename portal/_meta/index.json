@@ -84,5 +84,131 @@
   "footer": {
     "line": "Blueprint applied to itself — Pattern B / Tier 1 / brownfield",
     "repo_url": "https://github.com/nino-chavez/blueprint-redesign"
+  },
+  "citations": {
+    "findings": {
+      "Gap-1": {
+        "id": "Gap-1",
+        "short": "F1",
+        "title": "Distribution is filesystem-coupled",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-1 distribution": {
+        "id": "Gap-1 distribution",
+        "short": "F1",
+        "title": "Distribution is filesystem-coupled",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-2": {
+        "id": "Gap-2",
+        "short": "F2",
+        "title": "No versioning or upgrade path",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-3": {
+        "id": "Gap-3",
+        "short": "F3",
+        "title": "Discoverability is \"Nino tells someone about it\"",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-3 hosted reference deploy": {
+        "id": "Gap-3 hosted reference deploy",
+        "short": "F3",
+        "title": "Discoverability is \"Nino tells someone about it\"",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-4": {
+        "id": "Gap-4",
+        "short": "F4",
+        "title": "Reviewers are Claude-Code-locked",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-5": {
+        "id": "Gap-5",
+        "short": "F5",
+        "title": "No tests on the stamper or reviewers",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-6": {
+        "id": "Gap-6",
+        "short": "F6",
+        "title": "No telemetry / feedback loop",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-7": {
+        "id": "Gap-7",
+        "short": "F7",
+        "title": "Onboarding is \"paste the right prompt\"",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-7 paste-prompt onboarding": {
+        "id": "Gap-7 paste-prompt onboarding",
+        "short": "F7",
+        "title": "Onboarding is \"paste the right prompt\"",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-8": {
+        "id": "Gap-8",
+        "short": "F8",
+        "title": "No integration surface",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-9": {
+        "id": "Gap-9",
+        "short": "F9",
+        "title": "Pattern B template is rally-hq with placeholders",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "Gap-9 Pattern B template-is-rally-hq": {
+        "id": "Gap-9 Pattern B template-is-rally-hq",
+        "short": "F9",
+        "title": "Pattern B template is rally-hq with placeholders",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "four-layer stack": {
+        "id": "four-layer stack",
+        "short": "R4",
+        "title": "Four-layer stack — Ace / ai-hive / Blueprint / Lopopolo's harness",
+        "source": "research/current-state/01-ai-hive-as-companion.md"
+      }
+    },
+    "rules": {
+      "agent struggle = missing capability": {
+        "id": "agent struggle = missing capability",
+        "short": "R1",
+        "title": "Agent struggle is a missing capability (Blueprint First Principle)",
+        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
+      },
+      "dual-protocol distribution": {
+        "id": "dual-protocol distribution",
+        "short": "R2",
+        "title": "Dual-protocol distribution shape (CLI + MCP + GitHub Actions over a single canonical source)",
+        "source": "decisions/ADR-0001-dual-protocol-distribution.md"
+      },
+      "reviewers as executable plugins": {
+        "id": "reviewers as executable plugins",
+        "short": "R3",
+        "title": "Reviewers as executable plugins (paired markdown spec + .mjs implementation across all invocation surfaces)",
+        "source": "decisions/ADR-0002-reviewers-as-executable-plugins.md"
+      },
+      "four-layer stack": {
+        "id": "four-layer stack",
+        "short": "R4",
+        "title": "Four-layer stack — Ace / ai-hive / Blueprint / Lopopolo's harness",
+        "source": "research/current-state/01-ai-hive-as-companion.md"
+      },
+      "alignment-layer companion": {
+        "id": "alignment-layer companion",
+        "short": "R5",
+        "title": "ai-hive as the alignment-layer companion to Blueprint",
+        "source": "research/current-state/01-ai-hive-as-companion.md"
+      },
+      "ship-disappear pattern": {
+        "id": "ship-disappear pattern",
+        "short": "R6",
+        "title": "Hive disappears at ship; derived artifacts remain (shell is throwaway; artifacts are forever)",
+        "source": "research/current-state/01-ai-hive-as-companion.md"
+      }
+    }
   }
 }

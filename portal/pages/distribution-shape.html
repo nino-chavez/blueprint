@@ -108,7 +108,7 @@
         <ul class="mt-4">
           <li><strong>Universal.</strong> Every adjacent tool ships this way — create-next-app, Vite, Yeoman, Cookiecutter, Backstage's scaffolder. The pattern is the production-quality baseline.</li>
           <li><strong>Versioned upgrades.</strong> Consumer pins methodology_version; CLI's upgrade subcommand applies migration steps deterministically.</li>
-          <li><strong>Trust model is npm.</strong> Operators already trust the npm registry; Blueprint doesn't have to build its own.</li>
+          <li><strong>Trust model is npm.</strong> Operators already trust the npm registry; the CLI inherits that trust — no separate distribution infrastructure to build.</li>
           <li><strong>Parallel to ai-hive.</strong> Both tools converge on the same npm + Cloudflare-hosted-Worker shape. ADR-0001 ratifies this.</li>
         </ul>
       </div>
@@ -118,9 +118,7 @@
   <section class="shipped-view container mt-8">
     <div class="card">
       <h3>Shipped equivalent — paste-prompt + filesystem clone</h3>
-      <p class="mt-4">Today's adoption flow: clone the repo, set BLUEPRINT_HOME or replicate the filesystem path, open Claude Code, paste the contents of <code>docs/prompts/add-blueprint-to-project.md</code>, confirm the pattern-match, scaffold by hand. Path-coupled, ritual-driven, no versioning.</p>
-      <p class="mt-4">The paste-prompt was just updated this morning to encode the brownfield-redesign pattern-match correctly. That fixed the prompt's content; it didn't fix the distribution shape.</p>
-    </div>
+      <p class="mt-4">Today's adoption flow: clone the repo, set BLUEPRINT_HOME or replicate the filesystem path, open Claude Code, paste the contents of <code>docs/prompts/add-blueprint-to-project.md</code>, confirm the pattern-match, scaffold by hand. Path-coupled, ritual-driven, no versioning.</p>    </div>
   </section>
 
   <script>
