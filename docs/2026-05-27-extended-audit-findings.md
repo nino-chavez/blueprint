@@ -130,6 +130,21 @@ Added 4 audit artifact types (surface / content-type / auth-boundary / component
 
 **Promotion bar**: ≥1 other variant misclassification incident. Low priority — solo-incident evidence; the existing `variant-selection.md` decision tree handles the prevention layer.
 
+### Pattern N8 — Popularity-vs-quality research-reference conflation + reference-grader reviewer
+
+**Source**: rally-hq session 2026-05-27 (post-initial-audit) shipped three artifacts capturing the pattern — `apps/rally-hq/blueprint/METHODOLOGY-AMENDMENTS.md` (new 2026-05-27 entry at top, append-only convention), `apps/rally-hq/blueprint/research/2026-05-27-modern-webapp-palette-scan.md` §19 (re-grades 12 references against a two-track framework — Track 1 Convention, Track 2 Quality — downgrades ESPN/Sofascore/FotMob/Battlefy/Start.gg to "Convention only," names quality references to add: Apple Sports / The Athletic / FT.com / FiveThirtyEight / NYT Sports / Bloomberg Terminal / The Pudding / Linear authenticated / Stripe Dashboard authenticated), and `apps/rally-hq/blueprint/prototype/design-review.html` (user-facing "Methodology disclosure" panel + per-card Convention/Quality track tags).
+
+**Why it matters**: Stage 1 research today picks references by name-recognition and market presence ("ESPN/Sofascore do it this way") without formally distinguishing convention (users-already-know-it / Jakob's Law — valid for IA arguments) from quality (formally graded — Nielsen heuristic eval, Tufte info-density grade, WCAG 2.2 AA, design-press citation, independent awards — valid for design-quality arguments). Conflating the two produces recommendations grounded in popular-but-bad references when the actual claim being made is design-quality, not user-recognition. The rally-hq amendment's Identity A recommendation survived re-grading because its original reasoning (dark default + dense data + Tufte principles) re-grounded cleanly in quality references (Linear + Stripe Dashboard) — but only because the operator caught the conflation before shipping the recommendation. Future Stage 1 work without the two-track distinction will produce recommendations that fail under scrutiny.
+
+**Proposed methodology shape** (from the rally-hq amendment itself, not yet committed in methodology source):
+- New canonical doc declaring the two-track framework (Track 1 Convention valid evidence: market share / category dominance; Track 2 Quality valid evidence: heuristic eval / info-density grade / WCAG audit / design-press citation / independent awards)
+- New `research-reference-grader` reviewer agent invoked at Stage 1 → 2 gate: parses research-doc reference lists, flags references missing per-track classification, flags Track 2 (Quality) claims grounded in Track 1 (Convention)-only references
+- Template artifact: research-doc section template with track-classified reference grid (operators copy + fill instead of authoring from scratch)
+
+**Promotion bar**: ≥1 other consumer surfaces the same pattern (research-doc grounded in popularity rather than quality, recommendation arguing design-quality on convention references). High likelihood — any consumer doing Stage 1 design research with web-product references hits this if they're not actively distinguishing. Medium priority; expected to clear the 2-consumer bar within 1-2 audit cycles.
+
+**Cross-reference**: rally-hq's amendment marks itself "candidate for upstream promotion after a second consumer surfaces it" — applies the same defer-discipline as N1-N7 in this doc and as the 5 Loom-inspired candidates earlier this session. The methodology operator's standard grep loop (`for dir in ~/Workspace/dev/{wip,apps}/*/; do grep -A 2 "Scope.*[Cc]andidate" "$dir/blueprint/METHODOLOGY-AMENDMENTS.md"; done`) per `template/docs/methodology/methodology-amendments-convention.md` will find this entry on the next audit cycle.
+
 ## Updated next steps
 
 **This audit's outputs land as waves 27 + 28** for C4 + C5 (covered in separate wave-log entries). The 7 deferred patterns (N1-N7) remain in watch-and-promote status — each promotion-bar names the specific cross-consumer signal that would justify wave authoring. Most are 1-consumer evidence; deliberate restraint applied to avoid wave-promotion from single-source data (the same discipline the original candidates doc applied).
