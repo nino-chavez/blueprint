@@ -14,16 +14,16 @@
   <link rel="stylesheet" href="../shared.css?v=20260525-overlay">
   <link rel="stylesheet" href="../project-tokens.css?v=20260525-overlay">
   <style>
-    body { padding-bottom: 80px; }
+    body { padding-top: 56px; padding-bottom: 80px; }
 
     .doc-shell { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-8); max-width: 1200px; margin: var(--space-6) auto; padding: 0 var(--space-4); }
     @media (max-width: 768px) { .doc-shell { grid-template-columns: 1fr; } }
 
     .doc-nav {
       position: sticky;
-      top: var(--space-4);
+      top: calc(56px + var(--space-4));
       align-self: start;
-      max-height: calc(100vh - var(--space-8));
+      max-height: calc(100vh - 56px - var(--space-8));
       overflow-y: auto;
       padding-right: var(--space-3);
     }

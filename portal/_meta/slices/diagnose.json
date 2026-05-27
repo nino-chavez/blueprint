@@ -4,6 +4,6 @@
   "phase": "Phase 2",
   "summary": "What blocks Blueprint from being production-quality today. Eight named gaps from primary-source research + the dogfood's own discoveries. Foundation for everything downstream.",
   "production_surface": "research/current-state/02-blueprint-production-quality-gaps.md + research/current-state/03-portal-surface-audit.md",
-  "findings_cited": ["Gap-1 distribution", "Gap-7 paste-prompt onboarding", "Gap-9 Pattern B template-is-rally-hq"],
+  "findings_cited": ["Gap-1", "Gap-7", "Gap-9"],
   "principles_cited": ["agent struggle = missing capability"]
 }

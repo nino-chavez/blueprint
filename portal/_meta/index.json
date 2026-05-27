@@ -93,12 +93,6 @@
         "title": "Distribution is filesystem-coupled",
         "source": "research/current-state/02-blueprint-production-quality-gaps.md"
       },
-      "Gap-1 distribution": {
-        "id": "Gap-1 distribution",
-        "short": "F1",
-        "title": "Distribution is filesystem-coupled",
-        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
-      },
       "Gap-2": {
         "id": "Gap-2",
         "short": "F2",
@@ -107,12 +101,6 @@
       },
       "Gap-3": {
         "id": "Gap-3",
-        "short": "F3",
-        "title": "Discoverability is \"Nino tells someone about it\"",
-        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
-      },
-      "Gap-3 hosted reference deploy": {
-        "id": "Gap-3 hosted reference deploy",
         "short": "F3",
         "title": "Discoverability is \"Nino tells someone about it\"",
         "source": "research/current-state/02-blueprint-production-quality-gaps.md"
@@ -141,12 +129,6 @@
         "title": "Onboarding is \"paste the right prompt\"",
         "source": "research/current-state/02-blueprint-production-quality-gaps.md"
       },
-      "Gap-7 paste-prompt onboarding": {
-        "id": "Gap-7 paste-prompt onboarding",
-        "short": "F7",
-        "title": "Onboarding is \"paste the right prompt\"",
-        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
-      },
       "Gap-8": {
         "id": "Gap-8",
         "short": "F8",
@@ -158,18 +140,6 @@
         "short": "F9",
         "title": "Pattern B template is rally-hq with placeholders",
         "source": "research/current-state/02-blueprint-production-quality-gaps.md"
-      },
-      "Gap-9 Pattern B template-is-rally-hq": {
-        "id": "Gap-9 Pattern B template-is-rally-hq",
-        "short": "F9",
-        "title": "Pattern B template is rally-hq with placeholders",
-        "source": "research/current-state/02-blueprint-production-quality-gaps.md"
-      },
-      "four-layer stack": {
-        "id": "four-layer stack",
-        "short": "R4",
-        "title": "Four-layer stack — Ace / ai-hive / Blueprint / Lopopolo's harness",
-        "source": "research/current-state/01-ai-hive-as-companion.md"
       }
     },
     "rules": {

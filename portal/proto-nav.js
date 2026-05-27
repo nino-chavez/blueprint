@@ -456,7 +456,6 @@
     }
 
     const panel = el('aside', { class: 'strategy-panel', id: 'strategy-panel' },
-      el('button', { class: 'panel-close', onclick: () => togglePanel('strategy') }, '×'),
       el('h3', {}, 'Strategy'),
       el('p', { class: 'tiny muted mt-4' }, `Page: ${meta.title}`),
       ...(systemsParts.length ? [el('div', { class: 'panel-section panel-systems', html: systemsParts.join('') })] : []),
@@ -488,7 +487,6 @@
     if (!meta || !meta.currentState) return;
     const cs = meta.currentState;
     const panel = el('aside', { class: 'current-state-panel', id: 'current-state-panel' },
-      el('button', { class: 'panel-close', onclick: () => togglePanel('current-state') }, '×'),
       el('h3', {}, 'Shipped state'),
       el('p', { class: 'tiny muted mt-4' }, cs.route ? `Route: ${cs.route}` : 'No equivalent surface today'),
       el('div', { class: 'panel-section' },

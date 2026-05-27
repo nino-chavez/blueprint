@@ -4,6 +4,6 @@
   "phase": "Phase 1",
   "summary": "ai-hive's role as alignment-layer companion in the four-layer stack (Ace / ai-hive / Blueprint / Lopopolo's harness) + the shipping order that sequences the v1 wedges plus three independent items across Stage 2 prescription and Stage 3 rollout.",
   "production_surface": "research/current-state/01-ai-hive-as-companion.md + decisions/01-prescription.md § shipping order",
-  "findings_cited": ["four-layer stack", "Gap-3 hosted reference deploy"],
-  "principles_cited": ["alignment-layer companion", "ship-disappear pattern"]
+  "findings_cited": ["Gap-3"],
+  "principles_cited": ["alignment-layer companion", "ship-disappear pattern", "four-layer stack"]
 }
