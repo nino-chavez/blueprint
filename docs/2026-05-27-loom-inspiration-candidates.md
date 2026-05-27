@@ -44,7 +44,7 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 **Promotion evidence (2026-05-27 audit)**: three distinct drift surfaces across two consumers — rally-hq wave 22 sweep (diagnostic baseline) + rally-hq waves 14-16 audit-chrome (LAG/CUSTOMIZATION-OR-ROT classification, generative-output-shaped) + bc-subscriptions `tools/state-derive/` (TypeScript capability catalogs + check primitives → `_state.json`; built independently in May 2026 to solve the same audit-decay problem). The third piece — a built reference implementation already in production at a sibling consumer — accelerated the promotion past the watch-and-wait threshold the candidates doc originally specified.
 
-**Promotion shape (wave 24)**: extended `docs/prototype-vs-production-traceability-sweep.md` § "Generative output formats (wave 24)" with: per-verdict draft-artifact template + the bc-subs `state-derive` pattern as canonical companion + activation order for two-layer consumers. Reference implementation stays in bc-subs at `tools/state-derive/` (one-consumer shape; lift to `template/tools/state-derive/` when a second consumer adopts).
+**Promotion shape (wave 24)**: extended `docs/prototype-vs-production-traceability-sweep.md` § "Generative output formats (wave 24)" with: per-verdict draft-artifact template + the bc-subs `state-derive` pattern as canonical companion + activation order for two-layer consumers. Reference implementation: `template/tools/state-derive/` (lifted at commit `780932b`; engine + check primitives + renderers, with bc-subs's catalog stripped out — consumers add their own `catalog/*.ts` files).
 
 ### Candidate 3 — Methodology onboarding digests [medium leverage]
 
