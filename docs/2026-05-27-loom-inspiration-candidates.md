@@ -46,15 +46,17 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 **Promotion shape (wave 24)**: extended `docs/prototype-vs-production-traceability-sweep.md` § "Generative output formats (wave 24)" with: per-verdict draft-artifact template + the subs-initiative `state-derive` pattern as canonical companion + activation order for two-layer consumers. Reference implementation: `template/tools/state-derive/` (lifted at commit `780932b`; engine + check primitives + renderers, with subs-initiative's catalog stripped out — consumers add their own `catalog/*.ts` files).
 
-### Candidate 3 — Methodology onboarding digests [medium leverage]
+### Candidate 3 — Methodology onboarding digests [PROMOTED wave 26, 2026-05-27]
 
 **Loom analog**: chapters + summary — solve the wall-of-content problem.
 
-**Blueprint analog**: auto-generated "what changed in the last N waves" + "what's load-bearing for surface X" digests pulled from the wave log + reviewer prompts.
+**Blueprint analog**: auto-generated "what changed in the last N waves" + filter-by-keyword digests pulled from the wave log.
 
-**Why real**: wave 23 already flagged the register-asymmetry problem. The wave log + reviewer prompt set is ~1500 lines for a new contributor. Wave 23's fix was front-matter framing; the next iteration is generated digests.
+**Why real**: wave 23 already flagged the register-asymmetry problem. The wave log + reviewer prompt set is ~1500 lines for a new contributor. Wave 23's fix was front-matter framing; wave 26 adds the filter tool.
 
-**What would validate promotion**: a new contributor (or a returning operator after a 30+ day gap) reports the wave log alone insufficient for onboarding, and they hand-wrote a summary themselves. Promotion shape: tool at `template/tools/wave-digest/` that reads `wip/blueprint/CLAUDE.md` wave-log entries and outputs scoped digests.
+**Promotion evidence (2026-05-27 audit)**: wave 23 self-evidence (methodology grew past one-sitting reading; wave 23 fix addressed register but not wall-of-content) + rally-hq's 738-line onboarding burden (`blueprint/CLAUDE.md` 332 + `STATE.md` 406). subs-initiative does NOT exhibit C3 friction (`CLAUDE.md` only 48 lines) — promotion accepted on single-consumer + methodology-as-consumer evidence per this doc's "borderline" verdict.
+
+**Promotion shape (wave 26)**: new canonical doc `docs/wave-log-digest-pattern.md` + new tool subdir `template/tools/wave-digest/` with `README.md` + `digest.mjs` (small Node script, no dependencies, ~60 lines — parses `## Wave log` section of any CLAUDE.md, filters by `--since=N` and/or `--keyword=<regex>`, emits markdown). Tool scope deliberately narrow: deterministic filter only; no LLM, no semantic summary, no "what's load-bearing for surface X" feature. Defers richer features to second-consumer evidence under the same gating discipline waves 24-25 applied. Composes with wave 23's front matter (front matter sets reading register; tool surfaces relevant subset).
 
 ### Candidate 4 — Amendment auto-classification [defer]
 
