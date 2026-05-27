@@ -58,15 +58,15 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 **Promotion shape (wave 26)**: new canonical doc `docs/wave-log-digest-pattern.md` + new tool subdir `template/tools/wave-digest/` with `README.md` + `digest.mjs` (small Node script, no dependencies, ~60 lines — parses `## Wave log` section of any CLAUDE.md, filters by `--since=N` and/or `--keyword=<regex>`, emits markdown). Tool scope deliberately narrow: deterministic filter only; no LLM, no semantic summary, no "what's load-bearing for surface X" feature. Defers richer features to second-consumer evidence under the same gating discipline waves 24-25 applied. Composes with wave 23's front matter (front matter sets reading register; tool surfaces relevant subset).
 
-### Candidate 4 — Amendment auto-classification [defer]
+### Candidate 4 — Amendment classification [PROMOTED wave 27, 2026-05-27 — doc-only; tool defer-and-buy]
 
 **Loom analog**: AI categorization of action items.
 
-**Blueprint analog**: auto-classify amendments into "fix here / fix in template / fix in reviewer / consumer-specific."
+**Blueprint analog**: 4-bucket taxonomy (consumer-local / template / reviewer / methodology) + decision tree + manual→automated flip criteria.
 
-**Why defer**: amendment volume is not yet high enough across consumers to justify automation. The current manual triage at promotion time (operator reads `METHODOLOGY-AMENDMENTS.md` across initiatives via the grep loop in the convention doc) works.
+**Why defer was reconsidered**: extended audit (2026-05-27) found blueprint-redesign's `WAVE-2-BACKLOG.md:76` explicitly names the triage convention as a methodology gap and forecasts "10+ amendments next cycle." Manual bucketing already in practice across rally-hq + blueprint-redesign METHODOLOGY-AMENDMENTS files. Two-consumer evidence with operator-named promotion-bar met the wave-promotion threshold even at modest absolute volume.
 
-**Reconsider when**: ≥3 consumers are actively producing amendments at a rate where manual triage becomes the bottleneck.
+**Promotion shape (wave 27)**: doc-only — new canonical doc `docs/amendment-classification-pattern.md` documents the taxonomy + decision tree + manual→automated flip criteria. Tool defer to second-consumer adoption of automated triage; build-when-triggered path is GitHub Copilot SDK shipped as a GitHub Action (per market-comparison C4 verdict — matches per-developer pricing model; closed-taxonomy SaaS options don't fit). Doc includes the tool sketch for the future build.
 
 ### Candidate 5 — Multi-operator collaboration substrate [real gap, no Blueprint motion]
 
