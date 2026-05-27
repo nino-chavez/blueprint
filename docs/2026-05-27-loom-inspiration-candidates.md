@@ -22,15 +22,17 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 ## Candidate inspirations (triaged by leverage)
 
-### Candidate 1 — Stage-bridge summaries [highest leverage]
+### Candidate 1 — Operator-handoff pattern [PROMOTED wave 25, 2026-05-27]
+
+**Originally framed as**: "stage-bridge summaries" — auto-generated digests at every stage gate.
 
 **Loom analog**: AI action-item extraction (translate 20 minutes of talking into 3 things to do).
 
-**Blueprint analog**: at every stage gate (Stage 1 → 2, 2 → 3, etc.), auto-generate a "what does the next-stage operator need to know" digest from upstream artifacts.
+**Blueprint analog (refined by audit)**: a template + canonical shape for operator-written handoffs at three transition types — stage transitions, session restarts, cross-repo dispatches. The audit refined scope from "stage-bridge specifically" to "operator-context broadly" because the consumer evidence supports the broader frame.
 
-**Why highest leverage**: stage transitions are exactly where operators today re-read everything to rebuild context. The artifacts already carry the source material. This is a reviewer-class feature, not a media-generation feature — fits the existing methodology shape without expanding it into a new competence.
+**Promotion evidence (2026-05-27 audit)**: two consumers independently produced hand-written HANDOFF docs with overlapping structure within the same week — rally-hq's `blueprint/HANDOFF-blueprint-template-gaps.md` (2026-05-25, cross-repo dispatch) + bc-subscriptions' `HANDOFF.md` (2026-05-06, session restart). Common shape: state header → what's-live → what's-done → what's-pending → sequencing → local refs/secrets → out-of-scope.
 
-**What would validate promotion**: one consumer (greenfield or brownfield) reporting in `METHODOLOGY-AMENDMENTS.md` that re-context cost at stage transition was high enough that they hand-wrote a "next-stage handoff" doc themselves. Promotion shape: new reviewer in the Stage N → N+1 set + new template artifact `stage-bridge-digest.md`.
+**Promotion shape (wave 25)**: new canonical doc `docs/operator-handoff-pattern.md` + new template subdir `template/methodology/handoff/` (with `README.md` + `handoff-template.md`) matching the existing `template/methodology/{design,voice}/` convention. No reviewer gate — both consumer examples are *successful* voluntary handoffs; the audit didn't surface failure-mode evidence to justify forcing a Stage N→N+1 reviewer. A future amendment can add the reviewer when ≥2 consumers report stage-transition failures attributable to missing handoffs.
 
 ### Candidate 2 — Drift reports as generative output [PROMOTED wave 24, 2026-05-27]
 
