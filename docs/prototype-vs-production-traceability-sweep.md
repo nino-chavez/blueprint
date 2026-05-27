@@ -1,6 +1,6 @@
 # Prototype-vs-Production Traceability Sweep Pattern
 
-**Status**: Promoted 2026-05-27 wave 20 from rally-hq amendment (commit `7629d2f`, *"Prescription encodes known drift; intent traceability needs its own recurring sweep"*) + the 17-meta fan-out evidence (commit `a4383a6`, `blueprint/audits/traceability-sweep-2026-05-26.md`). Synthesizes v1 amendment + 10 recipe-friction refinements into a single recipe.
+**Status**: Promoted 2026-05-27 wave 22 from rally-hq amendment (commit `7629d2f`, *"Prescription encodes known drift; intent traceability needs its own recurring sweep"*) + the 17-meta fan-out evidence (commit `a4383a6`, `blueprint/audits/traceability-sweep-2026-05-26.md`). Synthesizes v1 amendment + 10 recipe-friction refinements into a single recipe. Extended 2026-05-27 wave 24 with generative output formats + the subs-initiative `tools/state-derive/` mechanical-evidence pattern as canonical companion (see § "Generative output formats (wave 24)").
 
 **Last updated**: 2026-05-27
 
@@ -109,7 +109,7 @@ Each finding gets exactly one verdict. The v1 amendment had four; friction note 
 | `refinement` | Production added something the prototype didn't have, justified by post-prototype learning | n/a | Document in meta + cross-reference; preserve |
 | `open-question` | Drift is real; resolution requires research signal not yet collected | n/a | File as gated prescription item with named gating signal |
 | `already-reconciled` | Drift existed but was fixed in this session / arc | n/a | Note the commit; no follow-up |
-| **`structural-divergence`** *(added wave 20)* | Prototype shape diverged from production shape intentionally; divergence is not documented | n/a | Required `rationale` field; update meta to record the divergence so future sweeps don't re-flag it |
+| **`structural-divergence`** *(added wave 22)* | Prototype shape diverged from production shape intentionally; divergence is not documented | n/a | Required `rationale` field; update meta to record the divergence so future sweeps don't re-flag it |
 
 The canonical `structural-divergence` case from the rally-hq sweep: `create-tournament` meta showed a flat single-form prototype; production ships a six-section progressive form. The change was intentional and correct, but no artifact documented the divergence — the sweep agent had no signal to distinguish "intentional architectural choice" from "implementation drift." A `structural-divergence` verdict with `rationale: "Production split flat form into six sections to scaffold field validation per BigEng DoD Gate 2"` slots the case without forcing the wrong-shaped verdict (`bug` is wrong because production is correct; `refinement` is wrong because the change isn't additive).
 
@@ -201,6 +201,72 @@ Step 4: Recipe-friction capture
 ```
 
 The "Recipe-friction notes for methodology amendment" section is load-bearing — it feeds the next iteration of this doc and is the staging artifact for future wip/blueprint promotions.
+
+---
+
+## Generative output formats (wave 24)
+
+The default output above catalogs drift for human review. Wave 24 extends the recipe with two generative modes that shift work from "operator reads list → drafts response" to "recipe drafts response → operator reviews." Both modes are additive — a consumer can run the recipe at wave-22 fidelity (diagnostic-only) or adopt either or both of the wave-24 extensions.
+
+### 1. Per-verdict draft artifacts
+
+Each verdict produces a draft amendment rather than a diagnostic entry. The aggregator at Step 2 of the per-sweep workflow emits both shapes — the diagnostic report (for operator review) and a `_drafts/` directory of draft artifacts (one per verdict-target pair). Operators review-and-apply rather than read-and-author.
+
+| Verdict | Diagnostic shape (wave 22) | Generative shape (wave 24) |
+|---|---|---|
+| `bug` | "PROD violates intent — see §4-#5" | Draft `prescription.yml` P-item with `findings_traceability`, severity, proposed fix |
+| `refinement` | "PROD added X not in prototype" | Draft `_meta/<id>.json` annotation update — `currentState.refinements_documented[]` |
+| `open-question` | "Gated on Guide B interviews" | Draft `prescription.yml` gated P-item with `gating_signal:` populated |
+| `already-reconciled` | "Fixed in commit abc123" | Draft `strategy.shipped.verified_date` + commit pair for the meta |
+| `structural-divergence` | "PROD split flat form into six sections" | Draft `_meta/<id>.json` patch with `structural_divergence: { rationale, scope, date }` |
+
+The closest market reference for this output shape is CodeRabbit's "PR summary + 1-click commit suggestion" pattern — a structured patch the author applies, not a diagnostic the author transcribes. The methodology's edge is that the suggestion shape is per-verdict-typed rather than per-diff-line-typed, because the source is intent-vs-implementation, not diff-vs-diff.
+
+### 2. Mechanical-evidence derivation — the subs-initiative `state-derive` pattern
+
+subs-initiative independently built `tools/state-derive/` in May 2026 to solve the audit-decay problem the sweep otherwise inherits: *"audit docs decay the moment they ship. The BigEng pattern-divergence audit (PR #527) called five conventions 'in flight' — Slices B/C/D (#542–#545) closed them the same day. Two downstream comparison audits then quoted #527 verbatim and produced recommendations on top of state that was already wrong."* (`tools/state-derive/README.md`)
+
+The tool catalogs capabilities as TypeScript object literals with derivation expressions, then runs the derivations against the codebase to produce machine-readable evidence that always reflects HEAD:
+
+```ts
+{
+  id: 'bigeng-09-operations-ledger',
+  category: 'bigeng-convention',
+  description: 'Operations-table saga ledger',
+  reference: 'ADR-0030 / Slice C PR #543',
+  derivation: [
+    { type: 'schema_has_table', table: 'operations' },
+  ],
+}
+```
+
+Check primitives: `file_exists`, `file_absent`, `grep_count`, `grep_present`, `grep_absent`, `schema_has_table`, `schema_has_column`, `commit_message_grep`. Each capability aggregates to one of `COMPLIANT | PARTIAL | NON-COMPLIANT | ABSENT | ERROR`. Output: `docs/audits/_state.json` (machine-readable, with `as_of_commit` + per-capability evidence) + `docs/audits/_state.md` (human summary + diff tables vs external systems).
+
+**Why this is canonical, not subs-initiative-specific**: the sweep's wave-22 walk is agent-driven and produces narrative drift findings. The state-derive pattern is script-driven and produces structured COMPLIANT-class evidence. They compose: state-derive runs first (mechanically catches what it can catch), the sweep agents run second (catch what mechanical checks can't — semantic intent mismatches, structural divergence, refinements). The two layers narrow what the agents have to read by pre-marking what's already mechanically COMPLIANT.
+
+The wave-22 chain (research → meta → prototype HTML → production) maps onto state-derive's capability shape directly:
+
+- A meta's `strategy.shipped` claim becomes a capability with `commit_message_grep` + `file_exists` derivations
+- A meta's `findings_traceability` claim becomes a capability with `grep_present` against `research/synthesis.md`
+- A meta's `currentState.expected_section_count: 5` becomes a capability with a count-based derivation against the production route file
+
+### Reference implementation
+
+`tools/state-derive/` in subs-initiative (canonical at `~/Workspace/dev/wip/subs-initiative/tools/state-derive/`) is the reference. The template should ship a generalized version at `template/tools/state-derive/` when the next consumer adopts the pattern — premature to lift now (one-consumer shape; need a second adoption to know which parts are general vs subs-initiative-shaped). See `apps/rally-hq/blueprint/scripts/check-prototype-traceability.sh` (proposed, not yet built) as the second candidate — that one would automate the wave-22 chain walk; state-derive would be its mechanical prefilter.
+
+### Activation order for a consumer running both layers
+
+1. **State-derive layer** — runs on every CI build (cheap, mechanical, low variance). Output: `_state.json` updated per commit; gate fails if NON-COMPLIANT capabilities increase.
+2. **Sweep layer** — runs per cadence (post-major-arc / quarterly) per wave 22. Reads `_state.json` to pre-narrow agent attention; agents focus on MANUAL_REVIEW + PARTIAL items.
+3. **Generative drafts** — emitted by both layers. State-derive produces structured-evidence diffs; sweep produces verdict-tagged draft artifacts per the table above.
+
+### Why this lands as wave 24 not as a wave-22 amendment
+
+Wave 22 promoted the sweep recipe. Wave 24 promotes the *output shape* of the recipe and the *mechanical-evidence-derivation* pattern that pairs with it. They're independent capabilities: a consumer can run wave-22's sweep without wave-24's generative output (sticks with diagnostic markdown), and can run state-derive without the sweep (mechanical catalog only, no semantic chain walk). Wave 24 is additive, not a replacement.
+
+### Cross-reference
+
+This wave promotes inspiration-candidate **C2** from `docs/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C2 watch-and-promote loop.
 
 ---
 

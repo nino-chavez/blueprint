@@ -32,7 +32,7 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 **What would validate promotion**: one consumer (greenfield or brownfield) reporting in `METHODOLOGY-AMENDMENTS.md` that re-context cost at stage transition was high enough that they hand-wrote a "next-stage handoff" doc themselves. Promotion shape: new reviewer in the Stage N → N+1 set + new template artifact `stage-bridge-digest.md`.
 
-### Candidate 2 — Drift reports as generative output [already in motion; sharpen]
+### Candidate 2 — Drift reports as generative output [PROMOTED wave 24, 2026-05-27]
 
 **Loom analog**: AI generates docs from video — modality translation from rich-but-unstructured to structured-and-referenceable.
 
@@ -40,7 +40,9 @@ Loom's AI capabilities are not "video editing made easier." They solve **modalit
 
 **Why this is sharpening, not new**: wave 22 established the sweep cadence and 4-link chain. The Loom inspiration reinforces that the next iteration bridges modality — from "list of drift" to "draft amendment ready for review."
 
-**What would validate promotion**: rally-hq's next traceability sweep (per the established quarterly cadence) tries the generative shape and reports whether draft-amendment output reduces operator time vs the diagnostic-only list. Promotion shape: extension to wave 22's doc with an "output formats" section.
+**Promotion evidence (2026-05-27 audit)**: three distinct drift surfaces across two consumers — rally-hq wave 22 sweep (diagnostic baseline) + rally-hq waves 14-16 audit-chrome (LAG/CUSTOMIZATION-OR-ROT classification, generative-output-shaped) + subs-initiative `tools/state-derive/` (TypeScript capability catalogs + check primitives → `_state.json`; built independently in May 2026 to solve the same audit-decay problem). The third piece — a built reference implementation already in production at a sibling consumer — accelerated the promotion past the watch-and-wait threshold the candidates doc originally specified.
+
+**Promotion shape (wave 24)**: extended `docs/prototype-vs-production-traceability-sweep.md` § "Generative output formats (wave 24)" with: per-verdict draft-artifact template + the subs-initiative `state-derive` pattern as canonical companion + activation order for two-layer consumers. Reference implementation stays in subs-initiative at `tools/state-derive/` (one-consumer shape; lift to `template/tools/state-derive/` when a second consumer adopts).
 
 ### Candidate 3 — Methodology onboarding digests [medium leverage]
 
