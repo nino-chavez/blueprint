@@ -96,6 +96,10 @@ function substitutions({ name, displayName, repoUrl, tagline, theme }) {
     // before JS loads. Runtime theme-switcher.js can override at the operator's
     // choosing (it reads ?theme= query param + localStorage first).
     { from: '<html lang="en">', to: `<html lang="en" data-theme="${theme}">` },
+    // Amendment 2026-05-26: blank the archaeology WORKER_URL so stamped portals
+    // don't inherit bc-subscriptions' substrate endpoint. The component renders
+    // a disabled "substrate not yet configured" state when the URL is empty.
+    { from: "https://subs-archaeology.bigcommerce-testing-7727.workers.dev", to: "" },
   ];
 }
 
@@ -122,7 +126,7 @@ const BANNER_LINES = {
     "  REPLACE_FOR_PROJECT — this file contains example business content carried over",
     "  from the bc-subscriptions reference initiative. Rewrite or delete before sharing",
     "  with stakeholders. The portal-pattern-a-conformance-reviewer treats this banner",
-    "  as a warning, not a block.",
+    "  as a block — resolve before sharing with stakeholders.",
     "-->",
     "",
   ].join("\n"),

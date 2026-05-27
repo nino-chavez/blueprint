@@ -12,6 +12,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
  * supports it.
  */
 
+// REPLACE_FOR_PROJECT: set to your deployed archaeology Worker URL.
+// When empty the component renders a disabled "substrate not configured" button.
 const WORKER_URL = 'https://subs-archaeology.bigcommerce-testing-7727.workers.dev';
 
 interface RankedEvent {
@@ -49,6 +51,22 @@ export interface ArchaeologyChatProps {
 }
 
 export function ArchaeologyChat({ pageContext }: ArchaeologyChatProps) {
+  if (!WORKER_URL) {
+    return (
+      <button
+        type="button"
+        disabled
+        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full bg-contrast-200 px-4 py-3 text-sm font-semibold text-contrast-400 shadow-lg cursor-not-allowed"
+        title="Substrate not yet configured — set WORKER_URL in ArchaeologyChat.tsx"
+        aria-label="Substrate not configured"
+      >
+        <span aria-hidden>💬</span>
+        <span>Substrate not configured</span>
+      </button>
+    );
+  }
+
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');

@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 
-const REPO = 'https://github.com/nino-chavez/bc-subscriptions/blob/main';
+const REPO = 'REPLACE_FOR_PROJECT_REPO';
 
 interface StrategyEntry {
   title: string;
@@ -11,25 +11,17 @@ interface StrategyEntry {
   summary: string;
 }
 
-const ENTRIES: StrategyEntry[] = [
-  {
-    title: 'Delivery fork — bolt-on app vs. first-class platform citizen',
-    status: 'open',
-    filed: '2026-05-22',
-    href: '/strategy/delivery-fork',
-    summary:
-      'Whether bc-subscriptions ships as a BC marketplace app (current shape) or as a native first-class BC service (gRPC, Nomad, BigPay-integrated). Triggered by Jordan Sim 2026-05-22 raising B2B Edition as the bolt-on cautionary reference. Contains the native-shape gap matrix and the portability inventory.',
-  },
-];
+// REPLACE_FOR_PROJECT: add strategic decision entries as they are filed.
+const ENTRIES: StrategyEntry[] = [];
 ---
-<Layout title="Strategy" description="Strategic decisions and open forks for bc-subscriptions delivery.">
+<Layout title="Strategy" description="Strategic decisions and open forks for this initiative.">
   <header class="mb-10 max-w-3xl">
     <p class="mb-2 font-mono text-xs uppercase tracking-wide text-info">Strategy</p>
     <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">
       Strategic decisions.
     </h1>
     <p class="text-lg leading-relaxed text-contrast-500">
-      Open strategic forks and ratified directional decisions for bc-subscriptions. Each entry is backed by markdown artifacts in <code class="font-mono text-sm">docs/strategy/</code> and a Hive proposal where the discussion lives.
+      Open strategic forks and ratified directional decisions for this initiative. Each entry is backed by markdown artifacts in <code class="font-mono text-sm">docs/strategy/</code> and a Hive proposal where the discussion lives.
     </p>
   </header>
 
