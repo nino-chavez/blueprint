@@ -57,9 +57,14 @@ Declare at `blueprint.yml`: `variant: greenfield | midstream | brownfield`. Defa
 
 ```
 Stage 0: Application Legibility → Research → Design Principles → Prototype → Fact-Check → Documents → Deploy → Iterate
+
+Optional capability stages (run alongside, gated by blueprint.yml flags):
+   Stage S-A: Archaeology Substrate    (when archaeology.enabled: true)
 ```
 
-Each stage feeds the next. The key insight: **the prototype and the documents are built simultaneously, not sequentially.** The prototype tests the design decisions, the documents capture the rationale, and the strategy panels on each prototype page connect the two.
+Each main-pipeline stage feeds the next. The key insight: **the prototype and the documents are built simultaneously, not sequentially.** The prototype tests the design decisions, the documents capture the rationale, and the strategy panels on each prototype page connect the two.
+
+Capability stages (the `S-` prefix denotes substrate / sidecar) are independent of the main pipeline — they activate based on per-initiative flags in `blueprint.yml`, have their own Done-criteria, and feed UI affordances back into the main-pipeline surfaces (e.g. the archaeology substrate populates the "Ask the substrate" widget that mounts in the portal layout). The "Optional Capability Stages" section below documents each.
 
 ## Stage 0: Application Legibility
 
@@ -349,6 +354,40 @@ After each iteration, capture what was learned:
 - **Copy patterns** → update the document voice guide
 - **Anti-patterns** → document what went wrong and why
 
+## Optional Capability Stages
+
+Capability stages run alongside the main pipeline, gated by `blueprint.yml` flags. Each has its own Done-criteria and produces UI affordances that mount into the main-pipeline portal. Capability stages are NOT optional in the "skip if you want" sense — they are optional in the "activate per initiative need" sense. When the flag is `true`, the stage is mandatory and gated.
+
+### Stage S-A: Archaeology Substrate (added 2026-05-27 wave 21 — promo-initiative amendment)
+
+**Flag**: `blueprint.yml archaeology.enabled: true | false` (default: `false`)
+
+**Reference**: [docs/archaeology-substrate-pattern.md](docs/archaeology-substrate-pattern.md) — full design, lifecycle, six-stream model
+
+**Activates when**: initiative will run more than a few weeks, multi-agent / multi-session work expected, accumulating ADRs / Hive proposals, onboarding new engineers periodically, OR wants exhaustive provenance queryable as evidence
+
+**Skips when**: throwaway prototype that won't outlive the week, solo single-session work with no Hive coordination, strict regulatory environment that can't tolerate default-on session capture
+
+**Why this is a stage, not a cross-cutting discipline**: the substrate has a discrete linear lifecycle (scaffold → deploy → ingest → flip UI flag) with distinct Done-criteria at each step, and the wrong choreography produces the promo-initiative failure mode where a portal ships with the "Ask the substrate" widget live but pointed at a non-existent or wrong-project substrate.
+
+**Lifecycle (when `archaeology.enabled: true`):**
+
+| Step | What lands | Done-criterion |
+|---|---|---|
+| S-A.1: Scaffold | `bash tools/archaeology/scaffold.sh` provisions CF Worker + D1 + R2 + Vectorize and installs the SessionEnd hook | Worker URL reachable; `wrangler tail` shows the deployed Worker; `.github/workflows/archaeology-tail-docs.yml` installed |
+| S-A.2: Ingest | First batch of session JSONLs + ADRs + Hive proposals ingested via `tools/archaeology/ingesters/` | `/derive?question=X` returns ranked events with citations; at least one ingester run per source stream the initiative uses |
+| S-A.3: Wire the UI | Update `apps/portal/src/components/ArchaeologyChat.tsx` `WORKER_URL` to point at THIS project's Worker (wave 17 stamper blanks the URL at scaffold time) | `curl <WORKER_URL>/health` returns 200; `WORKER_URL` is no longer an empty string; wave 17's component-side guard now passes-through to the live drawer instead of rendering the "substrate not configured" disabled button |
+| S-A.4: Flip the gate | Edit `apps/portal/src/layouts/Layout.astro` `ARCHAEOLOGY_READY = true` (wave 18 gate) | Portal renders the "Ask the substrate" trigger button; clicking it opens the drawer and a test query returns a grounded answer |
+
+**Stage-gate enforcement**: three layers prevent S-A.3 and S-A.4 from being flipped before S-A.1 and S-A.2 complete:
+- Wave 17 stamp-time: `stamp.mjs` blanks `WORKER_URL` at scaffold so the stamped component is born with an empty URL
+- Wave 17 component-time: `ArchaeologyChat.tsx` renders a disabled "substrate not configured" button when `WORKER_URL` is empty (so even an erroneously-mounted component is harmless)
+- Wave 18 operator-time: `ARCHAEOLOGY_READY = false` in `Layout.astro` means the component is never imported / mounted unless the operator explicitly flips the flag
+
+The `portal-pattern-{a,b}-conformance-reviewer` agents do NOT gate Stage S-A — the substrate is initiative-side infrastructure, not portal chrome. The gate is the combination of the three runtime + stamp-time defenses above.
+
+**Why the gates exist**: promo-initiative (May 2026) deployed a live "Ask the substrate" widget pointed at the subs-initiative reference Worker because the canonical Layout stamped the component unconditionally AND the component's `WORKER_URL` was hardcoded to subs-initiative. The widget surfaced subs-initiative suggested questions ("Why did we reject terraform-gcp-platform?") to promo-initiative stakeholders. Waves 17 + 18 closed the leak at three layers; this stage codifies the correct lifecycle so future consumers know when the operator flag flip is earned.
+
 ## Tools
 
 | Tool | Purpose | Location |
@@ -378,6 +417,8 @@ The seven pipeline stages above describe *what to produce*. The following patter
 | [docs/doc-discipline-micro-patterns.md](docs/doc-discipline-micro-patterns.md) | Always (low overhead) | Small disciplines — surface-existing, capture-ambiguity, wrong-copy-is-signal, avoid multi-role templates |
 
 These disciplines emerged from `subs-initiative` (May 2026). When they apply, they belong cross-cutting (not as a pipeline stage) — the pipeline produces the deliverables; the disciplines keep the surface around the deliverables coherent.
+
+The archaeology substrate, while it ingests artifacts the cross-cutting disciplines produce, is NOT a cross-cutting discipline — it has a discrete lifecycle and a stamp-gated UI surface. See "Optional Capability Stages" → Stage S-A above.
 
 ## Origin
 
