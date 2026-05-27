@@ -5,9 +5,9 @@ Blueprint methodology applied to itself. Variant: brownfield. Pattern: B (redesi
 **Current-state product**: `~/Workspace/dev/wip/blueprint/` (the live methodology repo).
 **Proposed-state product**: a production-quality Blueprint distribution that closes the eight gaps documented in Stage 1 + the four design-discipline gaps surfaced by the dogfood itself.
 
-## Status as of 2026-05-26
+## Status as of 2026-05-27
 
-Stages 1–4 of the methodology pipeline have run end-to-end against this initiative. Stage 5 (this doc) + Stage 6 (deploy) pending.
+All six methodology stages have run end-to-end against this initiative. Stage 6 deploy lives at **<https://methodology.ninochavez.co>** (Cloudflare Pages project `blueprint-methodology`, custom domain attached 2026-05-27; cert propagation may lag the first ~5 min after attachment).
 
 | Stage | Artifact set | Status |
 |---|---|---|
@@ -20,7 +20,7 @@ Stages 1–4 of the methodology pipeline have run end-to-end against this initia
 | 3 Prototype | Pattern B portal at `portal/` — 11 surfaces, 4 themes, voice-audited prose | substantively complete (audit-gap 7 prototype studio empty remains) |
 | 4 Fact-check | `research/current-state/04-stage4-fact-check.md` | seeded — mechanical-pass; judgment claims carry-forwarded to ratification gates |
 | 5 Docs | `README.md` (this file) + `HANDOFF.md` | in-progress |
-| 6 Deploy | Cloudflare Pages | pending |
+| 6 Deploy | Cloudflare Pages → `methodology.ninochavez.co` | deployed 2026-05-27 (branch `dogfood/deploy`, project `blueprint-methodology`) |
 
 ## Stage 1 — Research (seeded + new design-discovery)
 
