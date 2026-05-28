@@ -1,3 +1,8 @@
+---
+name: blueprint-amendment
+description: File a methodology amendment by guiding the operator through the canonical entry shape + applying wave 27's 4-bucket classification taxonomy + appending to the initiative's METHODOLOGY-AMENDMENTS.md in the correct (newest-first) order. Use when noticing a methodology gap your initiative had to work around, adding a hook/reviewer/doc the methodology doesn't supply, or skipping a stage with justification.
+---
+
 # /blueprint-amendment
 
 File a methodology amendment by guiding the operator through the canonical entry shape + applying wave 27's 4-bucket classification taxonomy + appending to the initiative's `METHODOLOGY-AMENDMENTS.md` in the correct (newest-first) order.

@@ -1,3 +1,8 @@
+---
+name: blueprint-prototype
+description: Prototype phase of a Blueprint initiative. Three target paradigms (static portal, embedded prototype, hybrid); pick by reading blueprint.yml prototype.host + prototype.design_system. Use during Stage 2 prototyping work after Stage 1 research has identified scope and patterns.
+---
+
 # /blueprint-prototype
 
 Prototype phase of a Blueprint initiative. Three target paradigms; pick by reading `blueprint.yml prototype.host` + `prototype.design_system`.

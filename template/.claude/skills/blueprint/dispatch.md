@@ -1,3 +1,8 @@
+---
+name: blueprint-dispatch
+description: Orchestrate a parallel agent dispatch wave when a planning thread has produced multiple inspectable artifact briefs whose file scopes don't overlap. Use when there are ≥2 artifacts with named target files, complete specs, non-overlapping file scopes, and no mid-flight orchestrator synthesis needed. Triggers on operator saying "dispatch", "wave", "in parallel", or "across agents".
+---
+
 # /blueprint-dispatch
 
 Orchestrate a parallel agent dispatch wave when a planning thread has produced multiple inspectable artifact briefs whose file scopes don't overlap. Codifies the wave-dispatch workflow — brief construction, model selection, inline orchestrator work during wait, post-flight cross-review for inter-artifact consistency, and commit-and-push following the project's dev-push pattern.
