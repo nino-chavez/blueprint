@@ -8,7 +8,7 @@ Operator-handoff template promoted as canonical methodology infrastructure in wa
 
 ## When to use
 
-See the canonical pattern doc: `~/Workspace/dev/wip/blueprint/docs/operator-handoff-pattern.md` § "When to write one." Briefly: write a handoff at stage transitions / session restarts / cross-repo dispatches where the next operator session can't recover context from `git log` + the standard pipeline artifacts alone.
+See the canonical pattern doc: `~/Workspace/dev/tools/blueprint/docs/operator-handoff-pattern.md` § "When to write one." Briefly: write a handoff at stage transitions / session restarts / cross-repo dispatches where the next operator session can't recover context from `git log` + the standard pipeline artifacts alone.
 
 ## What this is NOT
 
@@ -19,7 +19,7 @@ See the canonical pattern doc: `~/Workspace/dev/wip/blueprint/docs/operator-hand
 
 ## Reference examples (consumer-side)
 
-- `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md` (cross-repo dispatch — 5 template additions handed from rally-hq to wip/blueprint)
+- `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md` (cross-repo dispatch — 5 template additions handed from rally-hq to tools/blueprint)
 - `wip/bc-subscriptions/HANDOFF.md` (session restart — Hive bootstrap continuation)
 
 Both predate the template and are kept as historical examples. New handoffs should use the template.

@@ -10,7 +10,7 @@ canonical: true
 
 **Source evidence**:
 - `apps/rally-hq/blueprint/METHODOLOGY-AMENDMENTS.md` § "Worktree isolation leaks via the shared pre-commit hook" — commit `0c074d5` was labeled "P20-only" in the commit message but the actual diff bundled P14a + P14b changes from a sibling worktree. Per-agent attribution lost forever in `git log`.
-- `wip/blueprint-redesign/METHODOLOGY-AMENDMENTS.md:243` § "Operating in the wrong directory on dogfooding work" — parallel-session confusion between `wip/blueprint` and `wip/blueprint-redesign`; resolution required per-repo CLAUDE.md role declarations + worktree conversion (commit `0230bde`).
+- `wip/blueprint-redesign/METHODOLOGY-AMENDMENTS.md:243` § "Operating in the wrong directory on dogfooding work" — parallel-session confusion between `tools/blueprint` and `wip/blueprint-redesign`; resolution required per-repo CLAUDE.md role declarations + worktree conversion (commit `0230bde`).
 - `wip/blueprint-redesign/portal/CONVENTIONS.md:210,250` — website-nc-v3 incident: consumer truncated 268 lines from `shared.css` mid-edit, then restored the missing chrome by `curl`-ing from a peer consumer's deploy. Promoted the peer's project-specific drift into a "canonical" position no doc declared.
 - `apps/blog/.worktree/pilot-decision-gate/.blueprint/AGENTS.md:38` — pilot success criterion #3 explicitly names the parallel-work failure mode: *"No workaround emerges (agent doesn't reorder commits to land legal pieces while drifting; operator doesn't disable the hook)."*
 
@@ -77,7 +77,7 @@ The deferral is not "wait indefinitely." It is "the next wave-promotion candidat
 
 Three lightweight conventions consumers can adopt now to reduce the failure modes:
 
-1. **Per-repo role declaration in CLAUDE.md** (already in use at `wip/blueprint/CLAUDE.md` and `wip/blueprint-redesign/CLAUDE.md`): every CLAUDE.md opens with `**Repo role: I am X.**` + a `pwd` verification check. Prevents cross-context confusion. Adopted by blueprint-redesign after its wrong-directory amendment.
+1. **Per-repo role declaration in CLAUDE.md** (already in use at `tools/blueprint/CLAUDE.md` and `wip/blueprint-redesign/CLAUDE.md`): every CLAUDE.md opens with `**Repo role: I am X.**` + a `pwd` verification check. Prevents cross-context confusion. Adopted by blueprint-redesign after its wrong-directory amendment.
 
 2. **Worktree isolation per parallel agent** (existing global rule in `~/.claude/CLAUDE.md` § "Multi-session work isolation"): every parallel dispatch uses `isolation: "worktree"`. Rally-hq's `0c074d5` happened despite this rule because the `.git/` was still shared — known limitation, mitigated by serializing same-scope dispatches.
 

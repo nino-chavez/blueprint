@@ -10,23 +10,23 @@ Paste at the start of a fresh Claude Code session, in the target project's worki
 
 ## Prerequisites
 
-- Filesystem access to `~/Workspace/dev/wip/blueprint` (or a cloned copy of `github.com/nino-chavez/blueprint`).
+- Filesystem access to `~/Workspace/dev/tools/blueprint` (or a cloned copy of `github.com/nino-chavez/blueprint`).
 - `browse-tool` installed if the project will need Stage 0 browser sensing (most redesigns do — current-state screenshots are evidence).
 
 ## The prompt
 
 ```
 I'm adopting Blueprint methodology for a full redesign of this existing project.
-The canonical Blueprint repo is at ~/Workspace/dev/wip/blueprint. The SessionStart
+The canonical Blueprint repo is at ~/Workspace/dev/tools/blueprint. The SessionStart
 auto-loader hook is NOT installed for this session, so you load canonical context
 manually before reasoning about anything.
 
 STEP 1 — Read these three docs in order. Do not skip and do not skim:
-  1. ~/Workspace/dev/wip/blueprint/METHODOLOGY.md
+  1. ~/Workspace/dev/tools/blueprint/METHODOLOGY.md
      (focus on § "First Principle" and § "Variant Selection")
-  2. ~/Workspace/dev/wip/blueprint/docs/variant-selection.md
+  2. ~/Workspace/dev/tools/blueprint/docs/variant-selection.md
      (decision tree + worked examples)
-  3. ~/Workspace/dev/wip/blueprint/docs/portal-and-tier-ladder.md
+  3. ~/Workspace/dev/tools/blueprint/docs/portal-and-tier-ladder.md
      (Variant × Tier matrix near the top, Pattern A vs B decision tree,
       Pattern B drawer contract)
 
@@ -58,7 +58,7 @@ surface lives at `blueprint/` (subdirectory; the redesign sits alongside
 the existing product) or at the repo root (the redesign replaces the project
 entirely — bc-subscriptions did this). Then:
 
-  - Copy ~/Workspace/dev/wip/blueprint/template/portal/ into the chosen
+  - Copy ~/Workspace/dev/tools/blueprint/template/portal/ into the chosen
     location. Pattern B has no stamper yet (per the 2026-05-25 deferred-L5
     decision); copy-stamp by hand. The portal-pattern-b-conformance-reviewer
     catches drift mechanically at Stage 3, not at scaffold time.
@@ -72,7 +72,7 @@ entirely — bc-subscriptions did this). Then:
           description: "<one-line tagline>"
 
   - Create (or update) the per-project CLAUDE.md as a *map*, not a manual:
-    point at ~/Workspace/dev/wip/blueprint/template/CLAUDE.md as the
+    point at ~/Workspace/dev/tools/blueprint/template/CLAUDE.md as the
     canonical source. Do not inline Stage 0 recipes, voice rules, or
     citation rules — those load on-demand from the Blueprint repo.
 

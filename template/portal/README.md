@@ -71,7 +71,7 @@ portal/
 When the Blueprint methodology bumps the canonical chrome (`shared.css`, `_portal-shell.js`, `proto-nav.js`, `proto-annotate.js`, `_headers`, `_redirects`, `docs/index.html`), re-stamp from your project root:
 
 ```bash
-node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
   --mode=restamp-chrome --pattern=B \
   --target=$(pwd)
 ```
@@ -85,5 +85,5 @@ The Rally HQ blueprint at `apps/rally-hq/blueprint/portal/` is the worked exampl
 ## See also
 
 - `template/portal/CONVENTIONS.md` — the contract for every page
-- `wip/blueprint/METHODOLOGY.md` — the 7-stage pipeline this fits into
+- `tools/blueprint/METHODOLOGY.md` — the 7-stage pipeline this fits into
 - Rally HQ blueprint commit history under `apps/rally-hq/` for end-to-end examples

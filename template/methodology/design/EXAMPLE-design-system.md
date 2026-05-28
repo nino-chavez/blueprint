@@ -305,4 +305,4 @@ Each slice is a separate commit. The full migration is ~4 slices spread across s
 - `research/architecture/02-stage1-design-audit-template.md` — the cross-audit reconciliation validating the audit shape generalizes
 - `METHODOLOGY-AMENDMENTS.md` § 2026-05-26 — the design-discipline track gap this artifact's existence helps close (proof-of-concept of the Stage 1 → Stage 2 workflow)
 - `~/Workspace/dev/tools/forge-site/` — canonical L3/L4 archetype + module reference; this dictionary aligns with its conventions where applicable
-- `~/Workspace/dev/wip/blueprint/template/portal/shared.css` — canonical chrome (do not edit in this consumer; overrides land in `portal/project-tokens.css`)
+- `~/Workspace/dev/tools/blueprint/template/portal/shared.css` — canonical chrome (do not edit in this consumer; overrides land in `portal/project-tokens.css`)

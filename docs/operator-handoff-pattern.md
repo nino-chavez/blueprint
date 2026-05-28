@@ -9,7 +9,7 @@ canonical: true
 **Last updated**: 2026-05-27
 
 **Source evidence**:
-- `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md` (2026-05-25) — cross-repo dispatch handoff. 5 template additions identified by combining gaps rally-hq exposed with methodology framing the blog session articulated; handed off to a fresh `wip/blueprint` session to execute.
+- `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md` (2026-05-25) — cross-repo dispatch handoff. 5 template additions identified by combining gaps rally-hq exposed with methodology framing the blog session articulated; handed off to a fresh `tools/blueprint` session to execute.
 - `wip/bc-subscriptions/HANDOFF.md` (2026-05-06) — session-restart handoff. Hive bootstrap continuation context covering what's live, what's done, what's pending, and where secrets are cached locally.
 
 **Related patterns**:
@@ -24,7 +24,7 @@ Operators routinely write hand-crafted handoff docs at three transition types:
 
 1. **Methodology stage transitions** — Stage N → N+1 within one initiative, when the next stage's operator is a different agent session
 2. **Session restarts** — resume work after a cache window expires, a focus break, or a different machine
-3. **Cross-repo dispatches** — work spawned in one repo continues in another (the rally-hq HANDOFF dispatched 5 additions from `apps/rally-hq` into `wip/blueprint` for execution)
+3. **Cross-repo dispatches** — work spawned in one repo continues in another (the rally-hq HANDOFF dispatched 5 additions from `apps/rally-hq` into `tools/blueprint` for execution)
 
 Without a template, each operator re-derives the shape: state header, what-was-done, what's-pending, sequencing, scope-out. Two consumers independently produced docs with overlapping structure within the same week, signaling the shape is general enough to ship as a template rather than re-derive per initiative.
 

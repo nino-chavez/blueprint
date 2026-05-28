@@ -23,7 +23,7 @@ A blueprint with three "inaccurate cost figures" and two "wrong terminology refe
 
 Before the diagnose loop kicks in, run the mechanical checks. These are pass/fail, not judgment calls — they catch the class of regressions that don't need root-cause analysis. Failures here block validation; fix and re-run before continuing to Phase 1.
 
-These gates enforce the **15-dimension contract** from `~/Workspace/dev/wip/blueprint/docs/design-system-audit.md`.
+These gates enforce the **15-dimension contract** from `~/Workspace/dev/tools/blueprint/docs/design-system-audit.md`.
 
 | Gate | Command | Pass criterion |
 |---|---|---|

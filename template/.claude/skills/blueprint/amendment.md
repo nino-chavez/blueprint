@@ -8,9 +8,9 @@ description: File a methodology amendment by guiding the operator through the ca
 File a methodology amendment by guiding the operator through the canonical entry shape + applying wave 27's 4-bucket classification taxonomy + appending to the initiative's `METHODOLOGY-AMENDMENTS.md` in the correct (newest-first) order.
 
 Implements wave 27's amendment-classification pattern. Templates + conventions:
-- File shape + 3-scope axis: `~/Workspace/dev/wip/blueprint/template/docs/methodology/methodology-amendments-convention.md`
-- 4-bucket taxonomy: `~/Workspace/dev/wip/blueprint/docs/amendment-classification-pattern.md`
-- Slot-filled template: `~/Workspace/dev/wip/blueprint/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`
+- File shape + 3-scope axis: `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`
+- 4-bucket taxonomy: `~/Workspace/dev/tools/blueprint/docs/amendment-classification-pattern.md`
+- Slot-filled template: `~/Workspace/dev/tools/blueprint/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`
 
 ## When to use
 
@@ -25,7 +25,7 @@ Skip when the observation is just a regular bug (commit message is sufficient), 
 
 1. **Detect or initialize the amendments file**:
    - Look for `blueprint/METHODOLOGY-AMENDMENTS.md` or `METHODOLOGY-AMENDMENTS.md` at the initiative root
-   - If absent, ask the operator if they want to initialize the file from `~/Workspace/dev/wip/blueprint/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`. If yes, copy + replace `{Initiative Name}` with the initiative's name from `blueprint.yml` or pwd
+   - If absent, ask the operator if they want to initialize the file from `~/Workspace/dev/tools/blueprint/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`. If yes, copy + replace `{Initiative Name}` with the initiative's name from `blueprint.yml` or pwd
 
 2. **Capture the trigger** (one sentence): ask the operator what observation prompted the amendment. This becomes the `**Trigger**:` field.
 
@@ -36,7 +36,7 @@ Skip when the observation is just a regular bug (commit message is sufficient), 
    - Ask: "Does the fix change template files (`stamp.mjs`, reviewers, `template/*`)?"
      - Yes, primarily reviewer rubric → suggest bucket: **`reviewer`**
      - Yes, other template files → suggest bucket: **`template`**
-     - No (changes only docs/conceptual artifacts in `wip/blueprint/`) → suggest bucket: **`methodology`**
+     - No (changes only docs/conceptual artifacts in `tools/blueprint/`) → suggest bucket: **`methodology`**
    - State the suggested bucket; ask operator to confirm or override. The suggestion is mechanical; the operator's judgment is final.
 
 4. **Determine scope** (3-scope axis from the amendments convention):

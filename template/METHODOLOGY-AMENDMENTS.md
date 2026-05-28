@@ -4,7 +4,7 @@ canonical: false
 
 # Methodology Amendments — This Initiative
 
-This file captures methodology-level learnings specific to this initiative. Append at the top; supersede via new entry; never rewrite history. Full convention: `~/Workspace/dev/wip/blueprint/template/docs/methodology/methodology-amendments-convention.md`.
+This file captures methodology-level learnings specific to this initiative. Append at the top; supersede via new entry; never rewrite history. Full convention: `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`.
 
 If you are the operator on a fresh Blueprint initiative, this file starts empty. Add an entry when:
 

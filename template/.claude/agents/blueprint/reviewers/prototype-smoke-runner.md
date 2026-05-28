@@ -15,7 +15,7 @@ A 200 response from curl is not enough. A green `@smoke` Playwright suite is not
    - Midstream → mandatory (the prototype is the patch artifact)
    - Brownfield → run only if `portal/` or `prototype/` contains substantive content; PASS with note "no prototype artifact" otherwise
 
-2. **Verify the local boot script exists.** Look for `serve.sh` at initiative root. If absent, BLOCK with note "no boot script — Stage 0 reference recipe assumes one." (See `~/Workspace/dev/wip/blueprint/docs/browser-legibility.md`.)
+2. **Verify the local boot script exists.** Look for `serve.sh` at initiative root. If absent, BLOCK with note "no boot script — Stage 0 reference recipe assumes one." (See `~/Workspace/dev/tools/blueprint/docs/browser-legibility.md`.)
 
 3. **Boot the prototype** via `bash serve.sh &` and wait for it to be reachable on its declared port (read from `serve.sh` or `blueprint.yml`). If boot fails or hangs, BLOCK.
 

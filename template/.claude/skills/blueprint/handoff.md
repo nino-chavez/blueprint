@@ -7,7 +7,7 @@ description: Generate a session/stage/cross-repo handoff document by deriving st
 
 Generate a session/stage/cross-repo handoff document by deriving state from git + pwd + recent activity, leaving only "what's pending" and "sequencing" for operator input.
 
-Implements wave 25's operator-handoff pattern. Template source: `~/Workspace/dev/wip/blueprint/template/methodology/handoff/handoff-template.md`. Pattern doc: `~/Workspace/dev/wip/blueprint/docs/operator-handoff-pattern.md`.
+Implements wave 25's operator-handoff pattern. Template source: `~/Workspace/dev/tools/blueprint/template/methodology/handoff/handoff-template.md`. Pattern doc: `~/Workspace/dev/tools/blueprint/docs/operator-handoff-pattern.md`.
 
 ## When to use
 
@@ -15,7 +15,7 @@ At any of the three trigger types from the operator-handoff-pattern:
 
 1. **Stage transition** — next stage's operator is a different agent session; stage carries non-trivial context the next agent can't recover from `git log` + canonical pipeline alone
 2. **Session restart** — anticipated session break (context-window expiration, cross-machine resumption, focus break expected)
-3. **Cross-repo dispatch** — work spawns continuation in a different repo (the rally-hq → wip/blueprint shape from `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md`)
+3. **Cross-repo dispatch** — work spawns continuation in a different repo (the rally-hq → tools/blueprint shape from `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md`)
 
 Skip when work continues in the same session with no expected interruption, or when commit-message + `git log` + STATE.md gives the next reader everything they need.
 

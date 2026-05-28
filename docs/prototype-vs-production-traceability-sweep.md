@@ -200,7 +200,7 @@ Step 4: Recipe-friction capture
 {What remains: P-items to land, HIGH bugs to schedule, methodology amendment cadence}
 ```
 
-The "Recipe-friction notes for methodology amendment" section is load-bearing — it feeds the next iteration of this doc and is the staging artifact for future wip/blueprint promotions.
+The "Recipe-friction notes for methodology amendment" section is load-bearing — it feeds the next iteration of this doc and is the staging artifact for future tools/blueprint promotions.
 
 ---
 

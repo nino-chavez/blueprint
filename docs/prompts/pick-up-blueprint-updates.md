@@ -17,36 +17,36 @@ The prompt can be auto-injected via Claude Code's `SessionStart` hook configured
 ```
 Blueprint was renamed from BigBlueprint on 2026-05-25. New location:
 - GitHub: github.com/nino-chavez/blueprint
-- Local: ~/Workspace/dev/wip/blueprint
+- Local: ~/Workspace/dev/tools/blueprint
 
 Read these updates before continuing existing blueprint work — they change
 how this initiative operates:
 
-1. ~/Workspace/dev/wip/blueprint/docs/variant-selection.md
+1. ~/Workspace/dev/tools/blueprint/docs/variant-selection.md
    — Three-variant taxonomy (greenfield / midstream / brownfield). If this
    initiative's blueprint.yml doesn't have a `variant:` key yet, add it.
    Default is greenfield; pick the actual variant if different.
 
-2. ~/Workspace/dev/wip/blueprint/template/.claude/agents/blueprint/reviewers/
+2. ~/Workspace/dev/tools/blueprint/template/.claude/agents/blueprint/reviewers/
    — Seven new stage-gate reviewer agents replace the legacy `validator`.
    Variant-aware. They block premature stage completion (e.g., declaring
    Stage 1 complete with empty research/funnel/). Read reviewers/README.md
    for the roster.
 
-3. ~/Workspace/dev/wip/blueprint/template/prototype/DESIGN.md
+3. ~/Workspace/dev/tools/blueprint/template/prototype/DESIGN.md
    §"Architectural Invariants" + §"I-5. JS Class Output ↔ CSS Coverage"
    — Five structural invariants now apply to every prototype. I-5 specifically
    catches the v3 portal CSS-gap failure mode (template ships JS shells
    emitting classes without matching CSS rules).
 
-4. ~/Workspace/dev/wip/blueprint/template/.claude/agents/blueprint/reviewers/prototype-smoke-runner.md
+4. ~/Workspace/dev/tools/blueprint/template/.claude/agents/blueprint/reviewers/prototype-smoke-runner.md
    — Stage 6 ship gate now requires viewport screenshots per page via
    browse-tool AND CSS-coverage check, on top of @smoke Playwright. A 200
    response from curl + green @smoke is no longer enough.
 
 5. Voice rules moved out of per-initiative CLAUDE.md:
-   - ~/Workspace/dev/wip/blueprint/docs/voice-template.md (canonical)
-   - ~/Workspace/dev/wip/blueprint/docs/voice-b2b-addendum.md (loaded only
+   - ~/Workspace/dev/tools/blueprint/docs/voice-template.md (canonical)
+   - ~/Workspace/dev/tools/blueprint/docs/voice-b2b-addendum.md (loaded only
      when b2b_edition.enabled: true)
 
 6. Sweep this initiative for stale references: `big-blueprint` → `blueprint`,
@@ -59,7 +59,7 @@ how this initiative operates:
    chrome surface is now stamped + diffable:
    - `shared.css` is canonical chrome (do-not-edit). Project token overrides
      go in `project-tokens.css` (new file). Run:
-       node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+       node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
          --mode=restamp-chrome --pattern=B --target=<this initiative root>
      to pull canonical chrome (shared.css, _portal-shell.js, proto-nav.js,
      proto-annotate.js, _headers, _redirects, docs/index.html).
@@ -151,7 +151,7 @@ how do I encode it" — not "patch the prompt."
 Updates 1-6 above are reading + minor edits. Updates 7-13 are structural — they may rewrite files. Apply in this order to avoid losing work:
 
 1. Read sections 1-6 first; absorb the methodology shape.
-2. **Audit your `shared.css` BEFORE restamp.** Diff against `~/Workspace/dev/wip/blueprint/template/portal/shared.css`. Any lines in yours but not template's are project drift — lift them into `project-tokens.css` (create if absent).
+2. **Audit your `shared.css` BEFORE restamp.** Diff against `~/Workspace/dev/tools/blueprint/template/portal/shared.css`. Any lines in yours but not template's are project drift — lift them into `project-tokens.css` (create if absent).
 3. **Audit your `docs/index.html` BEFORE restamp.** Capture your sidebar entries, TITLES, STRATEGIC_DOCS into `_meta/index.json` `docs.tiers[]` per section 8.
 4. **Run `stamp.mjs --mode=restamp-chrome --pattern=B --target=<root>`.** This overwrites the canonical chrome files. project-tokens.css, _meta/*, pages/*, your project-specific code stays untouched.
 5. **Remove `window.PORTAL_SHELL_CONFIG`** from each portal HTML file (section 9). The shell now reads from manifest.
@@ -174,7 +174,7 @@ If you want auto-injection on every session start in a specific Blueprint initia
         "hooks": [
           {
             "type": "command",
-            "command": "cat ~/Workspace/dev/wip/blueprint/docs/prompts/pick-up-blueprint-updates.md",
+            "command": "cat ~/Workspace/dev/tools/blueprint/docs/prompts/pick-up-blueprint-updates.md",
             "timeout": 5
           }
         ]

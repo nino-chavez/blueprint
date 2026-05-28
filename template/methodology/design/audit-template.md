@@ -157,7 +157,7 @@ Not directly testable from these audits (the audits surface the GAP; the amendme
 
 ## Next moves
 
-1. **For methodology promotion** (after this initiative lands): the canonical template shape above becomes `~/Workspace/dev/wip/blueprint/template/methodology/design/stage1-surface-audit-template.md`. Variant-conditional sections flagged with brownfield / greenfield + content-collection / no-collections branches.
+1. **For methodology promotion** (after this initiative lands): the canonical template shape above becomes `~/Workspace/dev/tools/blueprint/template/methodology/design/stage1-surface-audit-template.md`. Variant-conditional sections flagged with brownfield / greenfield + content-collection / no-collections branches.
 
 2. **For this initiative**: Stage 2 design-system definition for the portal can now proceed deterministically — derive L4 templates from the portal audit's archetype profile (currently missing; needs to be backfilled into `research/current-state/03-portal-surface-audit.md` per the §7 promotion above), L0 tokens authored for Blueprint-the-product, L3 organism dictionary extracted from cross-surface patterns.
 

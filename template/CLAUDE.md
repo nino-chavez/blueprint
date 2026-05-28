@@ -1,6 +1,6 @@
 # Blueprint Project
 
-**Repo role: I am a Blueprint consumer initiative.** The methodology source lives at `~/Workspace/dev/wip/blueprint/` — do not edit that repo from this session unless the operator has explicitly granted a methodology-freeze waiver (see `~/Workspace/dev/wip/blueprint/CLAUDE.md`). Verify `pwd` does NOT end in `wip/blueprint` before any commit; if it does, stop and switch sessions.
+**Repo role: I am a Blueprint consumer initiative.** The methodology source lives at `~/Workspace/dev/tools/blueprint/` — do not edit that repo from this session unless the operator has explicitly granted a methodology-freeze waiver (see `~/Workspace/dev/tools/blueprint/CLAUDE.md`). Verify `pwd` does NOT end in `tools/blueprint` before any commit; if it does, stop and switch sessions.
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment. This file is a **map**, not a manual — pointers to canonical docs, not inlined content. See `blueprint.yml` for project configuration.
 
@@ -21,20 +21,20 @@ When an initiative loses trust mid-stream and the operator wants to restart from
 
 ### 2. Methodology freeze during consumer migration
 
-`wip/blueprint/template/` (the methodology source) and any consumer initiative using it cannot evolve in parallel. The drift mode this prevents was the 2026-05-25 four-way root-doc divergence: methodology was being edited under three live consumer sessions simultaneously, and each session produced a different "what is Blueprint" answer.
+`tools/blueprint/template/` (the methodology source) and any consumer initiative using it cannot evolve in parallel. The drift mode this prevents was the 2026-05-25 four-way root-doc divergence: methodology was being edited under three live consumer sessions simultaneously, and each session produced a different "what is Blueprint" answer.
 
 **The rule, in two directions:**
 
-- While `wip/blueprint/template/` is being edited (methodology change in flight), **no consumer Blueprint session opens.** Consumer sessions paused until the methodology change lands.
+- While `tools/blueprint/template/` is being edited (methodology change in flight), **no consumer Blueprint session opens.** Consumer sessions paused until the methodology change lands.
 - While a consumer initiative is migrating (picking up a methodology update), **no template edits land.** Template changes paused until the consumer migration completes.
 
 Sequenced, not parallel. The methodology repo holds one "live consumer" lock at a time. A second concurrent consumer is fine when the methodology is stable; a second concurrent consumer during methodology edits is forbidden.
 
-Operator check before starting a Blueprint-touching session: `git -C ~/Workspace/dev/wip/blueprint status` and any in-flight consumer worktree should both be clean of methodology edits, or one of them is paused.
+Operator check before starting a Blueprint-touching session: `git -C ~/Workspace/dev/tools/blueprint status` and any in-flight consumer worktree should both be clean of methodology edits, or one of them is paused.
 
 ## Per-initiative methodology amendments
 
-`METHODOLOGY-AMENDMENTS.md` at the initiative root captures methodology learnings specific to this initiative — gaps you worked around, hooks you added, stages you skipped, candidates for methodology promotion. Append-only, reverse-chronological. Convention: `~/Workspace/dev/wip/blueprint/template/docs/methodology/methodology-amendments-convention.md`.
+`METHODOLOGY-AMENDMENTS.md` at the initiative root captures methodology learnings specific to this initiative — gaps you worked around, hooks you added, stages you skipped, candidates for methodology promotion. Append-only, reverse-chronological. Convention: `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`.
 
 ## Variant declaration (read this first)
 
@@ -44,18 +44,18 @@ Every initiative declares a variant in `blueprint.yml`:
 variant: greenfield   # or: midstream | brownfield
 ```
 
-Canonical taxonomy: `~/Workspace/dev/wip/blueprint/docs/variant-selection.md` — pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Pick the variant before Stage 0 runs.
+Canonical taxonomy: `~/Workspace/dev/tools/blueprint/docs/variant-selection.md` — pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Pick the variant before Stage 0 runs.
 
 ## Optional capabilities (check `blueprint.yml`)
 
 | Flag | Reference doc | Read when starting |
 |---|---|---|
-| `b2b_edition.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
-| `hive.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
-| `cloudflare.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
-| `archaeology.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
-| `owner_spec.enabled: true` | `~/Workspace/dev/wip/blueprint/docs/owner-spec-pattern.md` | When project has >3 substrate tools |
-| Marketplace app (any BC initiative) | `~/Workspace/dev/wip/blueprint/docs/bc-marketplace-context.md` | Stage 1 research |
+| `b2b_edition.enabled: true` | `~/Workspace/dev/tools/blueprint/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
+| `hive.enabled: true` | `~/Workspace/dev/tools/blueprint/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
+| `cloudflare.enabled: true` | `~/Workspace/dev/tools/blueprint/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
+| `archaeology.enabled: true` | `~/Workspace/dev/tools/blueprint/docs/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
+| `owner_spec.enabled: true` | `~/Workspace/dev/tools/blueprint/docs/owner-spec-pattern.md` | When project has >3 substrate tools |
+| Marketplace app (any BC initiative) | `~/Workspace/dev/tools/blueprint/docs/bc-marketplace-context.md` | Stage 1 research |
 
 ## Pipeline
 
@@ -74,7 +74,7 @@ export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
 # In Claude Code: /add-dir /Users/nino/Workspace/dev/tools/browse-tool
 ```
 
-Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `~/Workspace/dev/wip/blueprint/docs/browser-legibility.md`.
+Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `~/Workspace/dev/tools/blueprint/docs/browser-legibility.md`.
 
 ## Skills
 
@@ -118,7 +118,7 @@ Run exactly one of the two portal-conformance reviewers per initiative — pick 
 
 ## Document voice
 
-Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + citation rules + anti-patterns: `~/Workspace/dev/wip/blueprint/docs/voice-template.md`. B2B-specific addendum (loaded only when `b2b_edition.enabled: true`): `docs/voice-b2b-addendum.md`.
+Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + citation rules + anti-patterns: `~/Workspace/dev/tools/blueprint/docs/voice-template.md`. B2B-specific addendum (loaded only when `b2b_edition.enabled: true`): `docs/voice-b2b-addendum.md`.
 
 ## Prototype design
 
@@ -133,7 +133,7 @@ Edit `blueprint.yml` for: variant, execution depth, voice modes, prototype setti
 Do not copy `template/apps/portal/` by hand. Use the stamper:
 
 ```bash
-node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
   --name=<project-slug> \
   --display-name="<Project Display Name>" \
   --repo-url=https://github.com/<owner>/<repo> \
@@ -150,8 +150,8 @@ The stamper substitutes the bc-subs reference strings, renames the logo, writes 
 
 Reusable prompts for common Blueprint adoption / update scenarios:
 
-- `~/Workspace/dev/wip/blueprint/docs/prompts/add-blueprint-to-project.md` — paste at start of a fresh session in a project taking on Blueprint for the first time
-- `~/Workspace/dev/wip/blueprint/docs/prompts/pick-up-blueprint-updates.md` — paste in a session resuming an existing Blueprint initiative to refresh methodology context
+- `~/Workspace/dev/tools/blueprint/docs/prompts/add-blueprint-to-project.md` — paste at start of a fresh session in a project taking on Blueprint for the first time
+- `~/Workspace/dev/tools/blueprint/docs/prompts/pick-up-blueprint-updates.md` — paste in a session resuming an existing Blueprint initiative to refresh methodology context
 
 ## SessionStart canonical-context injection (required)
 

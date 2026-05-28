@@ -35,7 +35,7 @@ node template/tools/blueprint-init/stamp.mjs \
 ## Usage — restamp chrome (Pattern B)
 
 ```bash
-node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
   --mode=restamp-chrome \
   --pattern=B \
   --target=~/Workspace/dev/apps/website-nc
