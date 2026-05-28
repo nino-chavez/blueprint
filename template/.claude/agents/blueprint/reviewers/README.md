@@ -2,7 +2,7 @@
 
 Stage-gate agents that block premature stage completion. Variant-aware: each gate behaves differently per `blueprint.yml` `variant:` declaration.
 
-Canonical reference: `wip/blueprint/docs/variant-selection.md`.
+Canonical reference: `tools/blueprint/docs/variant-selection.md`.
 
 ## Roster
 

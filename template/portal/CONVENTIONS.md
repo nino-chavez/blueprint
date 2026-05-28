@@ -204,7 +204,7 @@ Visual tokens split across two files. Both load on every page; the cascade picks
 
 | File | Owner | Editable in a consumer repo? |
 |---|---|---|
-| `shared.css` | Blueprint methodology (canonical chrome — tokens + layout primitives + chrome components) | **No.** Re-stamped from `~/Workspace/dev/wip/blueprint/template/portal/shared.css` via `stamp.mjs --mode=restamp-chrome --pattern=B`. `portal-chrome-canonical-reviewer` diffs your copy against canonical and fails the gate on drift. |
+| `shared.css` | Blueprint methodology (canonical chrome — tokens + layout primitives + chrome components) | **No.** Re-stamped from `~/Workspace/dev/tools/blueprint/template/portal/shared.css` via `stamp.mjs --mode=restamp-chrome --pattern=B`. `portal-chrome-canonical-reviewer` diffs your copy against canonical and fails the gate on drift. |
 | `project-tokens.css` | Initiative (token overrides + project-specific components) | **Yes.** Loaded after `shared.css`, so any `:root { --brand-600: ... }` here wins. New project components live here. |
 
 Why this split exists: on 2026-05-25 a Blueprint consumer (website-nc-v3) truncated 268 lines from its `shared.css` mid-edit, then restored the missing chrome by `curl`-ing from a peer consumer's deploy (`blueprint.rallyhq.app`). That promoted the peer's project-specific drift into a "canonical" position no doc declared and the methodology bump path didn't propagate. The overlay split makes the canonical file mechanically diffable and re-stampable; consumer overrides have a clean home.
@@ -247,7 +247,7 @@ Flows declared in `flows_touching_this_slice` on a slice get listed in that slic
 | Inline `font-family: var(--font-hero)` on body text | Display fonts are unreadable at small sizes. Never. |
 | Hardcoded hex colors | Token defaults in `shared.css`, overrides in `project-tokens.css`. |
 | Direct edits to `shared.css` in a consumer repo | Canonical chrome. `portal-chrome-canonical-reviewer` will fail the gate. Re-stamp via `stamp.mjs --mode=restamp-chrome --pattern=B`; put overrides in `project-tokens.css`. |
-| `curl`-ing a peer consumer's deployed CSS to "restore canonical" | The deployed sibling is not canonical — it has the peer's project drift baked in. Re-stamp from `~/Workspace/dev/wip/blueprint/template/portal/shared.css` instead. |
+| `curl`-ing a peer consumer's deployed CSS to "restore canonical" | The deployed sibling is not canonical — it has the peer's project drift baked in. Re-stamp from `~/Workspace/dev/tools/blueprint/template/portal/shared.css` instead. |
 | "This is a mock" framing inside `.proposed-view` | Product UI must look like production. Put framing in the strategy panel via per-page JSON. |
 | Page-level `@media (prefers-color-scheme: dark)` blocks | Theme handling belongs in tokens. |
 | Full PROTO_PAGE data inline | Whole point of `_meta/*.json` is centralization. |

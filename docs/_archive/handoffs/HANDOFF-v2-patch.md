@@ -12,7 +12,7 @@ Source PDF: `/Users/nino/Downloads/Harness engineering_ leveraging Codex in an a
 
 ## What landed this session
 
-### Methodology layer (`wip/blueprint/`)
+### Methodology layer (`tools/blueprint/`)
 
 | File | What it is |
 |---|---|
@@ -60,7 +60,7 @@ Plus the orchestrator that fans out, collects results, and decides convergence.
 
 **Open questions** (must resolve before drafting agents):
 
-1. **Reviewer agent location** — shared at `wip/blueprint/template/.claude/agents/` (every initiative inherits improvements) vs per-initiative (each project tunes thresholds). Trade-off: shared = compounding leverage, per-initiative = tunability.
+1. **Reviewer agent location** — shared at `tools/blueprint/template/.claude/agents/` (every initiative inherits improvements) vs per-initiative (each project tunes thresholds). Trade-off: shared = compounding leverage, per-initiative = tunability.
 2. **Convergence loop runtime** — single orchestrator agent that fans out and merges results (simpler), or worktree-per-reviewer via `Agent` tool with `isolation: "worktree"` (more honest about isolation, matches the multi-session-work-isolation rule in `~/.claude/CLAUDE.md`).
 3. **Smoke-flake policy** — block on any `@smoke` failure (Blueprint's VP-clicks-share-link audience argues for this) vs follow-up runs (Codex's throughput argument). Resolution: probably block, because Blueprint's audience is different from Codex's, but worth confirming.
 
@@ -101,7 +101,7 @@ Lowest urgency of the three increments — only bites large initiatives, and sub
 
 1. **Read this handoff doc + the v2 patch doc** to restore context (5 min).
 2. **Promote Stage 0 to METHODOLOGY.md** — small cleanup, removes doc drift (10 min).
-3. **Resolve the three open questions for Increment 2** — async with Nino, or by writing them into ADRs in `wip/blueprint/docs/decisions/` if that pattern doesn't exist yet (30 min).
+3. **Resolve the three open questions for Increment 2** — async with Nino, or by writing them into ADRs in `tools/blueprint/docs/decisions/` if that pattern doesn't exist yet (30 min).
 4. **Draft the five reviewer agents** as Claude Code subagent definitions in the location resolved at step 3 (2-3 hours).
 5. **Wire the orchestrator** for the convergence loop (1-2 hours).
 6. **Validate against Rally HQ** — same pattern as Stage 0 validation. Rally HQ stays the canonical first-application target.
@@ -114,9 +114,9 @@ Lowest urgency of the three increments — only bites large initiatives, and sub
 
 ## Cross-references
 
-- v2 patch source: `wip/blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
-- Stage 0 reference: `wip/blueprint/docs/browser-legibility.md`
-- Template: `wip/blueprint/template/CLAUDE.md`
+- v2 patch source: `tools/blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
+- Stage 0 reference: `tools/blueprint/docs/browser-legibility.md`
+- Template: `tools/blueprint/template/CLAUDE.md`
 - Rally HQ live consumer: `apps/rally-hq/blueprint/CLAUDE.md`
 - v3 live consumer: `apps/website-nc-v3/blueprint/CLAUDE.md`
 - browse-tool: `tools/browse-tool/` (README is the canonical interface ref)

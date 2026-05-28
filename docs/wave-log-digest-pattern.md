@@ -20,7 +20,7 @@ canonical: true
 
 ## Why this pattern exists
 
-The wave log in `~/Workspace/dev/wip/blueprint/CLAUDE.md` accretes one entry per methodology wave. At wave 26 it has crossed ~1000 lines. A new contributor or returning operator (post 30-day gap) needs context filtered by their actual question — *"what changed since wave N"*, *"what's load-bearing for the reviewer system"*, *"what's the substrate-vs-discipline distinction"*. The full log is the authoritative source; reading it cold every time costs more than the question warrants.
+The wave log in `~/Workspace/dev/tools/blueprint/CLAUDE.md` accretes one entry per methodology wave. At wave 26 it has crossed ~1000 lines. A new contributor or returning operator (post 30-day gap) needs context filtered by their actual question — *"what changed since wave N"*, *"what's load-bearing for the reviewer system"*, *"what's the substrate-vs-discipline distinction"*. The full log is the authoritative source; reading it cold every time costs more than the question warrants.
 
 The same pattern applies to any consumer initiative with a long-running wave-log-equivalent (rally-hq's CLAUDE.md + STATE.md combination, subs-initiative' CHANGELOG, etc.). The convention this wave promotes is: **the wave-log is the load-bearing onboarding text; the digest tool is a filter over it.** Both layers stay; the tool exists to narrow the read.
 

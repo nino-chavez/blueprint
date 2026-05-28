@@ -55,7 +55,7 @@ Three consumers across three distinct sub-patterns:
 1. **rally-hq — commit-attribution loss** (`METHODOLOGY-AMENDMENTS.md` worktree-isolation entry): commit `0c074d5` was labeled "P20-only" but bundled P14a+P14b changes from a sibling worktree. Per-agent attribution lost forever in git log.
 
 2. **blueprint-redesign — wrong-directory + peer-canonical-contamination**:
-   - `METHODOLOGY-AMENDMENTS.md:243` — "Operating in the wrong directory on dogfooding work" amendment; parallel-session confusion between `wip/blueprint` and `wip/blueprint-redesign`
+   - `METHODOLOGY-AMENDMENTS.md:243` — "Operating in the wrong directory on dogfooding work" amendment; parallel-session confusion between `tools/blueprint` and `wip/blueprint-redesign`
    - `portal/CONVENTIONS.md:210` — website-nc-v3 incident where consumer truncated 268 lines from `shared.css` mid-edit, then restored by `curl`-ing from a peer consumer's deploy → promoted peer's project-specific drift into "canonical" position
 
 3. **blog — multi-session pilot + anti-workaround success criterion** (`.blueprint/AGENTS.md:38`):

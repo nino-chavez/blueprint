@@ -2,8 +2,8 @@
 
 This file captures methodology-level learnings specific to this initiative. Append at the top; supersede via new entry; never rewrite history. Full conventions:
 
-- File shape + 3-scope axis: `~/Workspace/dev/wip/blueprint/template/docs/methodology/methodology-amendments-convention.md`
-- 4-bucket taxonomy (where fixes land): `~/Workspace/dev/wip/blueprint/docs/amendment-classification-pattern.md`
+- File shape + 3-scope axis: `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`
+- 4-bucket taxonomy (where fixes land): `~/Workspace/dev/tools/blueprint/docs/amendment-classification-pattern.md`
 
 Per methodology rule, no entry here is automatically promoted upstream. Methodology promotion is a separate operator session after evidence accumulates across ≥2 consumers. This file is the audit trail.
 
@@ -22,9 +22,9 @@ Per methodology rule, no entry here is automatically promoted upstream. Methodol
 
 **Bucket** (per wave 27 classification taxonomy):
 - `consumer-local` — fix stays in this initiative repo
-- `template` — fix lands in `wip/blueprint/template/*`
-- `reviewer` — fix lands in `wip/blueprint/template/.claude/agents/blueprint/reviewers/*`
-- `methodology` — fix lands in `wip/blueprint/METHODOLOGY.md` / `docs/` / top-level conceptual artifacts
+- `template` — fix lands in `tools/blueprint/template/*`
+- `reviewer` — fix lands in `tools/blueprint/template/.claude/agents/blueprint/reviewers/*`
+- `methodology` — fix lands in `tools/blueprint/METHODOLOGY.md` / `docs/` / top-level conceptual artifacts
 
 **Status**: One of:
 - `Active` — current

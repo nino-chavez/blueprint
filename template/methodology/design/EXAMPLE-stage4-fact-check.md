@@ -116,6 +116,6 @@ Status remains `seeded` until #2 happens.
 
 ## References
 
-- `~/Workspace/dev/wip/blueprint/METHODOLOGY.md` § Stage 4 (Fact-Check)
+- `~/Workspace/dev/tools/blueprint/METHODOLOGY.md` § Stage 4 (Fact-Check)
 - All ratified decisions in `decisions/`
 - Methodology amendments file

@@ -250,7 +250,7 @@ Reversibility: scoped to new initiatives spawned from the updated template. Exis
 
 ## Open questions to resolve before increment 2
 
-1. **Reviewer agent definitions** — should they live in `~/Workspace/dev/wip/blueprint/template/.claude/agents/` (shared) or per-initiative? The shared path lets every initiative benefit from improvements, but per-initiative lets each project tune reviewer thresholds.
+1. **Reviewer agent definitions** — should they live in `~/Workspace/dev/tools/blueprint/template/.claude/agents/` (shared) or per-initiative? The shared path lets every initiative benefit from improvements, but per-initiative lets each project tune reviewer thresholds.
 2. **Convergence loop runtime** — Claude Code's `Agent` tool with `isolation: "worktree"` per reviewer, or a single orchestrator agent that fans out and merges results? The orchestrator is simpler; the worktree-per-reviewer is more honest about isolation.
 3. **Threshold for the prototype-smoke-runner** — block on any `@smoke` failure, or allow up to N flakes per Codex's "follow-up runs over blocking"? Blueprint's audience (VPs clicking a share-link) argues for blocking; Codex's argument was internal devs.
 

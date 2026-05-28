@@ -83,8 +83,8 @@ For each in-flight Pattern B consumer (`rally-hq`, `website-nc-v3`, `subs-initia
 
 ```bash
 # 1. Pull this methodology bump
-git -C ~/Workspace/dev/wip/blueprint pull
-node ~/Workspace/dev/wip/blueprint/template/tools/blueprint-init/stamp.mjs \
+git -C ~/Workspace/dev/tools/blueprint pull
+node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
   --mode=restamp-chrome --pattern=B --target=$(pwd)
 
 # 2. Edit your _meta/index.json: add `source` field to each

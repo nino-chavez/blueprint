@@ -99,7 +99,7 @@ Five categories of current AI capability. Citations live in the sources section.
 
 **Notable finding**: **Mintlify's "generate changelog from PR diffs" is the closest market feature to Blueprint's "generate digest from wave-log entries."** Same modality-bridging shape. But pricing floors are steep enough that adding any of these as a dependency would cost more than Blueprint produces for solo/small-team consumers.
 
-**Sharpened Blueprint analog**: a tool at `template/tools/wave-digest/` that reads `wip/blueprint/CLAUDE.md` wave-log entries + reviewer prompt set, outputs scoped digests ("changes since wave N," "what's load-bearing for surface X"). The Mintlify-Autopilot pattern adapted to Blueprint's wave-log convention.
+**Sharpened Blueprint analog**: a tool at `template/tools/wave-digest/` that reads `tools/blueprint/CLAUDE.md` wave-log entries + reviewer prompt set, outputs scoped digests ("changes since wave N," "what's load-bearing for surface X"). The Mintlify-Autopilot pattern adapted to Blueprint's wave-log convention.
 
 **Build vs buy verdict**: build. The market options cost $250+/mo and presume per-site/per-org billing models that don't fit Blueprint's distribution shape. Docusaurus + Algolia is the only zero-fixed-cost path but doesn't natively produce digests (only chat). Build cost is small (a script that reads the wave log + outputs templated digests; no LLM dependency required for the "changes since wave N" form).
 
