@@ -1,3 +1,8 @@
+---
+name: blueprint-validate
+description: Validation phase of a Blueprint initiative. Fact-checks claims, audits copy/UX, and verifies feasibility against source code — structured as a diagnosis loop, not a static checklist. Use during Stage 4 validation before deploying or publishing Blueprint artifacts to stakeholders.
+---
+
 # /blueprint-validate
 
 Validation phase of a Blueprint initiative. Fact-checks claims, audits copy/UX, and verifies feasibility against source code — structured as a diagnosis loop, not a static checklist.

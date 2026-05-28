@@ -1,3 +1,8 @@
+---
+name: blueprint-handoff
+description: Generate a session/stage/cross-repo handoff document by deriving state from git + pwd + recent activity, leaving only "what's pending" and "sequencing" for operator input. Use when leaving work for a future session or another agent to pick up, or when the operator says "write a handoff" or "handoff doc".
+---
+
 # /blueprint-handoff
 
 Generate a session/stage/cross-repo handoff document by deriving state from git + pwd + recent activity, leaving only "what's pending" and "sequencing" for operator input.

@@ -1,3 +1,8 @@
+---
+name: blueprint-research
+description: Research phase of a Blueprint initiative. Produces competitive analysis, codebase exploration, and market comparables. Use during Stage 1 of a new Blueprint initiative when defining scope and identifying reference patterns.
+---
+
 # /blueprint-research
 
 Research phase of a Blueprint initiative. Produces competitive analysis, codebase exploration, and market comparables.

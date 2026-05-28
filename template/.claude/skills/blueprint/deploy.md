@@ -1,3 +1,8 @@
+---
+name: blueprint-deploy
+description: Deployment phase of a Blueprint initiative. Packages prototype + docs as a Vercel site. Use when ready to ship a Blueprint prototype/portal externally for stakeholder review.
+---
+
 # /blueprint-deploy
 
 Deployment phase of a Blueprint initiative. Packages prototype + docs as a Vercel site.

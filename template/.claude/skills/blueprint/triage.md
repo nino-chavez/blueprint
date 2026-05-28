@@ -1,3 +1,8 @@
+---
+name: blueprint-triage
+description: Triage stakeholder feedback after a Blueprint demo or doc review through a state machine of categories and dispositions. Use when feedback arrives from stakeholders and needs to be classified into actionable next steps with dispositions (accept, defer, decline, etc).
+---
+
 # /blueprint-triage
 
 Triage stakeholder feedback after a Blueprint demo or doc review through a state machine of categories and dispositions.

@@ -1,3 +1,8 @@
+---
+name: blueprint-docs
+description: Document generation phase of a Blueprint initiative. Produces strategic documents from research findings and prototype decisions. Use during Stage 3 documentation work after research and prototype phases have produced source material.
+---
+
 # /blueprint-docs
 
 Document generation phase of a Blueprint initiative. Produces strategic documents from research findings and prototype decisions.
