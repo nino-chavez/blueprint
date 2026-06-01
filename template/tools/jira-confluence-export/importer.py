@@ -212,9 +212,9 @@ def md_to_storage(md: str) -> str:
                 code.append(lines[i])
                 i += 1
             i += 1
-            html.append('<ac:structured-macro ac:name="code">'
-                        f'<ac:plain-text-body><![CDATA[{chr(10).join(code)}]]></ac:plain-text-body>'
-                        '</ac:structured-macro>')
+            # Fabric-safe code block. The <ac:structured-macro name="code"> storage
+            # macro is rejected on v2 create ("unsupported extensions"); <pre> works.
+            html.append(f"<pre>{_esc(chr(10).join(code))}</pre>")
             continue
         # table: header row followed by a |---|---| separator
         if line.lstrip().startswith("|") and i + 1 < len(lines) and _is_table_sep(lines[i + 1]):

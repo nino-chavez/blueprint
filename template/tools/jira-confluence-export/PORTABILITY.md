@@ -60,5 +60,9 @@ python3 compass.py                       # Compass payloads (or retarget DX Fabr
 - **Xray test content** (steps, gherkin) lives in Xray, set via GraphQL
   `createTest`; bare Jira `Test` issues won't carry steps. CSV importer is
   UI-only — GraphQL is the headless path.
+- **Confluence code blocks: use `<pre>`, not `<ac:structured-macro name="code">`.**
+  The storage code macro is rejected on v2 page create ("Content contains
+  unsupported extensions and cannot be edited in Fabric editor") — it silently
+  drops every page with a code fence. Plain `<pre>` is Fabric-safe.
 - **Compass is sunsetting → DX Fabric (EOL 2026-12-31).** For green-field,
   target DX directly; component payloads are forward-portable, scorecards aren't.
