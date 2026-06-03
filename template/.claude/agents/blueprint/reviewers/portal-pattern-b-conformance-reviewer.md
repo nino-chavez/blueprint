@@ -82,8 +82,23 @@ For each `_meta/<page-id>.json` that exists, verify:
 
 - `strategy` object exists with at least one populated field (`decision`, `why`, `tradeoffs`, `sources`)
 - `currentState` object exists with at least one populated field (`screenshot`, `summary`, `what_changes`)
+- `destination` exists and is exactly `product` or `blueprint` (per `template/portal/CONVENTIONS.md` § "The `destination` field")
+
+```bash
+for meta in blueprint/portal/_meta/*.json; do
+  case "$meta" in */index.json|*/slices/*) continue ;; esac
+  dest=$(grep -oE '"destination"[[:space:]]*:[[:space:]]*"[^"]*"' "$meta" | grep -oE '"[^"]*"$' | tr -d '"')
+  case "$dest" in
+    product|blueprint) ;;
+    "") echo "DESTINATION_MISSING: $(basename "$meta" .json)" ;;
+    *)  echo "DESTINATION_INVALID: $(basename "$meta" .json) -> '$dest'" ;;
+  esac
+done
+```
 
 **Empty drawers are the most common Pattern B failure mode.** A `_meta/<page-id>.json` with `strategy: {}` and `currentState: {}` passes the file-exists check but disables the portal's load-bearing primitives. BLOCK on more than 25% empty drawers across the page set. WARN on any.
+
+**A missing or invalid `destination` BLOCKs.** It is the field the traceability sweep keys on to decide which pages get the research→meta→HTML→production walk; an absent value means a positioning page can be silently treated as a product surface (the rally-hq migration-sweep failure) or a product page can escape the sweep. Every page meta must declare `product` or `blueprint`.
 
 ### 5. Verify I-2 invariant (page metadata declaration)
 
@@ -184,6 +199,7 @@ META_INDEX: present | empty | missing
 PAGES_COUNT: <count>
 META_FILES_PRESENT: <count> / <pages-count>
 EMPTY_DRAWERS: <count> / <meta-files-present>
+DESTINATION_ISSUES: <list of DESTINATION_MISSING / DESTINATION_INVALID, or "none"; >0 BLOCKS>
 I-2_DECLARATIONS: <count> / <pages-count>
 I-3_VIOLATIONS: <list of pages with local provider overrides>
 I-5_INLINE_STYLES: <count of pages with style="" attributes>
