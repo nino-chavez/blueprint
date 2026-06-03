@@ -3,6 +3,7 @@
   "title": "Example Page",
   "group": "marketing",
   "slice": "example-slice",
+  "destination": "product",
   "surface": "TBD — what production surface does this map to?",
   "phase": "Phase 1",
   "route": "/pages/example.html",

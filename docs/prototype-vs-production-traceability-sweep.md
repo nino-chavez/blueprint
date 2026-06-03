@@ -42,7 +42,7 @@ None of these walks the **research → meta → prototype HTML → production co
 **Skip when**:
 - Initiative is greenfield-pre-Stage-3 (no production code yet to diff against the meta)
 - Initiative is Tier 0 (no production destination — the prototype IS the deliverable)
-- Per-meta `destination` field is `blueprint` for all metas (synthetic design study; no production-code projection exists)
+- Per-meta `destination` field is `blueprint` for all metas (synthetic design study; no production-code projection exists). The `destination` field (`product | blueprint`) is defined in `template/portal/CONVENTIONS.md` § "The `destination` field" and enforced by `portal-pattern-b-conformance-reviewer`.
 
 ---
 
