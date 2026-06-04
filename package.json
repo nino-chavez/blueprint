@@ -1,0 +1,46 @@
+{
+  "name": "@nino-chavez/blueprint-cli",
+  "version": "0.1.0",
+  "description": "Blueprint methodology distribution — canonical docs, reviewer agents, stampers, and the blueprint CLI.",
+  "license": "MIT",
+  "author": "Nino Chavez",
+  "homepage": "https://github.com/nino-chavez/blueprint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nino-chavez/blueprint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nino-chavez/blueprint/issues"
+  },
+  "keywords": [
+    "blueprint",
+    "methodology",
+    "product-planning",
+    "prototyping",
+    "agent-assisted",
+    "scaffolding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/",
+    "template/",
+    "docs/",
+    "METHODOLOGY.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

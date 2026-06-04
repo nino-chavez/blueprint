@@ -51,20 +51,33 @@ def find_blueprint_yml(start: Path) -> Path | None:
     return None
 
 
-def _read_methodology_home(blueprint_yml: Path) -> str | None:
-    """Cheap top-level scan for a `methodology_home:` field (no yaml dependency)."""
+def _read_yaml_scalar(blueprint_yml: Path, key: str) -> str | None:
+    """Cheap top-level scan for a `<key>:` scalar value (no yaml dependency)."""
     try:
         for line in blueprint_yml.read_text(encoding="utf-8").splitlines():
             stripped = line.strip()
             if stripped.startswith("#") or ":" not in stripped:
                 continue
-            key, _, val = stripped.partition(":")
-            if key.strip() == "methodology_home":
+            k, _, val = stripped.partition(":")
+            if k.strip() == key:
                 val = val.split("#", 1)[0].strip().strip('"').strip("'")
                 return val or None
     except Exception:
         pass
     return None
+
+
+def _read_methodology_home(blueprint_yml: Path) -> str | None:
+    return _read_yaml_scalar(blueprint_yml, "methodology_home")
+
+
+def _read_methodology_version(blueprint_home: Path) -> str | None:
+    """The methodology's current version — single source: package.json `version`."""
+    try:
+        pkg = json.loads((blueprint_home / "package.json").read_text(encoding="utf-8"))
+        return pkg.get("version")
+    except Exception:
+        return None
 
 
 def _npm_package_home() -> Path | None:
@@ -184,7 +197,21 @@ def main() -> int:
         "the change lands in those files, not in this consumer session's notes.\n\n"
     )
 
-    body_parts: list[str] = [header]
+    methodology_version = _read_methodology_version(blueprint_home)
+    pinned = _read_yaml_scalar(initiative_root / "blueprint.yml", "methodology_version")
+    version_line = ""
+    if methodology_version:
+        version_line = f"**Methodology version**: `{methodology_version}`"
+        if pinned and pinned != methodology_version:
+            version_line += (
+                f" — this initiative pins `methodology_version: {pinned}`, which differs. "
+                "Run `blueprint upgrade` to review the changelog delta before proposing changes."
+            )
+        elif pinned:
+            version_line += f" (initiative pinned to `{pinned}`, in sync)."
+        version_line += "\n\n"
+
+    body_parts: list[str] = [header, version_line]
     for label, content in docs:
         body_parts.append(f"---\n\n## `{label}`\n\n{content}\n\n")
 
