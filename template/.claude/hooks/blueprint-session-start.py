@@ -19,7 +19,10 @@ Load order (codified, not arbitrary):
 This order matches the question hierarchy any consumer session needs to answer
 before proposing methodology changes from scratch.
 
-Resolution: BLUEPRINT_HOME env var, else `~/Workspace/dev/wip/blueprint`.
+Resolution (portable, no single hardcoded path): BLUEPRINT_HOME env var, else a
+`methodology_home:` field in the initiative's blueprint.yml, else the local dev
+path `~/Workspace/dev/tools/blueprint`, else an npm-installed
+`@nino-chavez/blueprint-cli`. A candidate counts only if it contains METHODOLOGY.md.
 
 Output protocol: Claude Code SessionStart hooks emit a JSON object on stdout
 with a `hookSpecificOutput.additionalContext` field. The content of that field
@@ -48,9 +51,73 @@ def find_blueprint_yml(start: Path) -> Path | None:
     return None
 
 
-def resolve_blueprint_home() -> Path:
-    raw = os.environ.get("BLUEPRINT_HOME", "~/Workspace/dev/wip/blueprint")
-    return Path(raw).expanduser().resolve()
+def _read_methodology_home(blueprint_yml: Path) -> str | None:
+    """Cheap top-level scan for a `methodology_home:` field (no yaml dependency)."""
+    try:
+        for line in blueprint_yml.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#") or ":" not in stripped:
+                continue
+            key, _, val = stripped.partition(":")
+            if key.strip() == "methodology_home":
+                val = val.split("#", 1)[0].strip().strip('"').strip("'")
+                return val or None
+    except Exception:
+        pass
+    return None
+
+
+def _npm_package_home() -> Path | None:
+    """The methodology ships inside the npm package; locate it via `npm root -g`.
+
+    This is the zero-config path for a team member who `npm install`s the CLI
+    instead of cloning. Probed last (after env + blueprint.yml + local dev paths)
+    so local sessions never pay the subprocess cost.
+    """
+    import shutil
+    import subprocess
+
+    if not shutil.which("npm"):
+        return None
+    try:
+        root = subprocess.run(
+            ["npm", "root", "-g"], capture_output=True, text=True, timeout=5
+        ).stdout.strip()
+    except Exception:
+        return None
+    if not root:
+        return None
+    return Path(root) / "@nino-chavez" / "blueprint-cli"
+
+
+def _candidate_homes(initiative_root: Path | None):
+    """Yield candidate methodology homes in resolution priority order."""
+    env = os.environ.get("BLUEPRINT_HOME")
+    if env:
+        yield Path(env).expanduser()
+    if initiative_root is not None:
+        field = _read_methodology_home(initiative_root / "blueprint.yml")
+        if field:
+            p = Path(field).expanduser()
+            yield p if p.is_absolute() else (initiative_root / p)
+    home = Path.home()
+    yield home / "Workspace" / "dev" / "tools" / "blueprint"   # canonical local dev
+    yield home / "Workspace" / "dev" / "wip" / "blueprint"     # legacy pre-rename
+    npm = _npm_package_home()
+    if npm is not None:
+        yield npm
+
+
+def resolve_blueprint_home(initiative_root: Path | None = None) -> Path | None:
+    """Resolve the methodology source. A candidate must contain METHODOLOGY.md to
+    count. Returns None if nothing resolves (caller emits remediation)."""
+    for cand in _candidate_homes(initiative_root):
+        try:
+            if cand and (cand / "METHODOLOGY.md").is_file():
+                return cand.resolve()
+        except Exception:
+            continue
+    return None
 
 
 def load_canonical(blueprint_home: Path) -> list[tuple[str, str]]:
@@ -79,18 +146,23 @@ def main() -> int:
     if initiative_root is None:
         return 0
 
-    blueprint_home = resolve_blueprint_home()
-    if not blueprint_home.is_dir():
+    blueprint_home = resolve_blueprint_home(initiative_root)
+    if blueprint_home is None:
         print(
             json.dumps(
                 {
                     "hookSpecificOutput": {
                         "hookEventName": "SessionStart",
                         "additionalContext": (
-                            f"# Blueprint canonical context unavailable\n\n"
-                            f"BLUEPRINT_HOME resolved to `{blueprint_home}` but that "
-                            f"directory does not exist. Set BLUEPRINT_HOME or clone the "
-                            f"Blueprint repo to `~/Workspace/dev/wip/blueprint`.\n"
+                            "# Blueprint canonical context unavailable\n\n"
+                            "Could not locate the methodology source. Resolution order: "
+                            "`$BLUEPRINT_HOME`, a `methodology_home:` field in this "
+                            "initiative's blueprint.yml, the local dev path "
+                            "`~/Workspace/dev/tools/blueprint`, then an npm-installed "
+                            "`@nino-chavez/blueprint-cli`. None contained METHODOLOGY.md.\n\n"
+                            "Fix: `export BLUEPRINT_HOME=/path/to/blueprint`, or "
+                            "`npm install -g @nino-chavez/blueprint-cli`, or add "
+                            "`methodology_home: <path>` to blueprint.yml.\n"
                         ),
                     }
                 }
@@ -107,8 +179,8 @@ def main() -> int:
         "them before reasoning about methodology shape, variant choice, or portal "
         "pattern — they exist precisely so consumer sessions stop re-deriving the "
         "methodology from first principles each time.\n\n"
-        "**Source of truth**: these files at `$BLUEPRINT_HOME` (`"
-        f"{blueprint_home}`). If you propose a change to Blueprint methodology, "
+        "**Source of truth**: the methodology source at `"
+        f"{blueprint_home}`. If you propose a change to Blueprint methodology, "
         "the change lands in those files, not in this consumer session's notes.\n\n"
     )
 

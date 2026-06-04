@@ -13,12 +13,12 @@
 //   ...
 //   N violations  (or "0 violations" on success)
 //
-// Source: ~/Workspace/dev/tools/big-blueprint/docs/doc-surface-discipline-pattern.md
+// Source: ~/Workspace/dev/tools/blueprint/docs/doc-surface-discipline-pattern.md
 //
 // No external dependencies — uses only node:fs + node:path.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
 
 const EXCLUDED_SEGMENTS = new Set(['rag', 'archive', 'node_modules', '.git']);
 
