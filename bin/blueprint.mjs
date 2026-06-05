@@ -44,6 +44,7 @@ Usage: blueprint <command> [options]
 Commands:
   init       Scaffold a new Blueprint portal (Pattern A or B)
   review     Run an executable reviewer against a target  (blueprint review <name> [--target=<dir>] [--json])
+             discovers canonical + org reviewers (ADR-0006); blueprint review --list enumerates them
   cost       Per-stage effort/model config + telemetry    (blueprint cost [--target=<dir>] [--json])
   fleet      Classify consumer drift from consumers.yml    (blueprint fleet [--json] [--strict])
              current / behind / ahead / on-deprecated / unpinned / unresolvable
@@ -92,38 +93,65 @@ function readTier(targetDir) {
   return undefined;
 }
 
-// review <name> [--target=<dir>] [--json] — load the reviewer's .mjs (ADR-0002
+// review <name> [--target=<dir>] [--json] | review --list — discover reviewers
+// across canonical + org sources (ADR-0006), then load the named one (ADR-0002
 // contract) and run it against the target. Exit 1 on BLOCKED, 0 otherwise.
 async function runReview(reviewArgv, home) {
   const { flags, positionals } = parseArgs(reviewArgv);
-  const name = positionals[0];
   const targetDir = resolve(flags.target || process.cwd());
+
+  const libDir = join(home, 'template', 'tools', 'lib');
+  let registry;
+  try {
+    registry = await import(pathToFileURL(join(libDir, 'reviewer-registry.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint review: failed to load reviewer-registry from ${libDir} — ${e.message}`);
+    process.exit(2);
+  }
+
+  // --list — enumerate discovered reviewers (canonical first, then org), with shadows.
+  if (flags.list) {
+    const { active, shadows } = registry.discoverReviewers({ home, targetDir });
+    console.log(`blueprint review — ${active.length} reviewer(s) discovered  (target: ${targetDir})\n`);
+    let cur = null;
+    for (const r of active) {
+      if (r.source !== cur) { cur = r.source; console.log(`  [${cur}]`); }
+      console.log(`    ${r.name}${r.pkg ? `  (${r.pkg})` : ''}`);
+    }
+    if (shadows.length) {
+      console.log('\n  shadowed (same name as a higher-precedence reviewer — NOT run):');
+      for (const s of shadows) console.log(`    ! ${s.name} from ${s.source}${s.pkg ? ` (${s.pkg})` : ''} — shadowed by ${s.shadowedBy}`);
+    }
+    process.exit(0);
+  }
+
+  const name = positionals[0];
   if (!name) {
     console.error('blueprint review: missing reviewer name.');
     console.error('  usage: blueprint review <reviewer> [--target=<dir>] [--json]');
+    console.error('         blueprint review --list [--target=<dir>]');
     process.exit(2);
   }
-  const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', `${name}.mjs`);
-  if (!existsSync(reviewerPath)) {
-    console.error(`blueprint review: no executable reviewer '${name}'.`);
-    console.error(`  expected: ${reviewerPath}`);
-    console.error('  (only some reviewers have .mjs pairs so far — build-order step 3+.)');
+
+  const { entry, shadows } = registry.resolveReviewer(name, { home, targetDir });
+  if (!entry) {
+    console.error(`blueprint review: no executable reviewer '${name}' (canonical or org).`);
+    console.error('  run `blueprint review --list` to see what is available.');
     process.exit(2);
   }
-  let fn;
-  try {
-    fn = (await import(pathToFileURL(reviewerPath).href)).default;
-  } catch (e) {
-    console.error(`blueprint review: failed to load '${name}': ${e.message}`);
+  for (const s of shadows) {
+    console.error(`! '${name}' from ${s.source}${s.pkg ? ` (${s.pkg})` : ''} is SHADOWED by ${s.shadowedBy} — running the ${entry.source} one (canonical authority; an org reviewer may tighten via its OWN gate, never relax a canonical one).`);
+  }
+
+  const loaded = await registry.loadReviewer(entry.path);
+  if (!loaded.ok) {
+    console.error(`blueprint review: '${name}' (${entry.source}) — ${loaded.reason}`);
     process.exit(2);
   }
-  if (typeof fn !== 'function') {
-    console.error(`blueprint review: '${name}' has no default export function (ADR-0002 review() contract).`);
-    process.exit(2);
-  }
+
   let res;
   try {
-    res = await fn({ targetDir, blueprintYml: { tier: readTier(targetDir) }, methodologyHome: home });
+    res = await loaded.fn({ targetDir, blueprintYml: { tier: readTier(targetDir) }, methodologyHome: home });
   } catch (e) {
     console.error(`blueprint review: '${name}' threw — ${e.stack || e.message}`);
     process.exit(2);
@@ -133,7 +161,8 @@ async function runReview(reviewArgv, home) {
     console.log(JSON.stringify(res, null, 2));
   } else {
     const icon = res.status === 'PASS' ? '✓' : res.status === 'WARN' ? '!' : '✗';
-    console.log(`${icon} ${res.status} — ${name}  (${(res.metadata && res.metadata.targetSummary) || ''})`);
+    const src = entry.source === 'canonical' ? '' : `  [${entry.source}${entry.pkg ? `: ${entry.pkg}` : ''}]`;
+    console.log(`${icon} ${res.status} — ${name}${src}  (${(res.metadata && res.metadata.targetSummary) || ''})`);
     for (const f of res.findings || []) {
       console.log(`\n  [${f.severity}] ${f.location}`);
       console.log(`    ${f.message}`);
