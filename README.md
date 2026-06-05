@@ -1,10 +1,32 @@
 # Blueprint
 
-Agent-assisted jig for product planning, prototyping, and stakeholder alignment.
+**Run a product initiative end-to-end, agent-assisted** — research, prototype, strategy docs, fact-check, deploy. You bring the context (screenshots, BRDs, codebase, competitive intel); an AI agent runs the pipeline and ships one portal that serves leadership, engineering, and everyone.
 
-## A note on the name
+[![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint-platform.pages.dev)
 
-Originally **the original employer-prefixed name** — the "Big" prefix followed the commerce platform tooling conventions (the platform design system, BigTools, the original employer-prefixed name) because the methodology was extracted from a the commerce platform CX initiative in March 2026. Renamed to **Blueprint** on 2026-05-25 once the methodology had proved general-purpose across Rally HQ (tournament management), Signal Dispatch (content platform audit), ninochavez.co v3 (personal portfolio brownfield), TNA (agency portfolio), and the original BC work. The methodology never required a vertical; the rename made that explicit.
+```bash
+npx @nino-chavez-labs/blueprint-cli init
+```
+
+## Quickstart
+
+```bash
+# 1. Scaffold a new initiative + its portal (validated against the variant × tier matrix)
+npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
+
+# 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield), tier (0–2),
+#    and portal_pattern (A|B). Then run the pipeline in Claude Code:
+#    /blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy
+
+# 3. Push to deploy your portal, then verify conformance
+npx @nino-chavez-labs/blueprint-cli doctor
+```
+
+Six commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor`. Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+---
+
+A note on the name: originally **the original employer-prefixed name** (extracted from a the commerce platform CX initiative, March 2026); renamed **Blueprint** on 2026-05-25 once it proved general-purpose. The methodology never required a vertical.
 
 ## What This Is
 
