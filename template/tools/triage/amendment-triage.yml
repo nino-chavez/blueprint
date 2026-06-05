@@ -1,0 +1,50 @@
+# Amendment triage — the UP-channel classifier (ADR-0004 step 10).
+#
+# DORMANT ARTIFACT: this file is NOT under .github/workflows/, so it never runs
+# as shipped. To ACTIVATE on a repo, copy it to `.github/workflows/amendment-triage.yml`.
+# It is parked here deliberately so installing the methodology adds no surprise
+# automation to a repo — activation is an explicit operator choice.
+#
+# What it does once active: on every amendment/RFC issue (opened or edited), it
+# runs tools/triage/classify.mjs to read the issue form's declared bucket + kind
+# (or infer from keywords for a free-form issue) and applies the 4-bucket labels
+# (bucket:<x>, kind:rfc|bug-fix, needs-rfc|pr-ok, stays-in-consumer, and
+# triage:needs-human when the bucket was a heuristic guess). It LABELS only — it
+# never merges, closes, or edits content. See README.md.
+
+name: Amendment triage
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  triage:
+    # Only act on issues filed via the amendment/RFC form (they carry `amendment`).
+    if: contains(github.event.issue.labels.*.name, 'amendment')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Classify + label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUM: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          # classify.mjs prints one label per line. Adjust the path if you vendored
+          # the methodology tools elsewhere than tools/triage/.
+          LABELS="$(node tools/triage/classify.mjs "$GITHUB_EVENT_PATH")"
+          echo "Computed labels:"; echo "$LABELS"
+          while IFS= read -r label; do
+            [ -z "$label" ] && continue
+            # create-if-missing (idempotent), then add to the issue.
+            gh label create "$label" --repo "$REPO" --color ededed 2>/dev/null || true
+            gh issue edit "$NUM" --repo "$REPO" --add-label "$label"
+          done <<< "$LABELS"
