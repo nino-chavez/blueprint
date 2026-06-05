@@ -117,9 +117,9 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 `CONTRIBUTING.md` (Rust-RFC-lite) + amendment/RFC issue form + triage classifier,
 `CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
 
-> Status: the CLI is feature-complete in this repo (`init`/`review`/`cost`/
-> `fleet`/`upgrade`/`doctor` all real). `npx @nino-chavez-labs/blueprint-cli` works
-> once the package is published; until then run `bin/blueprint.mjs` from a clone.
+> Status: **published** — `@nino-chavez-labs/blueprint-cli@0.1.0` is live on npm.
+> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all six
+> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`) are real.
 
 ### Optional: Add Forge Signal (strategic content generation)
 
