@@ -30,11 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # NOTE: no `registry-url:` here on purpose. setup-node's registry-url writes
+      # an .npmrc keyed on NODE_AUTH_TOKEN and pins NPM_CONFIG_USERCONFIG to it —
+      # which made npm publish ANONYMOUSLY (404) because we auth via NPM_TOKEN, not
+      # NODE_AUTH_TOKEN. We write the auth line explicitly below instead.
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: "https://registry.npmjs.org"
       - run: npm install --no-audit --no-fund
+      - name: Authenticate to npm
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> "$HOME/.npmrc"
+        env:
+          NPM_TOKEN: ${{ secrets.BLUEPRINT_NPM_TOKEN }}
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
@@ -42,8 +49,8 @@ jobs:
           publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Project-scoped secret → the NPM_TOKEN env var the changesets action reads.
-          # Avoids clashing with any org-level / other-project NPM_TOKEN secret.
+          # Project-scoped secret → also exposed as NPM_TOKEN for the changesets
+          # action's own npm calls. The real auth is the ~/.npmrc written above.
           NPM_TOKEN: ${{ secrets.BLUEPRINT_NPM_TOKEN }}
           # Provenance is OFF: npm provenance requires a PUBLIC source repo, and
           # nino-chavez/blueprint is private — leaving it on fails the publish.
