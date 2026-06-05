@@ -135,17 +135,17 @@ const BANNER_FILES = new Set([
 const BANNER_LINES = {
   ".astro": [
     "<!--",
-    "  REPLACE_FOR_PROJECT — this file contains example business content carried over",
-    "  from the subs-initiative reference initiative. Rewrite or delete before sharing",
-    "  with stakeholders. The portal-pattern-a-conformance-reviewer treats this banner",
-    "  as a block — resolve before sharing with stakeholders.",
+    "  REPLACE_FOR_PROJECT — this surface carries example/placeholder content from the",
+    "  Blueprint reference template. Populate it from your initiative's deliverables (or",
+    "  delete it) before sharing with stakeholders. The portal-pattern-a-conformance-",
+    "  reviewer treats this banner as a block — resolve before sharing.",
     "-->",
     "",
   ].join("\n"),
   ".js": [
     "/**",
-    " * REPLACE_FOR_PROJECT — this file contains example data carried over from the",
-    " * subs-initiative reference initiative. Replace before shipping to stakeholders.",
+    " * REPLACE_FOR_PROJECT — this file carries example/placeholder data from the",
+    " * Blueprint reference template. Replace before shipping to stakeholders.",
     " */",
     "",
   ].join("\n"),
