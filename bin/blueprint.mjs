@@ -11,7 +11,7 @@
  *   cost     per-stage effort/model config + telemetry sweep (real — step 5, ADR-0003)
  *   fleet    classify consumer drift from consumers.yml     (real — step 7, ADR-0005)
  *   upgrade  preview/apply this consumer's pin bump         (real — step 8, ADR-0005)
- *   doctor   conformance / health check                     [stub — step 12]
+ *   doctor   conformance / health check (the false-green guard) (real — step 12)
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
  */
@@ -51,7 +51,8 @@ Commands:
              exit 0 = clean (incl. unpinned); exit 1 = drift (behind/on-deprecated/unresolvable or suspect registry)
   upgrade    Preview/apply this consumer's pin bump        (blueprint upgrade [--target=<dir>] [--apply] [--ack-untagged] [--require-pin] [--json])
              dry-run by default (terraform-plan style); --apply writes the methodology_version bump (dirty-tree-guarded, breaking-gated)
-  doctor     Conformance / health check                         (coming: step 12)
+  doctor     Conformance / health check                    (blueprint doctor [--target=<dir>] [--json])
+             actually loads the config + every reviewer + runs portal conformance — the false-green guard
 
 Global:
   -h, --help       Show help
@@ -61,13 +62,11 @@ The methodology source resolves via:
   $BLUEPRINT_HOME -> blueprint.yml methodology_home -> the CLI's own package -> local dev paths.
 `;
 
-// Each not-yet-built subcommand resolves the methodology home (proving the
-// resolver + distribution wiring) and reports its contract + which build-order
-// step lands it. A real consumer running `blueprint <cmd>` today gets an honest
-// "not yet, here's what it will do" — not a crash.
-const STUBS = {
-  doctor:  { step: 12, adr: '(conformance)',       does: 'gate on runtime/browser verification — the false-green guard' },
-};
+// Not-yet-built subcommands resolve the methodology home (proving the resolver +
+// distribution wiring) and report their contract + build-order step rather than
+// crashing. As of build-order step 12 every command is real, so this is empty —
+// kept as the seam for any future not-yet-built subcommand.
+const STUBS = {};
 
 function runInit(initArgv, home) {
   // init delegates to the canonical stamper; the CLI is a stable front door to it.
@@ -433,6 +432,40 @@ async function runUpgrade(upgradeArgv, home) {
   process.exit(0);
 }
 
+// doctor [--target=<dir>] [--json] — the conformance/health capstone. Actually
+// loads the config + every discovered reviewer + runs portal conformance (real
+// runtime verification, not a curl-200 / files-exist green) and reports what it
+// did NOT check. exit 0 healthy (pass/warn), 1 on any FAIL, 2 on load error.
+async function runDoctor(doctorArgv, home) {
+  const { flags } = parseArgs(doctorArgv);
+  const targetDir = resolve(flags.target || process.cwd());
+  let doctor;
+  try {
+    doctor = await import(pathToFileURL(join(home, 'template', 'tools', 'lib', 'doctor.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint doctor: failed to load doctor lib — ${e.message}`);
+    process.exit(2);
+  }
+
+  const result = await doctor.runDoctor({ home, targetDir });
+
+  if (flags.json) {
+    console.log(JSON.stringify(result, null, 2));
+    process.exit(result.status === 'fail' ? 1 : 0);
+  }
+
+  const icon = { pass: '✓', warn: '!', fail: '✗', skip: '·' };
+  console.log(`blueprint doctor — ${targetDir}\n`);
+  for (const c of result.checks) {
+    console.log(`  ${icon[c.status] || '?'} ${c.name.padEnd(20)} ${c.detail}`);
+    if (c.remediation) console.log(`      fix: ${c.remediation}`);
+  }
+  console.log('\n  not checked (by design — a green here is not a build/browser green):');
+  for (const n of result.notChecked) console.log(`    · ${n}`);
+  console.log(`\noverall: ${result.status.toUpperCase()} → exit ${result.status === 'fail' ? 1 : 0}`);
+  process.exit(result.status === 'fail' ? 1 : 0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -482,6 +515,11 @@ async function main() {
 
   if (cmd === 'fleet') {
     await runFleet(argv.slice(argv.indexOf('fleet') + 1), home);
+    return;
+  }
+
+  if (cmd === 'doctor') {
+    await runDoctor(argv.slice(argv.indexOf('doctor') + 1), home);
     return;
   }
 
