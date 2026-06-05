@@ -8,6 +8,8 @@ You are the gate that catches portal drift before it ships. The single most comm
 
 This reviewer enforces the contract codified in [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md).
 
+**Executable pair (ADR-0002):** `portal-pattern-a-conformance-reviewer.mjs` implements the checks below as a runnable lint — `blueprint review portal-pattern-a-conformance-reviewer --target=<dir> [--json]` (CLI), or imported directly in CI. This `.md` is the canonical human-readable description; the `.mjs` must stay consistent with it (the gardening agent reconciles drift). Each `.mjs` finding carries a `remediation` string (the Lopopolo injection pattern) so an agent reading the output can act on it.
+
 ## When you run
 
 Tier 0 → Tier 1 graduation gate. Run when:
@@ -51,7 +53,7 @@ Extra routes are permitted as long as they nest under a canonical verb (e.g., `i
 
 ### 3. Verify the audience switcher
 
-Grep `apps/portal/src/layouts/Layout.astro` (or the project's equivalent shell layout) for:
+The generic Pattern A harness renders the switcher in the **nav component** (`PortalNav`), which the layout mounts — so grep the portal shell/nav (`apps/portal/src/components/PortalNav.tsx`, `Layout.astro`, or the project's equivalent) for:
 
 - An import of `AudienceSwitcher` from `@blueprint/ui` or `@blueprint/ui/audience-switcher`
 - The component rendered inside the layout's navbar slot
