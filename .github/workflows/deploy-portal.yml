@@ -24,6 +24,7 @@ on:
     paths:
       - 'apps/portal/**'
       - 'packages/**'
+      - 'blueprint.yml'          # the portal reads this at build time (hero, excerpts, sources)
       - '.github/workflows/deploy-portal.yml'
   workflow_dispatch:
 

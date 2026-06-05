@@ -128,23 +128,27 @@ portal:
     hero_eyebrow: Blueprint Platform
     hero_headline: The methodology, productized for teams.
     hero_subhead: "A team-adoptable, portable Blueprint distribution — configurable cost, git-native access, and bidirectional non-breaking updates. Pick how you want to enter."
+  # Discover = the front door: what Blueprint is, how it works, why this approach,
+  # and proof. Sourced from the methodology canon (README / METHODOLOGY / START-HERE),
+  # NOT from the productization initiative's internal charter (lineage / gap-tracks /
+  # scope-ceiling belong in Inspect, not on a newcomer's first screen).
   excerpts:
     - card: discover
       title: What it is
       path: README.md
       heading: What This Is
     - card: discover
-      title: Extends, not supersedes
-      path: decisions/00-charter.md
-      heading: "Relationship to blueprint-redesign — extends, does not supersede"
+      title: How it works
+      path: README.md
+      heading: How It Works
     - card: discover
-      title: The expansion
-      path: decisions/00-charter.md
-      heading: "Expansion — what the original six miss (architect-surfaced)"
+      title: Why this approach
+      path: METHODOLOGY.md
+      heading: "First Principle: Agent Struggle Is a Missing Capability"
     - card: discover
-      title: Scope ceiling
-      path: decisions/00-charter.md
-      heading: "Resolved — scope ceiling: A (methodology-native only)"
+      title: See it in action
+      path: START-HERE.md
+      heading: See it in action
   inspect:
     docs:
       - title: Charter
