@@ -63,11 +63,35 @@ function stripScalarComment(s) {
   return (i >= 0 ? s.slice(0, i) : s).trim();
 }
 
+function splitTopLevelCommas(s) {
+  // Split on commas that are NOT inside a quoted string. A value like
+  // skip_justification: "spike-only, deferred" must survive intact.
+  const parts = [];
+  let buf = '';
+  let quote = null;
+  for (const ch of s) {
+    if (quote) {
+      if (ch === quote) quote = null;
+      buf += ch;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+      buf += ch;
+    } else if (ch === ',') {
+      parts.push(buf);
+      buf = '';
+    } else {
+      buf += ch;
+    }
+  }
+  parts.push(buf);
+  return parts;
+}
+
 function parseInlineMap(braced) {
-  // braced: the text between { and }. Split on commas (no nested braces in our
-  // shape), each piece `key: value`; unwrap quotes on value.
+  // braced: the text between { and }. Split on top-level commas (no nested braces
+  // in our shape), each piece `key: value`; unwrap quotes on value.
   const out = {};
-  for (const piece of braced.split(',')) {
+  for (const piece of splitTopLevelCommas(braced)) {
     const m = /^\s*([A-Za-z_]+)\s*:\s*(.+?)\s*$/.exec(piece);
     if (!m) continue;
     let v = m[2].trim();
@@ -95,7 +119,10 @@ function normalizeStage(raw) {
 export function parseCostBlock(ymlText) {
   const lines = ymlText.split('\n');
   let i = lines.findIndex((l) => /^cost:\s*(#.*)?$/.test(l));
-  if (i < 0) return { default: { ...DEFAULT }, stages: {} };
+  // `present` lets the step-6 gate distinguish an operator who deliberately wrote
+  // a cost block (and may have downgraded a stage) from a consumer on built-in
+  // defaults (no conscious under-processing choice → nothing to gate).
+  if (i < 0) return { present: false, default: { ...DEFAULT }, stages: {} };
 
   let dflt = { ...DEFAULT };
   const stages = {};
@@ -125,7 +152,7 @@ export function parseCostBlock(ymlText) {
       stages[m[1]] = normalizeStage(parseInlineMap(m[2]));
     }
   }
-  return { default: dflt, stages };
+  return { present: true, default: dflt, stages };
 }
 
 /** Read + parse the cost block from a target dir's blueprint.yml (never throws). */
@@ -133,7 +160,7 @@ export function readCostBlock(targetDir) {
   try {
     return parseCostBlock(readFileSync(`${targetDir}/blueprint.yml`, 'utf8'));
   } catch {
-    return { default: { ...DEFAULT }, stages: {} };
+    return { present: false, default: { ...DEFAULT }, stages: {} };
   }
 }
 
@@ -190,9 +217,15 @@ quality:
   audit_before_share: true
 `;
   const cb = parseCostBlock(SAMPLE);
+  assert(cb.present === true, 'present=true when cost block exists');
   assert(cb.default.effort === 'medium' && cb.default.modelTier === 'inherit', 'default parsed');
   assert(cb.stages.research.effort === 'high' && cb.stages.research.modelTier === 'opus', 'research stage parsed');
   assert(cb.stages.deploy.skipJustification === 'mechanical', 'deploy skip_justification unquoted');
+
+  // A justification containing a comma must survive the inline-map split.
+  const commaCb = parseCostBlock('cost:\n  stages:\n    fact_check: { effort: low, model_tier: sonnet, skip_justification: "spike-only, deferred to next cycle" }\n');
+  assert(commaCb.stages.fact_check.skipJustification === 'spike-only, deferred to next cycle', 'skip_justification with comma survives');
+  assert(commaCb.stages.fact_check.effort === 'low' && commaCb.stages.fact_check.modelTier === 'sonnet', 'comma value did not corrupt sibling keys');
   assert(!cb.stages.quality, 'parser stopped at the cost block dedent (quality not captured)');
 
   const r = resolveCost(cb, 'research');
@@ -211,9 +244,10 @@ quality:
   // inherit never counts as a model downgrade.
   assert(underProcessed('research', { effort: 'high', modelTier: 'inherit', skipJustification: null }).belowAnchor === false, 'inherit model not a downgrade');
 
-  // Absent block → all DEFAULT.
+  // Absent block → all DEFAULT, present=false (the gate's PASS signal).
   const empty = parseCostBlock('tier: 1\nquality:\n  cite_sources: true\n');
+  assert(empty.present === false, 'present=false when no cost block');
   assert(empty.default.effort === 'medium' && Object.keys(empty.stages).length === 0, 'absent cost block → DEFAULT');
 
-  console.log('cost-dial self-test: PASS (8 assertions)');
+  console.log('cost-dial self-test: PASS (12 assertions)');
 }
