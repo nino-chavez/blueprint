@@ -84,6 +84,43 @@ cd my-initiative/
 # and agent definitions that an AI assistant can use to execute each stage.
 ```
 
+## Command-line interface — `@nino-chavez/blueprint-cli`
+
+Blueprint ships a thin, dependency-free CLI that operationalizes the methodology
+as a team-adoptable, portable platform (scope ceiling A — methodology-native: no
+hosted server; everything runs on the git host + npm + local files). The
+methodology home is resolved automatically (`$BLUEPRINT_HOME` → a consumer's
+`blueprint.yml methodology_home` → the CLI's own installed package → local dev
+paths), so an `npm install` user gets a working CLI with zero config.
+
+```bash
+# scaffold a new initiative's portal (Pattern A platform-portal or B redesign-review)
+npx @nino-chavez/blueprint-cli init --pattern=A --target=my-initiative
+
+blueprint review <name> [--target=<dir>] [--json]   # run an executable reviewer (ADR-0002);
+blueprint review --list                              #   discovers canonical + org reviewers (ADR-0006)
+blueprint cost   [--target=<dir>] [--json]           # per-stage effort/model config + telemetry (ADR-0003)
+blueprint fleet  [--json] [--strict]                 # classify each consumer's drift from consumers.yml (ADR-0005)
+blueprint upgrade [--target=<dir>] [--apply]         # preview/apply a consumer's methodology pin bump (ADR-0005);
+                  [--ack-untagged] [--require-pin]    #   dry-run by default (terraform-plan style)
+blueprint doctor [--target=<dir>] [--json]           # conformance/health — loads the config + every reviewer
+                                                     #   + runs portal conformance (the false-green guard)
+```
+
+Each command is a thin front door over a dependency-free, self-tested lib under
+`template/tools/lib/` (`cost-dial`, `telemetry`, `consumers-registry`, `upgrade`,
+`reviewer-registry`, `doctor`). Reviewers are paired `.md` spec + `.mjs`
+executable (`template/.claude/agents/blueprint/reviewers/`); a department adds its
+own without forking by dropping `.mjs` files in `.blueprint/reviewers/` or
+publishing a `blueprint-reviewer-*` npm package — the `review()` signature is the
+whole interface. Distribution + governance: a `consumers.yml` registry, a
+`CONTRIBUTING.md` (Rust-RFC-lite) + amendment/RFC issue form + triage classifier,
+`CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
+
+> Status: the CLI is feature-complete in this repo (`init`/`review`/`cost`/
+> `fleet`/`upgrade`/`doctor` all real). `npx @nino-chavez/blueprint-cli` works
+> once the package is published; until then run `bin/blueprint.mjs` from a clone.
+
 ### Optional: Add Forge Signal (strategic content generation)
 
 If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline:
