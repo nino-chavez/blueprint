@@ -125,9 +125,9 @@ portal:
                                    #   pattern /^(?:ADR-)?(\d{4})-/ indexes them. Charter + prescription
                                    #   (2-digit) surface as explicit inspect.docs entries below.
   home:
-    hero_eyebrow: Blueprint Platform
-    hero_headline: The methodology, productized for teams.
-    hero_subhead: "A team-adoptable, portable Blueprint distribution — configurable cost, git-native access, and bidirectional non-breaking updates. Pick how you want to enter."
+    hero_eyebrow: Blueprint
+    hero_headline: Run a product initiative end-to-end, agent-assisted.
+    hero_subhead: "You bring the context — screenshots, BRDs, codebase, competitive intel. The agent runs the pipeline: research, prototype, strategy docs, fact-check, deploy — and ships one portal that serves leadership, engineering, and everyone. Team-adoptable and portable: configurable cost, git-native access, non-breaking updates."
   # Discover = the front door: what Blueprint is, how it works, why this approach,
   # and proof. Sourced from the methodology canon (README / METHODOLOGY / START-HERE),
   # NOT from the productization initiative's internal charter (lineage / gap-tracks /
@@ -152,11 +152,11 @@ portal:
   inspect:
     docs:
       - title: Charter
-        description: "Gap scorecard + the six productization tracks + the scope-ceiling decision."
+        description: "Origin context — how the productization was scoped: the gap analysis, the six tracks, and why scope-ceiling A (methodology-native). The why behind the decisions, not a how-to."
         path: decisions/00-charter.md
         meta: "→ decisions/00-charter.md"
       - title: Prescription
-        description: "What v1 ships, what defers, and the research-refined 14-step build order."
+        description: "What v1 shipped — the 14-step build order, now complete — and what defers to v2."
         path: decisions/01-prescription.md
         meta: "→ decisions/01-prescription.md"
       - title: Stage 1 canonical research
@@ -172,6 +172,47 @@ portal:
         path: METHODOLOGY-AMENDMENTS.md
         meta: "→ METHODOLOGY-AMENDMENTS.md"
     axioms: []
+  # Try embeds these as live iframes (id/label/src/note/status); Build lists them
+  # as integration cards (title/description/href/meta). One entry serves both.
+  surfaces:
+    - id: reference-portal
+      label: "The reference portal — this site"
+      src: "https://blueprint-platform.pages.dev/"
+      note: "This portal is itself a live Pattern A Blueprint portal, generated from its blueprint.yml — exactly what a new initiative's portal looks like. Stamp your own: npx @nino-chavez-labs/blueprint-cli init --pattern=A"
+      status: ready
+      title: "Reference portal (Pattern A)"
+      description: "A live Blueprint Pattern A portal — this very site, generated from blueprint.yml. The canonical example of an initiative's deliverables harness."
+      href: "https://blueprint-platform.pages.dev/"
+      meta: "blueprint-platform.pages.dev"
+  # Operate — day-to-day playbooks. The command is the actionable bit (in the
+  # description); href only where the target is public (npm), so no dead links
+  # while the methodology repo stays private.
+  operate:
+    items:
+      - title: "Install / run the CLI"
+        description: "npx @nino-chavez-labs/blueprint-cli — zero install. Subcommands: init · review · cost · fleet · upgrade · doctor."
+        href: "https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli"
+        status: Available
+      - title: "Scaffold a new initiative"
+        description: "npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative — stamps a portal you own, validated against the variant × tier matrix."
+        status: Available
+      - title: "Run a reviewer (stage gate)"
+        description: "blueprint review <name> runs an executable reviewer; blueprint review --list shows canonical + org-authored reviewers."
+        status: Available
+      - title: "Track fleet drift · upgrade a consumer"
+        description: "blueprint fleet classifies each consumer's drift from consumers.yml; blueprint upgrade bumps a consumer's methodology pin (dry-run by default)."
+        status: Available
+      - title: "Run conformance (doctor)"
+        description: "blueprint doctor loads the config + every reviewer + runs portal conformance — the false-green guard, honest about what it didn't check."
+        status: Available
+      - title: "Amend the methodology"
+        description: "File an amendment/RFC; the 4-bucket triage classifies it. Substantial change → RFC first; bug-fix → PR."
+        status: Available
+    planned:
+      - title: "Multi-operator coordination"
+        description: "ai-hive integration (integrate, not absorb). Flip hive.enabled once a second operator joins the initiative."
+      - title: "Hosted fleet dashboard"
+        description: "Deferred to v2 (scope ceiling B). v1 is git-host + npm + local files only — no hosted service."
   sources:
     build_order: apps/portal/src/data/build-order.json
     scenarios: null
