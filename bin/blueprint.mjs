@@ -9,8 +9,8 @@
  *   init     scaffold a Pattern A/B portal (delegates to the canonical stamper)
  *   review   run an executable reviewer against a target   (real — step 3, ADR-0002/0006)
  *   cost     per-stage effort/model config + telemetry sweep (real — step 5, ADR-0003)
+ *   fleet    classify consumer drift from consumers.yml     (real — step 7, ADR-0005)
  *   upgrade  pull non-breaking methodology updates          [stub — step 8, ADR-0005]
- *   fleet    report consumer drift from the registry        [stub — step 7, ADR-0005]
  *   doctor   conformance / health check                     [stub — step 12]
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
@@ -45,8 +45,10 @@ Commands:
   init       Scaffold a new Blueprint portal (Pattern A or B)
   review     Run an executable reviewer against a target  (blueprint review <name> [--target=<dir>] [--json])
   cost       Per-stage effort/model config + telemetry    (blueprint cost [--target=<dir>] [--json])
+  fleet      Classify consumer drift from consumers.yml    (blueprint fleet [--json] [--strict])
+             current / behind / ahead / on-deprecated / unpinned / unresolvable
+             exit 0 = clean (incl. unpinned); exit 1 = drift (behind/on-deprecated/unresolvable or suspect registry)
   upgrade    Pull non-breaking methodology updates              (coming: step 8)
-  fleet      Report consumer drift from the registry            (coming: step 7)
   doctor     Conformance / health check                         (coming: step 12)
 
 Global:
@@ -63,7 +65,6 @@ The methodology source resolves via:
 // "not yet, here's what it will do" — not a crash.
 const STUBS = {
   upgrade: { step: 8,  adr: 'ADR-0005',            does: 'pull the semver-aware methodology delta and apply non-breaking migrations' },
-  fleet:   { step: 7,  adr: 'ADR-0005',            does: 'read consumers.yml and report each consumer as behind / ahead / on-deprecated' },
   doctor:  { step: 12, adr: '(conformance)',       does: 'gate on runtime/browser verification — the false-green guard' },
 };
 
@@ -220,6 +221,74 @@ async function runCost(costArgv, home) {
   process.exit(flagged.length ? 1 : 0);
 }
 
+// fleet [--json] [--strict] — classify each registered consumer's drift from the
+// current methodology version. Reads consumers.yml from the methodology HOME (not
+// cwd; no --target — fleet is methodology-side). Read-only, visibility-only.
+// Loads the lib from the methodology home (same decoupling as review/cost).
+async function runFleet(fleetArgv, home) {
+  const { flags } = parseArgs(fleetArgv);
+  const libDir = join(home, 'template', 'tools', 'lib');
+  let lib;
+  try {
+    lib = await import(pathToFileURL(join(libDir, 'consumers-registry.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint fleet: failed to load consumers-registry lib from ${libDir} — ${e.message}`);
+    process.exit(2);
+  }
+
+  const fleet = lib.computeFleet(home, undefined, { strict: !!flags.strict });
+
+  if (fleet.emptyFile) {
+    console.error(`blueprint fleet: consumers.yml at ${home} is empty — add a consumers: block to register consumers.`);
+    process.exit(2);
+  }
+  if (!fleet.present) {
+    console.error(`blueprint fleet: no consumers.yml at ${home} — the registry is methodology-side. Add one to register consumers (see docs/decisions/0005-consumer-registry-and-fleet.md).`);
+    process.exit(2);
+  }
+
+  if (flags.json) {
+    console.log(JSON.stringify(fleet, null, 2));
+    process.exit(fleet.driftPresent ? 1 : 0);
+  }
+
+  const { current, summary, warnings } = fleet;
+  const head7 = current.head ? current.head.slice(0, 7) : '???????';
+  const tagNote = current.latestSemverTag ? `, latest tag ${current.latestSemverTag}` : ', no semver tags yet';
+  console.log(`blueprint fleet — methodology @ ${home}`);
+  console.log(`current: ${current.version || '(no package.json version)'}  (HEAD ${head7}${tagNote})\n`);
+
+  if (!current.head) {
+    console.log('! git HEAD unresolvable (not a git repo / broken HEAD / shallow clone) — sha-pinned consumers cannot be placed and show as unresolvable for that reason, not a pin defect.');
+  }
+  if (warnings.skippedItems > 0) {
+    console.log(`! ${warnings.skippedItems} malformed/incomplete entr${warnings.skippedItems === 1 ? 'y' : 'ies'} skipped (missing repo or unparseable) — registry is suspect`);
+  }
+  if (warnings.duplicates.length > 0) {
+    console.log(`! duplicate repo entries (last-wins): ${warnings.duplicates.join(', ')}`);
+  }
+
+  // Truncate-pad keeps the fixed-width table aligned even for long org/name slugs.
+  const padTrunc = (s, w) => { s = String(s); return s.length > w ? s.slice(0, w - 1) + '…' : s.padEnd(w); };
+  console.log('  repo                                pattern  pin        class          distance      owner');
+  for (const c of fleet.consumers) {
+    const dist = c.distance == null ? '—' : `${c.distance} ${c.distanceUnit || ''}`.trim();
+    console.log(
+      `  ${padTrunc(c.repo, 35)} ${padTrunc(c.pattern || '—', 7)} ${padTrunc(c.pin || '—', 10)} ${padTrunc(c.class, 14)} ${padTrunc(dist, 13)} ${c.owner || '—'}`
+    );
+  }
+
+  const staleRows = fleet.consumers.filter((c) => c.syncedAt);
+  if (staleRows.length) {
+    console.log(`\n  ~ pins are a mirror of each consumer's blueprint.yml (last synced: ${staleRows.map((c) => `${c.repo.split('/').pop()} ${c.syncedAt}`).join(', ')}); verify before acting.`);
+  }
+
+  console.log(
+    `\n${summary.total} consumers: ${summary.behind} behind, ${summary.onDeprecated} on-deprecated, ${summary.unresolvable} unresolvable, ${summary.unpinned} unpinned (informational), ${summary.ahead} ahead → exit ${fleet.driftPresent ? 1 : 0}`
+  );
+  process.exit(fleet.driftPresent ? 1 : 0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -259,6 +328,11 @@ async function main() {
 
   if (cmd === 'cost') {
     await runCost(argv.slice(argv.indexOf('cost') + 1), home);
+    return;
+  }
+
+  if (cmd === 'fleet') {
+    await runFleet(argv.slice(argv.indexOf('fleet') + 1), home);
     return;
   }
 

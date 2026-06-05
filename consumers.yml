@@ -1,0 +1,60 @@
+# consumers.yml — the Blueprint methodology consumer registry.
+#
+# Lives at the methodology source ROOT (beside package.json / METHODOLOGY.md),
+# NOT in any consumer. This is methodology-side meta: "who depends on me." A
+# consumer's OWN config is its blueprint.yml; this file answers a different
+# question and lives on the other side of the dependency.
+#
+# Reference: docs/decisions/0005-consumer-registry-and-fleet.md.
+#
+# AUTHORITY / MIRROR (read before editing):
+#   The AUTHORITATIVE pin for a consumer is `methodology_version` in THAT
+#   consumer's blueprint.yml (where the SessionStart hook reads it). This file is
+#   a hand-maintained MIRROR of those pins, aggregated methodology-side because
+#   `blueprint fleet` must not clone N consumer repos (scope ceiling A). A mirror
+#   can be stale — a consumer can bump its pin without updating this file — so
+#   `fleet` reports drift-against-the-mirror, never authoritative drift, and
+#   surfaces each row's `synced_at` staleness. Auto-sync (`fleet --register`) is
+#   deferred; v1 is read-only.
+#
+# Parsed by template/tools/lib/consumers-registry.mjs (no yaml dep). Each item:
+#   - repo:                REQUIRED, unique. owner/name git-host identity, the
+#                          registry key (operator-declared; not verified against a
+#                          remote in v1). An item with no `repo` is malformed:
+#                          skipped AND counted (never a clean exit on a corrupt file).
+#   - pattern:             A | B — portal pattern this consumer stamped (informational).
+#   - methodology_version: MIRROR of the consumer's blueprint.yml pin — a semver
+#                          ("0.1.0"), a git sha ("010945a"), or null = unpinned
+#                          (honest "unknown"; informational, not drift).
+#   - owner:               CODEOWNERS-shaped handle accountable for upgrades.
+#   - synced_at:           ISO date this mirror row was last reconciled to the
+#                          consumer's blueprint.yml (null = never/unknown).
+#   - deprecated_pin:      optional; operator-asserted "this pin is on a deprecated
+#                          line." v1 reads the explicit flag only.
+
+version: 1                            # registry schema version (NOT a methodology version)
+
+consumers:
+  - repo: nino-chavez/rally-hq
+    pattern: B
+    methodology_version: null         # apps/rally-hq/blueprint/blueprint.yml — no pin
+    owner: nino-chavez
+    synced_at: "2026-06-04"
+
+  - repo: nino-chavez/blog
+    pattern: B
+    methodology_version: null         # apps/blog/blueprint.yml — no pin
+    owner: nino-chavez
+    synced_at: "2026-06-04"
+
+  - repo: nino-chavez/blueprint-redesign
+    pattern: A
+    methodology_version: null         # wip/blueprint-redesign/blueprint.yml — no pin
+    owner: nino-chavez
+    synced_at: "2026-06-04"
+
+  - repo: nino-chavez/blueprint-platform
+    pattern: A
+    methodology_version: "010945a"    # mirror of wip/blueprint-platform/blueprint.yml:82
+    owner: nino-chavez
+    synced_at: "2026-06-04"
