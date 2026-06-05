@@ -1,0 +1,30 @@
+# CODEOWNERS — promotion authority, made mechanical (ADR-0004).
+#
+# A change to the methodology's promotion-sensitive surfaces requires an admin
+# review before it can merge (paired with the `pull_request` ruleset's
+# require_code_owner_review — see docs/governance/main-ruleset.json). This turns
+# "who may change the methodology" from one operator's unilateral judgment over a
+# manual grep (charter risk #6) into a structural gate.
+#
+# KNOWN DEGRADE (not a bug): while the admin set is a single person, GitHub does
+# not require review from a PR's own author, so this collapses to a self-approval
+# no-op. The model is correct but only BINDS once a second admin joins — matching
+# the charter's "ratified by the first non-Nino consumer" gate. When this repo
+# moves under an org, replace `@nino-chavez` with `@<org>/blueprint-admins` (the
+# `access.roles.admin` team) and the gate binds automatically.
+
+# The methodology itself — first principles, taxonomies, ADRs.
+/METHODOLOGY.md            @nino-chavez
+/docs/                     @nino-chavez
+
+# The substrate every consumer stamps from.
+/template/                 @nino-chavez
+
+# Amendment ledgers (promotion candidates) anywhere in the tree.
+*AMENDMENTS*               @nino-chavez
+
+# Governance + distribution config — changing the rules needs an admin.
+/.github/                  @nino-chavez
+/CONTRIBUTING.md           @nino-chavez
+/consumers.yml             @nino-chavez
+/package.json              @nino-chavez

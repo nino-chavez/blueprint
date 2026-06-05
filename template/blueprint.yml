@@ -82,6 +82,28 @@ cost:
     iterate:     { effort: medium, model_tier: sonnet }                              # amendment harvest / review (Janitor)
 
 # ──────────────────────────────────────────────────────────────────
+# Access & governance (ADR-0004) — INTENT only; the git host ENFORCES.
+#   Blueprint owns no identity service (scope ceiling A). These four roles map to
+#   git-host TEAM names + GitHub built-in repo roles; enforcement is 100% the
+#   host's (team membership + CODEOWNERS + the `main` ruleset).
+# Reference: ADR-0004-native-access-governance.md, CONTRIBUTING.md,
+#            docs/governance/ (CODEOWNERS + main-ruleset.json + apply-ruleset.sh)
+# ──────────────────────────────────────────────────────────────────
+#
+# repo_role is the GitHub built-in role the host grants the team: admin | write |
+# triage | read. team is the git-host team handle (or a user handle on a personal
+# repo — then the model only BINDS once the team grows past one; see CODEOWNERS).
+# Leave teams empty until the repo is org-owned; an empty block is inert (no
+# enforcement is derived from this file — it documents intent the operator wires
+# in the host).
+access:
+  roles:
+    admin:       { team: "",  repo_role: admin }    # owns promotion: METHODOLOGY.md, docs/, template/, *AMENDMENTS* (CODEOWNERS)
+    contributor: { team: "",  repo_role: write }    # opens PRs/RFCs from the field (the UP channel)
+    reviewer:    { team: "",  repo_role: triage }   # triages amendment/RFC issues; no merge rights
+    stakeholder: { team: "",  repo_role: read }     # reads the portal + docs; no write
+
+# ──────────────────────────────────────────────────────────────────
 # Optional dependencies
 # Blueprint works standalone. These tools extend it.
 # ──────────────────────────────────────────────────────────────────

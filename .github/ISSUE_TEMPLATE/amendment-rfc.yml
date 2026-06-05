@@ -1,0 +1,70 @@
+name: Amendment / RFC
+description: Promote a methodology fix or idea discovered in a consumer (the UP channel, ADR-0004).
+title: "[RFC] <one-line summary>"
+labels: ["amendment"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this to promote a change into the Blueprint source from the field.
+        First read `CONTRIBUTING.md` — the **4-bucket taxonomy** decides where the
+        fix lands and whether it needs an RFC. The triage Action (build-order
+        step 10) reads the fields below to route this issue.
+  - type: dropdown
+    id: bucket
+    attributes:
+      label: Fix-location bucket
+      description: "Which surface does the fix change? (docs/amendment-classification-pattern.md)"
+      options:
+        - "consumer-local — specific to one initiative; should NOT be promoted (stays in your repo)"
+        - "template — stamper / chrome / schema / scaffolds (template/)"
+        - "reviewer — a reviewer agent's rubric or gate (template/.claude/agents/blueprint/reviewers/)"
+        - "methodology — METHODOLOGY.md / docs/ / a taxonomy or stage definition"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Change kind (routes RFC vs plain PR)
+      options:
+        - "bug-fix — restores intended behavior, no contract change → a plain PR is fine"
+        - "substantial — new reviewer/stage, changed stamped contract, taxonomy edit → RFC first"
+    validations:
+      required: true
+  - type: input
+    id: consumer
+    attributes:
+      label: Consumer that surfaced this
+      description: "The initiative + repo where you hit it (e.g. nino-chavez/rally-hq)."
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: "What breaks or is missing, and why it matters beyond this one consumer."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence (required — never an imagined case)
+      description: "A real commit / file:line / screenshot / amendment-ledger entry that grounds this. Self-interrogation without grounding evidence is rejected."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: "The smallest change that fixes it. If it diverges from a canonical/vendor pattern, name the canonical and the disqualifier."
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight
+      options:
+        - label: "I recorded this in my consumer's METHODOLOGY-AMENDMENTS.md (the append-only ledger)."
+          required: false
+        - label: "For a substantial change, I am opening this RFC BEFORE the PR (let it settle, then reference it)."
+          required: false

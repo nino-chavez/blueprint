@@ -1,0 +1,35 @@
+{
+  "_comment": "GitHub repository ruleset for the default branch (ADR-0004). The canonical successor to classic branch protection — layerable, readable by all developers, most-restrictive-wins. Apply with docs/governance/apply-ruleset.sh (idempotent gh api). Do NOT also configure classic branch protection on the same branch — two layers = two sources of truth; migrate OFF classic. require_code_owner_review pairs with .github/CODEOWNERS to make promotion authority mechanical. NOTE: while the admin set is a single person, the required review is a self-approval no-op (it binds when a second admin joins). bypass_actors lists the repo-admin role so the owner can still ship waves directly during the solo phase; tighten it when the team grows.",
+  "name": "main-protection",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "require_code_owner_review": true,
+        "dismiss_stale_reviews_on_push": true,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true,
+        "allowed_merge_methods": ["squash", "merge"]
+      }
+    },
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    { "type": "required_linear_history" }
+  ],
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ]
+}
