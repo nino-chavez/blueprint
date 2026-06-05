@@ -26,6 +26,8 @@ Canonical reference: `tools/blueprint/docs/variant-selection.md`.
 
 Run exactly one of the two portal-conformance reviewers per initiative — whichever matches the pattern declared in `blueprint.yml` (or inferred from the directory layout: `apps/portal/` ⇒ Pattern A, `portal/` or `blueprint/portal/` ⇒ Pattern B). Running both is a configuration error; running neither at Stage 3 on a Tier 1+ initiative is a methodology violation (the failure mode is the v1-with-deliberation-shape, 11-variants-walking portal the blog session shipped pre-2026-05-25).
 
+**Exception — bespoke portal (neither pattern fits the archetype).** An initiative whose archetype fits neither Pattern A nor B (e.g. an operator-facing process console; first instance `ai-content-engine`) runs *neither* conformance reviewer — and that is not a violation **iff** a divergence ADR is present in `decisions/` recording why neither pattern fits (per `docs/portal-and-tier-ladder.md` § "When neither pattern fits the archetype"). The gate inverts here: for a bespoke portal it is the **absence of the divergence ADR** that is the violation, not the absence of a conformance run. Do not down-declare such an initiative to Tier 0 to dodge the gate — a portal's existence makes the tier ≥ 1. (No automated reviewer enforces this yet; it is a documented gate condition until a second bespoke instance justifies promoting it to a conformance check.)
+
 The "any portal-touching commit" trigger applies to midstream and brownfield variants — those variants can edit a portal anywhere along the pipeline, not just at Stage 3. Greenfield gets the gate at Stage 3 completion only (no portal exists earlier).
 
 ### Chrome-canonical pairing (Pattern B)

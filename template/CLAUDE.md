@@ -114,7 +114,7 @@ Variant-aware gates that block premature stage completion. Full roster + behavio
 | Stage 5 → 6 | `doc-quality-auditor` + `terminology-linter` (parallel) |
 | Stage 6 ship | `prototype-smoke-runner` |
 
-Run exactly one of the two portal-conformance reviewers per initiative — pick by pattern (A or B) per `docs/portal-and-tier-ladder.md`.
+Run exactly one of the two portal-conformance reviewers per initiative — pick by pattern (A or B) per `docs/portal-and-tier-ladder.md`. If the initiative's archetype fits neither pattern (e.g. an operator-facing process console), run neither conformance reviewer — but a divergence ADR is mandatory; its absence is the violation (see `docs/portal-and-tier-ladder.md` § "When neither pattern fits the archetype").
 
 ## Document voice
 
