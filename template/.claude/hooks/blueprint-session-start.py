@@ -22,7 +22,7 @@ before proposing methodology changes from scratch.
 Resolution (portable, no single hardcoded path): BLUEPRINT_HOME env var, else a
 `methodology_home:` field in the initiative's blueprint.yml, else the local dev
 path `~/Workspace/dev/tools/blueprint`, else an npm-installed
-`@nino-chavez/blueprint-cli`. A candidate counts only if it contains METHODOLOGY.md.
+`@nino-chavez-labs/blueprint-cli`. A candidate counts only if it contains METHODOLOGY.md.
 
 Output protocol: Claude Code SessionStart hooks emit a JSON object on stdout
 with a `hookSpecificOutput.additionalContext` field. The content of that field
@@ -172,9 +172,9 @@ def main() -> int:
                             "`$BLUEPRINT_HOME`, a `methodology_home:` field in this "
                             "initiative's blueprint.yml, the local dev path "
                             "`~/Workspace/dev/tools/blueprint`, then an npm-installed "
-                            "`@nino-chavez/blueprint-cli`. None contained METHODOLOGY.md.\n\n"
+                            "`@nino-chavez-labs/blueprint-cli`. None contained METHODOLOGY.md.\n\n"
                             "Fix: `export BLUEPRINT_HOME=/path/to/blueprint`, or "
-                            "`npm install -g @nino-chavez/blueprint-cli`, or add "
+                            "`npm install -g @nino-chavez-labs/blueprint-cli`, or add "
                             "`methodology_home: <path>` to blueprint.yml.\n"
                         ),
                     }

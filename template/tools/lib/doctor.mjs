@@ -34,7 +34,7 @@ export async function runDoctor({ home, targetDir }) {
   if (home && existsSync(join(home, 'template'))) {
     add('methodology-home', 'pass', `resolved at ${home}`);
   } else {
-    add('methodology-home', 'fail', `methodology home not resolvable (${home || 'unset'})`, 'set $BLUEPRINT_HOME or blueprint.yml methodology_home; reinstall @nino-chavez/blueprint-cli');
+    add('methodology-home', 'fail', `methodology home not resolvable (${home || 'unset'})`, 'set $BLUEPRINT_HOME or blueprint.yml methodology_home; reinstall @nino-chavez-labs/blueprint-cli');
     return { checks, status: 'fail', notChecked: ['everything else — no methodology home'] };
   }
 

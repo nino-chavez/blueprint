@@ -75,7 +75,7 @@ export default async function review({ targetDir, blueprintYml }) {
       location: 'apps/portal/',
       message: 'No apps/portal/ directory — initiative is still Tier 0 or misnamed the portal dir.',
       remediation:
-        'Scaffold it: `blueprint init --pattern=A` (or `npx @nino-chavez/blueprint-cli init --pattern=A`). If the portal lives elsewhere, fix portal_pattern/paths in blueprint.yml.',
+        'Scaffold it: `blueprint init --pattern=A` (or `npx @nino-chavez-labs/blueprint-cli init --pattern=A`). If the portal lives elsewhere, fix portal_pattern/paths in blueprint.yml.',
       reference: 'docs/portal-and-tier-ladder.md#pattern-a-platform-portal',
     });
     return finalize(findings, 'no apps/portal/', startedAt);

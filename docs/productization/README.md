@@ -31,7 +31,7 @@ instead of a control plane).
 
 ## What was built (the output, in the source)
 
-A thin, dependency-free CLI (`@nino-chavez/blueprint-cli`) — `init / review /
+A thin, dependency-free CLI (`@nino-chavez-labs/blueprint-cli`) — `init / review /
 cost / fleet / upgrade / doctor`, all real — over six self-tested libs under
 `template/tools/lib/`, plus governance + distribution artifacts. The build order
 (steps 0–13) is complete.
@@ -77,7 +77,7 @@ The productization initiative itself: **github.com/nino-chavez/blueprint-platfor
 ## What remains (operator-gated, not new build steps)
 
 - Bind the governance ruleset: `docs/governance/apply-ruleset.sh` (needs `gh` admin).
-- Publish the CLI: `npm publish @nino-chavez/blueprint-cli` (then `npx … init` is
+- Publish the CLI: `npm publish @nino-chavez-labs/blueprint-cli` (then `npx … init` is
   the public scaffolder).
 - Track **F (multi-operator / ai-hive)** — the one deferred track; integrate, do
   not absorb. A future initiative, not a remaining build step.

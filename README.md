@@ -84,7 +84,7 @@ cd my-initiative/
 # and agent definitions that an AI assistant can use to execute each stage.
 ```
 
-## Command-line interface — `@nino-chavez/blueprint-cli`
+## Command-line interface — `@nino-chavez-labs/blueprint-cli`
 
 Blueprint ships a thin, dependency-free CLI that operationalizes the methodology
 as a team-adoptable, portable platform (scope ceiling A — methodology-native: no
@@ -95,7 +95,7 @@ paths), so an `npm install` user gets a working CLI with zero config.
 
 ```bash
 # scaffold a new initiative's portal (Pattern A platform-portal or B redesign-review)
-npx @nino-chavez/blueprint-cli init --pattern=A --target=my-initiative
+npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
 
 blueprint review <name> [--target=<dir>] [--json]   # run an executable reviewer (ADR-0002);
 blueprint review --list                              #   discovers canonical + org reviewers (ADR-0006)
@@ -118,7 +118,7 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 `CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
 
 > Status: the CLI is feature-complete in this repo (`init`/`review`/`cost`/
-> `fleet`/`upgrade`/`doctor` all real). `npx @nino-chavez/blueprint-cli` works
+> `fleet`/`upgrade`/`doctor` all real). `npx @nino-chavez-labs/blueprint-cli` works
 > once the package is published; until then run `bin/blueprint.mjs` from a clone.
 
 ### Optional: Add Forge Signal (strategic content generation)

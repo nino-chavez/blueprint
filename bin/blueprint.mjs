@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * blueprint — the @nino-chavez/blueprint-cli dispatcher.
+ * blueprint — the @nino-chavez-labs/blueprint-cli dispatcher.
  *
  * Thin ESM router over the methodology's tools. Step 2 of the blueprint-platform
  * build order (ADR-0001 dual-protocol distribution, ADR-0007 toolchain). Kept

@@ -1,6 +1,6 @@
 /**
  * blueprint-home.mjs — resolve the methodology home (the dir containing
- * METHODOLOGY.md + docs/ + template/) for @nino-chavez/blueprint-cli.
+ * METHODOLOGY.md + docs/ + template/) for @nino-chavez-labs/blueprint-cli.
  *
  * Mirrors the SessionStart hook's resolution (template/.claude/hooks/
  * blueprint-session-start.py) and adds a "the CLI's own package root" probe,
@@ -113,6 +113,6 @@ export function resolveBlueprintHome(opts = {}) {
       '$BLUEPRINT_HOME, a `methodology_home:` field in the nearest blueprint.yml, ' +
       "the CLI's own package, then local dev paths — none contained METHODOLOGY.md.\n" +
       'Fix: `export BLUEPRINT_HOME=/path/to/blueprint`, reinstall ' +
-      '`npm i -g @nino-chavez/blueprint-cli`, or add `methodology_home: <path>` to blueprint.yml.'
+      '`npm i -g @nino-chavez-labs/blueprint-cli`, or add `methodology_home: <path>` to blueprint.yml.'
   );
 }

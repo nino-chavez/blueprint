@@ -33,7 +33,7 @@ effects).
    Discovered automatically. Files prefixed `_` are skipped (scratch/examples).
 2. **npm package** — publish a package whose `package.json` declares
    `keywords: ["blueprint-reviewer"]` and ships `reviewers/*.mjs` (`files:
-   ["reviewers/"]`, a `peerDependency` on `@nino-chavez/blueprint-cli` to pin the
+   ["reviewers/"]`, a `peerDependency` on `@nino-chavez-labs/blueprint-cli` to pin the
    contract version). Installing it makes its reviewers discoverable.
 
 There is no central registration array to edit — that recreates the merge-conflict
