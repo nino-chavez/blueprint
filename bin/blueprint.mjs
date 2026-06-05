@@ -7,10 +7,10 @@
  * dependency-free (hand-rolled arg parsing; commander is the named escalation if
  * the surface grows). Subcommands:
  *   init     scaffold a Pattern A/B portal (delegates to the canonical stamper)
- *   review   run an executable reviewer against a target   [stub — step 3, ADR-0002/0006]
+ *   review   run an executable reviewer against a target   (real — step 3, ADR-0002/0006)
+ *   cost     per-stage effort/model config + telemetry sweep (real — step 5, ADR-0003)
  *   upgrade  pull non-breaking methodology updates          [stub — step 8, ADR-0005]
  *   fleet    report consumer drift from the registry        [stub — step 7, ADR-0005]
- *   cost     summarize per-stage effort/telemetry           [stub — step 5, ADR-0003]
  *   doctor   conformance / health check                     [stub — step 12]
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
@@ -44,9 +44,9 @@ Usage: blueprint <command> [options]
 Commands:
   init       Scaffold a new Blueprint portal (Pattern A or B)
   review     Run an executable reviewer against a target  (blueprint review <name> [--target=<dir>] [--json])
+  cost       Per-stage effort/model config + telemetry    (blueprint cost [--target=<dir>] [--json])
   upgrade    Pull non-breaking methodology updates              (coming: step 8)
   fleet      Report consumer drift from the registry            (coming: step 7)
-  cost       Summarize per-stage effort / telemetry             (coming: step 5)
   doctor     Conformance / health check                         (coming: step 12)
 
 Global:
@@ -64,7 +64,6 @@ The methodology source resolves via:
 const STUBS = {
   upgrade: { step: 8,  adr: 'ADR-0005',            does: 'pull the semver-aware methodology delta and apply non-breaking migrations' },
   fleet:   { step: 7,  adr: 'ADR-0005',            does: 'read consumers.yml and report each consumer as behind / ahead / on-deprecated' },
-  cost:    { step: 5,  adr: 'ADR-0003',            does: 'sweep .blueprint/telemetry.jsonl and summarize per-stage effort / model_tier / spend' },
   doctor:  { step: 12, adr: '(conformance)',       does: 'gate on runtime/browser verification — the false-green guard' },
 };
 
@@ -145,6 +144,82 @@ async function runReview(reviewArgv, home) {
   process.exit(res.status === 'BLOCKED' ? 1 : 0);
 }
 
+function fmtMs(ms) {
+  if (ms == null) return '—';
+  return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+}
+function fmtPct(rate) {
+  return rate == null ? '—' : `${Math.round(rate * 100)}%`;
+}
+
+// cost [--target=<dir>] [--json] — resolve the blueprint.yml cost: block per
+// stage (config view, always available) and sweep .blueprint/telemetry.jsonl
+// (telemetry view, when present). Flags any stage resolved below its anchor with
+// no skip_justification — the step-6 gate would BLOCK it. Loads the resolver +
+// aggregator from the methodology home (same decoupling as `review`).
+async function runCost(costArgv, home) {
+  const { flags } = parseArgs(costArgv);
+  const targetDir = resolve(flags.target || process.cwd());
+  const libDir = join(home, 'template', 'tools', 'lib');
+  let costDial, telemetry;
+  try {
+    costDial = await import(pathToFileURL(join(libDir, 'cost-dial.mjs')).href);
+    telemetry = await import(pathToFileURL(join(libDir, 'telemetry.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint cost: failed to load cost libs from ${libDir} — ${e.message}`);
+    process.exit(2);
+  }
+
+  const costBlock = costDial.readCostBlock(targetDir);
+  // Stage order: the anchored stages first, then any extra named in the block.
+  const stageOrder = [
+    ...Object.keys(costDial.ANCHORS),
+    ...Object.keys(costBlock.stages || {}).filter((s) => !(s in costDial.ANCHORS)),
+  ];
+  const config = stageOrder.map((stage) => {
+    const resolved = costDial.resolveCost(costBlock, stage);
+    const up = costDial.underProcessed(stage, resolved);
+    return { stage, ...resolved, belowAnchor: up.belowAnchor, anchor: up.anchor, dimensions: up.dimensions };
+  });
+
+  const records = telemetry.readTelemetry(targetDir);
+  const summary = telemetry.summarizeTelemetry(records);
+
+  if (flags.json) {
+    console.log(JSON.stringify({ target: targetDir, config, telemetry: summary }, null, 2));
+    process.exit(config.some((c) => c.belowAnchor) ? 1 : 0);
+  }
+
+  const hasYml = existsSync(join(targetDir, 'blueprint.yml'));
+  console.log(`blueprint cost — ${hasYml ? targetDir : `${targetDir} (no blueprint.yml — showing built-in defaults)`}\n`);
+  console.log('Resolved cost vector (blueprint.yml cost: → tools/lib/cost-dial.mjs):');
+  console.log('  stage        effort   model    note');
+  for (const c of config) {
+    let note = c.skipJustification ? `skip_justification: ${c.skipJustification}` : '';
+    if (c.belowAnchor) {
+      const d = c.dimensions.map((x) => `${x.dim} ${x.got}<${x.anchor}`).join(', ');
+      note = `⚠ below anchor (${d}) — no skip_justification → BLOCKs at step-6 gate`;
+    }
+    console.log(`  ${c.stage.padEnd(12)} ${String(c.effort).padEnd(8)} ${String(c.modelTier).padEnd(8)} ${note}`);
+  }
+  const flagged = config.filter((c) => c.belowAnchor);
+
+  console.log(`\nTelemetry (${telemetry.TELEMETRY_REL}): ${records.length ? `${records.length} records` : 'none yet — anchors stay PROVISIONAL until ~10 cycles accumulate'}`);
+  if (records.length) {
+    console.log('  stage        runs   median   pass   tiers');
+    for (const [stage, s] of Object.entries(summary.stages)) {
+      const tiers = Object.entries(s.byTier).map(([t, v]) => `${t}×${v.count}`).join(' ');
+      console.log(`  ${stage.padEnd(12)} ${String(s.count).padEnd(6)} ${fmtMs(s.medianDurationMs).padEnd(8)} ${fmtPct(s.passRate).padEnd(6)} ${tiers}`);
+    }
+    console.log('  (median = tier-weighted TIME proxy, not dollars — ADR-0003)');
+  }
+
+  if (flagged.length) {
+    console.log(`\n${flagged.length} stage(s) resolve below anchor without justification; the step-6 cost gate would BLOCK them.`);
+  }
+  process.exit(flagged.length ? 1 : 0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -179,6 +254,11 @@ async function main() {
 
   if (cmd === 'review') {
     await runReview(argv.slice(argv.indexOf('review') + 1), home);
+    return;
+  }
+
+  if (cmd === 'cost') {
+    await runCost(argv.slice(argv.indexOf('cost') + 1), home);
     return;
   }
 
