@@ -100,6 +100,18 @@ function substitutions({ name, displayName, repoUrl, tagline, theme }) {
     // don't inherit subs-initiative' substrate endpoint. The component renders
     // a disabled "substrate not yet configured" state when the URL is empty.
     { from: "", to: "" },
+    // Substrate-satellite URLs from the reference initiative. The portal renders
+    // these surfaces natively now; the external links are leaks. Blank them so a
+    // freshly-stamped portal carries no reference-project endpoints. Also asserted
+    // absent by SUBSTRATE_TRIPWIRES (de-narration regression sentinel).
+    { from: "https://private-demo.example", to: "" },
+    { from: "https://private-demo.example", to: "" },
+    { from: "https://private-demo.example", to: "" },
+    { from: "https://private-demo.example", to: "" },
+    { from: "private-demo.example", to: "" },
+    { from: "private-demo.example", to: "" },
+    { from: "private-demo.example", to: "" },
+    { from: "private-demo.example", to: "" },
   ];
 }
 
@@ -164,11 +176,22 @@ async function readMaybe(p) {
   try { return await fs.readFile(p, "utf8"); } catch { return null; }
 }
 
+// Directories that are never source: deps, VCS, and build output. Skipping
+// `dist`/`dist-story`/`.astro` keeps mechanicalCheck off generated artifacts
+// (rendered HTML legitimately contains business content from banner pages).
+const WALK_SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  "dist-story",
+  ".astro",
+]);
+
 async function walk(dir) {
   const out = [];
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const e of entries) {
-    if (e.name === "node_modules" || e.name === ".git") continue;
+    if (WALK_SKIP_DIRS.has(e.name)) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...(await walk(p)));
     else out.push(p);
@@ -182,6 +205,30 @@ function applySubstitutions(content, subs) {
     next = next.split(from).join(to);
   }
   return next;
+}
+
+// Insert the REPLACE_FOR_PROJECT banner without breaking the file's syntax.
+// For an .astro file that opens with a `---` frontmatter fence, the HTML-comment
+// banner must NOT go above the opening fence (that turns the fence into the
+// frontmatter and parses the comment as JS — esbuild then chokes on the em-dash).
+// Place it immediately after the closing fence, where `<!-- -->` is valid markup.
+// All other files (and .astro files with no frontmatter) get a simple prepend.
+function insertBanner(content, banner, ext) {
+  if (ext === ".astro") {
+    const lines = content.split("\n");
+    if (lines[0]?.trim() === "---") {
+      let closeIdx = -1;
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim() === "---") { closeIdx = i; break; }
+      }
+      if (closeIdx !== -1) {
+        const head = lines.slice(0, closeIdx + 1).join("\n");
+        const rest = lines.slice(closeIdx + 1).join("\n");
+        return `${head}\n${banner}${rest.startsWith("\n") ? rest.slice(1) : rest}`;
+      }
+    }
+  }
+  return banner + content;
 }
 
 async function copyTree({ src, dst, subs, dryRun, log }) {
@@ -207,7 +254,7 @@ async function copyTree({ src, dst, subs, dryRun, log }) {
     const templateRelKey = relFromBlueprintRoot.replace(/^template\//, "");
     if (BANNER_FILES.has(templateRelKey)) {
       const banner = BANNER_LINES[ext] || BANNER_LINES[".js"];
-      next = banner + next;
+      next = insertBanner(next, banner, ext);
       log.banner.push(rel);
     } else {
       log.stamped.push(rel);
@@ -241,7 +288,37 @@ async function replaceLogo(logoSrc, target, dryRun, log) {
   log.renamed.push(`copied ${logoSrc} → apps/portal/public/project-logo.png`);
 }
 
-async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline, dryRun, log }) {
+// Write the workspace-root package.json so the four @blueprint/* "*" deps in
+// apps/portal resolve to the local workspace packages (apps/*, packages/*)
+// instead of the npm registry (where they do not exist). Without this, a
+// freshly-stamped portal can't `npm install`. skip-if-exists, like
+// writeBlueprintYml — never clobber an operator-customized workspace root.
+async function writeWorkspaceRoot({ target, name, dryRun, log }) {
+  const dst = path.join(target, "package.json");
+  const existing = await readMaybe(dst);
+  if (existing) {
+    log.skipped.push("package.json (workspace root already exists; preserved)");
+    return;
+  }
+  const pkg = {
+    name: `${name}-workspace`,
+    private: true,
+    workspaces: ["apps/*", "packages/*"],
+    scripts: {
+      dev: "npm run dev -w apps/portal",
+      build: "npm run build -w apps/portal",
+      typecheck: "npm run typecheck -w apps/portal",
+    },
+  };
+  if (dryRun) {
+    log.skipped.push("package.json (workspace root; dry-run; would write)");
+    return;
+  }
+  await fs.writeFile(dst, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+  log.stamped.push("package.json (workspace root)");
+}
+
+async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline, repoUrl, dryRun, log }) {
   const dst = path.join(target, "blueprint.yml");
   const existing = await readMaybe(dst);
   if (existing) {
@@ -270,6 +347,39 @@ async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline
     "# Portal pattern (A = platform-portal, B = redesign-review-portal)",
     `portal_pattern: ${pattern}`,
     "",
+    "# ──────────────────────────────────────────────────────────────────",
+    "# Portal harness config (Pattern A). Read by apps/portal/src/lib/portal-config.ts.",
+    "# Tier-0 default: ZERO data sources wired. The portal builds green and shows the",
+    "# decisions catalog + strategy excerpts; every optional substrate section hides.",
+    "# Wire a source = set its path to a repo-relative file that exists, then rebuild.",
+    "# A typo'd path simply keeps the section hidden — it never crashes the build.",
+    "# ──────────────────────────────────────────────────────────────────",
+    "portal:",
+    `  repo_url: "${repoUrl}"`,
+    "  decisions:",
+    `    dir: "decisions"               # folder of NNNN-slug.md decision records (ADRs)`,
+    `    # filename_pattern: "^(?:ADR-)?(\\\\d{4})-(.+)\\\\.md$"  # override the matcher if your ADRs are named differently`,
+    "  # Optional derived-data sources. Each is a repo-relative path to a JSON file",
+    "  # produced by a consumer-side derive tool. null = section hidden (Tier 0).",
+    "  sources:",
+    "    state: null                    # capability state-derive   → enables Inspect/coverage",
+    "    board: null                    # work-board derive         → enables Roadmap",
+    "    epic_footprints: null          # per-epic footprint derive → enriches Roadmap epic progress",
+    "    attestations: null             # gate attestations derive  → enables Inspect/attestations",
+    "    proposals: null                # proposal/issue derive     → enables Inspect/dependencies",
+    "    dep_graph: null                # dependency-graph derive   → enables the dep-graph view",
+    "    scenarios: null                # demo scenarios json       → enables Try/scenarios",
+    "    build_order: null              # build-order plan          → enables Roadmap build order",
+    "  # 10-gate Epic-DoD compliance grid. Off by default; needs an epics model + a",
+    "  # state-derive tool. enabled:false keeps @blueprint/gate-derive yielding empty.",
+    "  gates:",
+    "    enabled: false",
+    "    epics_source: null             # repo-relative module/json supplying the EPICS list",
+    "    gate_labels: []                # 10 labels for the gate columns; empty = generic",
+    "  # board:    bucket labels, phase order, epic-tracker issue range (see portal-config.ts)",
+    "  # excerpts: strategy-doc excerpts to surface on the home/strategy pages",
+    "  # home / operate / inspect / surfaces / archaeology: navigation + content (Phase B)",
+    "",
     "execution:",
     "  depth: standard",
     "",
@@ -282,13 +392,46 @@ async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline
   log.stamped.push("blueprint.yml");
 }
 
+// Substrate de-narration tripwires. These strings are leaks from the
+// subs-initiative reference initiative — example URLs, framework jargon, and
+// example-issue markers. They're blanked by substitutions() and asserted absent
+// here so a de-narration regression fails mechanically. Kept in sync with the
+// substrate subs in substitutions().
+const SUBSTRATE_TRIPWIRES = [
+  "private-demo.example",
+  "private-demo.example",
+  "private-demo.example",
+  "private-demo.example",
+  "five-actor",
+  "trust axioms",
+  "synthesis #",
+  "Catalyst",
+  "BigEng",
+  "[Epic-",
+];
+
 async function mechanicalCheck({ target, log }) {
   const offenders = [];
-  const allFiles = await walk(target);
+  // Scope to STAMPED paths only — apps/portal + packages + the root package.json.
+  // Walking the whole target false-flags evidence docs (CLAUDE.md, research/*.md,
+  // blueprint.yml) that legitimately cite the example/reference project.
+  const scopedRoots = [
+    path.join(target, "apps/portal"),
+    path.join(target, "packages"),
+  ];
+  const allFiles = [];
+  for (const root of scopedRoots) {
+    const stat = await fs.stat(root).catch(() => null);
+    if (stat && stat.isDirectory()) allFiles.push(...(await walk(root)));
+  }
+  const rootPkg = path.join(target, "package.json");
+  if (await fs.stat(rootPkg).catch(() => null)) allFiles.push(rootPkg);
+
   const tripwires = [
     "subs-initiative",
     "An example product initiative",
     "/project-logo.png",
+    ...SUBSTRATE_TRIPWIRES,
   ];
   for (const f of allFiles) {
     const rel = path.relative(target, f);
@@ -733,9 +876,10 @@ async function main() {
     dryRun,
     log,
   });
+  await writeWorkspaceRoot({ target, name, dryRun, log });
   await renameLogo(target, dryRun, log);
   if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
-  await writeBlueprintYml({ target, name, variant, tier, pattern, tagline, dryRun, log });
+  await writeBlueprintYml({ target, name, variant, tier, pattern, tagline, repoUrl, dryRun, log });
 
   if (!dryRun) await mechanicalCheck({ target, name, log });
   printReport(log);

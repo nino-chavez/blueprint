@@ -14,10 +14,11 @@ import { PortalNav } from '@/components/PortalNav';
 // See docs/archaeology-substrate-pattern.md + METHODOLOGY.md § "Stage S-A".
 // Wave 18 (2026-05-27).
 const ARCHAEOLOGY_READY = false;
-// Conditional import keeps the disabled bundle clean (build-time tree-shake).
-const ArchaeologyChat = ARCHAEOLOGY_READY
-  ? (await import('@/components/ArchaeologyChat')).ArchaeologyChat
-  : null;
+// Static import — Astro client:* islands MUST be statically imported (a dynamic
+// `await import()` here breaks the island bundler at build time). The render
+// below is gated on ARCHAEOLOGY_READY, so the disabled island is tree-shaken
+// out of the static build when the flag is false (the default).
+import { ArchaeologyChat } from '@/components/ArchaeologyChat';
 import '@/styles/global.css';
 
 export interface Props {
@@ -63,6 +64,6 @@ const fullTitle = title === 'subs-initiative' ? title : `${title} — subs-initi
         </div>
       </Shell.Footer>
     </Shell.Root>
-    {ARCHAEOLOGY_READY && ArchaeologyChat && <ArchaeologyChat client:idle pageContext={currentPath} />}
+    {ARCHAEOLOGY_READY && <ArchaeologyChat client:idle pageContext={currentPath} />}
   </body>
 </html>

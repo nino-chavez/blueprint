@@ -58,22 +58,26 @@ const LANES: Record<LaneVerb, Lane> = {
 
 // Per-audience lane order. Same six lanes; the lead changes by who's looking.
 //   executive — bet first → trajectory → proof → methodology → integration → day-to-day
-//   discovery — proof first → integration → bet → trajectory → day-to-day → methodology
-//   internal  — methodology first → trajectory → bet → integration → proof → day-to-day
-const AUDIENCE_ORDER: Record<Audience, LaneVerb[]> = {
-  executive: ['discover', 'roadmap', 'try', 'inspect', 'build', 'operate'],
-  discovery: ['try', 'build', 'discover', 'roadmap', 'operate', 'inspect'],
-  internal:  ['inspect', 'roadmap', 'discover', 'build', 'try', 'operate'],
+//   evaluator — proof first → integration → bet → trajectory → day-to-day → methodology
+//   engineering — methodology first → trajectory → bet → integration → proof → day-to-day
+const DEFAULT_ORDER: LaneVerb[] = ['discover', 'try', 'build', 'operate', 'inspect', 'roadmap'];
+const AUDIENCE_ORDER: Partial<Record<Audience, LaneVerb[]>> = {
+  executive:   ['discover', 'roadmap', 'try', 'inspect', 'build', 'operate'],
+  evaluator:   ['try', 'build', 'discover', 'roadmap', 'operate', 'inspect'],
+  engineering: ['inspect', 'roadmap', 'discover', 'build', 'try', 'operate'],
 };
 
 /**
  * Six-lane card grid on the homepage. Lane order shifts per the persisted
  * audience preference — toggling the switcher in PortalNav re-renders this
  * island via the `blueprint-audience-change` CustomEvent the hook dispatches.
+ * Falls back to DEFAULT_ORDER for any unrecognized audience (e.g. during SSR
+ * before the preference hydrates) so the static build never throws.
  */
 export function HomeLanes() {
   const [audience] = useAudiencePreference();
-  const ordered = AUDIENCE_ORDER[audience].map((verb) => LANES[verb]);
+  const order = AUDIENCE_ORDER[audience] ?? DEFAULT_ORDER;
+  const ordered = order.map((verb) => LANES[verb]);
 
   return (
     <section aria-label="Portal lanes" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
