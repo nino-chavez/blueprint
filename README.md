@@ -121,6 +121,31 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 > `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all six
 > commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`) are real.
 
+## This repo is its own first consumer (the reference portal)
+
+Blueprint applies its own methodology to itself. The productization pass — turning
+Blueprint from a single-operator workflow into a team-adoptable platform — was run
+*as a Blueprint initiative*, in this repo, and its evidence lives at the root:
+
+- **`blueprint.yml`** — the self-application config (`variant: brownfield`, `tier: 2`,
+  `portal_pattern: A`). The methodology working on itself.
+- **`apps/portal/`** — the **reference-implementation Pattern A portal**: a live demo
+  of what a Blueprint portal looks like, *and* the onboarding knowledge base for new
+  consumers (discover → try → build → operate → inspect → roadmap).
+- **`research/`, `decisions/`** — the recon synthesis, canonical research, charter, and
+  prescription that drove the productization. The promoted ADRs are canon at
+  [`docs/decisions/ADR-0003..0007`](docs/decisions/); the methodology's own decision
+  record renders in the portal's *inspect* surface.
+- **`tools/archaeology/`** — an event-sourced provenance substrate over the whole
+  productization history (sessions, ADRs, git, memory) — "what did we know on date T,
+  why X, who decided Z." See `docs/archaeology-substrate-pattern.md`.
+- **`START-HERE.md`** — the team on-ramp.
+
+The boundary that keeps the methodology reusable is a **directory boundary, not a repo
+boundary**: external consumers only ever stamp from `template/` (the stamper reads
+nothing outside it). The root is Blueprint-applied-to-itself; `template/` is the clean
+substrate everyone else pulls. See `CLAUDE.md` for the invariant.
+
 ### Optional: Add Forge Signal (strategic content generation)
 
 If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline:

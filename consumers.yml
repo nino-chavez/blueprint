@@ -53,8 +53,8 @@ consumers:
     owner: nino-chavez
     synced_at: "2026-06-04"
 
-  - repo: nino-chavez/blueprint-platform
-    pattern: A
-    methodology_version: "010945a"    # mirror of wip/blueprint-platform/blueprint.yml:82
-    owner: nino-chavez
-    synced_at: "2026-06-04"
+  # nino-chavez/blueprint-platform was FOLDED into this repo on 2026-06-05 as the
+  # in-repo self-application (see root blueprint.yml, apps/portal/). It is no longer
+  # an EXTERNAL consumer — the methodology and its reference implementation share
+  # one tree, pinned `methodology_version: self`, so it has no fleet drift to track.
+  # The original repo is archived; the productization history lives in tools/archaeology/.

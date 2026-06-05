@@ -4,3 +4,12 @@
 __pycache__/
 .playwright-mcp/
 *.tgz
+
+# Self-application (apps/portal + packages/* + tools/archaeology) build/dep state
+node_modules/
+dist/
+.astro/
+.wrangler/
+*.log
+.env
+.env.*

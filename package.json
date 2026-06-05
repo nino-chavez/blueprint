@@ -23,6 +23,10 @@
   "engines": {
     "node": ">=18"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "files": [
     "bin/",
     "template/",
@@ -37,7 +41,10 @@
   "scripts": {
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "dev": "npm run dev -w apps/portal",
+    "build": "npm run build -w apps/portal",
+    "typecheck": "npm run typecheck -w apps/portal"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10"

@@ -1,0 +1,196 @@
+# Blueprint Configuration — wip/blueprint-platform
+# Created 2026-06-04. Blueprint applied to itself, productization pass.
+#
+# Current-state product:  the Blueprint methodology source at tools/blueprint/
+#                         (+ its v1-solo self-application at wip/blueprint-redesign/)
+# Proposed-state product: Blueprint as a team-adoptable, portable platform —
+#                         configurable cost, org access control, bidirectional
+#                         non-breaking update distribution, onboarding ramp.
+#
+# This EXTENDS blueprint-redesign (which ratified the v1-solo architecture in
+# ADR-0001/ADR-0002 and deliberately deferred the four productization
+# requirements below to "v2 / out-of-scope / Never"). Those ADRs are inherited
+# verbatim — NOT re-decided. See decisions/00-charter.md.
+
+project:
+  name: "blueprint-platform"
+  description: "Productize the Blueprint methodology into a team-adoptable, portable platform: configurable cost-efficiency, org-scale access control, bidirectional non-breaking update distribution, full docs, and an onboarding/enablement ramp."
+  product: "Blueprint methodology"
+  audience:
+    leadership: []
+    engineering: []
+    broader:
+      - "Teams adopting Blueprint across departments"
+      - "Non-Nino operators running their first initiative"
+      - "Org contributors filing reviewers / amendments from the field"
+
+# ──────────────────────────────────────────────────────────────────
+# Pilot profile (REQUIRED — Stage 0 → Stage 1 gate)
+# Reference: tools/blueprint/template/docs/methodology/pilot-profile-template.md
+# ──────────────────────────────────────────────────────────────────
+pilot_profile:
+  slug: "department-team-adopter"
+  display_name: "Department team adopting Blueprint (multi-operator, not solo-Nino)"
+  pain_point: "A team that wants to run initiatives with Blueprint cannot adopt it without re-deriving shape from a single operator's machine: paths are hardcoded, there is no cost dial, no access model, no way to receive non-breaking updates or contribute fixes back, and no onboarding ramp — so adoption stalls at 'read METHODOLOGY.md and hope.'"
+  monetization_side: "operator"   # platform-owner / methodology-operator side, not the consumer product's end-user
+  walkthrough_citation: "research/00-recon-synthesis.md"   # 6-agent recon, 2026-06-04; full transcript referenced therein
+  competitors_in_scope:
+    - "Backstage (Spotify) — internal developer platform, golden paths, plugin catalog, software catalog"
+    - "Spec Kit (OpenAI) — spec-first AI engineering toolkit"
+    - "Cookiecutter / Yeoman / Hygen — scaffolders (distribution shape only, no methodology/governance)"
+    - "Shape Up / Linear — methodology + workflow shape"
+    - "ai-hive (companion) — multi-operator coordination substrate Blueprint integrates with, does NOT absorb"
+  out_of_scope_pilots:
+    - "End-user of a consumer product built with Blueprint (e.g., a coach using rally-hq) — pilot of the consumer, not of Blueprint"
+    - "The AI agent as pilot — agent is executor; the human team is the pilot"
+    - "External commercial SaaS customer with billing/SOC2 — see scope-ceiling decision (decisions/00-charter.md § Open decision)"
+
+# Pipeline shape — brownfield. Blueprint exists, works, ships to 6 named
+# consumers, and has a deployed reference portal. We evolve it, preserving what
+# works (ADR-0001/0002, the stamper, the reviewer specs, the portal chrome).
+# See: tools/blueprint/docs/variant-selection.md
+variant: brownfield
+
+# Deliverable sophistication — Tier 2. Unlike blueprint-redesign (Tier 1, portal
+# only), this initiative ships real new product surfaces alongside the portal:
+# @blueprint/cli, executable .mjs reviewers, a versioned update channel, and a
+# thin coordination control plane (pending the scope-ceiling decision).
+# See: tools/blueprint/docs/portal-and-tier-ladder.md
+tier: 2
+
+# Portal pattern — A (platform-portal-as-harness). Corrected from B 2026-06-04:
+# Blueprint ships a portal SHELL that is the harness/index to everything an
+# initiative delivers (subs-initiative is the canonical Pattern A reference).
+# The IA contract fits this initiative exactly — discover (what the platform is),
+# try (npx init), build (run an initiative), operate (fleet/upgrade/cost), inspect
+# (the ADRs + research evidence), roadmap (the build tracks). Instantiated via the
+# stamper (stamp.mjs --mode=stamp --pattern=A), not hand-built. "Why not B": B is
+# the redesign-review (current-vs-proposed) shape; this initiative is a platform
+# whose harness indexes deliverables, which is precisely Pattern A.
+portal_pattern: A
+
+execution:
+  depth: thorough
+  # thorough: this initiative defines how Blueprint ships to teams going forward;
+  # full research + design-constraints + prototypes of the 4 net-new surfaces +
+  # fact-check against a real second consumer + ADRs + onboarding ramp.
+
+# Methodology version. SELF-HOSTED: as of the 2026-06-05 fold, this initiative
+# lives in the methodology repo itself (tools/blueprint) as its own first
+# consumer — the reference implementation. There is no external pin to track;
+# the methodology and its self-application advance in the same repo, with
+# template/ kept clean as the stampable substrate external consumers pull.
+methodology_version: "self"   # in-repo self-application (folded 2026-06-05)
+
+# Companion — ai-hive. Integrate, do NOT absorb (prescription: "companion stays
+# separate / Never"). Blueprint owns methodology; ai-hive owns identity,
+# coordination, persistence. Multi-operator + access-control build ON ai-hive's
+# Worker + D1 + bearer-token substrate. See decisions/00-charter.md § Fork 1.
+hive:
+  enabled: false
+  # The platform DESIGNS multi-operator; the platform initiative can run solo
+  # initially. Flip true once the identity layer lands and a second operator joins.
+
+cloudflare:
+  enabled: true
+  # Pattern B onboarding portal deploys as a Cloudflare Pages project. Any thin
+  # control-plane surface (registry / update-feed / triage) reuses the ai-hive
+  # Worker + D1 family, not a net-new auth/multi-tenant stack.
+
+# ──────────────────────────────────────────────────────────────────
+# Productization tracks (expanded beyond the operator's original 6 requirements;
+# architect-surfaced additions marked [+]). Full rationale + gap status +
+# closing pattern + reusable foundation: decisions/00-charter.md.
+# ──────────────────────────────────────────────────────────────────
+# A. Distribution & Versioning  — portable, bidirectional updates, [+]consumer
+#                                  registry/fleet, [+]semver+deprecation, [+]contract tests
+# B. Configurability & Cost      — cost dial, [+]telemetry/observability, [+]FinOps budgets
+# C. Access & Governance         — access control, [+]contribution/promotion governance,
+#                                  [+]security/supply-chain, [+]licensing/IP model, [+]identity
+# D. Extensibility               — [+]plugin model (org-authored reviewers/stages), [+]catalog
+# E. Adoption & Enablement       — documented, onboarding ramp, [+]role-based paths,
+#                                  [+]support/escalation, [+]conformance certification
+# F. Team / Multi-operator       — team-adoptable, ai-hive integration
+
+# ──────────────────────────────────────────────────────────────────
+# Portal harness config — read by apps/portal/src/lib/portal-config.ts.
+# The Pattern A portal ships as a GENERIC shell; this block points it at
+# THIS initiative's deliverables. A source left null hides its IA section
+# (no Hive/state-derive substrate here — ceiling A is methodology-native).
+# ──────────────────────────────────────────────────────────────────
+portal:
+  repo_url: "https://github.com/nino-chavez/blueprint"
+  decisions:
+    dir: docs/decisions            # the methodology's canonical ADR store (ADR-NNNN + numbered);
+                                   #   pattern /^(?:ADR-)?(\d{4})-/ indexes them. Charter + prescription
+                                   #   (2-digit) surface as explicit inspect.docs entries below.
+  home:
+    hero_eyebrow: Blueprint Platform
+    hero_headline: The methodology, productized for teams.
+    hero_subhead: "A team-adoptable, portable Blueprint distribution — configurable cost, git-native access, and bidirectional non-breaking updates. Pick how you want to enter."
+  excerpts:
+    - card: discover
+      title: What it is
+      path: README.md
+      heading: What This Is
+    - card: discover
+      title: Extends, not supersedes
+      path: decisions/00-charter.md
+      heading: "Relationship to blueprint-redesign — extends, does not supersede"
+    - card: discover
+      title: The expansion
+      path: decisions/00-charter.md
+      heading: "Expansion — what the original six miss (architect-surfaced)"
+    - card: discover
+      title: Scope ceiling
+      path: decisions/00-charter.md
+      heading: "Resolved — scope ceiling: A (methodology-native only)"
+  inspect:
+    docs:
+      - title: Charter
+        description: "Gap scorecard + the six productization tracks + the scope-ceiling decision."
+        path: decisions/00-charter.md
+        meta: "→ decisions/00-charter.md"
+      - title: Prescription
+        description: "What v1 ships, what defers, and the research-refined 14-step build order."
+        path: decisions/01-prescription.md
+        meta: "→ decisions/01-prescription.md"
+      - title: Stage 1 canonical research
+        description: "Vendor-canonical + internal-impl grounding for every primitive (the ADR basis)."
+        path: research/01-canonical-research.md
+        meta: "→ research/01-canonical-research.md"
+      - title: Recon synthesis
+        description: "The 6-agent gap-analysis evidence base."
+        path: research/00-recon-synthesis.md
+        meta: "→ research/00-recon-synthesis.md"
+      - title: Methodology amendments
+        description: "Dogfooding learnings from applying Blueprint to itself; candidates for promotion."
+        path: METHODOLOGY-AMENDMENTS.md
+        meta: "→ METHODOLOGY-AMENDMENTS.md"
+    axioms: []
+  sources:
+    build_order: apps/portal/src/data/build-order.json
+    scenarios: null
+    state: null
+    board: null
+    epic_footprints: null
+    attestations: null
+    proposals: null
+    dep_graph: null
+
+# ──────────────────────────────────────────────────────────────────
+# Archaeology substrate (LIVE) — event-sourced provenance over the
+# productization's history. "What did we know on date T, why X, who decided Z."
+# Tooling: tools/archaeology/. Pattern: tools/blueprint/docs/archaeology-substrate-pattern.md
+# ──────────────────────────────────────────────────────────────────
+archaeology:
+  enabled: true
+  project_slug: blueprint                 # CF resource prefix (blueprint-archaeology{,-blobs,-chunks})
+  worker: https://blueprint-archaeology.biq.workers.dev   # POST /events,/embed · GET /timeline,/derive,/health
+  cf_account: b6ffcf200d56bab5749e243f024658d2            # abelino.chavez account
+  federation: per_project
+  # Backfilled 2026-06-05: the 13 productization sessions (~/.claude/projects/
+  #   -Users-nino-Workspace-dev-tools-blueprint) → 949 events → 1165 Vectorize chunks.
+  #   The recon, canonical research, ADR deliberation, and design workflows live here,
+  #   queryable via /derive (retrieval grounded; set ANTHROPIC_API_KEY on the Worker for
+  #   full RAG synthesis). Ongoing capture: wire the SessionEnd hook (tools/archaeology).

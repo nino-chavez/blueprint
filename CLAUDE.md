@@ -1,22 +1,25 @@
-# Blueprint methodology source
+# Blueprint methodology source — and its own first consumer
 
-**Repo role: I am the Blueprint methodology source.** This repo holds the canonical methodology — `METHODOLOGY.md`, `docs/`, and `template/` — that consumer initiatives reference and stamp from. Verify `pwd` ends in `tools/blueprint` (not `wip/blueprint-redesign` or any consumer-shaped path) before any commit; if it ends in a consumer path, stop and switch sessions.
+**Repo role: I am the Blueprint methodology source AND its reference-implementation consumer.** This repo holds two things that share one tree (folded 2026-06-05):
 
-## What this repo is, and is not
+1. **The methodology distribution** (what external consumers pull): `METHODOLOGY.md`, `docs/`, and `template/` — the stamper substrate + reviewer agents + hooks shipped to consumers.
+2. **Blueprint applied to itself** (the self-application / reference portal): a root `blueprint.yml`, `research/`, `decisions/`, `apps/portal/`, `packages/`, `tools/archaeology/`, `START-HERE.md` — the productization initiative, run *as* a Blueprint initiative, in this repo. The portal at `apps/portal/` is the live Pattern A reference implementation, demo, and onboarding knowledge base for new consumers.
 
-- **Is**: the methodology distribution — `METHODOLOGY.md` (first-principles), `docs/` (canonical taxonomies, variant + tier + pattern decision trees, ADRs), `template/` (the stamper substrate + reviewer agents + hooks shipped to consumers).
-- **Is not**: a consumer initiative. There is no `blueprint.yml` at this root, no `research/`, no `decisions/`, no `portal/`. If you find yourself reaching for those, you opened the wrong repo.
+The dual role is deliberate: a methodology proves itself by being its own first consumer — the compiler that compiles itself. Verify `pwd` ends in `tools/blueprint` before any commit.
 
-The dogfooding consumer for this methodology is `~/Workspace/dev/wip/blueprint-redesign/` (Blueprint applied to itself). Other live consumers: `apps/rally-hq/`, `apps/website-nc-v3/`, `apps/blog/blueprint/`, `wip/subs-initiative/`.
+## The boundary that matters is a DIRECTORY boundary, not a repo boundary
+
+The rule that keeps the methodology reusable is NOT "no consumer artifacts in this repo" (the root IS a consumer now). It is:
+
+- **`template/` is the stampable substrate — keep it clean.** External consumers stamp from `template/` and ONLY `template/`: `template/tools/blueprint-init/stamp.mjs` walks the passed `src` and never reads the repo root; its `mechanicalCheck` is scoped to the stamped target. The self-application's `blueprint.yml`, `research/`, `decisions/`, and `apps/portal/` at the root **never reach what a consumer stamps**, so they cannot pollute it. A change to `template/` is a methodology change; a change to the root is self-application work.
+- **If you find yourself editing `template/` to make the self-application's portal build, stop — that's the leak.** Fix it at the root (`apps/portal/`, `packages/`). The portal under `apps/` is the *instance*; `template/apps/portal/` is the *boilerplate*. Keep them distinct.
 
 ## Operating invariants
 
-The two rules from `template/CLAUDE.md` apply here in reverse:
+- **Shell is throwaway; artifacts are forever**: "artifacts" here means BOTH the methodology (`METHODOLOGY.md`, `docs/`, `template/`) AND the self-application's evidence (`research/`, `decisions/`, `blueprint.yml`, committed `*.md` rationale). Scaffolding (`apps/portal/dist`, `node_modules`, `.wrangler`, `.astro`) is throwaway — regenerate it. Treat both artifact columns with the care a consumer gives its `research/`.
+- **Methodology freeze during consumer migration**: when an EXTERNAL consumer is mid-migration picking up a methodology update, no `template/` edits land without an explicit operator waiver ("patch upstream now, consumer keeps local fixes"; see wave 5 commit `53fe1f0`). The in-repo self-application is pinned to `methodology_version: self` and does NOT trip this. The freeze is about concurrent *editing*, not repo topology — concurrent SESSIONS editing this repo still use worktrees (the `worktree-guard` hook enforces it; a solo session in main is never blocked).
 
-- **Shell is throwaway; artifacts are forever**: in this repo "artifacts" means the methodology — `METHODOLOGY.md`, `docs/`, `template/`. Treat edits to those with the same care as edits to a consumer's `research/` or `decisions/`.
-- **Methodology freeze during consumer migration**: the rule's intent reads from this side as — when a consumer is in flight, no template edits land here without an explicit operator waiver ("patch upstream now, consumer keeps local fixes"; see wave 5 commit `53fe1f0` for the pattern). Otherwise consumers and methodology evolve sequentially.
-
-Operator check before editing `template/`: confirm which consumer initiatives are in flight (`ls ~/Workspace/dev/wip/blueprint-redesign/.git/HEAD`, peer consumer worktrees) and whether the current edit has waiver authority.
+Operator check before editing `template/`: confirm which external consumer initiatives are in flight and whether the edit has waiver authority. Editing the root self-application never trips the freeze. Other live external consumers: `apps/rally-hq/`, `apps/website-nc-v3/`, `apps/blog/blueprint/`, `wip/subs-initiative/` (all at rest as of the fold).
 
 ## Wave log
 
