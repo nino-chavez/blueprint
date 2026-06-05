@@ -31,6 +31,9 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "bin": {
+    "blueprint": "./bin/blueprint.mjs"
+  },
   "scripts": {
     "changeset": "changeset",
     "version": "changeset version",
