@@ -51,7 +51,7 @@ export function looksLikeSha(s) {
   return typeof s === 'string' && /^[0-9a-f]{7,40}$/i.test(s);
 }
 
-function semverParts(s) {
+export function semverParts(s) {
   // Capture prerelease (group 4) separately from build metadata (group 5).
   // Build metadata is IGNORED for precedence per semver.org; only `pre` is compared.
   const m = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+([0-9A-Za-z.-]+))?$/.exec(s);
@@ -195,6 +195,18 @@ export function makeGitProbe(home) {
       const n = out == null ? NaN : Number(out);
       return Number.isFinite(n) ? n : null;
     },
+    // `blueprint upgrade` reads these (still all methodology-home git, behind the
+    // one injectable probe so the self-test's fake-git seam covers them too).
+    commitSubjects(from, to, cap = 40) {
+      const out = git(['log', '--format=%h %s', `${from}..${to}`]);
+      if (!out) return [];
+      return out.split('\n').filter(Boolean).slice(0, cap);
+    },
+    packageVersionAt(ref) {
+      const out = git(['show', `${ref}:package.json`]);
+      if (!out) return null; // ref predates package.json, or unreadable
+      try { return JSON.parse(out).version || null; } catch { return null; }
+    },
   };
 }
 
@@ -208,8 +220,16 @@ export function resolveCurrent(gitProbe) {
 }
 
 // ── Classify one consumer ────────────────────────────────────────────────────
-// Returns { class, distance, distanceUnit, reason }. Pure function of pin SHAPE
-// and intra-shape orderability — never a cross-shape comparison.
+// Returns { class, distance, distanceUnit, reason, breaking }. Pure function of
+// pin SHAPE and intra-shape orderability — never a cross-shape comparison.
+//
+// `breaking` (the SINGLE source of truth that both `fleet` and `upgrade` read):
+//   true  — a `behind` pin crossing a MAJOR boundary (semver: current.major >
+//           pin.major; sha: package.json major increased across pin..HEAD).
+//   false — a `behind` pin within the same major, or any non-behind class.
+//   null  — UNKNOWN: a sha `behind` pin whose package.json major can't be read
+//           at the pinned commit (the pin predates package.json, or no version).
+//           `upgrade` refuses to auto-apply UNKNOWN without explicit --ack-untagged.
 export function classifyConsumer(entry, current, gitProbe) {
   const pin = entry.methodology_version;
   let base;
@@ -249,6 +269,21 @@ export function classifyConsumer(entry, current, gitProbe) {
     base = { class: 'unresolvable', distance: null, distanceUnit: null, reason: 'pin is neither valid semver nor a resolvable commit' };
   }
 
+  // breaking — only meaningful for `behind` (the direction upgrade would bump).
+  let breaking = false;
+  if (base.class === 'behind') {
+    if (looksLikeSemver(pin) && current.version) {
+      const pp = semverParts(pin), cp = semverParts(current.version);
+      breaking = !!(pp && cp && cp.major > pp.major);
+    } else if (looksLikeSha(pin)) {
+      const atPin = gitProbe.packageVersionAt ? gitProbe.packageVersionAt(pin) : null;
+      const cp = current.version ? semverParts(current.version) : null;
+      const ap = atPin ? semverParts(atPin) : null;
+      breaking = (ap && cp) ? cp.major > ap.major : null; // null = UNKNOWN
+    }
+  }
+  base.breaking = breaking;
+
   // Deprecation overlays an orderable class (operator-asserted flag only in v1).
   if (entry.deprecated_pin && ['current', 'behind', 'ahead'].includes(base.class)) {
     return { ...base, class: 'on-deprecated', reason: `${base.reason}; entry flagged deprecated_pin` };
@@ -274,6 +309,7 @@ export function computeFleet(home, registryPath, opts = {}) {
       class: c.class,
       distance: c.distance,
       distanceUnit: c.distanceUnit,
+      breaking: c.breaking,
       owner: entry.owner,
       syncedAt: entry.synced_at,
       reason: c.reason,
@@ -364,6 +400,9 @@ consumers:
     },
     isAncestor: (a, b) => (a === ANCESTOR && b === HEAD) || (a === HEAD && b === FORWARD) || a === b,
     commitDistance: (from, to) => (from === ANCESTOR && to === HEAD ? 23 : from === HEAD && to === FORWARD ? 5 : 0),
+    // `upgrade` probes (added with the breaking field).
+    commitSubjects: (from, to) => (from === ANCESTOR && to === HEAD ? ['abc123 feat(x): a', 'def456 fix(y): b'] : []),
+    packageVersionAt: (ref) => (ref === ANCESTOR ? null : ref === FORWARD ? '0.1.0' : null), // ANCESTOR predates package.json → UNKNOWN
   };
   const cur = resolveCurrent(fakeGit);
   const cls = (entry) => classifyConsumer(entry, cur, fakeGit);
@@ -380,6 +419,16 @@ consumers:
   assert(cls({ methodology_version: 'not-a-version' }).class === 'unresolvable', 'garbage pin → unresolvable');
   assert(cls({ methodology_version: '010945a', deprecated_pin: true }).class === 'on-deprecated', 'deprecated flag overlays orderable class');
   assert(cls({ methodology_version: null, deprecated_pin: true }).class === 'unpinned', 'deprecated flag does NOT overlay unpinned');
+
+  // breaking field (the single source of truth fleet + upgrade share).
+  assert(cls({ methodology_version: '0.0.9' }).breaking === false, 'semver behind same major → breaking:false');
+  assert(cls({ methodology_version: '0.1.0' }).breaking === false, 'current → breaking:false');
+  // A semver pin two majors back (current 0.1.0 has major 0, so force a major bump via a higher-major current).
+  const v2cur = { version: '2.0.0', head: HEAD, latestSemverTag: null };
+  assert(classifyConsumer({ methodology_version: '1.5.0' }, v2cur, fakeGit).breaking === true, 'semver behind crossing major → breaking:true');
+  assert(classifyConsumer({ methodology_version: '2.0.0-rc.1' }, v2cur, fakeGit).breaking === false, 'same-major prerelease behind → breaking:false');
+  // sha behind whose pin predates package.json (packageVersionAt → null) → breaking UNKNOWN (null).
+  assert(shaBehind.breaking === null, 'sha behind, pin predates package.json → breaking:null (UNKNOWN)');
 
   // Null-HEAD (not-a-git-repo / broken HEAD): a sha pin is unresolvable with a
   // reason that names the probe failure, not a masked "off the HEAD line".
@@ -412,5 +461,5 @@ consumers:
   assert(computeFleet(dir, regPath, { gitProbe: fakeGit }).driftPresent === false, 'ahead not drift by default');
   assert(computeFleet(dir, regPath, { gitProbe: fakeGit, strict: true }).driftPresent === true, '--strict: ahead counts as drift');
 
-  console.log('consumers-registry self-test: PASS (33 assertions)');
+  console.log('consumers-registry self-test: PASS (39 assertions)');
 }

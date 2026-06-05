@@ -45,7 +45,7 @@ function* ancestors(start) {
 }
 
 /** Read a top-level scalar from a blueprint.yml without a yaml dependency. */
-function readYamlScalar(ymlPath, key) {
+export function readYamlScalar(ymlPath, key) {
   try {
     for (const line of readFileSync(ymlPath, 'utf8').split('\n')) {
       const s = line.trim();

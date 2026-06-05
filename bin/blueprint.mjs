@@ -10,7 +10,7 @@
  *   review   run an executable reviewer against a target   (real — step 3, ADR-0002/0006)
  *   cost     per-stage effort/model config + telemetry sweep (real — step 5, ADR-0003)
  *   fleet    classify consumer drift from consumers.yml     (real — step 7, ADR-0005)
- *   upgrade  pull non-breaking methodology updates          [stub — step 8, ADR-0005]
+ *   upgrade  preview/apply this consumer's pin bump         (real — step 8, ADR-0005)
  *   doctor   conformance / health check                     [stub — step 12]
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
@@ -19,7 +19,7 @@ import { spawn } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { existsSync, readFileSync } from 'node:fs';
-import { resolveBlueprintHome, BlueprintHomeError } from './lib/blueprint-home.mjs';
+import { resolveBlueprintHome, BlueprintHomeError, readYamlScalar } from './lib/blueprint-home.mjs';
 
 const VERSION = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8')
@@ -48,7 +48,8 @@ Commands:
   fleet      Classify consumer drift from consumers.yml    (blueprint fleet [--json] [--strict])
              current / behind / ahead / on-deprecated / unpinned / unresolvable
              exit 0 = clean (incl. unpinned); exit 1 = drift (behind/on-deprecated/unresolvable or suspect registry)
-  upgrade    Pull non-breaking methodology updates              (coming: step 8)
+  upgrade    Preview/apply this consumer's pin bump        (blueprint upgrade [--target=<dir>] [--apply] [--ack-untagged] [--require-pin] [--json])
+             dry-run by default (terraform-plan style); --apply writes the methodology_version bump (dirty-tree-guarded, breaking-gated)
   doctor     Conformance / health check                         (coming: step 12)
 
 Global:
@@ -64,7 +65,6 @@ The methodology source resolves via:
 // step lands it. A real consumer running `blueprint <cmd>` today gets an honest
 // "not yet, here's what it will do" — not a crash.
 const STUBS = {
-  upgrade: { step: 8,  adr: 'ADR-0005',            does: 'pull the semver-aware methodology delta and apply non-breaking migrations' },
   doctor:  { step: 12, adr: '(conformance)',       does: 'gate on runtime/browser verification — the false-green guard' },
 };
 
@@ -289,6 +289,121 @@ async function runFleet(fleetArgv, home) {
   process.exit(fleet.driftPresent ? 1 : 0);
 }
 
+// upgrade [--target=<dir>] [--apply] [--ack-untagged] [--require-pin] [--json] —
+// the DOWN channel, consumer-local (ADR-0005). Runs in a CONSUMER repo: reads
+// THIS consumer's methodology_version pin, classifies it against the current
+// methodology (reusing the fleet classifier, N=1), narrates the delta, and —
+// only under --apply, dirty-tree-guarded + breaking-gated — bumps the pin.
+// Default is a dry-run preview (terraform plan). v1 is pin-bump only; chrome
+// re-stamp stays the separate `stamp.mjs --mode=restamp-chrome` step.
+async function runUpgrade(upgradeArgv, home) {
+  const { flags } = parseArgs(upgradeArgv);
+  const targetDir = resolve(flags.target || process.cwd());
+  const apply = !!flags.apply;
+  const ackUntagged = !!flags['ack-untagged'];
+  const requirePin = !!flags['require-pin'];
+
+  if (!existsSync(join(targetDir, 'blueprint.yml'))) {
+    console.error(`blueprint upgrade: no blueprint.yml at ${targetDir} — upgrade runs in a CONSUMER repo. cd into an initiative or pass --target=<dir>.`);
+    process.exit(2);
+  }
+
+  const libDir = join(home, 'template', 'tools', 'lib');
+  let reg, up;
+  try {
+    reg = await import(pathToFileURL(join(libDir, 'consumers-registry.mjs')).href);
+    up = await import(pathToFileURL(join(libDir, 'upgrade.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint upgrade: failed to load upgrade libs from ${libDir} — ${e.message}`);
+    process.exit(2);
+  }
+
+  const pin = readYamlScalar(join(targetDir, 'blueprint.yml'), 'methodology_version');
+  const gitProbe = reg.makeGitProbe(home);
+  const current = reg.resolveCurrent(gitProbe);
+  const verdict = reg.classifyConsumer({ repo: '(this consumer)', methodology_version: pin, deprecated_pin: false }, current, gitProbe);
+  const delta = up.narrateChangelogDelta({ home, pin, current, verdictClass: verdict.class, gitProbe });
+  const gate = up.computeGate(verdict, { ackUntagged });
+  // upgrade-TO is `current`, shaped to match the pin: a semver pin bumps to the
+  // version; a sha pin bumps to the short HEAD. An UNPINNED consumer adopts the
+  // stable semver release identity (version) when one exists — friendlier and
+  // forward-compatible — else the short HEAD.
+  const shortHead = current.head ? current.head.slice(0, 7) : null;
+  const to = pin
+    ? (reg.looksLikeSemver(pin) ? current.version : shortHead)
+    : (current.version || shortHead);
+
+  // exit code (dry-run): 0 if current, 0 if unpinned (unless --require-pin), else 1.
+  const driftExit = verdict.class === 'current' ? 0 : (verdict.class === 'unpinned' ? (requirePin ? 1 : 0) : 1);
+
+  if (flags.json) {
+    console.log(JSON.stringify({
+      target: targetDir,
+      pinned: pin,
+      current,
+      verdict: { class: verdict.class, distance: verdict.distance, distanceUnit: verdict.distanceUnit, reason: verdict.reason, breaking: verdict.breaking },
+      delta,
+      proposed: { from: pin, to, gate: gate.action },
+      applied: false,
+    }, null, 2));
+    if (!apply) process.exit(driftExit);
+  } else {
+    const head7 = current.head ? current.head.slice(0, 7) : '???????';
+    console.log(`blueprint upgrade — ${targetDir}`);
+    console.log(`pinned: ${pin || '(unpinned)'}   methodology current: ${current.version || '?'} (HEAD ${head7})`);
+    console.log(`verdict: ${verdict.class}${verdict.distance != null ? ` (${verdict.distance} ${verdict.distanceUnit})` : ''} — ${verdict.reason}`);
+    if (delta.kind === 'commitlog') {
+      console.log(`delta: no semver releases between ${(pin || '').slice(0, 7)} and current — methodology commit log (CHANGELOG narration begins once vX.Y.Z tags exist in range):`);
+      for (const s of delta.entries.slice(0, 15)) console.log(`  ${s}`);
+      if (delta.entries.length > 15) console.log(`  … ${delta.entries.length - 15} more`);
+    } else if (delta.kind === 'changelog') {
+      console.log('delta: CHANGELOG sections in range:');
+      for (const s of delta.entries) console.log(s.split('\n').map((l) => `  ${l}`).join('\n'));
+    } else {
+      console.log('delta: (nothing to narrate — already current or no released versions in range)');
+    }
+    if (gate.action === 'noop') {
+      console.log('gate: noop — already current.');
+    } else if (gate.action.startsWith('refuse')) {
+      console.log(`gate: REFUSE — ${gate.message}`);
+    } else {
+      console.log(`proposed: bump methodology_version ${pin || '(none)'} -> ${to} in blueprint.yml   [--apply to write]`);
+      console.log(`gate: ${gate.action} — ${gate.message}`);
+    }
+  }
+
+  if (!apply) {
+    if (!flags.json) console.log(`\nexit ${driftExit} (dry-run; --apply to write)`);
+    process.exit(driftExit);
+  }
+
+  // ── --apply path ──
+  if (gate.action === 'noop') process.exit(0);
+  if (gate.action.startsWith('refuse')) {
+    if (!flags.json) console.log(`\nnot applied — ${gate.message}. exit 1`);
+    process.exit(1);
+  }
+  // dirty-tree guard — makes "revert via git" true rather than asserted.
+  if (up.isDirty(targetDir, ['blueprint.yml'])) {
+    console.error(`blueprint upgrade: blueprint.yml at ${targetDir} has uncommitted changes; the revert hint would discard them. Commit or stash first, then re-run --apply.`);
+    process.exit(2);
+  }
+  const res = up.bumpPin(targetDir, gate.action === 'insert' ? null : pin, to);
+  if (!res.ok) {
+    console.error(`blueprint upgrade: pin write failed — ${res.error}. blueprint.yml left unchanged or reverted.`);
+    process.exit(2);
+  }
+  console.log(`applied: methodology_version ${res.mode === 'insert' ? 'inserted' : 'bumped'} -> ${to} in ${targetDir}/blueprint.yml`);
+  if (up.isTracked(targetDir, 'blueprint.yml')) {
+    console.log(`revert: git -C ${targetDir} checkout blueprint.yml`);
+  } else if (res.mode === 'insert') {
+    console.log(`revert: delete the inserted line  methodology_version: "${to}"`);
+  } else {
+    console.log(`revert: set methodology_version back to ${pin}`);
+  }
+  process.exit(0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -328,6 +443,11 @@ async function main() {
 
   if (cmd === 'cost') {
     await runCost(argv.slice(argv.indexOf('cost') + 1), home);
+    return;
+  }
+
+  if (cmd === 'upgrade') {
+    await runUpgrade(argv.slice(argv.indexOf('upgrade') + 1), home);
     return;
   }
 
