@@ -70,15 +70,30 @@ Is the initiative a brownfield audit / redesign with a current-state vs. propose
 ├── Yes → Pattern B (redesign-review-portal)
 │   └── Static HTML + drawers + comparison toggle + chat FAB
 └── No
-    └── Does the initiative have multiple distinct surfaces and multiple audiences?
+    └── Multiple distinct surfaces and multiple audiences, AS a stakeholder
+        front-door to a product?
         ├── Yes → Pattern A (platform-portal)
         │   └── Astro + React + @blueprint/ui + @blueprint/design-tokens
-        └── No → consider whether a portal is needed at all
-            └── Solo-audience product (single-surface) may not need a portal.
-                The product itself is the deliverable.
+        └── No
+            ├── Single-surface, solo-audience → consider whether a portal is
+            │   needed at all. The product itself may be the deliverable.
+            └── Portal-shaped but operator-facing — a console for running a
+                recurring process, not a stakeholder front-door (neither A nor
+                B fits the archetype) → bespoke portal, ADR-MANDATORY.
+                See "When neither pattern fits the archetype" below.
 ```
 
 Pattern A and Pattern B can coexist in the same project if the surfaces are genuinely separate (e.g., a platform that also publishes audit docs). That's a Tier 2 monorepo with both `apps/portal/` (A) and `portal/` (B). Rare. Document via ADR.
+
+### When neither pattern fits the archetype (bespoke-with-ADR)
+
+Both named patterns assume **stakeholder-facing externalization**: A is a front-door *to a product*, B is a review surface *for a redesign*. An initiative can be portal-shaped — a front door over multiple surfaces — yet fit neither. The clearest case is an **operator-facing process console**: a control surface for running a recurring operation, whose audience is the team *operating* it, not stakeholders *evaluating* a product. Pattern A already carries this concern as one of its six verbs (Operate); a process console is the degenerate case where Operate *is* the product and Discover/Try/Build/Roadmap collapse.
+
+When that happens:
+
+- **A bespoke portal is allowed, but ADR-mandatory.** Record why neither A nor B fits, per the Divergence rule below. Silence is the failure mode — it produces unversioned IA that drifts from the next same-archetype consumer (the exact problem the two named patterns exist to prevent; see "Why this exists").
+- **Do not relabel as Tier 0 to escape the matrix.** Tier 0 is *pre-portal* scratch (≤ 1 week). If a portal exists — a front door, multiple surfaces, deploy config — the tier is **≥ 1**, regardless of how lightweight it is. Redefining "Tier 0" locally to mean "lightweight bespoke dashboard" hides the divergence and dodges the pattern-conformance gate.
+- **The archetype is not yet canonized.** The first instance is `ai-content-engine` (a daily-content operation; bespoke `prototype/` cockpit, `decisions/0001-bespoke-portal-ops-console.md`). One instance names the gap; it does not freeze a contract — Pattern B was extracted from three consumers, not one. A third canonical pattern ("operator console") waits for a *second* instance to define it. Tracked under Open questions.
 
 ## Pattern A — The IA contract (mandatory)
 
@@ -210,7 +225,7 @@ A Blueprint initiative occupies one tier at a time. The tier ladder applies inde
 ### Tier 0 — Idea
 
 - `decisions/` (ADRs, optional at this tier), `research/`, optional `prototype.md` for design-principle scratch
-- **No portal yet.** This tier is pre-portal.
+- **No portal yet.** This tier is pre-portal. A bespoke or lightweight portal still counts as a portal: if a front door over multiple surfaces exists (with deploy config), the initiative is **≥ Tier 1**, however lightweight — see "When neither pattern fits the archetype." Do not stay at Tier 0 to dodge the pattern-conformance gate.
 - Expected duration: ≤ 1 week.
 
 ### Tier 1 — Portal
@@ -266,3 +281,4 @@ When in doubt: blueprint is process, portals are IA contracts (two patterns, A o
 - **`@blueprint/ui-svelte` parity**: when does the React-only `@blueprint/ui` get a Svelte equivalent for Pattern A SvelteKit consumers? Demand-driven.
 - ~~**Audience switcher pill naming**: subs-initiative uses `executive / discovery / internal`. "Internal" is overloaded. ADR candidate.~~ **Resolved 2026-05-25.** Renamed to `executive / evaluator / engineering` per [ADR-0001](decisions/0001-audience-pill-naming.md). Storage-key prefix cleanup (`bcs-` → `blueprint-`) tracked as follow-up ADR-0002.
 - **Pattern coexistence**: when a project genuinely needs both A and B portals (multi-audience platform that *also* publishes audit work), how does the workspace plumb both? Single project with `apps/portal/` (A) and `portal/` (B)? Future ADR.
+- **Operator-console archetype (candidate Pattern C)**: A and B both assume stakeholder-facing externalization; an operator-facing process console (a cockpit for running a recurring operation) fits neither. First instance: `ai-content-engine` (`decisions/0001-bespoke-portal-ops-console.md`). Until a *second* instance appears, such initiatives use a bespoke portal with a mandatory divergence ADR (see "When neither pattern fits the archetype") — they are NOT forced into A/B, and NOT canonized into a third frozen contract from one example. Promote when a second console consumer lands; the second instance defines the contract (verbs reweighted/relabeled — cockpit/overview/convert; audience pills operator-first). Tracked: `METHODOLOGY-AMENDMENTS.md` 2026-06-05.
