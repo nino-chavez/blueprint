@@ -3,3 +3,4 @@
 /.audit-tmp/
 __pycache__/
 .playwright-mcp/
+*.tgz
