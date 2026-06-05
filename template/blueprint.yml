@@ -46,6 +46,42 @@ execution:
   # thorough: All of standard + market comparables + integration plan + AI chat + codebase validation.
 
 # ──────────────────────────────────────────────────────────────────
+# Cost / effort dial (ADR-0003) — orthogonal to execution.depth.
+#   execution.depth answers "how many docs."  cost answers "how hard each
+#   stage thinks + which model runs it."  Resolved by tools/lib/cost-dial.mjs.
+# Reference: docs/tiered-orchestration-pattern.md (the Opus/Sonnet ladder),
+#            ADR-0003-cost-effort-dial.md
+# ──────────────────────────────────────────────────────────────────
+#
+# effort     uses Claude Code's enum VERBATIM: low | medium | high | xhigh | max
+#            (the operator named that exact dial; do not invent a custom scale).
+# model_tier opus | sonnet | haiku | inherit. `inherit` = use the session model.
+#
+# The per-stage anchors below are PROVISIONAL — seeded from the tiered-
+# orchestration ladder (Orchestrator/arbitration = opus high; Implementer = sonnet
+# high; verification = opus xhigh; mechanical = sonnet low). They are NOT
+# calibrated. Re-anchor from .blueprint/telemetry.jsonl after ~10 cycles and record
+# the recalibration as a methodology amendment. Never ship telemetry-free numbers as
+# settled truth.
+#
+# Skip-justification gate (step 6): if a stage's RESOLVED effort/model_tier falls
+# BELOW its anchored default and no `skip_justification:` string is present, the
+# cost gate emits a BLOCK finding (charter risk #3 — under-processing must be a
+# recorded conscious choice, not a silent default).
+cost:
+  default:
+    effort: medium                  # applied to any stage not named below
+    model_tier: inherit
+  stages:
+    research:    { effort: high,  model_tier: opus }                                 # arbitration-heavy (Orchestrator)
+    design:      { effort: high,  model_tier: opus }                                 # constraint/fork resolution (Specialist)
+    prototype:   { effort: high,  model_tier: sonnet }                               # TDD implementation (Implementer)
+    fact_check:  { effort: xhigh, model_tier: opus }                                 # false-green guard (Specialist verify)
+    documents:   { effort: medium, model_tier: sonnet }                              # doc generation (Implementer)
+    deploy:      { effort: low,   model_tier: sonnet, skip_justification: "mechanical" }
+    iterate:     { effort: medium, model_tier: sonnet }                              # amendment harvest / review (Janitor)
+
+# ──────────────────────────────────────────────────────────────────
 # Optional dependencies
 # Blueprint works standalone. These tools extend it.
 # ──────────────────────────────────────────────────────────────────
