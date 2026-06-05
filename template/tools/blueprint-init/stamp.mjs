@@ -91,6 +91,13 @@ function substitutions({ name, displayName, repoUrl, tagline, theme }) {
     { from: "/project-logo.png", to: "/project-logo.png" },
     { from: "--bcs-", to: `--${shortPrefix}-` },
     { from: "subs-initiative", to: name },
+    // Explicit fill-me tokens the de-narrated pages use for brand + repo, so the
+    // generic shell carries no reference-project name (PortalNav brand, Layout
+    // fullTitle, strategy REPO const). NOTE: the banner prose "REPLACE_FOR_PROJECT —"
+    // (space-dash) is a DIFFERENT token and is intentionally not matched here.
+    { from: "REPLACE_FOR_PROJECT_NAME", to: displayName },
+    { from: "REPLACE_FOR_PROJECT_REPO", to: repoUrl },
+    { from: "REPLACE_FOR_PROJECT_TAGLINE", to: tagline },
     // Multi-theme registry (2026-05-26 wave 11): the stamper writes the
     // initiative's chosen theme into <html> as data-theme so the default applies
     // before JS loads. Runtime theme-switcher.js can override at the operator's
