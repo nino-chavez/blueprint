@@ -1,35 +1,31 @@
 import * as NavBar from '@blueprint/ui/navbar';
-import { AudienceSwitcher, useAudiencePreference } from '@blueprint/ui';
 
-// Blueprint Platform — the initiative's display name (brand label).
-// Stamped from blueprint.yml `name` at stamp time; matches the token the
-// Layout uses for <title> / footer so the brand reads consistently.
-const PROJECT_NAME = 'Blueprint Platform';
+// Blueprint — the product brand. (This portal is Blueprint's own product site,
+// a bespoke instance; the generic Pattern A reference lives in template/apps/portal.)
+const PROJECT_NAME = 'Blueprint';
 
-// The 7-verb IA spine. This is the canonical Blueprint information
-// architecture and is always present regardless of which substrate sources
-// a given initiative has wired — empty verbs render their own "not
-// configured" state, they are never hidden from the nav.
-const VERBS = [
-  { href: '/discover', label: 'Discover' },
-  { href: '/try',      label: 'Try' },
-  { href: '/build',    label: 'Build' },
-  { href: '/operate',  label: 'Operate' },
-  { href: '/inspect',  label: 'Inspect' },
-  { href: '/roadmap',  label: 'Roadmap' },
+// Product nav — a linear adoption path, not an audience-routed lane switcher.
+// Anchors jump to the home sections so the story stays on one page ("don't make
+// people think"); Docs opens the deeper reference portal.
+const NAV = [
+  { href: '/#quickstart', label: 'Quickstart' },
+  { href: '/#commands', label: 'Commands' },
+  { href: '/#contribute', label: 'Contribute' },
+  { href: '/discover', label: 'Docs' },
 ] as const;
+
+const NPM_URL = 'https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli';
 
 export interface PortalNavProps {
   currentPath: string;
 }
 
 /**
- * Whole nav as a React island. Owns audience preference state; renders
- * brand + verb switcher + audience chip group. The current verb is
- * highlighted from the SSR-passed currentPath.
+ * Product-site nav. Brand + linear path + npm link. No audience switcher —
+ * that's a stakeholder-dashboard feature; a product homepage gives one path.
  */
 export function PortalNav({ currentPath }: PortalNavProps) {
-  const [audience, setAudience] = useAudiencePreference();
+  const onDocs = currentPath !== '/' && currentPath !== '';
 
   return (
     <NavBar.Root>
@@ -38,20 +34,25 @@ export function PortalNav({ currentPath }: PortalNavProps) {
         <span>{PROJECT_NAME}</span>
       </NavBar.Brand>
       <NavBar.Switcher>
-        {VERBS.map((verb) => (
+        {NAV.map((item) => (
           <NavBar.Item
-            key={verb.href}
-            href={verb.href}
-            active={
-              currentPath === verb.href || currentPath.startsWith(`${verb.href}/`)
-            }
+            key={item.href}
+            href={item.href}
+            active={item.label === 'Docs' && onDocs}
           >
-            {verb.label}
+            {item.label}
           </NavBar.Item>
         ))}
       </NavBar.Switcher>
       <NavBar.Actions>
-        <AudienceSwitcher value={audience} onChange={setAudience} />
+        <a
+          href={NPM_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
+        >
+          npm ↗
+        </a>
       </NavBar.Actions>
     </NavBar.Root>
   );
