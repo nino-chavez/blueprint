@@ -1,13 +1,22 @@
 name: Release
 
-# Publishes the Blueprint methodology distribution to npm.
-# Dormant until the NPM_TOKEN secret is set. The changesets action opens a
-# "Version Packages" PR when pending changesets exist; publish happens only when
-# that PR merges — nothing publishes on an ordinary push.
+# Publishes the Blueprint methodology distribution to npm
+# (@nino-chavez-labs/blueprint-cli).
+#
+# Dormant until the BLUEPRINT_NPM_TOKEN secret is set. The secret is named
+# project-specifically (NOT the generic NPM_TOKEN) so it can't clash with an
+# org-level or another project's NPM_TOKEN secret; it's mapped to the NPM_TOKEN
+# env var the changesets action reads (see the env: block below).
+#
+# The changesets action opens a "Version Packages" PR when pending changesets
+# exist; with no pending changesets it runs the publish command, shipping any
+# unpublished version (the first publish of 0.1.0). Trigger via workflow_dispatch
+# (Actions → Release → Run workflow) once the secret is set, or any push to main.
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency: release-${{ github.ref }}
 
@@ -33,5 +42,9 @@ jobs:
           publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+          # Project-scoped secret → the NPM_TOKEN env var the changesets action reads.
+          # Avoids clashing with any org-level / other-project NPM_TOKEN secret.
+          NPM_TOKEN: ${{ secrets.BLUEPRINT_NPM_TOKEN }}
+          # Provenance is OFF: npm provenance requires a PUBLIC source repo, and
+          # nino-chavez/blueprint is private — leaving it on fails the publish.
+          # Re-enable (publishConfig.provenance + this var) if the repo goes public.
