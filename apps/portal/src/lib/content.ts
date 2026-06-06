@@ -96,13 +96,16 @@ export function loadExcerpt(
   if (foundIdx === -1) return null;
 
   // Collect body lines until next heading at same-or-shallower depth. Skip
-  // markdown table rows/separators — raw pipes read as gibberish in a prose
-  // excerpt, and the full table is one click away via the source link.
+  // markdown table rows/separators (raw pipes read as gibberish in a prose
+  // excerpt) and code-fence markers (a leading ``` would otherwise render as
+  // literal backticks in the card) — the fenced content is kept as prose, and
+  // the full block is one click away via the source link.
   const bodyLines: string[] = [];
   for (let i = foundIdx + 1; i < lines.length; i++) {
     const line = lines[i]!;
     const nextHeading = /^(#{1,6})\s+/.exec(line);
     if (nextHeading && nextHeading[1]!.length <= foundDepth) break;
+    if (/^\s*```/.test(line)) continue;
     if (/^\s*\|/.test(line) || /^\s*\|?[\s:|-]{3,}\|?\s*$/.test(line)) continue;
     bodyLines.push(line);
   }
