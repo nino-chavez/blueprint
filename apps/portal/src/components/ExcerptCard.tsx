@@ -13,6 +13,8 @@ export interface ExcerptCardProps {
    * configured), the source link is hidden rather than rendered as a broken anchor.
    */
   repoPrefix?: string;
+  /** Extra classes for the card root (e.g. a grid col-span for the odd last card). */
+  className?: string;
 }
 
 /**
@@ -20,10 +22,10 @@ export interface ExcerptCardProps {
  * canonical source. When the excerpt isn't found, the card renders a
  * 'planned' placeholder pointing at the intended source.
  */
-export function ExcerptCard({ title, excerpt, badge, repoPrefix }: ExcerptCardProps) {
+export function ExcerptCard({ title, excerpt, badge, repoPrefix, className }: ExcerptCardProps) {
   if (!excerpt) {
     return (
-      <Card variant="outline" title={title} description="Excerpt source not yet authored.">
+      <Card variant="outline" title={title} description="Excerpt source not yet authored." className={className}>
         {badge}
       </Card>
     );
@@ -32,7 +34,7 @@ export function ExcerptCard({ title, excerpt, badge, repoPrefix }: ExcerptCardPr
   const sourceUrl = repoPrefix ? `${repoPrefix}/${excerpt.source}#${excerpt.anchor}` : null;
 
   return (
-    <Card variant="elevated" title={title}>
+    <Card variant="elevated" title={title} className={className}>
       <p className="text-sm leading-relaxed text-contrast-500 whitespace-pre-wrap">
         {excerpt.body}
       </p>

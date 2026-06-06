@@ -29,8 +29,13 @@ const cards = portalConfig()
 
   {cards.length > 0 ? (
     <section class="mt-10 grid gap-4 md:grid-cols-2">
-      {cards.map((c) => (
-        <ExcerptCard title={c.title} excerpt={c.excerpt} repoPrefix={repoPrefix} />
+      {cards.map((c, i) => (
+        <ExcerptCard
+          title={c.title}
+          excerpt={c.excerpt}
+          repoPrefix={repoPrefix}
+          className={cards.length % 2 === 1 && i === cards.length - 1 ? 'md:col-span-2' : undefined}
+        />
       ))}
     </section>
   ) : (

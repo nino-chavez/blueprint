@@ -150,6 +150,12 @@ portal:
       title: See it in action
       path: START-HERE.md
       heading: See it in action
+    # The team/scale beat: hive is opt-in, off by default — this card surfaces the
+    # litmus (when it's worth it), not a pitch. Spans full-width as the odd 5th card.
+    - card: discover
+      title: Coordinating a team
+      path: docs/hive-coordination-pattern.md
+      heading: When to Use Hive
   inspect:
     docs:
       - title: Charter
