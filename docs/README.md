@@ -35,7 +35,9 @@ Decision trees, setup, integration recipes, and actionable patterns.
 | [`docs/cloudflare-deployment-pattern.md`](cloudflare-deployment-pattern.md) | Stage 6 deploy recipe for Cloudflare |
 | [`docs/prompts/run-validate-to-goal.md`](prompts/run-validate-to-goal.md) | Drive the Stage 4 validate loop to a goal state |
 | [`docs/bc-b2b-buyer-portal-integration.md`](bc-b2b-buyer-portal-integration.md) | the commerce platform B2B buyer-portal integration recipe |
-| [`docs/hive-coordination-pattern.md`](hive-coordination-pattern.md) | Hive-enabled multi-agent coordination |
+| [`docs/team-roles-and-conventions.md`](team-roles-and-conventions.md) | Running with >1 operator: the three zero-infra conventions + the crawl→walk→run litmus for escalating to Hive |
+| [`docs/hive-coordination-pattern.md`](hive-coordination-pattern.md) | Hive-enabled multi-agent coordination + `blueprint hive setup` |
+| [`docs/hive-identity-gap.md`](hive-identity-gap.md) | Hive's shared-bearer trust limitation; read before any client engagement |
 | [`docs/multi-operator-collab-pattern.md`](multi-operator-collab-pattern.md) | Multi-operator coordination rules + memory management |
 | [`docs/operator-handoff-pattern.md`](operator-handoff-pattern.md) | Stage-transition handoff template + when to write one |
 | [`docs/tiered-orchestration-pattern.md`](tiered-orchestration-pattern.md) | Orchestrator / Specialist / Implementer / Janitor roles; wave sequencing |
@@ -125,7 +127,7 @@ Then stage-specific:
 
 Variant context: [`docs/bc-marketplace-context.md`](bc-marketplace-context.md), [`docs/bc-b2b-edition-context.md`](bc-b2b-edition-context.md) + [`docs/bc-b2b-buyer-portal-integration.md`](bc-b2b-buyer-portal-integration.md), [`docs/hive-coordination-pattern.md`](hive-coordination-pattern.md).
 
-Coordination + infra: [`docs/multi-operator-collab-pattern.md`](multi-operator-collab-pattern.md), [`docs/operator-handoff-pattern.md`](operator-handoff-pattern.md), [`docs/tiered-orchestration-pattern.md`](tiered-orchestration-pattern.md), [`CLAUDE.md`](../CLAUDE.md) § Operating Invariants.
+Coordination + infra (>1 operator): [`docs/team-roles-and-conventions.md`](team-roles-and-conventions.md) (start here — the litmus), [`docs/hive-coordination-pattern.md`](hive-coordination-pattern.md) + [`docs/hive-identity-gap.md`](hive-identity-gap.md), [`docs/multi-operator-collab-pattern.md`](multi-operator-collab-pattern.md), [`docs/operator-handoff-pattern.md`](operator-handoff-pattern.md), [`docs/tiered-orchestration-pattern.md`](tiered-orchestration-pattern.md), [`CLAUDE.md`](../CLAUDE.md) § Operating Invariants.
 
 Fixing drift / scaling past one project: [`docs/doc-surface-discipline-pattern.md`](doc-surface-discipline-pattern.md), [`docs/inventory-as-evidence-pattern.md`](inventory-as-evidence-pattern.md).
 

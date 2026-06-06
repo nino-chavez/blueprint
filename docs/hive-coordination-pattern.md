@@ -2,7 +2,7 @@
 
 **Purpose:** Captures when a Blueprint initiative benefits from the Hive multi-agent coordination layer (originally developed in `subs-initiative`), and how to bootstrap it without re-deriving the pattern.
 
-**Last updated:** 2026-05-08
+**Last updated:** 2026-06-06
 
 **Source:** `subs-initiative/.hive/` and a B2B client engagement initiative (May 2026).
 
@@ -56,47 +56,32 @@ Skip Hive when:
 
 ## Bootstrap Sequence
 
-Mirrors `subs-initiative/.hive/docs/BOOTSTRAP.md`. Adapted for any new initiative:
+**Use the scripted bootstrap — `blueprint hive setup`.** The manual sequence below
+was the original path; as of wave 49 it collapses into one terraform-plan-style
+command that provisions a fresh Hive (CF D1 + Worker + Pages dashboard) from a
+vendored ai-hive kit:
 
 ```bash
-# 1. Copy .hive/ from subs-initiative into your initiative
-cp -r ~/Workspace/dev/wip/subs-initiative/.hive ./.hive
-
-# 2. Provision a dedicated Cloudflare account (recommended) or
-#    use a separate D1 namespace within an existing account
-wrangler d1 create paradigm-hive-d1
-# capture the database_id
-
-# 3. Update .hive/apps/mcp-server/wrangler.toml
-#    - Change worker name (e.g., paradigm-hive-mcp)
-#    - Update [[d1_databases]] binding with your new database_id
-#    - Update routes if applicable
-
-# 4. Apply schema migrations
-cd .hive/apps/mcp-server
-wrangler d1 migrations apply paradigm-hive-d1
-
-# 5. Update .hive/apps/dashboard/ deploy target
-#    - Project name: e.g., paradigm-hive-dashboard
-
-# 6. Deploy MCP server
-wrangler deploy
-
-# 7. Deploy dashboard
-cd ../dashboard
-wrangler pages deploy dist --project-name=paradigm-hive-dashboard
-
-# 8. Seed initial tasks
-#    - Open dashboard URL
-#    - Create your project
-#    - Bulk-import tasks via dashboard UI or direct D1 INSERT
-
-# 9. Update CLAUDE.md to require hive_register_session on session start
-
-# 10. Verify by running a test session
+# vendor the ai-hive kit into your repo (integrate, not absorb), then:
+blueprint hive setup --slug=<team-or-product>-hive --cf-account-id=<id>            # dry-run PLAN — reviewable, no live mutation
+blueprint hive setup --slug=<team-or-product>-hive --cf-account-id=<id> --execute  # provision for real
 ```
 
-Total time: ~1 hour if Cloudflare credentials are ready. Most of the time is account/secret provisioning, not the Hive itself.
+It is idempotent (D1/Pages reuse-if-exists, patches re-match) and dry-run by
+default. The full walkthrough — prerequisites, the three inherently-manual steps
+it can't script (`wrangler login`, CF API-token creation, `hive_create_project`),
+and troubleshooting — lives in **`template/tools/hive/BOOTSTRAP.md`**
+(implementation: `template/tools/hive/bootstrap.mjs`). To *join* an existing Hive
+rather than stand one up, see `template/tools/hive/ONBOARDING.md` (~60 seconds).
+
+> **Read the litmus first.** Most multi-operator work needs only the three
+> zero-infrastructure conventions in `docs/team-roles-and-conventions.md`, not
+> this substrate. Stand up a Hive only when contention is real (the gate in
+> "When to Use Hive" above). And before any client-binding engagement, read
+> `docs/hive-identity-gap.md` — the trust model is a shared bearer token.
+
+Total time: ~10 minutes via `blueprint hive setup` once Cloudflare credentials are
+ready; most of that is account/secret provisioning, not the Hive itself.
 
 ---
 

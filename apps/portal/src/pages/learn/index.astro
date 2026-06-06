@@ -100,4 +100,28 @@ const ROLES = [
       </section>
     ))}
   </div>
+
+  <!-- Optional / advanced — only the operators who need it land here -->
+  <section class="mt-12 rounded-lg border border-contrast-200 bg-contrast-50/40 p-6">
+    <h2 class="mb-1 font-heading text-lg font-semibold tracking-tight">Going further — running a team</h2>
+    <p class="mb-4 max-w-2xl text-sm leading-relaxed text-contrast-500">
+      Solo Blueprint needs none of this. The moment a second operator (or a second concurrent agent
+      session) joins, coordination is the <strong>Hive</strong> substrate — optional, off by default,
+      and worth standing up only when contention is real. Read the litmus before the bootstrap.
+    </p>
+    <ul class="space-y-1.5">
+      <li class="text-sm leading-snug">
+        <a href={`${GH}/docs/team-roles-and-conventions.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">team-roles-and-conventions.md</a>
+        <span class="text-contrast-500"> — the three zero-infra conventions + the crawl→walk→run litmus (read this first)</span>
+      </li>
+      <li class="text-sm leading-snug">
+        <a href={`${GH}/docs/hive-coordination-pattern.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-coordination-pattern.md</a>
+        <span class="text-contrast-500"> — what Hive is, when to use it, and <code class="text-[12px]">blueprint hive setup</code> to stand one up</span>
+      </li>
+      <li class="text-sm leading-snug">
+        <a href={`${GH}/docs/hive-identity-gap.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-identity-gap.md</a>
+        <span class="text-contrast-500"> — the shared-bearer trust limitation; required reading before any client engagement</span>
+      </li>
+    </ul>
+  </section>
 </Layout>
