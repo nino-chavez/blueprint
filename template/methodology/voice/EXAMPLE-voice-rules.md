@@ -12,7 +12,7 @@ sources:
   - 03-brand-brief.md (B6 voice rules)
   - 2026-05-26 operator grilling session (4-question voice-spine extraction)
 related:
-  - ~/Workspace/dev/apps/blog/docs/signal-dispatch-voice-guide.md (operator's published-prose voice; Blueprint's voice is distinct because audience is agent + operator + stakeholder, NOT blog reader)
+  - apps/blog/docs/signal-dispatch-voice-guide.md (operator's published-prose voice; Blueprint's voice is distinct because audience is agent + operator + stakeholder, NOT blog reader)
 ---
 
 # Blueprint Voice Rules — v0.1
@@ -142,5 +142,5 @@ Distinct (because audience differs):
 ## References
 
 - `decisions/03-brand-brief.md` § B6 — the operator-blocked decision this artifact closes
-- `~/Workspace/dev/apps/blog/docs/signal-dispatch-voice-guide.md` — operator's published-prose voice (compatible anti-patterns, distinct register)
-- `~/Workspace/dev/tools/forge-brand/src/cli/index.ts generate voice` — generator that extends this seed
+- `apps/blog/docs/signal-dispatch-voice-guide.md` — operator's published-prose voice (compatible anti-patterns, distinct register)
+- `tools/forge-brand/src/cli/index.ts generate voice` — generator that extends this seed

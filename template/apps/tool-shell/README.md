@@ -10,7 +10,7 @@ A minimal Vite + React + react-router-dom skeleton that hosts your project's too
 
 The shell that turns N separate tooling deploys into 1 (per auth cluster). You stamp it twice — once for the operator-internal cluster, once for the stakeholder-shareable cluster — then port your existing apps in as React route components.
 
-See `~/Workspace/dev/tools/blueprint/docs/clustered-tool-surface-pattern.md` for the rationale, auth-cleavage discipline, and activation thresholds.
+See `$BLUEPRINT_HOME/docs/clustered-tool-surface-pattern.md` for the rationale, auth-cleavage discipline, and activation thresholds.
 
 ## When to use
 
@@ -69,6 +69,6 @@ For the operator cluster, gate the CF Pages project behind CF Access in the Clou
 
 ## Companion docs
 
-- `~/Workspace/dev/tools/blueprint/docs/clustered-tool-surface-pattern.md` — the discipline this template implements
-- `~/Workspace/dev/tools/blueprint/docs/hive-coordination-pattern.md` — what the Hive dashboard surfaces look like
-- `~/Workspace/dev/tools/blueprint/template/apps/demos/README.md` — the existing demo storyboard pattern
+- `$BLUEPRINT_HOME/docs/clustered-tool-surface-pattern.md` — the discipline this template implements
+- `$BLUEPRINT_HOME/docs/hive-coordination-pattern.md` — what the Hive dashboard surfaces look like
+- `$BLUEPRINT_HOME/template/apps/demos/README.md` — the existing demo storyboard pattern

@@ -7,7 +7,7 @@ description: Generate a session/stage/cross-repo handoff document by deriving st
 
 Generate a session/stage/cross-repo handoff document by deriving state from git + pwd + recent activity, leaving only "what's pending" and "sequencing" for operator input.
 
-Implements wave 25's operator-handoff pattern. Template source: `~/Workspace/dev/tools/blueprint/template/methodology/handoff/handoff-template.md`. Pattern doc: `~/Workspace/dev/tools/blueprint/docs/operator-handoff-pattern.md`.
+Implements wave 25's operator-handoff pattern. Template source: `$BLUEPRINT_HOME/template/methodology/handoff/handoff-template.md`. Pattern doc: `$BLUEPRINT_HOME/docs/operator-handoff-pattern.md`.
 
 ## When to use
 

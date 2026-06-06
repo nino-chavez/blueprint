@@ -1,38 +1,28 @@
-# HANDOFF — blueprint-platform
+# HANDOFF — Blueprint methodology source (self-hosting)
 
-**Date:** 2026-06-04
-**State:** Stages 0–2 + ADRs done. **Portal harness DONE + DEPLOYED** → https://blueprint-platform.pages.dev (generic Pattern A harness wave 31, merged + pushed to `tools/blueprint` main `653720a`; both amendments resolved). **Stage-3 build:** steps 0–1 done (BLUEPRINT_HOME, semver — merged in wave 31); **step 2 done** (`@nino-chavez-labs/blueprint-cli` dispatcher + resolver, `5ced121` on `platform/cli`, pending wave merge). Next: merge `platform/cli` as wave 32, then step 3 (first `.mjs` reviewer, ADR-0002/0006 — unblocks the gate + plugins).
+**Date:** 2026-06-06
+**State:** Productization **COMPLETE**. The methodology is published, public, and self-hosting — it is its own first consumer. Current frontier: **team adoption** (Blueprint + hive for a real client build) and doc/quality hygiene.
 
-## What landed
-- Project scaffolded at `wip/blueprint-platform/` (standalone repo — rationale in `CLAUDE.md`).
-- `blueprint.yml` — brownfield / Tier 2 / Pattern B; pinned to methodology HEAD `010945a`; 6 productization tracks declared.
-- `decisions/00-charter.md` — relationship to blueprint-redesign (extends), gap scorecard (6), the expanded requirement set (architect-surfaced additions across tracks A–F), proposed stage sequence, defaults taken, risks, reusable-foundation table.
-- `research/00-recon-synthesis.md` — 6-agent recon evidence base (full transcript path in frontmatter).
+> This file orients the next session. It replaced a 2026-06-04 pre-fold snapshot (blueprint-platform as a separate in-progress repo) — all of which is now done; see git history if you need it.
 
-## Blocking decision — RESOLVED
-**Scope ceiling: A (methodology-native only)** (operator, 2026-06-04). No hosted service. See charter § Resolved + `decisions/01-prescription.md § Design invariant`.
+## Where things stand
 
-## Stage 3 build — IN PROGRESS (freeze waiver granted 2026-06-04)
+- **Folded (wave 45):** `blueprint-platform` is no longer a separate repo — it is this repo's in-repo self-application. Root `blueprint.yml`, `research/`, `decisions/`, `apps/portal/`, `packages/`, `tools/archaeology/`. Source≠consumer is a **DIRECTORY boundary** (`template/` is the clean stampable substrate), not a repo boundary. See `CLAUDE.md`.
+- **CLI published:** `@nino-chavez-labs/blueprint-cli@0.1.0` on npm (MIT, public repo). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
+- **Build order 0–13 complete** across tracks A–E. `main-protection` ruleset bound + active.
+- **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint-platform.pages.dev` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
+- **Latest wave (49):** Blueprint + hive **team onboarding/adoption kit** — `docs/team-roles-and-conventions.md`, `docs/hive-identity-gap.md`, `template/tools/hive/{ONBOARDING,BOOTSTRAP}.md`, and the keystone `blueprint hive setup --slug=<x>` (`template/tools/hive/bootstrap.mjs`). Full log in `WAVE-LOG.md`.
 
-Building in a **worktree of `tools/blueprint`** at `wip/blueprint-substrate-build` on branch **`platform/substrate`** (base `main` 010945a). Source-touching work lands there; the operator merges to `main` as a wave when the substrate is reviewed.
+## In flight / next
 
-- [x] **Step 0 — `BLUEPRINT_HOME` resolver** (`ca273d2`). Hook resolves env → `blueprint.yml methodology_home` → local canonical → npm-installed `@nino-chavez-labs/blueprint-cli` (candidate must hold METHODOLOGY.md); stale `wip/blueprint` default + `stamp.mjs` generated-path leaks + `big-blueprint` ref killed. Tested (syntax + 4 resolver cases + end-to-end JSON).
-- [x] **Step 1 — semver baseline** (`3a22923`). `package.json` `@nino-chavez-labs/blueprint-cli` 0.1.0 (single version source, no VERSION file); `.changeset/` config + README (migration-note discipline); `CHANGELOG.md` 0.1.0 baseline; `.github/workflows/release.yml` (dormant until `NPM_TOKEN`); hook version-banner (flags consumer pin drift → `blueprint upgrade`). Tested. `@blueprint/cli` still pending org claim — shipped scoped.
-- [ ] **Step 2 — CLI dispatcher** — `bin/blueprint.mjs` thin ESM dispatcher (reuse `stamp.mjs` parseArgs) + a JS resolver lib (`template/tools/lib/blueprint-home.mjs`) mirroring the hook's resolution order; subcommands stubbed (init/review/upgrade/fleet/cost/doctor); add `bin` to package.json.
-- [ ] **Step 3 — first `.mjs` reviewer** — prove the ADR-0002 contract runs outside Claude Code.
-
-## Portal harness track (parallel to the substrate build)
-
-The Blueprint portal SHELL is the canonical harness/index to all deliverables (not a bespoke analysis portal — see memory `blueprint-portal-is-the-harness`). Flipped `portal_pattern` **B → A** (platform-portal fits a platform; subs-initiative is the Pattern A reference).
-
-- [x] **Shell stamped** (`e38ddb7`) — `apps/portal` (Astro IA contract discover/try/build/operate/inspect/roadmap) + `packages/{ui,design-tokens}` via `stamp.mjs --pattern=A`. `blueprint.yml` preserved; evidence untouched. Amendment filed (stamper mechanical-check false-positives on evidence docs citing the example project).
-- [x] **Generic harness refactor + populate** (blueprint-platform `d27adc5`; template fixes on `platform/substrate`: `b9ce8af` Phase A, `e264f4e` Phase B, `cc8e340` banner). The Pattern A portal template was made a genuinely generic, config-driven harness (North Star / campsite): `portal-config.ts` contract (a `blueprint.yml portal:` block), all loaders degrade-to-empty, `@blueprint/gate-derive` vendored, workspace-root scaffold, `repo-root` keys on `blueprint.yml`, ~22 pages de-narrated. blueprint-platform re-stamped from it + its `portal:` block authored: `discover` ← charter excerpts, `inspect` ← doc cards + live ADR catalog (0003–0007), `roadmap` ← the 14-step `build-order.json` (`apps/portal/src/data/`), hero ← productization thesis; substrate sections hidden (ceiling A, no Hive). **Verified: npm install + astro check (0 errors) + astro build (14 pages) green; renders all real deliverables; zero leak.** Both methodology amendments RESOLVED. **To view:** `cd apps/portal && npm run dev`. Optional remaining: a CLI `scenarios.json` for `/try`, and Cloudflare Pages deploy.
-
-## Pending operator inputs (non-blocking)
-- npm scope: defaulted to `@nino-chavez-labs/blueprint-cli`; redirect if registering the `@blueprint` org.
-- Merge `platform/substrate` → `tools/blueprint` main as a wave once the substrate is reviewed.
+- **Team adoption (the live driver):** T. is adopting Blueprint + hive for a client the commerce platform build — the first real *team* engagement. Treat his needs as the priority signal for hive productization. The `blueprint hive setup --execute` path is operator-gated (real billable CF infra; needs the client repo) — do not run it autonomously.
+- **Hive identity hardening — TRIGGER, not yet due:** the substrate authenticates with a shared bearer (spoofable attribution; see `docs/hive-identity-gap.md`). For ≤3 trusted/co-located operators, option (a) trust + risk-register is the accepted call. **Harden to per-session JWT BEFORE a 2nd team or any external contributor joins** — that onboarding is the trigger, and the hardening must land before it.
+- **Multi-operator chaos test:** the substrate is built but never run under contention. Owned by the first real parallel engagement (T.).
+- **The false-green gap (no-regret, deferred):** Fact-Check (Stage 4) does not gate on runtime/browser verification; `doctor` is honest about this boundary. Closing it is the next quality frontier.
 
 ## Standing constraints
-- **Methodology freeze:** no edits to `tools/blueprint/template/` without an explicit operator waiver. Promote upstream via cross-repo PR / wave.
-- **Build v1 substrate before v2 design slices** (0 `.mjs` reviewers, no CLI, no semver today) — or new ADRs verify against vapor.
-- **ai-hive: integrate, not absorb.** Hold the line against SaaS-scope-creep.
+
+- **Methodology freeze:** no `template/` edits land while an EXTERNAL consumer is mid-migration without an explicit operator waiver. The in-repo self-application (`methodology_version: self`) does not trip this. Consumers currently at rest: `apps/rally-hq`, `apps/website-nc-v3`, `apps/blog/blueprint`, `wip/subs-initiative`.
+- **Concurrent sessions use worktrees** (the `worktree-guard` hook enforces it; a solo session in main is never blocked).
+- **ai-hive: integrate, not absorb.** Hold the line against SaaS-scope-creep — scope ceiling A (methodology-native: git-host + npm + local files, no hosted service).
+- **`template/` is the clean substrate.** If you find yourself editing `template/` to make the self-application's portal build, that's the leak — fix it at the root (`apps/portal/`, `packages/`).

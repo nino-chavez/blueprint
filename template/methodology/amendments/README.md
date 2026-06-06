@@ -21,8 +21,8 @@ Skip when:
 
 The template assumes the conventions documented in two source files:
 
-1. `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md` — the append-only file convention (entry shape, scope axis, promotion path)
-2. `~/Workspace/dev/tools/blueprint/docs/amendment-classification-pattern.md` — the wave 27 4-bucket taxonomy (where the fix lands, orthogonal to scope)
+1. `$BLUEPRINT_HOME/template/docs/methodology/methodology-amendments-convention.md` — the append-only file convention (entry shape, scope axis, promotion path)
+2. `$BLUEPRINT_HOME/docs/amendment-classification-pattern.md` — the wave 27 4-bucket taxonomy (where the fix lands, orthogonal to scope)
 
 The template body comments cite both. Operators new to the convention should read both first.
 

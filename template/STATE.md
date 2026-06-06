@@ -21,7 +21,7 @@ This file ships in the template scaffold as a **fallback** for solo projects wit
 | **Session Log** | Project has commit history with conventional commits + Hive checkpoints | Git log + Hive trace. Append-only history is the commit graph. |
 | **Patterns Established** | Project has ≥3 entries | Promote to `docs/lessons/` or a dedicated register; STATE.md is the wrong home once it grows past a few entries |
 
-**The anti-pattern this guidance prevents:** STATE.md becomes a parallel decision register that drifts from ADRs, a parallel blocker tracker that drifts from issues, and a parallel session log that drifts from git. Three drift surfaces, none authoritative, all hand-maintained. See `~/Workspace/dev/tools/blueprint/docs/doc-discipline-micro-patterns.md` § "Avoid multi-role template files" for the rationale.
+**The anti-pattern this guidance prevents:** STATE.md becomes a parallel decision register that drifts from ADRs, a parallel blocker tracker that drifts from issues, and a parallel session log that drifts from git. Three drift surfaces, none authoritative, all hand-maintained. See `$BLUEPRINT_HOME/docs/doc-discipline-micro-patterns.md` § "Avoid multi-role template files" for the rationale.
 
 **If your project has Hive + state-derive + ADRs:** you probably don't need STATE.md at all. Delete it and rely on the derived sources. The `subs-initiative` project filed retirement of its STATE.md in Hive #929 for exactly this reason.
 

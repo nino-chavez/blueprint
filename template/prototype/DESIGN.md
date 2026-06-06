@@ -393,6 +393,6 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 ### Additional Reference
 
-- `~/Workspace/dev/tools/blueprint/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
-- `~/Workspace/dev/tools/blueprint/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
-- Multi-actor role pattern: `~/Workspace/dev/wip/subs-initiative/docs/decisions/0023-multi-actor-roles.md`
+- `$BLUEPRINT_HOME/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
+- `$BLUEPRINT_HOME/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
+- Multi-actor role pattern: `wip/subs-initiative/docs/decisions/0023-b2b-checkout-ownership.md`

@@ -2,8 +2,8 @@
 
 This file captures methodology-level learnings specific to this initiative. Append at the top; supersede via new entry; never rewrite history. Full conventions:
 
-- File shape + 3-scope axis: `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`
-- 4-bucket taxonomy (where fixes land): `~/Workspace/dev/tools/blueprint/docs/amendment-classification-pattern.md`
+- File shape + 3-scope axis: `$BLUEPRINT_HOME/template/docs/methodology/methodology-amendments-convention.md`
+- 4-bucket taxonomy (where fixes land): `$BLUEPRINT_HOME/docs/amendment-classification-pattern.md`
 
 Per methodology rule, no entry here is automatically promoted upstream. Methodology promotion is a separate operator session after evidence accumulates across ≥2 consumers. This file is the audit trail.
 

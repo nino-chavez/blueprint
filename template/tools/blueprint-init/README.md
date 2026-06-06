@@ -29,16 +29,16 @@ node template/tools/blueprint-init/stamp.mjs \
   --variant=greenfield \
   --tier=1 \
   --pattern=A \
-  --target=~/Workspace/dev/wip/my-project
+  --target=/path/to/your/project
 ```
 
 ## Usage — restamp chrome (Pattern B)
 
 ```bash
-node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --mode=restamp-chrome \
   --pattern=B \
-  --target=~/Workspace/dev/apps/website-nc
+  --target=/path/to/your/initiative
 ```
 
 The Pattern B chrome manifest (`PATTERN_B_CHROME_FILES` in `stamp.mjs`) refreshes:

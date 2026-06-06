@@ -26,7 +26,7 @@ canonical: true
 **Companion registers:**
 - `differentiators.md` — the positive register ("things this project does that comparable products don't")
 
-**Source pattern:** See `~/Workspace/dev/tools/blueprint/docs/register-pattern.md` for the shared register discipline used by this and the differentiators register.
+**Source pattern:** See `$BLUEPRINT_HOME/docs/register-pattern.md` for the shared register discipline used by this and the differentiators register.
 
 ---
 

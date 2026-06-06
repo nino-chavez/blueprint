@@ -8,7 +8,7 @@ Enforces the `canonical: true | false` frontmatter convention on every `*.md` fi
 
 ## Why
 
-See `~/Workspace/dev/tools/blueprint/docs/doc-surface-discipline-pattern.md` for the convention's rationale. Short version: every doc declares its class (canonical-present vs anything else) so readers — human and agent — know at a glance whether to trust it as current.
+See `$BLUEPRINT_HOME/docs/doc-surface-discipline-pattern.md` for the convention's rationale. Short version: every doc declares its class (canonical-present vs anything else) so readers — human and agent — know at a glance whether to trust it as current.
 
 ## Usage
 
@@ -63,4 +63,4 @@ Apply this lint when the project has >20 markdown docs. Below that, hand-discipl
 
 ## Source
 
-`~/Workspace/dev/tools/blueprint/template/tools/frontmatter-lint/`. Distilled from `subs-initiative` doc-reorg work (Hive #929, May 2026).
+`$BLUEPRINT_HOME/template/tools/frontmatter-lint/`. Distilled from `subs-initiative` doc-reorg work (Hive #929, May 2026).

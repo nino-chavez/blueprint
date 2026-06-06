@@ -12,7 +12,7 @@ Prototype phase of a Blueprint initiative. Three target paradigms; pick by readi
 | `prototype.host` | `prototype.design_system` | the B2B client |
 |---|---|---|
 | `standalone` (or unset) | `bigdesign` | **BC-pattern SliceShell.** Slice-per-directory under `prototypes/<slice-name>/`; each slice wraps in `<SliceShell>` with `tools` / `notes` / `traces`. Harness chrome shipped per slice. Existing pattern; documented below. |
-| `standalone` (or unset) | `custom` | **Standalone custom-design-system prototype.** Whole-webapp shape, not slice-per-directory. Project owns its own harness chrome (reviewer drawer, strategy panels, annotations, traceability) per `~/Workspace/dev/tools/blueprint/docs/design-system-audit.md` D-1..D-10. No SliceShell. |
+| `standalone` (or unset) | `custom` | **Standalone custom-design-system prototype.** Whole-webapp shape, not slice-per-directory. Project owns its own harness chrome (reviewer drawer, strategy panels, annotations, traceability) per `$BLUEPRINT_HOME/docs/design-system-audit.md` D-1..D-10. No SliceShell. |
 | `atelier` | `custom` | **Atelier-hosted prototype.** Project ships content + `.atelier/prototype.yaml` declaring `content_path` + `traceability_source` + `surfaces` mapping. **Harness chrome is provided by Atelier's `/prototype` route** (ADR-057). Annotations land as `contributions` with `kind: 'design'`; strategy notes via `log_decision`; traceability via `get_context(scope_files)`. Project does NOT re-implement these primitives. |
 
 If `prototype.host` is unset, default to `standalone`. If `prototype.design_system: custom` is set without `prototype.host: atelier`, that's the second row — project owns its own harness.
@@ -77,7 +77,7 @@ The Studio Home page rediscovers slices automatically — do not edit `src/pages
 - One primary CTA per page
 - Sidebar nav highlights the correct page; prev/next bar wires up correctly
 
-### Design-system completeness gates (per `~/Workspace/dev/tools/blueprint/docs/design-system-audit.md`)
+### Design-system completeness gates (per `$BLUEPRINT_HOME/docs/design-system-audit.md`)
 
 Beyond scaffolding correctness, the prototype must answer **ten design-system decisions** (D-1..D-10) in `prototype/DESIGN.md` frontmatter AND apply them consistently in code:
 
@@ -116,7 +116,7 @@ What the project does NOT ship:
 - `prototype.config.json` per slice
 - the platform design system components
 
-Worked example: `~/Workspace/dev/wip/atelier-dashboard-blueprint/prototype/` — 7-route React + Tailwind v4 + Fraunces, deployed to CF Pages as a self-contained stakeholder review site.
+Worked example: `wip/atelier-dashboard-blueprint/prototype/` — 7-route React + Tailwind v4 + Fraunces, deployed to CF Pages as a self-contained stakeholder review site.
 
 ---
 
@@ -144,4 +144,4 @@ What Atelier provides (project does NOT re-implement):
 
 The substrate-side capability is provisioned by ADR-057 + the new `/prototype/<project_id>` route in Atelier's webapp. Without that ADR accepted on `wip/atelier`, paradigm 3 is unavailable; fall back to paradigm 2.
 
-Bootstrap reference: the Atelier dashboard north-star initiative migrated from paradigm 2 (CF Pages standalone) to paradigm 3 (Atelier-hosted) once ADR-057 shipped. See `~/Workspace/dev/wip/atelier-dashboard-blueprint/META-CODIFY-EVALUATION.md` § "Refinement (2026-05-11)" for the decision trail.
+Bootstrap reference: the Atelier dashboard north-star initiative migrated from paradigm 2 (CF Pages standalone) to paradigm 3 (Atelier-hosted) once ADR-057 shipped. See `wip/atelier-dashboard-blueprint/META-CODIFY-EVALUATION.md` § "Refinement (2026-05-11)" for the decision trail.

@@ -8,9 +8,9 @@ description: File a methodology amendment by guiding the operator through the ca
 File a methodology amendment by guiding the operator through the canonical entry shape + applying wave 27's 4-bucket classification taxonomy + appending to the initiative's `METHODOLOGY-AMENDMENTS.md` in the correct (newest-first) order.
 
 Implements wave 27's amendment-classification pattern. Templates + conventions:
-- File shape + 3-scope axis: `~/Workspace/dev/tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`
-- 4-bucket taxonomy: `~/Workspace/dev/tools/blueprint/docs/amendment-classification-pattern.md`
-- Slot-filled template: `~/Workspace/dev/tools/blueprint/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`
+- File shape + 3-scope axis: `$BLUEPRINT_HOME/template/docs/methodology/methodology-amendments-convention.md`
+- 4-bucket taxonomy: `$BLUEPRINT_HOME/docs/amendment-classification-pattern.md`
+- Slot-filled template: `$BLUEPRINT_HOME/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`
 
 ## When to use
 
@@ -25,7 +25,7 @@ Skip when the observation is just a regular bug (commit message is sufficient), 
 
 1. **Detect or initialize the amendments file**:
    - Look for `blueprint/METHODOLOGY-AMENDMENTS.md` or `METHODOLOGY-AMENDMENTS.md` at the initiative root
-   - If absent, ask the operator if they want to initialize the file from `~/Workspace/dev/tools/blueprint/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`. If yes, copy + replace `{Initiative Name}` with the initiative's name from `blueprint.yml` or pwd
+   - If absent, ask the operator if they want to initialize the file from `$BLUEPRINT_HOME/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`. If yes, copy + replace `{Initiative Name}` with the initiative's name from `blueprint.yml` or pwd
 
 2. **Capture the trigger** (one sentence): ask the operator what observation prompted the amendment. This becomes the `**Trigger**:` field.
 

@@ -21,7 +21,7 @@ Wire into CI as a gate so token changes can't silently regress contrast.
 
 ## lint-design-system.mjs
 
-Parses `prototype/DESIGN.md` frontmatter and asserts the 15-dimension contract from `~/Workspace/dev/tools/blueprint/docs/design-system-audit.md`.
+Parses `prototype/DESIGN.md` frontmatter and asserts the 15-dimension contract from `$BLUEPRINT_HOME/docs/design-system-audit.md`.
 
 ```bash
 node prototype/scripts/lint-design-system.mjs

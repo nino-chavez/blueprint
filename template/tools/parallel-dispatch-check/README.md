@@ -36,4 +36,4 @@ Rally-hq commit `0c074d5` was labeled "P20-only" but bundled P14a + P14b changes
 
 ## Reference
 
-See `~/Workspace/dev/tools/blueprint/docs/multi-operator-collab-pattern.md` § "What consumers can do today" for the full lightweight-convention set (per-repo role declaration + worktree isolation + no-workaround success criterion). This tool addresses the worktree-isolation convention specifically.
+See `$BLUEPRINT_HOME/docs/multi-operator-collab-pattern.md` § "What consumers can do today" for the full lightweight-convention set (per-repo role declaration + worktree isolation + no-workaround success criterion). This tool addresses the worktree-isolation convention specifically.

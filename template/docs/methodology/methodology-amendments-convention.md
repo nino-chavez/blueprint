@@ -55,7 +55,8 @@ Initiative root: `METHODOLOGY-AMENDMENTS.md`. Frontmatter optional. Reverse-chro
 The methodology operator periodically greps `METHODOLOGY-AMENDMENTS.md` across initiatives to find candidates for promotion:
 
 ```bash
-for dir in ~/Workspace/dev/wip/*/ ~/Workspace/dev/apps/*/; do
+# run from your workspace root (the directory that holds your initiatives)
+for dir in wip/*/ apps/*/; do
   if [ -f "$dir/METHODOLOGY-AMENDMENTS.md" ]; then
     echo "=== $dir ==="
     grep -A 2 "Scope.*[Cc]andidate" "$dir/METHODOLOGY-AMENDMENTS.md"

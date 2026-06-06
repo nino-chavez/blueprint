@@ -26,7 +26,7 @@ Sessions run on prior Blueprint initiatives that are canonical examples for meth
 
 **Portal**: `promo-initiative.pages.dev` (Cloudflare Pages, deployed Stage 6)
 
-**Repo**: `~/Workspace/dev/wip/promo-initiative`
+**Repo**: `wip/promo-initiative`
 
 ---
 

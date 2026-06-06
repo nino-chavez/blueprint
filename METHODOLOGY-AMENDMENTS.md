@@ -1,6 +1,6 @@
-# Methodology amendments — blueprint-platform
+# Methodology amendments — Blueprint self-application
 
-Append-only, reverse-chronological. Methodology learnings specific to this initiative: gaps worked around, candidates for promotion into `tools/blueprint`. Convention: `tools/blueprint/template/docs/methodology/methodology-amendments-convention.md`.
+Append-only, reverse-chronological. Methodology learnings from applying Blueprint to itself (the in-repo self-application, folded from `blueprint-platform` in wave 45): gaps worked around, candidates for promotion into the methodology (`template/`). Convention: `template/docs/methodology/methodology-amendments-convention.md`.
 
 ---
 

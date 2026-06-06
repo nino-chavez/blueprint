@@ -27,6 +27,6 @@ The 4 themes in `template/portal/shared.css [data-theme]` blocks aren't fixed â€
 
 ## Origin
 
-`blueprint-brand-kit.json` was forked from `~/Workspace/dev/tools/forge-brand/presets/signal-dispatch.json` during the dogfood, then overridden with Blueprint-the-product identity (B1 outcome-led tagline, B2 Solution Architecture register, light surfaces, slate primary matching the default theme). Voice block authored from the 2026-05-26 operator-grilled session.
+`blueprint-brand-kit.json` was forked from `tools/forge-brand/presets/signal-dispatch.json` during the dogfood, then overridden with Blueprint-the-product identity (B1 outcome-led tagline, B2 Solution Architecture register, light surfaces, slate primary matching the default theme). Voice block authored from the 2026-05-26 operator-grilled session.
 
 The kit's `media.templates[]` array is metadata-only â€” forge-brand's renderer has a hard-coded set (`social-card / story / flyer / favicon / prescription-label / heat-card / email-header / business-card`). Of those, social-card / story / email-header / business-card / favicon are appropriate for a methodology product; the rest are domain-specific.

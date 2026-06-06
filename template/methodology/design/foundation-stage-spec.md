@@ -10,7 +10,7 @@ canonical: true
 
 This stage is the binding-and-enforcement layer above the wave-8 design-discovery sub-track. Wave 8 added the design *inventory* (L5 surfaces) and *dictionary* (L0–L4 primitives) — *what exists*. This stage adds what an inventory and a dictionary cannot supply on their own: the *binding* of primitives to pages (scope + archetype per route) and the *machine enforcement* that keeps the binding from decaying. A dictionary that names a `PageContainer` does not make N routes use it; only a manifest plus a linter that fails the build does.
 
-**Reference implementation**: Rally HQ (`~/Workspace/dev/apps/rally-hq`). Its `src/routes/manage/events/[slug]/+layout.svelte` is the canonical entity-scoped layout; its `docs/LAYOUT_TAXONOMY.md` is the prose contract; its `tests/e2e/surfaces.ts` manifest + `src/lib/surface-coverage.test.ts` + `lint:design` gate are the enforcement scaffold seed. Rally HQ is also the cautionary case: ~7 of 99 routes adopted the (already-built) primitives before this stage existed, which is what the stage prevents.
+**Reference implementation**: Rally HQ (`apps/rally-hq`). Its `src/routes/manage/events/[slug]/+layout.svelte` is the canonical entity-scoped layout; its `docs/LAYOUT_TAXONOMY.md` is the prose contract; its `tests/e2e/surfaces.ts` manifest + `src/lib/surface-coverage.test.ts` + `lint:design` gate are the enforcement scaffold seed. Rally HQ is also the cautionary case: ~7 of 99 routes adopted the (already-built) primitives before this stage existed, which is what the stage prevents.
 
 **Done-criterion**: feature prototyping does not start until all five declarations below exist and the enforcement scaffold gates the build. A project that begins feature work without them will re-derive layout grammar per page and accrue the drift this stage exists to prevent.
 
@@ -108,6 +108,6 @@ Only when steps 1–6 are done does feature prototyping / feature-spec implement
 ## References
 
 - Wave-8 design-discovery sub-track (the inventory + dictionary this stage binds): `METHODOLOGY.md` § Stage 1 "Design-discovery sub-track" + § Stage 2 "Design-system dictionary"; `template/methodology/design/audit-template.md`; `template/methodology/design/EXAMPLE-design-system.md`.
-- Reference implementation (entity-scoped layout): `~/Workspace/dev/apps/rally-hq/src/routes/manage/events/[slug]/+layout.svelte`.
+- Reference implementation (entity-scoped layout): `apps/rally-hq/src/routes/manage/events/[slug]/+layout.svelte`.
 - Reference contract + enforcement scaffold: rally-hq `docs/LAYOUT_TAXONOMY.md` (prose contract), `tests/e2e/surfaces.ts` (manifest), `src/lib/surface-coverage.test.ts` (drift + coherence guard), `lint:design` gate.
 - Originating evidence: rally-hq 2026-05-31 7-dimension nav/layout audit + the rally-hq `METHODOLOGY-AMENDMENTS.md` entry "Feature-driven specs have no author for cross-cutting IA/design/layout."

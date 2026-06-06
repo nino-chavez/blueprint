@@ -71,7 +71,7 @@ portal/
 When the Blueprint methodology bumps the canonical chrome (`shared.css`, `_portal-shell.js`, `proto-nav.js`, `proto-annotate.js`, `_headers`, `_redirects`, `docs/index.html`), re-stamp from your project root:
 
 ```bash
-node ~/Workspace/dev/tools/blueprint/template/tools/blueprint-init/stamp.mjs \
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --mode=restamp-chrome --pattern=B \
   --target=$(pwd)
 ```
