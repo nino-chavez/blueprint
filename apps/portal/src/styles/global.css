@@ -5,3 +5,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Long-form doc rendering (markdown pages under /learn). Scoped to .doc so it
+   never leaks into the bespoke product/landing pages. Reuses portal tokens. */
+@layer components {
+  .doc {
+    @apply max-w-3xl text-[15px] leading-relaxed text-contrast-500;
+  }
+  .doc > :first-child { @apply mt-0; }
+  .doc h1 {
+    @apply mb-3 mt-0 font-heading text-4xl font-semibold leading-tight tracking-tight text-foreground;
+  }
+  .doc h2 {
+    @apply mb-3 mt-12 border-t border-contrast-100 pt-8 font-heading text-2xl font-semibold tracking-tight text-foreground;
+  }
+  .doc h3 {
+    @apply mb-2 mt-8 font-heading text-lg font-semibold tracking-tight text-foreground;
+  }
+  .doc p { @apply my-4; }
+  .doc a { @apply text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand; }
+  .doc strong { @apply font-medium text-foreground; }
+  .doc ul { @apply my-4 list-disc space-y-1.5 pl-5; }
+  .doc ol { @apply my-4 list-decimal space-y-1.5 pl-5; }
+  .doc li { @apply pl-1; }
+  .doc code {
+    @apply rounded bg-contrast-100 px-1.5 py-0.5 font-mono text-[13px] text-foreground;
+  }
+  .doc pre {
+    @apply my-5 overflow-x-auto rounded-lg border border-contrast-200 bg-contrast-100/60 p-4 font-mono text-[13px] leading-relaxed;
+  }
+  .doc pre code { @apply bg-transparent p-0 text-foreground; }
+  .doc hr { @apply my-10 border-contrast-100; }
+  .doc blockquote {
+    @apply my-5 border-l-2 border-brand/40 pl-4 text-contrast-500;
+  }
+  .doc table { @apply my-5 w-full border-collapse text-sm; }
+  .doc th { @apply border-b border-contrast-200 px-3 py-2 text-left font-medium text-foreground; }
+  .doc td { @apply border-b border-contrast-100 px-3 py-2 align-top text-contrast-500; }
+}

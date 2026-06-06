@@ -1,0 +1,21 @@
+---
+import Layout from './Layout.astro';
+
+// Layout for markdown doc pages under /learn. Astro passes the page's frontmatter
+// here as `frontmatter`. We forward title/description to the shared portal Layout
+// and wrap the rendered markdown in `.doc` (scoped prose styles in global.css).
+const { frontmatter } = Astro.props;
+const title = frontmatter?.title ?? 'Docs';
+const description = frontmatter?.description;
+---
+<Layout title={title} description={description}>
+  <a
+    href="/learn"
+    class="mb-8 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-contrast-400 transition-colors hover:text-brand"
+  >
+    ← Learn
+  </a>
+  <article class="doc">
+    <slot />
+  </article>
+</Layout>

@@ -8,7 +8,7 @@ const PROJECT_NAME = 'Blueprint';
 // Anchors jump to the home sections so the story stays on one page ("don't make
 // people think"); Docs opens the deeper reference portal.
 const NAV = [
-  { href: '/#quickstart', label: 'Quickstart' },
+  { href: '/learn', label: 'Learn' },
   { href: '/#commands', label: 'Commands' },
   { href: '/#contribute', label: 'Contribute' },
   { href: '/discover', label: 'Docs' },
@@ -25,7 +25,8 @@ export interface PortalNavProps {
  * that's a stakeholder-dashboard feature; a product homepage gives one path.
  */
 export function PortalNav({ currentPath }: PortalNavProps) {
-  const onDocs = currentPath !== '/' && currentPath !== '';
+  const onLearn = currentPath === '/learn' || currentPath.startsWith('/learn/');
+  const onDocs = currentPath !== '/' && currentPath !== '' && !onLearn;
 
   return (
     <NavBar.Root>
@@ -38,7 +39,7 @@ export function PortalNav({ currentPath }: PortalNavProps) {
           <NavBar.Item
             key={item.href}
             href={item.href}
-            active={item.label === 'Docs' && onDocs}
+            active={(item.label === 'Learn' && onLearn) || (item.label === 'Docs' && onDocs)}
           >
             {item.label}
           </NavBar.Item>
