@@ -121,6 +121,6 @@ optional — artifacts still land in D1 without it).
 - **Worker:** `<HIVE_WORKER_URL>` (Cloudflare Workers + D1) — 20 MCP tools + the
   60-second stale-session reaper.
 - **Dashboard:** `<HIVE_DASHBOARD_URL>` (Cloudflare Pages).
-- **Bootstrap a fresh Hive:** `template/tools/hive/BOOTSTRAP.md`.
+- **Bootstrap a fresh Hive:** `blueprint hive setup --slug=<x>` — see [`./BOOTSTRAP.md`](./BOOTSTRAP.md).
 - **Coordination model + conventions:** `docs/team-roles-and-conventions.md`.
 - **The identity gap (read before client/multi-team use):** `docs/hive-identity-gap.md`.

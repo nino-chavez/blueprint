@@ -12,6 +12,7 @@
  *   fleet    classify consumer drift from consumers.yml     (real — step 7, ADR-0005)
  *   upgrade  preview/apply this consumer's pin bump         (real — step 8, ADR-0005)
  *   doctor   conformance / health check (the false-green guard) (real — step 12)
+ *   hive     stand up the team coordination substrate (hive setup --slug=<x>)
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
  */
@@ -53,6 +54,9 @@ Commands:
              dry-run by default (terraform-plan style); --apply writes the methodology_version bump (dirty-tree-guarded, breaking-gated)
   doctor     Conformance / health check                    (blueprint doctor [--target=<dir>] [--json])
              actually loads the config + every reviewer + runs portal conformance — the false-green guard
+  hive       Stand up the team coordination substrate      (blueprint hive setup --slug=<x> --cf-account-id=<id> [--hive-dir=.hive] [--execute])
+             dry-run PLAN by default (terraform-plan style); --execute provisions CF D1+Worker+Pages from a vendored ai-hive kit
+             the "run" rung of crawl→walk→run — only when contention is real (docs/team-roles-and-conventions.md litmus)
 
 Global:
   -h, --help       Show help
@@ -466,6 +470,59 @@ async function runDoctor(doctorArgv, home) {
   process.exit(result.status === 'fail' ? 1 : 0);
 }
 
+// hive <subcommand> — stand up / operate the team coordination substrate. v1
+// has one subcommand: `setup`, which runs the dependency-free bootstrap
+// (template/tools/hive/bootstrap.mjs) loaded from the methodology home. Default
+// is a dry-run PLAN (no live CF mutation); --execute provisions for real. The
+// kit itself is NOT vendored here (integrate-not-absorb) — point --hive-dir at
+// the operator's vendored ai-hive checkout (defaults to ./.hive).
+async function runHive(hiveArgv, home) {
+  const { flags, positionals } = parseArgs(hiveArgv);
+  const sub = positionals[0];
+
+  if (sub !== 'setup') {
+    console.error('blueprint hive: usage — blueprint hive setup --slug=<x> --cf-account-id=<id> [--hive-dir=.hive] [--execute]');
+    console.error('  setup   provision a fresh Hive (CF D1 + Worker + Pages) from a vendored ai-hive kit');
+    console.error('          dry-run plan by default; --execute applies. See template/tools/hive/BOOTSTRAP.md for the 3 manual steps.');
+    process.exit(2);
+  }
+
+  // --hive-dir, else ./.hive if present (subtree convention), else cwd.
+  let hiveDir = flags['hive-dir'];
+  if (!hiveDir) hiveDir = existsSync(join(process.cwd(), '.hive')) ? join(process.cwd(), '.hive') : process.cwd();
+  hiveDir = resolve(hiveDir);
+
+  // Secrets prefer an explicit flag; env is the 1Password-injection fallback
+  // (e.g. --cf-api-token="$(op read 'op://Developer Secrets/...')"). Never logged.
+  const cfAccountId = flags['cf-account-id'] || process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID;
+  const cfApiToken = flags['cf-api-token'] || process.env.CF_API_TOKEN;
+  const githubToken = flags['github-token'] || process.env.GITHUB_TOKEN;
+
+  let lib;
+  try {
+    lib = await import(pathToFileURL(join(home, 'template', 'tools', 'hive', 'bootstrap.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint hive: failed to load bootstrap lib from ${home} — ${e.message}`);
+    process.exit(2);
+  }
+
+  const result = await lib.bootstrap({
+    slug: flags.slug,
+    cfAccountId,
+    hiveDir,
+    execute: !!flags.execute,
+    cfApiToken,
+    githubToken,
+    ghRepo: flags['gh-repo'],
+  });
+
+  if (!result.ok) {
+    if (result.error) console.error(`\nblueprint hive setup: ${result.error}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -520,6 +577,11 @@ async function main() {
 
   if (cmd === 'doctor') {
     await runDoctor(argv.slice(argv.indexOf('doctor') + 1), home);
+    return;
+  }
+
+  if (cmd === 'hive') {
+    await runHive(argv.slice(argv.indexOf('hive') + 1), home);
     return;
   }
 
