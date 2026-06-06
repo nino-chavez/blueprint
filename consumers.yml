@@ -58,3 +58,60 @@ consumers:
   # an EXTERNAL consumer — the methodology and its reference implementation share
   # one tree, pinned `methodology_version: self`, so it has no fleet drift to track.
   # The original repo is archived; the productization history lives in tools/archaeology/.
+
+  # ── Reconciled 2026-06-06: the registry under-counted (3 of ~12). The competitive-
+  #    positioning pass (research/02-competitive-positioning.md) surfaced the real fleet.
+  #    Patterns/pins are best-known from each consumer's blueprint.yml where present;
+  #    all are unpinned (null) → `fleet` classifies them as unpinned (informational).
+
+  # Verified-local consumers (a blueprint.yml or methodology adoption confirmed on this machine):
+  - repo: nino-chavez/ai-content-engine
+    pattern: bespoke                  # wave-46 ops console — bespoke-with-ADR portal
+    methodology_version: null         # wip/ai-content-engine/blueprint.yml — greenfield, no pin
+    owner: nino-chavez
+    synced_at: "2026-06-06"
+
+  - repo: nino-chavez/atelier-dashboard
+    pattern: null                     # wip/atelier-dashboard-blueprint — pattern not declared
+    methodology_version: null
+    owner: nino-chavez
+    synced_at: "2026-06-06"
+
+  - repo: nino-chavez/tna
+    pattern: null                     # wip/tna/blueprint — TNA public site
+    methodology_version: null
+    owner: nino-chavez
+    synced_at: "2026-06-06"
+
+  - repo: nino-chavez/subs-initiative
+    pattern: A                        # the code-shipping flagship (116k LOC shipped). Consumes the
+    methodology_version: null         #   methodology via METHODOLOGY.md/BRD (no blueprint.yml) + the
+    owner: nino-chavez                #   ai-hive substrate. The ONLY full `.hive/` consumer.
+    synced_at: "2026-06-06"
+
+  # Operator-declared, NOT locally verified on THIS machine (the registry is machine-local).
+  # Confirm repo / pattern / pin before relying on these for fleet/upgrade.
+  - repo: nino-chavez/ninochavez.co
+    pattern: null
+    methodology_version: null         # operator-declared; confirm
+    owner: nino-chavez
+    synced_at: "2026-06-06"
+
+  - repo: nino-chavez/promo-initiative
+    pattern: null
+    methodology_version: null         # operator-declared; confirm
+    owner: nino-chavez
+    synced_at: "2026-06-06"
+
+  - repo: nino-chavez/dms-north-star
+    pattern: null
+    methodology_version: null         # operator-declared; confirm
+    owner: nino-chavez
+    synced_at: "2026-06-06"
+
+  # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
+  - repo: external-a/media-toolkit          # operator-declared; CONFIRM exact owner/repo slug
+    pattern: null
+    methodology_version: null
+    owner: external-a                       # external operator
+    synced_at: "2026-06-06"
