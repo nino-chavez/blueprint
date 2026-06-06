@@ -14,7 +14,7 @@ The methodology ships to a fleet of consumer initiatives (`rally-hq`, `blog`, `b
 
 Two facts constrain the v1 shape, both verified against the live repo on 2026-06-04:
 
-1. **No semver tags exist yet.** `package.json` `version` is `0.1.0` (the single source the hook already uses); there are zero `vX.Y.Z` git tags (only `dogfood-v*`). The only real pin in the fleet is a **git sha** — `blueprint-platform` pins `methodology_version: "010945a"` (23 commits behind HEAD `4d8f319`). So fleet must be honest across **three worlds at once**: semver pins, sha pins, and unpinned consumers — it cannot assume semver.
+1. **No semver tags exist yet.** `package.json` `version` is `0.1.0` (the single source the hook already uses); there are zero `vX.Y.Z` git tags (only `dogfood-v*`). The only real pin in the fleet is a **git sha** — `blueprint-platform` pins `methodology_version: "010945a"` (N commits behind HEAD `<sha>`). **Note:** `blueprint-platform` was folded into this repo in wave 45 (`methodology_version: self`) and is no longer an external fleet member; it is preserved here as the reference example of a sha-pinned consumer entry. So fleet must be honest across **three worlds at once**: semver pins, sha pins, and unpinned consumers — it cannot assume semver.
 2. **Scope ceiling A (methodology-native).** No hosted catalog service, no daemon. Everything computes from a committed file + the methodology's own git history. The command must not clone or fetch consumer repos.
 
 ## Decision

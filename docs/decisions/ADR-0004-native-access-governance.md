@@ -5,20 +5,20 @@ status: proposed
 date: 2026-06-04
 deciders: ["Nino Chavez"]
 scope_ceiling: "A — methodology-native only"
-informs: 01-prescription.md
-depends_on: 00-charter.md
+informs: ../../decisions/01-prescription.md
+depends_on: ../../decisions/00-charter.md
 references:
-  - ../research/01-canonical-research.md
+  - ../productization/canonical-research.md
   - "vendor: https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles"
   - "vendor: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners"
   - "vendor: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets"
   - "vendor: https://rust-lang.github.io/rfcs/0002-rfc-process.html"
-  - "internal: tools/blueprint/docs/amendment-classification-pattern.md"
+  - "internal: docs/amendment-classification-pattern.md"
 ---
 
 # ADR-0004 — Native access control + governance
 
-> **Promoted into the methodology source** from the `blueprint-platform` dogfood (wave 43, 2026-06-05). Frontmatter + cross-references (`../research/`, `../../blueprint-redesign/`, `00-charter.md`, `01-prescription.md`) resolve in that consumer repo; the cited research is mirrored at [`docs/productization/`](../productization/README.md), which also maps every ADR to the feature + wave that shipped it.
+> **Promoted into the methodology source** from the `blueprint-platform` dogfood (wave 43, 2026-06-05). These ADRs were promoted from the blueprint-platform dogfood in wave 43 and now live in THIS source repo (`tools/blueprint`). The cited research is mirrored at [`docs/productization/`](../productization/README.md), which also maps every ADR to the feature + wave that shipped it.
 
 
 Status: **proposed** — grounded in Stage 1 canonical research; ratify on operator review.

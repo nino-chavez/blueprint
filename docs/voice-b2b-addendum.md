@@ -20,7 +20,7 @@ The base anti-patterns (1-7) in `voice-template.md` apply unchanged. These exten
 
 ## Actor naming — multi-actor role pattern
 
-Every B2B flow must name *which actor* (per `wip/subs-initiative/docs/decisions/0023-multi-actor-roles.md`):
+Every B2B flow must name *which actor* (roles defined below):
 
 - **Owner** — Company Admin or ultimate authority
 - **Payer** — settles invoices (may differ from Owner)
@@ -58,7 +58,6 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 - `~/Workspace/dev/tools/blueprint/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
 - `~/Workspace/dev/tools/blueprint/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
-- `~/Workspace/dev/wip/subs-initiative/docs/decisions/0023-multi-actor-roles.md` — actor pattern source
 
 ## Origin
 

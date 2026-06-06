@@ -68,11 +68,13 @@ source during the fleet/upgrade work — it fixes the concrete `consumers.yml` +
 
 ## The live dogfood (durable, public)
 
-The productization initiative itself: **github.com/nino-chavez/blueprint-platform**
-(a standalone public repo) with a deployed Pattern A portal at
-**blueprint-platform.pages.dev** (the roadmap there renders the build order). Its
-`decisions/` and `research/` are the originals these were promoted from; its
-`METHODOLOGY-AMENDMENTS.md` is the running ledger of dogfooding learnings.
+The productization initiative itself runs **in this repo** (folded from the
+standalone `wip/blueprint-platform` in wave 45, commit `7bf554f`; the old repo
+is archived). The self-application lives at the repo root: `blueprint.yml`,
+`research/`, `decisions/`, and `apps/portal/`. The portal deploys from
+`apps/portal/` via `.github/workflows/deploy-portal.yml` to
+**blueprint-platform.pages.dev**. The `decisions/` and `research/` here are the
+originals the productization ADRs were promoted from.
 
 ## What remains (operator-gated, not new build steps)
 

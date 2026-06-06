@@ -10,7 +10,7 @@ This is the **trust-restoration surface** companion to the substrate itself. The
 
 ## Files
 
-- `ArchaeologyChat.tsx` — the React component (single file, ~490 lines). `scaffold.sh` substitutes `{{PROJECT_SLUG}}` and `{{CF_WORKERS_SUBDOMAIN}}` at install time so the component points at your Worker.
+- `ArchaeologyChat.tsx` — the React component (single file, ~578 lines). This is the pre-rendered reference deployment pointing to `blueprint-archaeology.biq.workers.dev`; consumers receive a templated version via `template/tools/archaeology/web/` where `scaffold.sh` substitutes `{{PROJECT_SLUG}}` and `{{CF_WORKERS_SUBDOMAIN}}` at install time.
 
 ## Integration
 

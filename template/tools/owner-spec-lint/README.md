@@ -51,7 +51,7 @@ output_schema_hash: <hex>         # optional; computed from tool output JSON
 ---
 ```
 
-See the canary at [`tools/state-derive/OWNER-SPEC.md`](../state-derive/OWNER-SPEC.md) for a worked example.
+See the canary at [`tools/archaeology/OWNER-SPEC.md`](../archaeology/OWNER-SPEC.md) for a worked example.
 
 ## Why this exists
 

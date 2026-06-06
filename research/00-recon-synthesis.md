@@ -8,6 +8,8 @@ full_transcript: (local Claude Code session transcript — not published)
 
 # Recon synthesis — current Blueprint vs the productization requirements
 
+> **Historical snapshot — pre-wave-47 state (2026-06-04).** This document is the evidence base captured before implementation began. As of wave 49: 12 of 15 reviewers are executable `.mjs` files (up from 0), `@nino-chavez-labs/blueprint-cli@0.1.0` is published on npm, and `VERSION`/`CHANGELOG` exist in the repo. Claims in this doc reflecting "0 .mjs reviewers", "no @blueprint/cli", or "no VERSION/CHANGELOG/semver" are accurate for the date of capture — they are not current state.
+
 Evidence base for `decisions/00-charter.md`. Five parallel domain readers audited the methodology source, the `blueprint-redesign` self-application, the distribution substrate, consumer field evidence, configurability primitives, and the docs/onboarding surface; a synthesis agent produced the gap analysis and project framing. 6 agents, ~612k tokens, 102 tool uses.
 
 This is the **decision-lineage** record (what we found, with evidence paths). The forward-looking decisions live in the charter. Extends — does not duplicate — blueprint-redesign's `research/current-state/02-blueprint-production-quality-gaps.md`.
@@ -31,9 +33,9 @@ This is the **decision-lineage** record (what we found, with evidence paths). Th
 ### 3. Consumer field evidence
 - **v3 chrome-leak** — website-nc-v3 lost 268 lines of chrome mid-edit, restored from a peer consumer's deployed URL, promoting another consumer's 832-line drift into a de-facto "canonical" no doc declared. Root pattern: template ships files mixing canonical chrome with project data; consumers either edit chrome (drift) or copy verbatim (inherit leak).
 - **subs-initiative skipped Stages 2–4** and paid 12+ Sonnet-hours fixing what the constraints stage would have caught.
-- **Multi-operator attribution loss** — operators sharing one `.git/` lose authorship (`multi-operator-collab-pattern.md`).
+- **Multi-operator attribution loss** — operators sharing one `.git/` lose authorship (`docs/multi-operator-collab-pattern.md`).
 - **Process asymmetry** — documented 738-vs-48-line gold-plate-vs-under-process gap → the cost dial must have skip-justification gates.
-- Evidence: `tools/blueprint/docs/case-study-{v3-portal-css-gap,subs-initiative-skipped-stages-2-4,pp-cx}.md`, `multi-operator-collab-pattern.md`.
+- Evidence: `tools/blueprint/docs/case-study-{v3-portal-css-gap,subs-initiative-skipped-stages-2-4,pp-cx}.md`, `docs/multi-operator-collab-pattern.md`.
 
 ### 4. Configurability primitives
 - One real operator-set dial: `execution.depth: lean|standard|thorough` — but it scales **deliverable count** (which docs/stages run), not reasoning depth, tokens, or model tier.

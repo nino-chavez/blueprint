@@ -5,14 +5,14 @@ status: draft
 date: 2026-06-04
 supersedes: none
 scope_ceiling: "A — methodology-native only"
-extends: ../../blueprint-redesign/decisions/01-prescription.md
+extends: ../../../../wip/blueprint-redesign/decisions/01-prescription.md
 informs:
   - "ADR-0003 cost/effort dial"
   - "ADR-0004 native access + governance"
   - "ADR-0005 bidirectional non-breaking update protocol"
   - "ADR-0006 native extensibility (org-authored reviewers)"
   - "ADR-0007 versioning + distribution toolchain"
-grounded_by: "research/01-canonical-research.md (Stage 1 canonical-pattern research)"
+grounded_by: "canonical-research.md (Stage 1 canonical-pattern research)"
 ratified_by: "pending — first non-Nino team consumer (per charter solo-degrade path)"
 ---
 
@@ -98,7 +98,7 @@ Multi-tenant SaaS, auth server, billing, SOC2, hosted multi-tenant isolation. Ab
 
 ## Order rationale + research-refined build order
 
-The 10 items above are now grounded by Stage 1 canonical research (`research/01-canonical-research.md`) and decided in ADR-0003..0007. The refined smallest-first order (one correction: `BLUEPRINT_HOME` is step **0**, before the package wiring — it gates every CLI subcommand and the researchers underweighted it):
+The 10 items above are now grounded by Stage 1 canonical research (`canonical-research.md`) and decided in ADR-0003..0007. The refined smallest-first order (one correction: `BLUEPRINT_HOME` is step **0**, before the package wiring — it gates every CLI subcommand and the researchers underweighted it):
 
 ```
 0  BLUEPRINT_HOME resolver            (portability precondition — gates the CLI)

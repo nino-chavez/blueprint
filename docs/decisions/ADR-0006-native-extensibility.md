@@ -5,16 +5,16 @@ status: proposed
 date: 2026-06-04
 deciders: ["Nino Chavez"]
 scope_ceiling: "A — methodology-native only"
-informs: 01-prescription.md
+informs: ../../decisions/01-prescription.md
 depends_on:
-  - 00-charter.md
-  - ../../blueprint-redesign/decisions/ADR-0002-reviewers-as-executable-plugins.md
+  - ../../decisions/00-charter.md
+  - ../../../../wip/blueprint-redesign/decisions/ADR-0002-reviewers-as-executable-plugins.md
 references:
-  - ../research/01-canonical-research.md
+  - ../productization/canonical-research.md
   - "vendor: https://eslint.org/docs/latest/extend/plugins"
   - "vendor: https://vite.dev/guide/api-plugin"
   - "vendor: https://backstage.io/docs/features/software-catalog/system-model"
-  - "internal: tools/blueprint/template/tools/state-derive/index.ts (walkCatalog:48)"
+  - "internal: template/tools/state-derive/index.ts (walkCatalog:48)"
 ---
 
 # ADR-0006 — Native extensibility (org-authored reviewers/stages)

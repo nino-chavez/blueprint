@@ -22,7 +22,7 @@ npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
 npx @nino-chavez-labs/blueprint-cli doctor
 ```
 
-Six commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor`. Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Seven commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor` · `hive`. Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
@@ -140,8 +140,8 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 `CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
 
 > Status: **published** — `@nino-chavez-labs/blueprint-cli@0.1.0` is live on npm.
-> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all six
-> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`) are real.
+> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all seven
+> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`) are real.
 
 ## This repo is its own first consumer (the reference portal)
 

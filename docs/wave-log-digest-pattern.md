@@ -41,7 +41,7 @@ The same pattern applies to any consumer initiative with a long-running wave-log
 
 ## The tool
 
-`template/tools/wave-digest/digest.mjs` — small Node script (~60 lines, no dependencies) that:
+`template/tools/wave-digest/digest.mjs` — small Node script (~90 lines, no dependencies) that:
 
 1. Reads a `CLAUDE.md` file (defaults to `./CLAUDE.md`)
 2. Extracts the `## Wave log` section

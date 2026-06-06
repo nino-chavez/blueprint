@@ -128,7 +128,7 @@ Skills are cheap to spin up (~1 hour each) BUT only useful when grounded in an a
 ## Cross-refs
 
 - Pattern home: this doc + `tools/owner-spec-lint/`
-- First canary: `tools/state-derive/OWNER-SPEC.md`
+- First canary: `tools/archaeology/OWNER-SPEC.md`
 - Companion substrate: human-attestation substrate per Hive #1269
 - Convention compounding: portable per [Hive #1519](the subscriptions initiative's repo (private)/issues/1519) — methodology compounds regardless of fork outcome
-- Big-blueprint replication: template adoption is operator-driven; do after state-derive canary proves the pattern
+- Big-blueprint replication: template adoption is operator-driven; do after archaeology canary proves the pattern

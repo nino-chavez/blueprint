@@ -22,7 +22,7 @@ canonical: true
 | Category | Invocation trigger | Cadence | Example |
 |---|---|---|---|
 | **STAGE skill** | Operator advances from Stage N to Stage N+1 | Once per stage transition (~6× per initiative) | `/blueprint-research`, `/blueprint-prototype`, `/blueprint-docs`, `/blueprint-validate`, `/blueprint-deploy`, `/blueprint-triage` |
-| **ROUTINE skill** | Operator runs a recurring convention-maintenance routine | Many times per initiative (varies — handoffs at every session break; amendments when methodology learning surfaces; parallel-dispatch-checks before every parallel dispatch) | `/blueprint-handoff` (first example, this wave); future candidates: `/blueprint-amendment`, `/blueprint-sweep`, `/blueprint-dispatch` |
+| **ROUTINE skill** | Operator runs a recurring convention-maintenance routine | Many times per initiative (varies — handoffs at every session break; amendments when methodology learning surfaces; parallel-dispatch-checks before every parallel dispatch) | `/blueprint-handoff`, `/blueprint-amendment`, `/blueprint-dispatch` (shipped); future candidate: `/blueprint-sweep` |
 
 The categories differ in three load-bearing ways:
 
@@ -96,11 +96,11 @@ As of 2026-05-27:
 - `deploy.md` (`/blueprint-deploy`)
 - `triage.md` (`/blueprint-triage`)
 
-**ROUTINE skills** (2, in `template/.claude/skills/blueprint/`):
+**ROUTINE skills** (3, in `template/.claude/skills/blueprint/`):
 - `handoff.md` (`/blueprint-handoff`) — generates HANDOFF.md by deriving state from git + pwd; asks operator for "what's pending" + sequencing
 - `amendment.md` (`/blueprint-amendment`) — files a METHODOLOGY-AMENDMENTS entry via wave 27's 4-bucket decision tree; initializes the amendments file from template if absent
+- `dispatch.md` (`/blueprint-dispatch`) — runs `parallel-dispatch-check` as pre-flight before parallel-agent dispatch
 
 **Routine candidates** (deferred — each awaits its own promotion-evidence threshold):
 - `/blueprint-sweep` — orchestrates wave 22 + 24 two-layer drift-detection recipe (state-derive prefilter + sweep on MANUAL_REVIEW remainder + per-verdict draft emission). Defer until a consumer runs the two-layer recipe and reports back on whether the orchestration adds value vs the manual workflow.
-- `/blueprint-dispatch` — runs `parallel-dispatch-check` as pre-flight before parallel-agent dispatch. Defer until a second parallel-dispatch failure mode surfaces (the first was rally-hq's `0c074d5`; need cross-consumer evidence the routine is recurring before automating).
 - `/blueprint-archaeology-ready` — verifies all 4 wave 21 preconditions before flipping the operator gate. Defer until a consumer actually deploys Stage S-A end-to-end and reports back on whether the manual gate-flip carries enough cognitive load to need automation.

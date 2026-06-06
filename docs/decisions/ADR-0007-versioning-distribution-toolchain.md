@@ -5,12 +5,12 @@ status: proposed
 date: 2026-06-04
 deciders: ["Nino Chavez"]
 scope_ceiling: "A — methodology-native only"
-informs: 01-prescription.md
+informs: ../../decisions/01-prescription.md
 depends_on:
-  - 00-charter.md
-  - ../../blueprint-redesign/decisions/ADR-0001-dual-protocol-distribution.md
+  - ../../decisions/00-charter.md
+  - ../../../../wip/blueprint-redesign/decisions/ADR-0001-dual-protocol-distribution.md
 references:
-  - ../research/01-canonical-research.md
+  - ../productization/canonical-research.md
   - "vendor: https://docs.npmjs.com/cli/v10/configuring-npm/package-json"
   - "vendor: https://github.com/changesets/changesets"
   - "vendor: https://nodejs.org/api/deprecations.html"

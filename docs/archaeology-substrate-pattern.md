@@ -2,7 +2,7 @@
 
 **Purpose:** Captures the day-0 pattern for an event-sourced archaeology substrate so future projects can answer "what did we know on date T, why did we pick X, who decided Z" without writing a new ad-hoc tool per question. Codifies the lesson learned on `subs-initiative` (May 2026) where five overlapping ingestion tools (session-mine, state-derive, hive-board-derive, drift sweeps, handoff dossiers) were each built reactively to answer a specific archaeological question — and would have collapsed into a single read-side query layer if the substrate had existed from project start.
 
-**Last updated:** 2026-05-22
+**Last updated:** 2026-05-25
 
 **Status:** Proven in production on `subs-initiative` (Phase 6 smoke test passed 2026-05-22). 47K session events + 62 ADRs + 18 inputs + 68 iterations + 43 audits ingested; 15K chunks embedded; `/derive` answers archaeological questions with correctly-grounded citations across both repo docs and live session JSONLs.
 
@@ -446,7 +446,7 @@ The subs-initiative retro that produced this pattern surfaced three reusable les
 
 For future projects adopting this pattern:
 
-1. Run `scaffold.sh` (once the template lands this pattern's hooks; in the meantime, follow the bootstrap sequence above manually)
+1. Run `scaffold.sh`
 2. Confirm the substrate is capturing — check the Worker's `/health` and that POST `/events` is receiving from each ingester
 3. Set a 30-day reminder to re-verify capture is healthy; refs density on commits is the leading indicator
 4. After 60 days, run `/derive` against a question whose answer you know — confirm the substrate has accumulated enough signal to be trusted

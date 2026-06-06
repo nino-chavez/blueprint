@@ -15,7 +15,7 @@ Hive, you don't need this: see [ONBOARDING.md](./ONBOARDING.md) (60 seconds).
 
 ## What you provide vs. what the script does
 
-The bootstrap is **one command** — `blueprint hive setup` — that runs ~15 scriptable
+The bootstrap is **one command** — `blueprint hive setup` — that runs ~18 scriptable
 steps (create D1, patch config, migrate, set the bearer, deploy the Worker, wire the
 dashboard, deploy Pages). Three things stay **manual by nature** (browser / judgment /
 in-Claude-Code) and are listed below; the script checks the first and prints the other

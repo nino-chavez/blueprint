@@ -5,7 +5,7 @@ The unified family portal — front door across strategy, demos, build, operate,
 ## Stack
 
 - **Astro 5** — content-first, native markdown collections, fast SSR
-- **React 19** islands for interactive parts (audience switcher, future live-iframe wrappers)
+- **React 19** islands for interactive parts (future live-iframe wrappers)
 - **Tailwind 3** via PostCSS, consuming `@blueprint/design-tokens/tailwind` preset
 - **`@blueprint/ui`** — family component kit (Shell, NavBar, LaneCard, AudienceSwitcher, StatusBadge, plus generic Button/Badge/Alert/Card/Tabs/Modal and roadmap viz Swimlane/TaskBar/DependencyArrow)
 
@@ -38,7 +38,7 @@ Outputs static-first build to `dist/`. Deployable to Cloudflare Pages, Netlify, 
 | `/inspect` | Inspect | Methodology, Hive substrate, decision lineage, derived state |
 | `/roadmap` | Roadmap | Ready queue, epic progress, swimlane visualization |
 
-The audience switcher (top-right) reorders lanes by audience priority — executive / evaluator / engineering — and persists to localStorage.
+This self-application portal is bespoke (wave 48) and does not use the Pattern A audience switcher — it delivers a single linear adoption path designed for the product homepage, not a stakeholder-routed dashboard.
 
 ## Scaffolding into a new initiative
 

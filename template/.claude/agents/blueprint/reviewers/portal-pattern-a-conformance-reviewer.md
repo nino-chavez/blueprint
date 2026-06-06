@@ -31,7 +31,7 @@ If `apps/portal/` does not exist, the initiative has not graduated to Tier 1. BL
 
 If both `apps/portal/` (Pattern A) and `portal/` (or `blueprint/portal/`, Pattern B) exist as **active** surfaces in the same initiative, BLOCK with note "two portal patterns present — pick one per `docs/portal-and-tier-ladder.md`, or write an ADR justifying coexistence (rare; only when the initiative genuinely needs both a platform-portal and a redesign-review portal)."
 
-### 2. Verify the six canonical routes exist
+### 2. Verify the seven canonical routes (six verbs + overview)
 
 Glob for the route files:
 

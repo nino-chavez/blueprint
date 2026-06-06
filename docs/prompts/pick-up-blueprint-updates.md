@@ -28,7 +28,7 @@ how this initiative operates:
    Default is greenfield; pick the actual variant if different.
 
 2. ~/Workspace/dev/tools/blueprint/template/.claude/agents/blueprint/reviewers/
-   — Seven new stage-gate reviewer agents replace the legacy `validator`.
+   — Twelve stage-gate reviewer agents (12 executable, 3 spec-only by design) replace the legacy `validator`.
    Variant-aware. They block premature stage completion (e.g., declaring
    Stage 1 complete with empty research/funnel/). Read reviewers/README.md
    for the roster.

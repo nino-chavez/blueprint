@@ -15,6 +15,8 @@ feeds:
 
 # Stage 1 canonical research — grounded design basis (ceiling A)
 
+> **Note:** Evidence base as of 2026-06-04 (pre-wave-47). Implementation landed in waves 47-49; this is the historical decision rationale, not current state.
+
 Per the operator's canonical-pattern-first rule, each platform primitive was grounded against (1) the **vendor canonical** doc and (2) an **internal reference impl** under `the dev workspace`. This is the decision basis for ADR-0003..0007. Full per-primitive detail in the workflow transcript (frontmatter).
 
 ## Vendor canonical → decision (one line each)

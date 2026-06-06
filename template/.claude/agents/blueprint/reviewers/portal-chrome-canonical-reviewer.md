@@ -32,7 +32,7 @@ The manifest is owned by `template/tools/blueprint-init/stamp.mjs` (constant `PA
 node -e "import('$BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs').then(m => console.log('manifest is in source — read PATTERN_B_CHROME_FILES'))"
 ```
 
-Hard-coded mirror of the manifest as of 2026-05-25 evening (re-read `stamp.mjs` if this drifts):
+Hard-coded mirror of the manifest (re-read `stamp.mjs` if this drifts):
 
 ```
 shared.css
@@ -40,6 +40,7 @@ _portal-shell.js
 proto-nav.js
 proto-annotate.js
 chat-widget.js
+theme-switcher.js
 _headers
 _redirects
 docs/index.html
@@ -53,7 +54,7 @@ PORTAL_DIR=""
 [ -d blueprint/portal ] && PORTAL_DIR=blueprint/portal
 [ -z "$PORTAL_DIR" ] && [ -d portal ] && PORTAL_DIR=portal
 
-for f in shared.css _portal-shell.js proto-nav.js proto-annotate.js chat-widget.js _headers _redirects docs/index.html; do
+for f in shared.css _portal-shell.js proto-nav.js proto-annotate.js chat-widget.js theme-switcher.js _headers _redirects docs/index.html; do
   canonical="$BP_HOME/template/portal/$f"
   consumer="$PORTAL_DIR/$f"
   if [ ! -f "$canonical" ]; then

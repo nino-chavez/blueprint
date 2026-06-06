@@ -8,8 +8,8 @@ Companion to: `../docs/` (research + strategy docs), `DESIGN.md` (extracted desi
 
 | Layer | Version |
 |---|---|
-| React | 18.3 (pinned — the platform design system requirement) |
-| styled-components | 5.3 (pinned — the platform design system requirement) |
+| React | 18.3 (current — the platform design system requirement) |
+| styled-components | 5.3 (current — the platform design system requirement) |
 | @bigcommerce/big-design | 2.4 |
 | @bigcommerce/big-design-patterns | 3.0 |
 | bigcommerce-design-patterns | 0.15 |

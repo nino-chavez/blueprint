@@ -5,7 +5,7 @@ max_unattested_days: 60
 couples_with:
   - docs/methodology/archaeology-substrate-pattern.md
   - docs/runbooks/archaeology-hydration.md
-  - .github/workflows/archaeology-reindex.yml
+  - .github/workflows/archaeology-tail-docs.yml
 convention_version: 1
 ---
 
@@ -58,7 +58,7 @@ Mirror the pattern: `commits.py`, `prs.py`, `issues.py` (or `hive.py`), `adrs.py
 - `docs/methodology/archaeology-substrate-pattern.md` — design doc
 - `docs/runbooks/archaeology-hydration.md` — operator runbook
 - `apps/portal/` (or equivalent) — chat island consumer
-- `.github/workflows/archaeology-reindex.yml` — ingest on push
+- `.github/workflows/archaeology-tail-docs.yml` — ingest on push
 - Harness hook for SessionEnd if operator wants session ingest
 
 ## Maintainer playbook
@@ -67,7 +67,7 @@ Mirror the pattern: `commits.py`, `prs.py`, `issues.py` (or `hive.py`), `adrs.py
 
 **The two-artifacts rule (codified after subs-initiative' silent-failure incident):**
 1. Ingester at `tools/archaeology/ingesters/<category>.py` emitting `<category>_doc` events
-2. Path filter + ingest step in `.github/workflows/archaeology-reindex.yml`
+2. Path filter + ingest step in `.github/workflows/archaeology-tail-docs.yml`
 
 Both MUST land in the same PR. Otherwise the docs render in the portal but the chat island returns nothing — silent failure.
 

@@ -4,7 +4,7 @@ stage: 0
 status: draft
 date: 2026-06-04
 supersedes: none
-extends: ../../blueprint-redesign/decisions/01-prescription.md
+extends: ../../../wip/blueprint-redesign/decisions/01-prescription.md
 informs:
   - "decisions/01-prescription.md"
   - "Stage 1 research (extends blueprint-redesign 9-gap inventory)"

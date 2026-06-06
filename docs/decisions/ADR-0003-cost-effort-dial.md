@@ -1,17 +1,17 @@
 ---
 canonical: true
 adr: 0003
-status: proposed
+status: Accepted
 date: 2026-06-04
 deciders: ["Nino Chavez"]
 scope_ceiling: "A — methodology-native only"
-informs: 01-prescription.md
-depends_on: 00-charter.md
+informs: ../../decisions/01-prescription.md
+depends_on: ../../decisions/00-charter.md
 references:
-  - ../research/01-canonical-research.md
+  - ../productization/canonical-research.md
   - "vendor: https://platform.claude.com/docs/en/build-with-claude/effort"
   - "vendor: https://code.claude.com/docs/en/sub-agents"
-  - "internal: tools/blueprint/docs/tiered-orchestration-pattern.md"
+  - "internal: docs/tiered-orchestration-pattern.md"
   - "internal: tools/specchain/specchain/docs/execution-profiles.md"
 ---
 
@@ -20,7 +20,7 @@ references:
 > **Promoted into the methodology source** from the `blueprint-platform` dogfood (wave 43, 2026-06-05). Frontmatter + cross-references (`../research/`, `../../blueprint-redesign/`, `00-charter.md`, `01-prescription.md`) resolve in that consumer repo; the cited research is mirrored at [`docs/productization/`](../productization/README.md), which also maps every ADR to the feature + wave that shipped it.
 
 
-Status: **proposed** — grounded in Stage 1 canonical research; ratify on operator review.
+Status: **Accepted** — promoted in wave 43; grounded in Stage 1 canonical research.
 
 ## Context
 

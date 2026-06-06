@@ -5,13 +5,13 @@ status: proposed
 date: 2026-06-04
 deciders: ["Nino Chavez"]
 scope_ceiling: "A — methodology-native only"
-informs: 01-prescription.md
-depends_on: 00-charter.md
+informs: ../../decisions/01-prescription.md
+depends_on: ../../decisions/00-charter.md
 references:
-  - ../research/01-canonical-research.md
+  - ../productization/canonical-research.md
   - "vendor: https://docs.renovatebot.com/configuration-options/"
   - "vendor: https://github.com/changesets/changesets"
-  - "internal: tools/blueprint/template/tools/blueprint-init/stamp.mjs (classifyDivergenceCause:394)"
+  - "internal: template/tools/blueprint-init/stamp.mjs (classifyDivergenceCause:394)"
   - "internal: tools/specchain/setup.sh (--upgrade)"
 ---
 

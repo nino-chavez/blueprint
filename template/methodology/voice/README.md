@@ -20,4 +20,4 @@ For a new consumer initiative entering Stage 2:
 
 ## Origin
 
-Authored during the blueprint-redesign dogfood (commit `22aaa9d` on `dogfood/self-redesign`). The 4-axis spine is the methodology's first formal voice-rules schema; it generalizes via the EXAMPLE shape rather than via canonical chrome.
+Authored during the blueprint-redesign dogfood (commit `22aaa9d` on `dogfood/deploy`). The 4-axis spine is the methodology's first formal voice-rules schema; it generalizes via the EXAMPLE shape rather than via canonical chrome.

@@ -4,7 +4,7 @@ stage: 0
 status: draft
 date: 2026-06-04
 supersedes: none
-extends: ../../blueprint-redesign/decisions/01-prescription.md
+extends: ../../../../wip/blueprint-redesign/decisions/01-prescription.md
 informs:
   - "decisions/01-prescription.md"
   - "Stage 1 research (extends blueprint-redesign 9-gap inventory)"
@@ -15,7 +15,7 @@ scope_ceiling: "A — methodology-native only (operator-resolved 2026-06-04)"
 
 What this initiative is, how it relates to the existing self-application, the full requirement set (operator-named **plus** architect-surfaced), and the one decision that gates the design.
 
-Grounding: a 6-agent recon (2026-06-04) audited the methodology source, the `blueprint-redesign` self-application, the distribution substrate, consumer field evidence, configurability primitives, and the docs/onboarding surface. Evidence base: `research/00-recon-synthesis.md`.
+Grounding: a 6-agent recon (2026-06-04) audited the methodology source, the `blueprint-redesign` self-application, the distribution substrate, consumer field evidence, configurability primitives, and the docs/onboarding surface. Evidence base: `recon-synthesis.md`.
 
 ## Relationship to blueprint-redesign — extends, does not supersede
 

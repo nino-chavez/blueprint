@@ -4,7 +4,7 @@ Agent-assisted pipeline for product planning, prototyping, and stakeholder align
 
 ## State of the methodology
 
-Blueprint is a methodology I've been refining across six consumer initiatives so far (`rally-hq`, `website-nc-v3`, `apps/blog`, `blueprint-redesign`, `subs-initiative`, `promo-initiative`), with twenty-two waves of changes captured in [CLAUDE.md](CLAUDE.md). Each initiative has caught gaps that became reviewer checks, schema fields, or stamper logic in subsequent waves.
+Blueprint is a methodology I've been refining across six consumer initiatives so far (`rally-hq`, `website-nc-v3`, `apps/blog`, `blueprint-redesign`, `subs-initiative`, `promo-initiative`), with forty-nine waves of changes captured in [CLAUDE.md](CLAUDE.md). Each initiative has caught gaps that became reviewer checks, schema fields, or stamper logic in subsequent waves.
 
 If you run an initiative through Blueprint and a gate feels wrong, or the methodology is missing a check you'd expect to find, [template/docs/methodology/methodology-amendments-convention.md](template/docs/methodology/methodology-amendments-convention.md) describes how to upstream the finding so the next initiative inherits it. The amendments convention is how a reader of this document becomes a contributor to it.
 
