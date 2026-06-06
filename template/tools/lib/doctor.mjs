@@ -10,11 +10,28 @@
 // (cost-dial, consumers-registry, reviewer-registry) + the conformance reviewer.
 // Never throws; each check degrades to a finding.
 
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const libUrl = (home, name) => pathToFileURL(join(home, 'template', 'tools', 'lib', name)).href;
+
+/**
+ * A bespoke portal (portal_pattern: bespoke — fits neither Pattern A nor B,
+ * wave 46) gates on the PRESENCE of a divergence ADR; its absence is the
+ * violation. Find one by filename convention in the consumer's decisions dirs.
+ * Returns the basename, or null.
+ */
+function findDivergenceAdr(targetDir) {
+  const rx = /(portal.*(bespoke|divergen)|(bespoke|divergen).*portal)/i;
+  for (const d of [join(targetDir, 'decisions'), join(targetDir, 'blueprint', 'decisions')]) {
+    try {
+      const hit = readdirSync(d).find((f) => f.endsWith('.md') && rx.test(f));
+      if (hit) return hit;
+    } catch { /* dir absent — keep looking */ }
+  }
+  return null;
+}
 
 // A check returns { name, status: 'pass'|'warn'|'fail'|'skip', detail, remediation? }.
 const worst = (a, b) => {
@@ -43,6 +60,7 @@ export async function runDoctor({ home, targetDir }) {
 
   // 2. blueprint.yml — present + parseable + declares a tier.
   let tier = null;
+  let portalPattern = null;
   if (!hasYml) {
     add('blueprint-yml', 'warn', `no blueprint.yml at ${targetDir} (running against the methodology home, or an unstamped dir)`);
   } else {
@@ -51,6 +69,8 @@ export async function runDoctor({ home, targetDir }) {
       const text = readFileSync(ymlPath, 'utf8');
       const m = /^\s*tier:\s*([0-9]+)/m.exec(text);
       tier = m ? Number(m[1]) : null;
+      const pm = /^\s*portal_pattern:\s*(\w+)/m.exec(text);
+      portalPattern = pm ? pm[1].toLowerCase() : null;
       if (tier == null) add('blueprint-yml', 'warn', 'blueprint.yml present but no `tier:` declared');
       else add('blueprint-yml', 'pass', `tier ${tier}`);
     } catch (e) {
@@ -107,21 +127,35 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
-  // 6. portal-conformance — if a Pattern A portal exists, RUN its reviewer (not a
-  //    files-exist check). This is the runtime-verification core.
+  // 6. portal-conformance. A Pattern A portal RUNS its reviewer (runtime
+  //    verification, not a files-exist check). A portal that declares
+  //    `portal_pattern: bespoke` fits neither A nor B (wave 46) — so NEITHER
+  //    conformance reviewer runs; the gate instead is the PRESENCE of a
+  //    divergence ADR (its absence is the violation). Automated here on the
+  //    2nd bespoke instance (the methodology's own product-site portal), per
+  //    the wave-46 "automate on the 2nd instance" trigger.
   if (existsSync(join(targetDir, 'apps', 'portal'))) {
-    try {
-      const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'portal-pattern-a-conformance-reviewer.mjs');
-      if (existsSync(reviewerPath)) {
-        const fn = (await import(pathToFileURL(reviewerPath).href)).default;
-        const res = await fn({ targetDir, blueprintYml: { tier }, methodologyHome: home });
-        const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
-        add('portal-conformance', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''} (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? 'run `blueprint review portal-pattern-a-conformance-reviewer --target=<dir>` for details' : undefined);
+    if (portalPattern === 'bespoke') {
+      const adr = findDivergenceAdr(targetDir);
+      if (adr) {
+        add('portal-conformance', 'pass', `bespoke portal — divergence recorded in ${adr}; Pattern A/B conformance not applicable`);
       } else {
-        add('portal-conformance', 'skip', 'conformance reviewer not present in this methodology home');
+        add('portal-conformance', 'fail', 'portal_pattern: bespoke but no divergence ADR found in decisions/', "record the divergence — write decisions/NNNN-portal-bespoke-*.md per docs/portal-and-tier-ladder.md (a bespoke portal's gate is the ADR's presence; its absence is the violation)");
       }
-    } catch (e) {
-      add('portal-conformance', 'fail', `portal conformance reviewer threw: ${e.message}`);
+    } else {
+      try {
+        const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'portal-pattern-a-conformance-reviewer.mjs');
+        if (existsSync(reviewerPath)) {
+          const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+          const res = await fn({ targetDir, blueprintYml: { tier }, methodologyHome: home });
+          const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
+          add('portal-conformance', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''} (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? 'run `blueprint review portal-pattern-a-conformance-reviewer --target=<dir>` for details' : undefined);
+        } else {
+          add('portal-conformance', 'skip', 'conformance reviewer not present in this methodology home');
+        }
+      } catch (e) {
+        add('portal-conformance', 'fail', `portal conformance reviewer threw: ${e.message}`);
+      }
     }
   }
 
