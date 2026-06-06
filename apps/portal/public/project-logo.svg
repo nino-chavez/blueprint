@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Blueprint">
+  <title>Blueprint</title>
+  <defs>
+    <linearGradient id="bp" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a6bcc"/>
+      <stop offset="1" stop-color="#163f80"/>
+    </linearGradient>
+    <pattern id="gridpat" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M8 0H0V8" fill="none" stroke="#fff" stroke-width="0.5" opacity="0.13"/>
+    </pattern>
+    <pattern id="hatchblue" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="3.6" stroke="#15448a" stroke-width="1.1" opacity="0.55"/>
+    </pattern>
+    <filter id="r1" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="r2" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="1" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <g id="cog" fill="#fff">
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(0 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(45 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(90 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(135 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(180 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(225 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(270 32 32)"/>
+      <rect x="28" y="12" width="8" height="11" rx="1.6" transform="rotate(315 32 32)"/>
+      <circle cx="32" cy="32" r="14.5"/>
+    </g>
+    <clipPath id="cogclip"><use href="#cog"/></clipPath>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="url(#bp)"/>
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="url(#gridpat)"/>
+  <g filter="url(#r2)">
+    <circle cx="32" cy="32" r="25.5" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.3" stroke-dasharray="2 3.5"/>
+  </g>
+  <g filter="url(#r1)">
+    <use href="#cog"/>
+    <g clip-path="url(#cogclip)"><rect x="0" y="0" width="64" height="64" fill="url(#hatchblue)"/></g>
+    <circle cx="32" cy="32" r="5.6" fill="#1a4d96"/>
+    <circle cx="32" cy="32" r="5.6" fill="none" stroke="#fff" stroke-width="2.2"/>
+  </g>
+</svg>

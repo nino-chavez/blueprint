@@ -31,7 +31,7 @@ export function PortalNav({ currentPath }: PortalNavProps) {
   return (
     <NavBar.Root>
       <NavBar.Brand href="/">
-        <img src="/project-logo.png" alt={PROJECT_NAME} className="h-5 w-5 object-contain" />
+        <img src="/project-logo.svg" alt={PROJECT_NAME} className="h-5 w-5 object-contain" />
         <span>{PROJECT_NAME}</span>
       </NavBar.Brand>
       <NavBar.Switcher>
