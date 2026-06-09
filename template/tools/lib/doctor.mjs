@@ -159,6 +159,24 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
+  // 7. doc-currency — docs reference files/paths/commands that exist (wave 50).
+  //    RUNS the reviewer (runtime verification): broken internal links → fail,
+  //    unknown CLI mentions → warn; unresolved citations are agent-verified
+  //    INFO inside the reviewer and do not gate here.
+  try {
+    const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'doc-currency-reviewer.mjs');
+    if (existsSync(reviewerPath)) {
+      const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+      const res = await fn({ targetDir, methodologyHome: home });
+      const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
+      add('doc-currency', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''}`, res.status !== 'PASS' ? 'run `blueprint review doc-currency-reviewer` for details' : undefined);
+    } else {
+      add('doc-currency', 'skip', 'doc-currency reviewer not present in this methodology home');
+    }
+  } catch (e) {
+    add('doc-currency', 'fail', `doc-currency reviewer threw: ${e.message}`);
+  }
+
   const status = checks.reduce((acc, c) => worst(acc, c.status), 'pass');
   // Honesty about the boundary: name what doctor did NOT verify, so a green is
   // never read as more than it is.

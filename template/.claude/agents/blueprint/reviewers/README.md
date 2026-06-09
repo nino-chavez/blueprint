@@ -21,6 +21,8 @@ Canonical reference: `tools/blueprint/docs/variant-selection.md`.
 | `doc-quality-auditor` | Stage 5 → Stage 6 | All |
 | `terminology-linter` | Stage 5 → Stage 6 (parallel with doc-quality-auditor) | All |
 | `prototype-smoke-runner` | Stage 6 ship gate | Greenfield, Midstream, Brownfield-if-prototype |
+| `defrag-reviewer` | Cadence pass (per wave / pre-release) — NOT a stage gate; never blocks | All |
+| `doc-currency-reviewer` | Continuous — runs inside `blueprint doctor`; also Stage 5 → Stage 6 alongside doc-quality-auditor | All |
 
 ### Pattern selection for the portal-conformance gate
 
@@ -44,7 +46,7 @@ Run order: `portal-pattern-b-conformance-reviewer` first (shape), then `portal-c
 
 - **Read-only audit, with one exception.** Most reviewers audit; they do not patch. The calling agent owns the fix. The exception is `prototype-smoke-runner`, which actively boots the prototype + drives browse-tool to capture screenshots — it produces artifacts (`.smoke-screenshots/`) but does not modify source files.
 - **Variant-aware.** Each reviewer reads `blueprint.yml` to determine variant and adjusts checks accordingly.
-- **Block on failure.** A reviewer's verdict is binary — PASS or BLOCKED. The calling agent must resolve all findings before re-invoking.
+- **Block on failure.** A reviewer's verdict is binary — PASS or BLOCKED. The calling agent must resolve all findings before re-invoking. Exception: `defrag-reviewer` is WARN-only by design — it is a cadence coherence pass, not a gate, and blocking on drift would punish in-flight work for consolidation it hasn't had a chance to do yet.
 - **Flag only correctness-or-requirement gaps.** A reviewer told to find gaps will manufacture them even when the work is sound — that is what it was asked to do. A BLOCKED verdict is reserved for findings that violate a stated requirement, a JTBD trace, an invariant, or factual accuracy. Stylistic preferences, speculative hardening, and "could also" suggestions are NON-blocking: list them as optional and PASS. Chasing every reviewer finding is how a sound deliverable accretes defensive scope, extra abstraction, and tests for cases that can't happen.
 - **Convergence cap.** `fact-check-loop-reviewer` caps at 5 iterations before escalating to the operator. Persistent failure after 5 loops is a signal that the underlying claims are unsupportable, not that more loops will help.
 - **Visual gates beat protocol gates.** `prototype-smoke-runner` requires viewport screenshots + CSS-coverage checks alongside the `@smoke` Playwright run. A 200 response from curl is not enough; a green `@smoke` is not enough. Both are blind to unstyled chrome (see `docs/case-study-v3-portal-css-gap.md`).

@@ -15,6 +15,8 @@ sources:
     retrieved_at: 2026-06-01
 ---
 
+<!-- doc-currency: external -->
+
 # Full-SDLC coverage across the Atlassian suite
 
 > **Portable pattern (big-blueprint).** A `big-blueprint`/`ai-hive`-shaped project

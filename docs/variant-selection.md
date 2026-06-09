@@ -40,6 +40,17 @@ Run this at project init. Answer in order; first "yes" wins.
 - **subs-initiative** — gated; revisit at session reopen.
 - **A new product idea (no code yet)** — Q1=no → **greenfield**.
 
+## The entropy wall — the signal that it's time to adopt
+
+Teams that vibe-coded their way to a working product rarely arrive at this doc from first principles — they arrive because the build stopped feeling fast. That moment has a recognizable signature. If two or more of these are true, the product has hit the entropy wall, and the answer to "which variant" is **midstream** (still actively building) or **brownfield** (mature, needs an audit before more building):
+
+1. **The codebase grows outward, not denser.** Every feature lands in its own file with its own patterns; utilities get reimplemented because the agent didn't know they existed.
+2. **Bugs cluster at the seams between features**, not inside them.
+3. **PRs are getting harder to review** — you can't tell whether code is intentionally different or just inconsistently generated.
+4. **Docs lag the code**, so the agent can't reference what the product already does — and starts contradicting or duplicating it.
+
+None of this means the vibe coding failed; demand-first building is how the product earned the right to structure (the Glass/Ramp case in `research/03-comparable-glass-ramp.md` hit this exact wall at ~20 daily users and retrofitted gates rather than rewriting). The wall is the signal that the missing capability is now *coherence*, not features. Adopting at Tier 0 costs one stamped `blueprint.yml` + the reviewer gates; the alternative is paying the wall tax compounding on every subsequent feature. Once adopted, the `defrag-reviewer` cadence pass is the standing repair for signal #1 and #3, and `doc-currency-reviewer` for #4.
+
 ## Stage shapes per variant
 
 All three variants share **Stage 0 (Application Legibility)**. Sensor wiring is identical; the difference is what Stage 0 captures. Greenfield captures nothing yet (the app may not exist); midstream and brownfield capture the live surfaces that subsequent stages diagnose against.
