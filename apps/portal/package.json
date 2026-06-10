@@ -2,7 +2,7 @@
   "name": "@blueprint/portal",
   "version": "0.0.0",
   "private": true,
-  "description": "Blueprint Pattern A portal \u2014 config-driven consumer harness. The front door across strategy, decisions, roadmap, and inspection surfaces. Astro + React islands; consumes @blueprint/ui + design-tokens; degrades to a Tier-0 catalog when no data sources are configured.",
+  "description": "Blueprint Pattern A portal — config-driven consumer harness. The front door across strategy, decisions, roadmap, and inspection surfaces. Astro + React islands; consumes @blueprint/ui + design-tokens; degrades to a Tier-0 catalog when no data sources are configured.",
   "type": "module",
   "scripts": {
     "dev": "astro dev",
@@ -40,6 +40,7 @@
     "normalize-path": "^3.0.0",
     "object-hash": "^3.0.0",
     "picocolors": "^1.1.1",
+    "playwright": "^1.60.0",
     "postcss": "^8.4.0",
     "postcss-import": "^15.1.0",
     "postcss-js": "^4.0.1",

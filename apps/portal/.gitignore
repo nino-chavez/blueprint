@@ -2,6 +2,9 @@
 dist/
 .astro/
 
+# Demo reel recordings (regenerable — scripts/record-demo.mjs)
+demo-recordings/
+
 # Dependencies
 node_modules/
 

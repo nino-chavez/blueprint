@@ -1,0 +1,60 @@
+---
+// /demo — the HTML demo reel (sizzle + deep walkthrough). Deliberately NOT the
+// shared Layout: this page is a stage for the scene player (and the screen-
+// recording rig), so it carries no portal nav/footer chrome. Contract:
+// docs/content/demo-reel-storyboard.md. Recording: scripts/record-demo.mjs.
+import { DemoPlayer } from '@/components/DemoPlayer';
+import '@/styles/global.css';
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Demo — Blueprint</title>
+    <meta name="description" content="Blueprint in 60 seconds — real CLI transcripts, replayed: stamp a portal, run the gates, ship with receipts." />
+    <link rel="icon" type="image/svg+xml" href="/project-logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style is:global>
+      .demo-fade-in {
+        animation: demo-fade 360ms var(--motion-easing-decel, cubic-bezier(0, 0, 0.2, 1)) both;
+      }
+      .demo-rise {
+        animation: demo-rise 600ms var(--motion-easing-decel, cubic-bezier(0, 0, 0.2, 1)) both;
+      }
+      .demo-caret {
+        display: inline-block;
+        width: 0.55em;
+        height: 1.1em;
+        margin-left: 1px;
+        vertical-align: text-bottom;
+        background: #e6edf3;
+        animation: demo-blink 1s steps(1) infinite;
+      }
+      @keyframes demo-fade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes demo-rise {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes demo-blink {
+        50% { opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .demo-fade-in, .demo-rise { animation: none; }
+        .demo-caret { animation: none; }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[#0a0d12] antialiased">
+    <DemoPlayer client:only="react" />
+  </body>
+</html>
