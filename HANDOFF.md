@@ -1,7 +1,7 @@
 # HANDOFF — Blueprint methodology source (self-hosting)
 
 **Date:** 2026-06-11
-**State:** Productization **COMPLETE**. The methodology is published, public, and self-hosting — it is its own first consumer. Current frontier: **team adoption** (Blueprint + hive for a real client build) and **demand validation** — organic stakeholder feedback is flowing (`feedback/`, demand-evidence log at `docs/content/validation-script.md`) and drove waves 51/53 (Mom Test bridge + ask-outcome discipline). Recent: wave 52 (DoD verification ladder), wave 54 (docs/ reorg into typed subdirs — stamped consumers carry stale `$BLUEPRINT_HOME/docs/` paths until they re-run pick-up-updates).
+**State:** Productization **COMPLETE**. The methodology is published, public, and self-hosting — it is its own first consumer. Current frontier: **team adoption** (Blueprint + hive for a real client build) and **demand validation** — organic stakeholder feedback is flowing (`feedback/`, demand-evidence log at `docs/content/validation-script.md`) and now drives most waves. For wave recency, read the LAST entry of `WAVE-LOG.md` — this header does not narrate it (it rotted twice when it did).
 
 > This file orients the next session. It replaced a 2026-06-04 pre-fold snapshot (blueprint-platform as a separate in-progress repo) — all of which is now done; see git history if you need it.
 
