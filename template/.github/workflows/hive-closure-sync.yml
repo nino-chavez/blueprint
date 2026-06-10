@@ -16,8 +16,8 @@ name: Hive — closure sync on push to main
 #
 # TODO: Replace <YOUR_HIVE_MCP_URL> with your Worker URL.
 #
-# See: docs/hive-closure-drift-sync-pattern.md for the root-cause explanation
-# and docs/hive-coordination-pattern.md for full Hive bootstrap instructions.
+# See: docs/patterns/hive-closure-drift-sync-pattern.md for the root-cause explanation
+# and docs/patterns/hive-coordination-pattern.md for full Hive bootstrap instructions.
 
 on:
   push:

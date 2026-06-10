@@ -10,7 +10,7 @@ import { PortalNav } from '@/components/PortalNav';
 //   1. blueprint.yml sets `archaeology.enabled: true`
 //   2. `bash tools/archaeology/scaffold.sh` has deployed the project's Worker + ingested sources
 //   3. WORKER_URL in src/components/ArchaeologyChat.tsx points at THIS project's substrate
-// See docs/archaeology-substrate-pattern.md for the full setup procedure.
+// See docs/patterns/archaeology-substrate-pattern.md for the full setup procedure.
 const ARCHAEOLOGY_READY = false;
 // Static import — Astro client:* islands MUST be statically imported (a dynamic
 // `await import()` here breaks the island bundler at build time). The render

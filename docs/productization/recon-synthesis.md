@@ -33,21 +33,21 @@ This is the **decision-lineage** record (what we found, with evidence paths). Th
 - **subs-initiative skipped Stages 2–4** and paid 12+ Sonnet-hours fixing what the constraints stage would have caught.
 - **Multi-operator attribution loss** — operators sharing one `.git/` lose authorship (`multi-operator-collab-pattern.md`).
 - **Process asymmetry** — documented 738-vs-48-line gold-plate-vs-under-process gap → the cost dial must have skip-justification gates.
-- Evidence: `tools/blueprint/docs/case-study-{v3-portal-css-gap,subs-initiative-skipped-stages-2-4,pp-cx}.md`, `multi-operator-collab-pattern.md`.
+- Evidence: `tools/blueprint/docs/case-studies/case-study-{v3-portal-css-gap,subs-initiative-skipped-stages-2-4,pp-cx}.md`, `multi-operator-collab-pattern.md`.
 
 ### 4. Configurability primitives
 - One real operator-set dial: `execution.depth: lean|standard|thorough` — but it scales **deliverable count** (which docs/stages run), not reasoning depth, tokens, or model tier.
 - The real cost model (Opus-vs-Sonnet, "~10x cost") lives as **prose** in `tiered-orchestration-pattern.md`, applied by judgment.
 - `METHODOLOGY.md:85` browse-tool-vs-Chrome-MCP is the only token-economics reasoning — a fixed default, not a budget.
 - Access control: **zero** role/department/RBAC/seat concept. Closest adjacents: tool_surface operator-vs-stakeholder auth split; archaeology `federation: per_project|org_shared` + `ALLOWED_PROJECTS`.
-- Evidence: `tools/blueprint/template/blueprint.yml`, `docs/tiered-orchestration-pattern.md`, `docs/skill-categories-pattern.md`, `docs/clustered-tool-surface-pattern.md`.
+- Evidence: `tools/blueprint/template/blueprint.yml`, `docs/patterns/tiered-orchestration-pattern.md`, `docs/patterns/skill-categories-pattern.md`, `docs/patterns/clustered-tool-surface-pattern.md`.
 
 ### 5. Docs & onboarding
 - Deep REFERENCE coverage (~50 docs, deployed portal) — but ~90% reference/explanation mode, scoped to the solo-operator v1 story.
 - **Zero** getting-started/tutorial/quickstart/walkthrough files repo-wide. Only sequencing is an agent-facing paste-prompt + a SessionStart hook injecting ~9,700 words of dense reference.
 - Blueprint **self-diagnosed** the gap: `2026-05-27-loom-inspiration-candidates.md` records the operator reaching for a 20-min Loom because "the portal answers questions for someone already asking them; it doesn't onboard a colleague."
 - No audience-routed index — a newcomer cannot tell which 3 of ~50 docs to read first.
-- Evidence: `tools/blueprint/{README.md,docs/prompts/add-blueprint-to-project.md,docs/2026-05-27-loom-inspiration-candidates.md}`, `blueprint-redesign/portal/`.
+- Evidence: `tools/blueprint/{README.md,docs/prompts/add-blueprint-to-project.md,docs/_archive/2026-05-27-loom-inspiration-candidates.md}`, `blueprint-redesign/portal/`.
 
 ## Net assessment
 

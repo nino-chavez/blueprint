@@ -75,10 +75,10 @@ and troubleshooting — lives in **`template/tools/hive/BOOTSTRAP.md`**
 rather than stand one up, see `template/tools/hive/ONBOARDING.md` (~60 seconds).
 
 > **Read the litmus first.** Most multi-operator work needs only the three
-> zero-infrastructure conventions in `docs/team-roles-and-conventions.md`, not
+> zero-infrastructure conventions in `docs/governance/team-roles-and-conventions.md`, not
 > this substrate. Stand up a Hive only when contention is real (the gate in
 > "When to Use Hive" above). And before any client-binding engagement, read
-> `docs/hive-identity-gap.md` — the trust model is a shared bearer token.
+> `docs/governance/hive-identity-gap.md` — the trust model is a shared bearer token.
 
 Total time: ~10 minutes via `blueprint hive setup` once Cloudflare credentials are
 ready; most of that is account/secret provisioning, not the Hive itself.
@@ -197,7 +197,7 @@ Over time, proposals accumulate where the GitHub issue is CLOSED but the Hive st
 - GH issues are closed manually or via synthesis sweeps without a matching commit subject reference
 - Tasks are created directly from proposals, bypassing `hive_approve_plan`
 
-**Fix:** Add the `hive-closure-sync.yml` template workflow, which includes a "Proposal drift sync" step that self-heals this on every push to main. Details in `docs/hive-closure-drift-sync-pattern.md`.
+**Fix:** Add the `hive-closure-sync.yml` template workflow, which includes a "Proposal drift sync" step that self-heals this on every push to main. Details in `docs/patterns/hive-closure-drift-sync-pattern.md`.
 
 **Prevention:** Enforce in `CLAUDE.md` or `WAYS-OF-WORKING.md` that every `hive_synthesize` call must include `proposal_ids`.
 

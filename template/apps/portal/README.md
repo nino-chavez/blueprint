@@ -78,6 +78,6 @@ The `loadState` / `loadBoard` / `loadEpicFootprint` loaders in `src/lib/derived.
 
 1. **Delete the substrate-aware pages** from `src/pages/inspect/` if your initiative has no Hive / state-derive substrate. The portal-pattern-a-conformance-reviewer treats the `/inspect` route as "required" but the substrate sub-pages are not required by the IA contract.
 2. **Populate placeholder substrate data** — write a minimal valid `_state.json` (zero capabilities) and `_board.json` (zero issues) so the pages render with empty content.
-3. **Run the substrate tooling** if your initiative actually uses Hive — see `$BLUEPRINT_HOME/docs/hive-coordination-pattern.md`.
+3. **Run the substrate tooling** if your initiative actually uses Hive — see `$BLUEPRINT_HOME/docs/patterns/hive-coordination-pattern.md`.
 
 The proper fix (`loadState` returning `null` on missing-file, pages rendering "Not configured" placeholders) is tracked as future methodology work.

@@ -8,7 +8,7 @@ Enforces the `canonical: true | false` frontmatter convention on every `*.md` fi
 
 ## Why
 
-See `$BLUEPRINT_HOME/docs/doc-surface-discipline-pattern.md` for the convention's rationale. Short version: every doc declares its class (canonical-present vs anything else) so readers — human and agent — know at a glance whether to trust it as current.
+See `$BLUEPRINT_HOME/docs/patterns/doc-surface-discipline-pattern.md` for the convention's rationale. Short version: every doc declares its class (canonical-present vs anything else) so readers — human and agent — know at a glance whether to trust it as current.
 
 ## Usage
 

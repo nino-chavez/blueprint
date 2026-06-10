@@ -61,9 +61,9 @@ Per the strengthened `prototype-smoke-runner`: **no portal change is "complete" 
 
 - Invariant: `template/prototype/DESIGN.md` §"I-5. JS Class Output ↔ CSS Coverage"
 - Strengthened gate: `template/.claude/agents/blueprint/reviewers/prototype-smoke-runner.md`
-- Stage 0 recipe: `docs/browser-legibility.md`
+- Stage 0 recipe: `docs/context/browser-legibility.md`
 - First principle (why this case study exists): `METHODOLOGY.md` §"First Principle: Agent Struggle Is a Missing Capability"
-- Sibling case studies: `docs/case-study-subs-initiative-skipped-stages-2-4.md`, `docs/case-study-pp-cx.md`
+- Sibling case studies: `docs/case-studies/case-study-subs-initiative-skipped-stages-2-4.md`, `docs/case-studies/case-study-pp-cx.md`
 
 ---
 

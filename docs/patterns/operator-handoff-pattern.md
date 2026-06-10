@@ -13,8 +13,8 @@ canonical: true
 - `wip/subs-initiative/HANDOFF.md` (2026-05-06) — session-restart handoff. Hive bootstrap continuation context covering what's live, what's done, what's pending, and where secrets are cached locally.
 
 **Related patterns**:
-- [docs/prototype-vs-production-traceability-sweep.md](prototype-vs-production-traceability-sweep.md) § "Generative output formats (wave 24)" — sibling pattern: artifact-as-resumable-context for drift findings rather than for operator continuation
-- [docs/2026-05-27-loom-inspiration-candidates.md](2026-05-27-loom-inspiration-candidates.md) C1 — the inspiration candidate this wave closes
+- [docs/case-studies/prototype-vs-production-traceability-sweep.md](../case-studies/prototype-vs-production-traceability-sweep.md) § "Generative output formats (wave 24)" — sibling pattern: artifact-as-resumable-context for drift findings rather than for operator continuation
+- [docs/_archive/2026-05-27-loom-inspiration-candidates.md](../_archive/2026-05-27-loom-inspiration-candidates.md) C1 — the inspiration candidate this wave closes
 
 ---
 
@@ -86,4 +86,4 @@ Two reasons:
 
 ## Cross-reference
 
-Promotes inspiration-candidate **C1** from `docs/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C1 watch-and-promote loop. Loom's market analog (action-item extraction from a recording) is structurally similar but operates on the wrong source modality for Blueprint's shape — the handoffs operators write contain narrative reasoning, not just action items, and the template preserves both.
+Promotes inspiration-candidate **C1** from `docs/_archive/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C1 watch-and-promote loop. Loom's market analog (action-item extraction from a recording) is structurally similar but operates on the wrong source modality for Blueprint's shape — the handoffs operators write contain narrative reasoning, not just action items, and the template preserves both.

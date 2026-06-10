@@ -17,4 +17,4 @@ These docs produced four-way root-doc drift in 2026-05-25's three-session reconc
 
 If a current doc still links to one of these by name, the link points here on purpose — it preserves history without promoting the drift sources back to canonical status.
 
-Archived 2026-05-25 as part of the three-session reconciliation. See `docs/2026-05-25-three-session-reconciliation.md` for the failure-mode write-up.
+Archived 2026-05-25 as part of the three-session reconciliation. See `docs/_archive/2026-05-25-three-session-reconciliation.md` for the failure-mode write-up.

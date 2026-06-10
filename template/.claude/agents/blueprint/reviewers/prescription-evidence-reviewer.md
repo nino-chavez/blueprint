@@ -28,7 +28,7 @@ You are the Stage 2 gate for midstream and brownfield Blueprint initiatives. Gre
 4a. **Verify monetization-side coverage matches the pilot.** Cross-reference `blueprint.yml` `pilot_profile.monetization_side` and any `secondary_pilots[]` against the monetization sides claimed by prescription items. If the initiative declares three monetization sides (e.g., `player` + `coach` + `organizer`) but the prescription only touches one, flag it as MONETIZATION_GAP. Two failure modes this catches:
    - **Cherry-picked side**: all changes serve the easiest-to-design-for side; harder sides get no items, no deferrals, no acknowledgment.
    - **Implicit cross-side cost**: a change for side A degrades side B (e.g., a "simpler organizer dashboard" that hides info coaches need). Items that affect multiple sides must name the cross-side impact in the Why field.
-   This check is the encoded response to the rally-hq monetization-axis miss diagnosed in `docs/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught."
+   This check is the encoded response to the rally-hq monetization-axis miss diagnosed in `docs/_archive/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught."
 
 5. **For brownfield specifically:** every change item must reference a finding in `01-diagnose.md`. Prescription items that have no diagnose-backed motivation are decoration, not evidence-driven prescription.
 

@@ -14,7 +14,7 @@ body:
     id: bucket
     attributes:
       label: Fix-location bucket
-      description: "Which surface does the fix change? (docs/amendment-classification-pattern.md)"
+      description: "Which surface does the fix change? (docs/patterns/amendment-classification-pattern.md)"
       options:
         - "consumer-local — specific to one initiative; should NOT be promoted (stays in your repo)"
         - "template — stamper / chrome / schema / scaffolds (template/)"

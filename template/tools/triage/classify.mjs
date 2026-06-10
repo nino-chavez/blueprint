@@ -9,7 +9,7 @@
 // GitHub as `### <label>` + value. We read the operator's DECLARED choice — not a
 // guess. Heuristic keyword inference is the fallback for free-form issues only.
 //
-// Reference: docs/amendment-classification-pattern.md (the taxonomy + decision
+// Reference: docs/patterns/amendment-classification-pattern.md (the taxonomy + decision
 // tree), CONTRIBUTING.md (the routing).
 
 export const BUCKETS = ['consumer-local', 'template', 'reviewer', 'methodology'];

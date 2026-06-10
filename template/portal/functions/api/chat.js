@@ -119,7 +119,7 @@ export async function onRequestPost(context) {
   // manifest's project name. Prior version hardcoded
   // 'https://blueprint.rallyhq.app' and 'Rally HQ Blueprint' — a stamp leak
   // that propagated to every Pattern B consumer that copied this file
-  // verbatim (case: docs/case-study-v3-portal-css-gap.md "docs viewer Rally HQ
+  // verbatim (case: docs/case-studies/case-study-v3-portal-css-gap.md "docs viewer Rally HQ
   // leak"). Now project-agnostic.
   let httpReferer = 'https://blueprint.example.com';
   let xTitle = 'Blueprint';

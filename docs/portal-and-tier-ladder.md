@@ -127,7 +127,7 @@ Each Pattern A route has a default voice mode declared at the IA level. Pages un
 | `/inspect` | Thought Leadership (methodology subtype) | narrative, evidence-led, self-interrogating — methodology IS the work being shown |
 | `/roadmap` | Executive Advisory | outcome-focused, confidence about ordering |
 
-The voice taxonomy comes from `forge-signal/docs/voice/` (when Forge Signal is enabled) or `docs/voice-template.md` (Blueprint's built-in fallback). Per-page override: add `voice_mode: <name>` to the page's frontmatter. The override is rare — most pages on a route share the route's mode.
+The voice taxonomy comes from `forge-signal/docs/voice/` (when Forge Signal is enabled) or `docs/context/voice-template.md` (Blueprint's built-in fallback). Per-page override: add `voice_mode: <name>` to the page's frontmatter. The override is rare — most pages on a route share the route's mode.
 
 Enforced by `terminology-linter` + `doc-quality-auditor` at Stage 5 → 6. Pages whose copy doesn't match the declared mode (executive-advisory text on `/inspect`, methodology-narrative text on `/discover`) get flagged for rewrite. Both reviewers read the route → mode map above.
 

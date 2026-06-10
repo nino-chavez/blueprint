@@ -15,10 +15,10 @@ canonical: true
 - `apps/blog/.worktree/pilot-decision-gate/.blueprint/AGENTS.md:38` — pilot success criterion #3 explicitly names the parallel-work failure mode: *"No workaround emerges (agent doesn't reorder commits to land legal pieces while drifting; operator doesn't disable the hook)."*
 
 **Related patterns**:
-- [docs/operator-handoff-pattern.md](operator-handoff-pattern.md) (wave 25) — sibling: lowers cost of writing handoff for a specific session-transition reader. This pattern addresses coordination across simultaneous operators (not sequential handoffs).
-- [docs/amendment-classification-pattern.md](amendment-classification-pattern.md) (wave 27) — both this and that pattern target the data shape of amendments; this pattern targets how amendments are *created* in collaborative settings.
-- [docs/2026-05-27-loom-inspiration-candidates.md](2026-05-27-loom-inspiration-candidates.md) C5 — the inspiration candidate this wave closes
-- [docs/2026-05-27-extended-audit-findings.md](2026-05-27-extended-audit-findings.md) — the audit that drove promotion
+- [docs/patterns/operator-handoff-pattern.md](operator-handoff-pattern.md) (wave 25) — sibling: lowers cost of writing handoff for a specific session-transition reader. This pattern addresses coordination across simultaneous operators (not sequential handoffs).
+- [docs/patterns/amendment-classification-pattern.md](amendment-classification-pattern.md) (wave 27) — both this and that pattern target the data shape of amendments; this pattern targets how amendments are *created* in collaborative settings.
+- [docs/_archive/2026-05-27-loom-inspiration-candidates.md](../_archive/2026-05-27-loom-inspiration-candidates.md) C5 — the inspiration candidate this wave closes
+- [docs/_archive/2026-05-27-extended-audit-findings.md](../_archive/2026-05-27-extended-audit-findings.md) — the audit that drove promotion
 
 ---
 
@@ -101,4 +101,4 @@ None of these is met today. The three lightweight conventions handle 80% of the 
 
 ## Cross-reference
 
-Promotes inspiration-candidate **C5** from `docs/2026-05-27-loom-inspiration-candidates.md` based on the 2026-05-27 extended consumer audit (`docs/2026-05-27-extended-audit-findings.md`). Closes the C5 watch-and-promote loop. Loom's market analog (timestamped comments + reactions on a shared video) is structurally similar but operates on a different modality and on a different time-shape — comments-on-recording vs annotations-on-live-portal. The pattern this wave names is closer in shape to Figma's positional pinning + Notion's queryable comment rows + GitHub's PR suggestions-as-patches (per the market-comparison doc) — none of which exists yet for stamped-HTML portals; the dogfood would be the first.
+Promotes inspiration-candidate **C5** from `docs/_archive/2026-05-27-loom-inspiration-candidates.md` based on the 2026-05-27 extended consumer audit (`docs/_archive/2026-05-27-extended-audit-findings.md`). Closes the C5 watch-and-promote loop. Loom's market analog (timestamped comments + reactions on a shared video) is structurally similar but operates on a different modality and on a different time-shape — comments-on-recording vs annotations-on-live-portal. The pattern this wave names is closer in shape to Figma's positional pinning + Notion's queryable comment rows + GitHub's PR suggestions-as-patches (per the market-comparison doc) — none of which exists yet for stamped-HTML portals; the dogfood would be the first.

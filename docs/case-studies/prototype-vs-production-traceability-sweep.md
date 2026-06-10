@@ -10,9 +10,9 @@
 - subs-initiative May 2026 — first articulation of the prescription's `known-known` vs `known-unknown` distinction
 
 **Related patterns**:
-- [docs/archaeology-substrate-pattern.md](archaeology-substrate-pattern.md) — when present, the substrate can answer many sweep questions via `/derive` queries; the sweep is the verification layer above it
-- [docs/inventory-as-evidence-pattern.md](inventory-as-evidence-pattern.md) — same family: read-only walk → classify → file as evidence
-- [docs/register-pattern.md](register-pattern.md) — `strategy.shipped` schema reform (friction note #5) follows the same append-only convention
+- [docs/patterns/archaeology-substrate-pattern.md](../patterns/archaeology-substrate-pattern.md) — when present, the substrate can answer many sweep questions via `/derive` queries; the sweep is the verification layer above it
+- [docs/patterns/inventory-as-evidence-pattern.md](../patterns/inventory-as-evidence-pattern.md) — same family: read-only walk → classify → file as evidence
+- [docs/patterns/register-pattern.md](../patterns/register-pattern.md) — `strategy.shipped` schema reform (friction note #5) follows the same append-only convention
 
 ---
 
@@ -270,7 +270,7 @@ Wave 22 promoted the sweep recipe. Wave 24 promotes the *output shape* of the re
 
 ### Cross-reference
 
-This wave promotes inspiration-candidate **C2** from `docs/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C2 watch-and-promote loop.
+This wave promotes inspiration-candidate **C2** from `docs/_archive/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C2 watch-and-promote loop.
 
 ---
 
@@ -294,4 +294,4 @@ The sweep does not feed the next pipeline stage — it runs *after* the pipeline
 
 The closest sibling capability is Stage S-A (Archaeology Substrate), but the substrate is flag-gated (`archaeology.enabled`) and has a discrete linear lifecycle. The sweep activates per cadence (post-major-arc or quarterly), runs as an orchestrated fan-out, and terminates. Different activation model, different lifecycle.
 
-See [METHODOLOGY.md § "Cross-Cutting Disciplines"](../METHODOLOGY.md#cross-cutting-disciplines) for the table that activates this pattern.
+See [METHODOLOGY.md § "Cross-Cutting Disciplines"](../../METHODOLOGY.md#cross-cutting-disciplines) for the table that activates this pattern.

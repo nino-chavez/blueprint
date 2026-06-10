@@ -6,7 +6,7 @@ canonical: true
 
 **Date**: 2026-05-25
 **Status**: Accepted
-**Supersedes**: open follow-up #1 in `docs/2026-05-25-three-session-reconciliation.md`
+**Supersedes**: open follow-up #1 in `docs/_archive/2026-05-25-three-session-reconciliation.md`
 
 ## Context
 

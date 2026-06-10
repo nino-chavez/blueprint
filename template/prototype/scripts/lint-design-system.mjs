@@ -3,7 +3,7 @@
  * Design-system completeness lint.
  *
  * Parses `prototype/DESIGN.md` frontmatter and asserts the 15-dimension
- * contract from `big-blueprint/docs/design-system-audit.md`.
+ * contract from `big-blueprint/docs/case-studies/design-system-audit.md`.
  *
  * Hard requirements (fail = exit 1):
  *   D-1  colors.primary set (not "#000000")

@@ -13,7 +13,7 @@
 //   ...
 //   N violations  (or "0 violations" on success)
 //
-// Source: ~/Workspace/dev/tools/blueprint/docs/doc-surface-discipline-pattern.md
+// Source: ~/Workspace/dev/tools/blueprint/docs/patterns/doc-surface-discipline-pattern.md
 //
 // No external dependencies — uses only node:fs + node:path.
 

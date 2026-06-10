@@ -46,7 +46,7 @@ node template/tools/wave-digest/digest.mjs --since=24 --format=plain
 
 ## Convention dependency
 
-The tool depends on three wave-log properties (see `docs/wave-log-digest-pattern.md`):
+The tool depends on three wave-log properties (see `docs/patterns/wave-log-digest-pattern.md`):
 1. A section anchored by `## Wave log`
 2. Each wave on a bullet starting `- Wave N — `
 3. Each wave entry as one logical line (markdown soft-wrap OK; no internal `\n`)
@@ -55,4 +55,4 @@ Consumer logs that follow these conventions get the tool for free.
 
 ## Reference
 
-See `docs/wave-log-digest-pattern.md` for full pattern documentation including when to use a digest, how it composes with wave 23's front-matter framing, and what future amendments are deferred to second-consumer evidence.
+See `docs/patterns/wave-log-digest-pattern.md` for full pattern documentation including when to use a digest, how it composes with wave 23's front-matter framing, and what future amendments are deferred to second-consumer evidence.

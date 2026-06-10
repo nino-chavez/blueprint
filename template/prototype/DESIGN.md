@@ -71,7 +71,7 @@ typography:
   # D-2 — Typography is a SYSTEM, not a font list. Required fields:
   # ramp tuples (size, leading, weight, tracking, family) per token;
   # three-weight rule; tabular numerals policy; italic policy; eyebrow token.
-  # See docs/design-system-audit.md for the contract.
+  # See docs/case-studies/design-system-audit.md for the contract.
   fonts:
     display:
       family: System              # REPLACE
@@ -381,7 +381,7 @@ Every flow must name *which actor* (per the multi-actor role pattern):
 
 ### Additional Platform-Fidelity Requirement
 
-Every storefront claim that touches B2B surfaces must cite a contract method from `docs/bc-b2b-buyer-portal-integration.md`:
+Every storefront claim that touches B2B surfaces must cite a contract method from `docs/context/bc-b2b-buyer-portal-integration.md`:
 
 | Surface | Required citation |
 |---|---|
@@ -393,6 +393,6 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 ### Additional Reference
 
-- `$BLUEPRINT_HOME/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
-- `$BLUEPRINT_HOME/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
+- `$BLUEPRINT_HOME/docs/context/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
+- `$BLUEPRINT_HOME/docs/context/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
 - Multi-actor role pattern: `wip/subs-initiative/docs/decisions/0023-b2b-checkout-ownership.md`

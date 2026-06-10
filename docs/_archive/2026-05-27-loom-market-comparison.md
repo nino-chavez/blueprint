@@ -82,7 +82,7 @@ Five categories of current AI capability. Citations live in the sources section.
 
 **Build vs buy verdict**: build, because the market doesn't sell this. CodeRabbit's PR-summary-with-applyable-fix is the closest output shape to copy. The methodology already has the 4-link chain framework; the build is "make the sweep output amendment-shaped instead of issue-list-shaped."
 
-**Update 2026-05-27 — PROMOTED as wave 24**: consumer-evidence audit on the same date found three drift surfaces across two consumers including subs-initiative' already-built `tools/state-derive/` (TypeScript capability catalogs + check primitives → `_state.json`). Wave 24 extends `docs/prototype-vs-production-traceability-sweep.md` with the per-verdict draft-artifact template + the state-derive pattern as canonical companion. Reference implementation: `template/tools/state-derive/` (lifted at commit `780932b`; engine + check primitives, with subs-initiative's catalog stripped out — consumers add their own `catalog/*.ts`).
+**Update 2026-05-27 — PROMOTED as wave 24**: consumer-evidence audit on the same date found three drift surfaces across two consumers including subs-initiative' already-built `tools/state-derive/` (TypeScript capability catalogs + check primitives → `_state.json`). Wave 24 extends `docs/case-studies/prototype-vs-production-traceability-sweep.md` with the per-verdict draft-artifact template + the state-derive pattern as canonical companion. Reference implementation: `template/tools/state-derive/` (lifted at commit `780932b`; engine + check primitives, with subs-initiative's catalog stripped out — consumers add their own `catalog/*.ts`).
 
 ### Candidate 3 — Methodology onboarding digests
 

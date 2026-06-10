@@ -11,9 +11,9 @@ canonical: true
 **Source observation**: extended audit + the 2026-05-27 meta-question (*"are there skills that should ship with blueprint, like a skill that knows to create and maintain a handoff doc?"*) revealed that Blueprint's existing 6-skill set is incomplete by construction. The set models the pipeline (stage advancement) but not the convention-maintenance (continuous practice).
 
 **Related patterns**:
-- [docs/operator-handoff-pattern.md](operator-handoff-pattern.md) (wave 25) — the first routine the new category addresses
-- [docs/amendment-classification-pattern.md](amendment-classification-pattern.md) (wave 27) — second candidate routine
-- [docs/multi-operator-collab-pattern.md](multi-operator-collab-pattern.md) (wave 28) — third candidate routine
+- [docs/patterns/operator-handoff-pattern.md](operator-handoff-pattern.md) (wave 25) — the first routine the new category addresses
+- [docs/patterns/amendment-classification-pattern.md](amendment-classification-pattern.md) (wave 27) — second candidate routine
+- [docs/patterns/multi-operator-collab-pattern.md](multi-operator-collab-pattern.md) (wave 28) — third candidate routine
 
 ---
 

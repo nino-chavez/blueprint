@@ -4,7 +4,7 @@
 **Source**: OpenAI, *Harness engineering: leveraging Codex in an agent-first world* (Ryan Lopopolo, Feb 11, 2026). Their 5-month / 1M-line / 1,500-PR / 3-engineer experiment.
 **Scope**: Adds one stage, restructures one stage, codifies four cross-cutting disciplines. Does not change the existing seven-stage pipeline's outputs.
 
-> **Forward-pointer**: Stage 0 canonical reference is now `METHODOLOGY.md` §"Stage 0: Application Legibility" + `docs/browser-legibility.md`. The reviewer agents promised in Increment 2 are defined at `template/.claude/agents/blueprint/reviewers/` with variant-aware gates documented in `docs/variant-selection.md`. The Stage 0 section that follows below is preserved for historical context.
+> **Forward-pointer**: Stage 0 canonical reference is now `METHODOLOGY.md` §"Stage 0: Application Legibility" + `docs/context/browser-legibility.md`. The reviewer agents promised in Increment 2 are defined at `template/.claude/agents/blueprint/reviewers/` with variant-aware gates documented in `docs/variant-selection.md`. The Stage 0 section that follows below is preserved for historical context.
 
 ## Why this patch exists
 
@@ -226,7 +226,7 @@ This patch lands in three increments to keep blast radius small:
 
 - Add Stage 0 section to METHODOLOGY.md
 - Add browse-tool install instructions to `template/CLAUDE.md`
-- Document the MCP escalation rubric in `docs/browser-legibility.md`
+- Document the MCP escalation rubric in `docs/context/browser-legibility.md`
 
 Reversibility: pure additive. Existing initiatives ignore Stage 0 until they need it.
 

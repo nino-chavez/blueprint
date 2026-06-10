@@ -60,5 +60,5 @@ The audience switcher (`executive / evaluator / engineering`) is the comparison 
 - Stage 2 gate: `template/.claude/agents/blueprint/reviewers/design-principles-reviewer.md`
 - Stage 3 gate (Pattern A): `template/.claude/agents/blueprint/reviewers/portal-pattern-a-conformance-reviewer.md`
 - Stage 3 gate (Pattern B): `template/.claude/agents/blueprint/reviewers/portal-pattern-b-conformance-reviewer.md` § "Verify 'not a deliberation venue' rule"
-- Trigger incident: 2026-05-23 apps/blog 11-variant portal; full diagnosis in `docs/2026-05-25-three-session-reconciliation.md` § "Blog session caught"
-- Reconciliation execution plan item 4: `docs/2026-05-25-three-session-reconciliation.md` line 108
+- Trigger incident: 2026-05-23 apps/blog 11-variant portal; full diagnosis in `docs/_archive/2026-05-25-three-session-reconciliation.md` § "Blog session caught"
+- Reconciliation execution plan item 4: `docs/_archive/2026-05-25-three-session-reconciliation.md` line 108

@@ -143,4 +143,4 @@ Pattern A's canonical chrome surface (`packages/ui/`, `packages/design-tokens/`,
 - Manifest source: `template/tools/blueprint-init/stamp.mjs` (`PATTERN_B_CHROME_FILES`)
 - Fix path: `template/tools/blueprint-init/README.md` § "Usage — restamp chrome (Pattern B)"
 - Overlay contract: `template/portal/CONVENTIONS.md` § "Tokens & typography"
-- Trigger incident: 2026-05-25 v3 chrome-drift bug ([case-study-v3-portal-css-gap.md](../../../../../docs/case-study-v3-portal-css-gap.md))
+- Trigger incident: 2026-05-25 v3 chrome-drift bug ([case-study-v3-portal-css-gap.md](../../../../../docs/case-studies/case-study-v3-portal-css-gap.md))

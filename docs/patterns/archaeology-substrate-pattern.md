@@ -8,7 +8,7 @@
 
 **Source:** `subs-initiative` — see [`docs/methodology/archaeology-substrate-design.md`](the subscriptions initiative's repo (private)/blob/dev/docs/methodology/archaeology-substrate-design.md) for the full design, [`tools/archaeology/`](the subscriptions initiative's repo (private)/tree/dev/tools/archaeology) for the working implementation, and [`docs/runbooks/archaeology-hydration.md`](the subscriptions initiative's repo (private)/blob/dev/docs/runbooks/archaeology-hydration.md) for the provisioning runbook.
 
-**Template:** [`blueprint/template/tools/archaeology/`](../template/tools/archaeology/) — drop-in scaffold with `scaffold.sh` for one-command bootstrap.
+**Template:** [`blueprint/template/tools/archaeology/`](../../template/tools/archaeology/) — drop-in scaffold with `scaffold.sh` for one-command bootstrap.
 
 **Related patterns:**
 - [`hive-coordination-pattern.md`](hive-coordination-pattern.md) — Hive is one of the six source streams the substrate ingests
@@ -149,7 +149,7 @@ Token-gated (reuses `ARCHAEOLOGY_INGEST_TOKEN`). Returns JSON aggregates over th
 
 ## Interrogation Surface (Chat)
 
-A drop-in React island that turns the substrate into a public "ask anything" surface, mounted as a global island in your project's portal. Provided in the template at [`template/tools/archaeology/web/ArchaeologyChat.tsx`](../template/tools/archaeology/web/ArchaeologyChat.tsx).
+A drop-in React island that turns the substrate into a public "ask anything" surface, mounted as a global island in your project's portal. Provided in the template at [`template/tools/archaeology/web/ArchaeologyChat.tsx`](../../template/tools/archaeology/web/ArchaeologyChat.tsx).
 
 **Design intent:** the substrate captures and indexes; this UI lets visitors interrogate it from inside the portal pages they're already reading. Borrows the framing from [Signal-x-Studio-LLC/resonance](https://github.com/Signal-x-Studio-LLC/resonance) — "documents respond when questioned" — but lands as a chat fixture rather than inline source-badges, because our portal pages are hand-authored summaries (not AI-generated documents with built-in claim provenance). Inline citations would carry a permanent authoring/maintenance tax for low signal; chat-only citations are derived live with zero drift.
 
@@ -169,7 +169,7 @@ A drop-in React island that turns the substrate into a public "ask anything" sur
 - Audit log in `derive_log` D1 table with `sha256(ip)[:16]` for privacy-preserving review
 - Both caps enforced before the Anthropic API is called — no abuse vector for spend
 
-**Integration shape:** the component is portal-agnostic. Reference integration mounts it in the Astro layout; Next.js + vanilla React recipes are in [`web/README.md`](../template/tools/archaeology/web/README.md). Empty-state suggestions are customizable per project via the `getSuggestions` prop.
+**Integration shape:** the component is portal-agnostic. Reference integration mounts it in the Astro layout; Next.js + vanilla React recipes are in [`web/README.md`](../../template/tools/archaeology/web/README.md). Empty-state suggestions are customizable per project via the `getSuggestions` prop.
 
 **Why this works for trust restoration:** a skeptic lands on (say) the `/inspect/gates` page, sees the prose summary, and can ask follow-ups grounded in what they were just reading. Every load-bearing claim in the answer carries a numbered citation chip; one click opens the actual session turn / ADR / audit / manifest entry that supports it. The pages stay readable; the substrate stays authoritative; the chat is the bridge.
 
@@ -232,7 +232,7 @@ Use #1 when latency matters (sessions disappear from disk if you don't capture t
 
 ### What ships pre-wired in the template
 
-[`blueprint/template/tools/archaeology/`](../template/tools/archaeology/) ships with two tail wires already configured:
+[`blueprint/template/tools/archaeology/`](../../template/tools/archaeology/) ships with two tail wires already configured:
 
 - **Sessions** — `template/.claude/hooks/archaeology-session-end.py` (copied to `~/.claude/hooks/` by `scaffold.sh`)
 - **Track 1-3 docs** — `template/.github/workflows/archaeology-tail-docs.yml`
@@ -345,7 +345,7 @@ After scaffold:
 
 - **First commit lands with sessions-tail already capturing.** Sessions JSONLs flow in on every `SessionEnd`.
 - **First push touching `docs/{inputs,iterations,audits}/`** fires the GH Action and ingests those surfaces.
-- **Optional one-shot mount**: copy `web/ArchaeologyChat.tsx` into your portal's component directory and add `<ArchaeologyChat client:idle pageContext={currentPath} />` to your layout. See [`web/README.md`](../template/tools/archaeology/web/README.md) for per-framework recipes.
+- **Optional one-shot mount**: copy `web/ArchaeologyChat.tsx` into your portal's component directory and add `<ArchaeologyChat client:idle pageContext={currentPath} />` to your layout. See [`web/README.md`](../../template/tools/archaeology/web/README.md) for per-framework recipes.
 - **Remaining sources** (adr/github/hive/git/memory) are skeleton ingesters — wire their tail triggers per the table in §Freshness as you need them.
 
 ### Lint config (recommended, not bundled)

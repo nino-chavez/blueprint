@@ -8,7 +8,7 @@ Operator-handoff template promoted as canonical methodology infrastructure in wa
 
 ## When to use
 
-See the canonical pattern doc: `$BLUEPRINT_HOME/docs/operator-handoff-pattern.md` § "When to write one." Briefly: write a handoff at stage transitions / session restarts / cross-repo dispatches where the next operator session can't recover context from `git log` + the standard pipeline artifacts alone.
+See the canonical pattern doc: `$BLUEPRINT_HOME/docs/patterns/operator-handoff-pattern.md` § "When to write one." Briefly: write a handoff at stage transitions / session restarts / cross-repo dispatches where the next operator session can't recover context from `git log` + the standard pipeline artifacts alone.
 
 ## What this is NOT
 

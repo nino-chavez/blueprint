@@ -7,10 +7,10 @@ Hive, you don't need this: see [ONBOARDING.md](./ONBOARDING.md) (60 seconds).
 > **First, decide if you even need this.** The full Hive substrate is the **"run"**
 > rung of crawl → walk → run. Most multi-operator work is handled by the three
 > zero-infrastructure conventions in
-> [`docs/team-roles-and-conventions.md`](../../../docs/team-roles-and-conventions.md).
+> [`docs/governance/team-roles-and-conventions.md`](../../../docs/governance/team-roles-and-conventions.md).
 > Stand up this substrate only when the litmus there is met (5+ parallel streams, ≥2
 > concurrent sessions on one repo, real file collisions, a tight deadline). Below that
-> bar it's overhead. And read [`docs/hive-identity-gap.md`](../../../docs/hive-identity-gap.md)
+> bar it's overhead. And read [`docs/governance/hive-identity-gap.md`](../../../docs/governance/hive-identity-gap.md)
 > before any client-binding engagement — the trust model is a shared bearer token.
 
 ## What you provide vs. what the script does
@@ -119,7 +119,7 @@ Share the **project_id** with the team — it's the join key. Then everyone foll
 You'll have a deployed Worker (`https://<slug>-mcp.<subdomain>.workers.dev`), a live
 dashboard (`https://<slug>-dashboard.pages.dev`), auto-deploy on push to `main` for both,
 and a first project ready for sessions. Hand the team
-[`docs/team-roles-and-conventions.md`](../../../docs/team-roles-and-conventions.md) and
+[`docs/governance/team-roles-and-conventions.md`](../../../docs/governance/team-roles-and-conventions.md) and
 [ONBOARDING.md](./ONBOARDING.md).
 
 ## Troubleshooting

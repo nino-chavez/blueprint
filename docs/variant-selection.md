@@ -179,7 +179,7 @@ The blog blueprint's existing `variant: "diagnose-prescription-brief"` is the sa
 - Canonical methodology: `tools/blueprint/METHODOLOGY.md` (build-variant inherits from this verbatim)
 - v2 patch source (archived historical record): `tools/blueprint/docs/_archive/handoffs/METHODOLOGY-v2-harness-engineering-patch.md`
 - v3 handoff (archived historical record): `tools/blueprint/docs/_archive/handoffs/HANDOFF-v3-variant-taxonomy.md`
-- Stage 0 reference: `tools/blueprint/docs/browser-legibility.md`
+- Stage 0 reference: `tools/blueprint/docs/context/browser-legibility.md`
 - Reviewer agent definitions: `tools/blueprint/template/.claude/agents/blueprint/reviewers/` (12 executable reviewers + 3 spec-only)
 - Brownfield reference impl: `apps/website-nc-v3/blueprint/` (informal) and `apps/blog/blueprint/` (paused at Stage 1)
 - Midstream reference impl: `apps/rally-hq/blueprint/` (to be migrated from forced-greenfield)

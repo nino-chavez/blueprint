@@ -1,6 +1,6 @@
 # Voice Addendum — BC B2B Edition
 
-Loaded only when `blueprint.yml` has `b2b_edition.enabled: true`. The base voice rules are in `docs/voice-template.md`; this doc adds the B2B-specific anti-patterns and actor-naming requirements.
+Loaded only when `blueprint.yml` has `b2b_edition.enabled: true`. The base voice rules are in `docs/context/voice-template.md`; this doc adds the B2B-specific anti-patterns and actor-naming requirements.
 
 ## Additional anti-patterns
 
@@ -44,7 +44,7 @@ These extend `terminology-linter`'s base ban list for B2B contexts:
 
 ## Platform-fidelity citations
 
-Every storefront claim that touches B2B surfaces must cite a contract method from `docs/bc-b2b-buyer-portal-integration.md`. The `citation-checker` sub-agent enforces this.
+Every storefront claim that touches B2B surfaces must cite a contract method from `docs/context/bc-b2b-buyer-portal-integration.md`. The `citation-checker` sub-agent enforces this.
 
 | Surface | Required citation |
 |---|---|
@@ -56,8 +56,8 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 ## References
 
-- `~/Workspace/dev/tools/blueprint/docs/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
-- `~/Workspace/dev/tools/blueprint/docs/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
+- `~/Workspace/dev/tools/blueprint/docs/context/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
+- `~/Workspace/dev/tools/blueprint/docs/context/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
 
 ## Origin
 

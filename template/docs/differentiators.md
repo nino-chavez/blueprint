@@ -25,7 +25,7 @@ canonical: true
 - Quarterly review during release planning
 - New ADRs with `### Differentiator` content add an entry here as part of ratification
 
-**Source pattern:** See `$BLUEPRINT_HOME/docs/register-pattern.md` for the shared register discipline.
+**Source pattern:** See `$BLUEPRINT_HOME/docs/patterns/register-pattern.md` for the shared register discipline.
 
 ---
 

@@ -7,7 +7,7 @@
  *     -> { status: 'PASS'|'BLOCKED'|'WARN', findings: [...], metadata: {...} }
  *
  * Gate rule (the v3 portal CSS-gap, 2026-05-25 — see
- * docs/case-study-v3-portal-css-gap.md): a 200 from curl is not enough and a
+ * docs/case-studies/case-study-v3-portal-css-gap.md): a 200 from curl is not enough and a
  * green @smoke suite is not enough; both are blind to unstyled chrome. This gate
  * boots the prototype, runs @smoke, captures viewport screenshots, and verifies
  * every JS-emitted class name has a CSS rule. The share-link MUST NOT release on
@@ -293,7 +293,7 @@ export default async function review({ targetDir, blueprintYml }) {
       severity: 'BLOCK',
       location: 'serve.sh',
       message: 'No boot script (serve.sh) at initiative root — the Stage 0 reference recipe assumes one; the prototype cannot be booted or smoke-tested.',
-      remediation: 'Add a serve.sh that serves the prototype/portal on a declared port (claim the next free port). See docs/browser-legibility.md.',
+      remediation: 'Add a serve.sh that serves the prototype/portal on a declared port (claim the next free port). See docs/context/browser-legibility.md.',
       reference: 'prototype-smoke-runner.md#2-verify-the-local-boot-script-exists',
     });
   }
@@ -398,7 +398,7 @@ export default async function review({ targetDir, blueprintYml }) {
         location: shell ? `${shell.rel}/` : 'prototype/',
         message: `JS shell modules emit ${jsClasses.size} class name(s) but no shipping stylesheet (shared.css or equivalent) was found to cover them — every emitted class is unstyled chrome.`,
         remediation: 'Add the shipping stylesheet (shared.css) and ensure every JS-emitted class has a CSS rule. This is the v3 portal CSS-gap failure mode.',
-        reference: 'docs/case-study-v3-portal-css-gap.md',
+        reference: 'docs/case-studies/case-study-v3-portal-css-gap.md',
       });
     } else if (missing.length) {
       findings.push({
@@ -406,7 +406,7 @@ export default async function review({ targetDir, blueprintYml }) {
         location: cssFiles.map((f) => path.relative(targetDir, f)).slice(0, 3).join(', '),
         message: `${missing.length} JS-emitted class(es) have no CSS rule (unstyled chrome): ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? ` (+${missing.length - 12} more)` : ''}.`,
         remediation: `Add a CSS rule for each, or add the class to the gate's allow-list if it is a framework/runtime hook with no visual surface. This is exactly the v3 portal CSS-gap (curl 200 + @smoke green, but visibly unstyled).`,
-        reference: 'docs/case-study-v3-portal-css-gap.md',
+        reference: 'docs/case-studies/case-study-v3-portal-css-gap.md',
       });
     }
   }

@@ -11,12 +11,12 @@
 - **CLI published:** `@nino-chavez-labs/blueprint-cli@0.1.0` on npm (MIT, public repo). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
 - **Build order 0–13 complete** across tracks A–E. `main-protection` ruleset bound + active.
 - **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint-platform.pages.dev` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
-- **Latest wave (49):** Blueprint + hive **team onboarding/adoption kit** — `docs/team-roles-and-conventions.md`, `docs/hive-identity-gap.md`, `template/tools/hive/{ONBOARDING,BOOTSTRAP}.md`, and the keystone `blueprint hive setup --slug=<x>` (`template/tools/hive/bootstrap.mjs`). Full log in `WAVE-LOG.md`.
+- **Latest wave (49):** Blueprint + hive **team onboarding/adoption kit** — `docs/governance/team-roles-and-conventions.md`, `docs/governance/hive-identity-gap.md`, `template/tools/hive/{ONBOARDING,BOOTSTRAP}.md`, and the keystone `blueprint hive setup --slug=<x>` (`template/tools/hive/bootstrap.mjs`). Full log in `WAVE-LOG.md`.
 
 ## In flight / next
 
 - **Team adoption (the live driver):** T. is adopting Blueprint + hive for a client the commerce platform build — the first real *team* engagement. Treat his needs as the priority signal for hive productization. The `blueprint hive setup --execute` path is operator-gated (real billable CF infra; needs the client repo) — do not run it autonomously.
-- **Hive identity hardening — TRIGGER, not yet due:** the substrate authenticates with a shared bearer (spoofable attribution; see `docs/hive-identity-gap.md`). For ≤3 trusted/co-located operators, option (a) trust + risk-register is the accepted call. **Harden to per-session JWT BEFORE a 2nd team or any external contributor joins** — that onboarding is the trigger, and the hardening must land before it.
+- **Hive identity hardening — TRIGGER, not yet due:** the substrate authenticates with a shared bearer (spoofable attribution; see `docs/governance/hive-identity-gap.md`). For ≤3 trusted/co-located operators, option (a) trust + risk-register is the accepted call. **Harden to per-session JWT BEFORE a 2nd team or any external contributor joins** — that onboarding is the trigger, and the hardening must land before it.
 - **Multi-operator chaos test:** the substrate is built but never run under contention. Owned by the first real parallel engagement (T.).
 - **The false-green gap (no-regret, deferred):** Fact-Check (Stage 4) does not gate on runtime/browser verification; `doctor` is honest about this boundary. Closing it is the next quality frontier.
 

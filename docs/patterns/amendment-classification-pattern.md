@@ -15,9 +15,9 @@ canonical: true
 - `wip/blueprint-redesign/METHODOLOGY-AMENDMENTS.md:48` (manual bucketing already in practice): *"Wave 14 = audit-chrome + portal.dir (RH §1). Wave 15 = chrome divergence classification (RH §1 gap 3). Wave 16 = brand_axes (RH §3). Wave 14 is the highest-priority load-bearing change (silent destruction risk against 4 consumers)."*
 
 **Related patterns**:
-- [template/docs/methodology/methodology-amendments-convention.md](../template/docs/methodology/methodology-amendments-convention.md) — the append-only amendment file shape this pattern operates on
-- [docs/2026-05-27-loom-inspiration-candidates.md](2026-05-27-loom-inspiration-candidates.md) C4 — the inspiration candidate this wave closes
-- [docs/2026-05-27-extended-audit-findings.md](2026-05-27-extended-audit-findings.md) — the audit that drove promotion
+- [template/docs/methodology/methodology-amendments-convention.md](../../template/docs/methodology/methodology-amendments-convention.md) — the append-only amendment file shape this pattern operates on
+- [docs/_archive/2026-05-27-loom-inspiration-candidates.md](../_archive/2026-05-27-loom-inspiration-candidates.md) C4 — the inspiration candidate this wave closes
+- [docs/_archive/2026-05-27-extended-audit-findings.md](../_archive/2026-05-27-extended-audit-findings.md) — the audit that drove promotion
 
 ---
 
@@ -69,7 +69,7 @@ The decision tree is mechanical when the fix has been authored. It is harder *be
 - Multi-amendment promotion sessions are common (multiple amendments per wave-promotion cycle)
 - Cross-consumer pattern detection becomes the bottleneck (operator has to read all amendments to find the patterns that recur across consumers)
 
-The flip is a build-vs-buy decision. Per the 2026-05-27 market comparison (`docs/2026-05-27-loom-market-comparison.md` C4): **buy via GitHub Copilot SDK** — amendments already live in markdown in initiative repos; a custom triage app shipped as a GitHub Action can classify by reading the AMENDMENTS file + emitting promotion-candidate labels. Per-developer pricing ($10-39/mo) fits Blueprint's distribution shape; closed-taxonomy SaaS options (Zendesk, Jira Rovo) do not.
+The flip is a build-vs-buy decision. Per the 2026-05-27 market comparison (`docs/_archive/2026-05-27-loom-market-comparison.md` C4): **buy via GitHub Copilot SDK** — amendments already live in markdown in initiative repos; a custom triage app shipped as a GitHub Action can classify by reading the AMENDMENTS file + emitting promotion-candidate labels. Per-developer pricing ($10-39/mo) fits Blueprint's distribution shape; closed-taxonomy SaaS options (Zendesk, Jira Rovo) do not.
 
 ## What this wave ships
 
@@ -113,4 +113,4 @@ The pattern doc above is sufficient for the manual workflow today. The tool sket
 
 ## Cross-reference
 
-Promotes inspiration-candidate **C4** from `docs/2026-05-27-loom-inspiration-candidates.md` based on the 2026-05-27 extended consumer audit (`docs/2026-05-27-extended-audit-findings.md`). Closes the C4 watch-and-promote loop. Loom's market analog (AI categorization of action items) is structurally similar but operates on a fixed taxonomy (action / decision / blocker); this pattern's taxonomy is methodology-distribution-specific (where the fix lands across the layered substrate).
+Promotes inspiration-candidate **C4** from `docs/_archive/2026-05-27-loom-inspiration-candidates.md` based on the 2026-05-27 extended consumer audit (`docs/_archive/2026-05-27-extended-audit-findings.md`). Closes the C4 watch-and-promote loop. Loom's market analog (AI categorization of action items) is structurally similar but operates on a fixed taxonomy (action / decision / blocker); this pattern's taxonomy is methodology-distribution-specific (where the fix lands across the layered substrate).

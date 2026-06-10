@@ -140,5 +140,5 @@ The cost of catching it at Stage 2 or later: Stage 1 redo + Stage 2 redo + an AD
 
 - Schema source: `template/blueprint.yml` § `pilot_profile:`
 - Methodology doc: `template/docs/methodology/pilot-profile-template.md`
-- Trigger incident: 2026-05-22 rally-hq vs-volleyballlife walkthrough; full diagnosis in `docs/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught"
-- Reconciliation execution plan item 3: `docs/2026-05-25-three-session-reconciliation.md` line 107
+- Trigger incident: 2026-05-22 rally-hq vs-volleyballlife walkthrough; full diagnosis in `docs/_archive/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught"
+- Reconciliation execution plan item 3: `docs/_archive/2026-05-25-three-session-reconciliation.md` line 107

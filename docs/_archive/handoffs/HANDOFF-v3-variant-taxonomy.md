@@ -37,7 +37,7 @@ Both failures share a root cause: **no programmatic enforcement of stage complet
 |---|---|---|
 | Canonical methodology | `tools/blueprint/METHODOLOGY.md` | Codifies build-variant only |
 | v2 patch (Stage 0 + reviewer agents + janitor + invariants) | `tools/blueprint/METHODOLOGY-v2-harness-engineering-patch.md` | Increment 1 landed; Increments 2-3 deferred |
-| Stage 0 reference | `tools/blueprint/docs/browser-legibility.md` | Done |
+| Stage 0 reference | `tools/blueprint/docs/context/browser-legibility.md` | Done |
 | Template | `tools/blueprint/template/CLAUDE.md` | Has Stage 0 block; otherwise unchanged |
 | Rally HQ blueprint | `apps/rally-hq/blueprint/CLAUDE.md` | Stage 0 only |
 | website-nc-v3 blueprint | `apps/website-nc-v3/blueprint/CLAUDE.md` | Stage 0 only; project itself has informal 01/02/03 brownfield variant |
@@ -138,7 +138,7 @@ The test for the fresh session: at the end, opening any of the four consumers sh
 
 - v2 patch source: `tools/blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
 - v2 handoff: `tools/blueprint/HANDOFF-v2-patch.md`
-- Stage 0 reference: `tools/blueprint/docs/browser-legibility.md`
+- Stage 0 reference: `tools/blueprint/docs/context/browser-legibility.md`
 - Canonical methodology: `tools/blueprint/METHODOLOGY.md`
 - Blog blueprint (paused): `apps/blog/blueprint/`
 - Rally HQ blueprint: `apps/rally-hq/blueprint/`

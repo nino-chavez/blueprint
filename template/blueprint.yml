@@ -49,7 +49,7 @@ execution:
 # Cost / effort dial (ADR-0003) — orthogonal to execution.depth.
 #   execution.depth answers "how many docs."  cost answers "how hard each
 #   stage thinks + which model runs it."  Resolved by tools/lib/cost-dial.mjs.
-# Reference: docs/tiered-orchestration-pattern.md (the Opus/Sonnet ladder),
+# Reference: docs/patterns/tiered-orchestration-pattern.md (the Opus/Sonnet ladder),
 #            ADR-0003-cost-effort-dial.md
 # ──────────────────────────────────────────────────────────────────
 #
@@ -132,8 +132,8 @@ specchain:
 
 # ──────────────────────────────────────────────────────────────────
 # the commerce platform B2B Edition — opt-in for B2B-targeted initiatives
-# Reference: docs/bc-b2b-edition-context.md
-#            docs/bc-b2b-buyer-portal-integration.md
+# Reference: docs/context/bc-b2b-edition-context.md
+#            docs/context/bc-b2b-buyer-portal-integration.md
 # ──────────────────────────────────────────────────────────────────
 
 b2b_edition:
@@ -150,7 +150,7 @@ b2b_edition:
 
 # ──────────────────────────────────────────────────────────────────
 # Hive multi-agent coordination — opt-in
-# Reference: docs/hive-coordination-pattern.md
+# Reference: docs/patterns/hive-coordination-pattern.md
 # ──────────────────────────────────────────────────────────────────
 
 hive:
@@ -170,7 +170,7 @@ hive:
 
 # ──────────────────────────────────────────────────────────────────
 # Cloudflare deployment — opt-in (replaces default Vercel target)
-# Reference: docs/cloudflare-deployment-pattern.md
+# Reference: docs/patterns/cloudflare-deployment-pattern.md
 # ──────────────────────────────────────────────────────────────────
 
 cloudflare:
@@ -195,7 +195,7 @@ cloudflare:
 
 # ──────────────────────────────────────────────────────────────────
 # OWNER-SPEC pattern — durable expert knowledge on substrate tools
-# Reference: ~/Workspace/dev/tools/blueprint/docs/owner-spec-pattern.md
+# Reference: ~/Workspace/dev/tools/blueprint/docs/patterns/owner-spec-pattern.md
 # Implementation: template/tools/owner-spec-lint/ + template/docs/methodology/owner-spec-convention.md
 # ──────────────────────────────────────────────────────────────────
 
@@ -213,7 +213,7 @@ owner_spec:
 
 # ──────────────────────────────────────────────────────────────────
 # Archaeology substrate — opt-in (recommended for >2-week initiatives)
-# Reference: docs/archaeology-substrate-pattern.md
+# Reference: docs/patterns/archaeology-substrate-pattern.md
 # Implementation: template/tools/archaeology/  (scaffold.sh provisions everything)
 # ──────────────────────────────────────────────────────────────────
 
@@ -343,7 +343,7 @@ initiative_type: consumer-app       # consumer-app | platform-feature
 
 # ──────────────────────────────────────────────────────────────────
 # Tool-surface clustering — how the tooling around the project deploys
-# Reference: docs/clustered-tool-surface-pattern.md
+# Reference: docs/patterns/clustered-tool-surface-pattern.md
 # ──────────────────────────────────────────────────────────────────
 #
 # The tooling a project ships (Hive dashboard, prototype, demo storyboard,

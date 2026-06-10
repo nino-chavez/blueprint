@@ -45,8 +45,8 @@ how this initiative operates:
    response from curl + green @smoke is no longer enough.
 
 5. Voice rules moved out of per-initiative CLAUDE.md:
-   - ~/Workspace/dev/tools/blueprint/docs/voice-template.md (canonical)
-   - ~/Workspace/dev/tools/blueprint/docs/voice-b2b-addendum.md (loaded only
+   - ~/Workspace/dev/tools/blueprint/docs/context/voice-template.md (canonical)
+   - ~/Workspace/dev/tools/blueprint/docs/context/voice-b2b-addendum.md (loaded only
      when b2b_edition.enabled: true)
 
 6. Sweep this initiative for stale references: `big-blueprint` → `blueprint`,

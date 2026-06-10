@@ -52,5 +52,5 @@ The single-pilot lock applies to single-pilot initiatives, which is most of them
 
 - Schema: `template/blueprint.yml` § `pilot_profile:`
 - Reviewer: `template/.claude/agents/blueprint/reviewers/pilot-profile-lock-reviewer.md`
-- Trigger incident: 2026-05-22 rally-hq vs-volleyballlife walkthrough; full diagnosis in `docs/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught"
+- Trigger incident: 2026-05-22 rally-hq vs-volleyballlife walkthrough; full diagnosis in `docs/_archive/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught"
 - Methodology first principle: `METHODOLOGY.md` § "First Principle: Agent Struggle Is a Missing Capability" — this reviewer is the encoded response to the rally-hq pilot-drift failure mode

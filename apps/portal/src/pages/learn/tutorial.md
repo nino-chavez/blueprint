@@ -91,7 +91,7 @@ You will also fill in the `pilot_profile:` block — Stage 0's gate reads it.
 
 **You run:** the one-time sensor wiring. Brownfield makes Stage 0 mandatory — the product exists, so every audit claim must ground in a captured surface.
 
-The default sensor is `browse-tool`; wire it once per initiative (setup + the escalation rubric to Chrome DevTools MCP live in [`docs/browser-legibility.md`](https://github.com/nino-chavez/blueprint/blob/main/docs/browser-legibility.md)). Each initiative claims a free port via its `serve.sh` and uses a per-initiative browser profile:
+The default sensor is `browse-tool`; wire it once per initiative (setup + the escalation rubric to Chrome DevTools MCP live in [`docs/context/browser-legibility.md`](https://github.com/nino-chavez/blueprint/blob/main/docs/context/browser-legibility.md)). Each initiative claims a free port via its `serve.sh` and uses a per-initiative browser profile:
 
 ```
 --profile-name acme-checkout-blueprint

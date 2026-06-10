@@ -46,11 +46,11 @@ Per the operator's canonical-pattern-first rule, each platform primitive was gro
 | `template/.github/workflows/owner-spec-lint.yml` | CI skeleton (PR + paths + permissions + tsx runner) for the triage Action | reuse skeleton, build classifier body |
 | `tools/specchain/package.json` + `setup.sh` | publishable-scaffolder shape + `--upgrade` precedent | reuse as literal template |
 | `tools/specchain/.../execution-profiles.md` | two-axis (strategy×depth) + never-downgrade-silently | reuse pattern; build depth×effort projection |
-| `docs/tiered-orchestration-pattern.md` | Opus/Sonnet ladder + "anchors emerge from telemetry" | reuse as `model_tier` defaults source; promote prose→config |
+| `docs/patterns/tiered-orchestration-pattern.md` | Opus/Sonnet ladder + "anchors emerge from telemetry" | reuse as `model_tier` defaults source; promote prose→config |
 | `blueprint-redesign/decisions/ADR-0002` | the ratified `review()` contract = the plugin interface | reuse as-is; build the validator + the `.mjs` pairs (0 exist) |
 | `blueprint-redesign/portal/` | audience pills + theme-switcher + manifest docs viewer + FLOWS | reuse mechanism; build content/reskin |
-| `docs/browser-legibility.md` | runtime-not-existence doctrine | reuse as `blueprint doctor` runtime-tier justification |
-| `docs/amendment-classification-pattern.md` | 4-bucket taxonomy = the triage classifier + RFC routing | reuse taxonomy; diverge from Copilot-SDK → deterministic glob+keyword |
+| `docs/context/browser-legibility.md` | runtime-not-existence doctrine | reuse as `blueprint doctor` runtime-tier justification |
+| `docs/patterns/amendment-classification-pattern.md` | 4-bucket taxonomy = the triage classifier + RFC routing | reuse taxonomy; diverge from Copilot-SDK → deterministic glob+keyword |
 | `ref/catalyst/.github/CODEOWNERS`, `rally-hq/CONTRIBUTING.md` | team-as-owner + CONTRIBUTING structure | reuse as templates |
 
 **ai-hive**: docs-only in this workspace (no `src/`), and its bearer-token model needs a running Worker → explicitly NOT the access substrate under ceiling A. Recorded so a future session doesn't re-reach for it.

@@ -56,7 +56,7 @@ Commands:
              actually loads the config + every reviewer + runs portal conformance — the false-green guard
   hive       Stand up the team coordination substrate      (blueprint hive setup --slug=<x> --cf-account-id=<id> [--hive-dir=.hive] [--execute])
              dry-run PLAN by default (terraform-plan style); --execute provisions CF D1+Worker+Pages from a vendored ai-hive kit
-             the "run" rung of crawl→walk→run — only when contention is real (docs/team-roles-and-conventions.md litmus)
+             the "run" rung of crawl→walk→run — only when contention is real (docs/governance/team-roles-and-conventions.md litmus)
 
 Global:
   -h, --help       Show help

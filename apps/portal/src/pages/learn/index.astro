@@ -21,7 +21,7 @@ const ROLES = [
     action: { label: 'Route your change', href: `${GH}/CONTRIBUTING.md`, hint: 'File an RFC or a plain PR — one question decides which.' },
     reads: [
       ['CONTRIBUTING.md', 'the routing question + PR checklist', `${GH}/CONTRIBUTING.md`],
-      ['amendment-classification-pattern.md', 'the 4-bucket taxonomy', `${GH}/docs/amendment-classification-pattern.md`],
+      ['amendment-classification-pattern.md', 'the 4-bucket taxonomy', `${GH}/docs/patterns/amendment-classification-pattern.md`],
       ['methodology-amendments-convention.md', 'how to write a promotable amendment', `${GH}/template/docs/methodology/methodology-amendments-convention.md`],
     ],
   },
@@ -32,7 +32,7 @@ const ROLES = [
     reads: [
       ['reviewers/README.md', 'the roster + spec/executable contract', `${GH}/template/.claude/agents/blueprint/reviewers/README.md`],
       ['METHODOLOGY.md', 'the stages your gates sit in', `${GH}/METHODOLOGY.md`],
-      ['voice-template.md', 'a concrete gate spec', `${GH}/docs/voice-template.md`],
+      ['voice-template.md', 'a concrete gate spec', `${GH}/docs/context/voice-template.md`],
     ],
   },
   {
@@ -111,15 +111,15 @@ const ROLES = [
     </p>
     <ul class="space-y-1.5">
       <li class="text-sm leading-snug">
-        <a href={`${GH}/docs/team-roles-and-conventions.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">team-roles-and-conventions.md</a>
+        <a href={`${GH}/docs/governance/team-roles-and-conventions.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">team-roles-and-conventions.md</a>
         <span class="text-contrast-500"> — the three zero-infra conventions + the crawl→walk→run litmus (read this first)</span>
       </li>
       <li class="text-sm leading-snug">
-        <a href={`${GH}/docs/hive-coordination-pattern.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-coordination-pattern.md</a>
+        <a href={`${GH}/docs/patterns/hive-coordination-pattern.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-coordination-pattern.md</a>
         <span class="text-contrast-500"> — what Hive is, when to use it, and <code class="text-[12px]">blueprint hive setup</code> to stand one up</span>
       </li>
       <li class="text-sm leading-snug">
-        <a href={`${GH}/docs/hive-identity-gap.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-identity-gap.md</a>
+        <a href={`${GH}/docs/governance/hive-identity-gap.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-identity-gap.md</a>
         <span class="text-contrast-500"> — the shared-bearer trust limitation; required reading before any client engagement</span>
       </li>
     </ul>

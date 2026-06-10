@@ -10,7 +10,7 @@
 //   - reviewer: 'pass' | 'fail' | null  (did the stage's gate pass on this run)
 //
 // Anchors emerge from this file after ~10 cycles — they are NEVER shipped as
-// defaults. See docs/tiered-orchestration-pattern.md § calibration discipline.
+// defaults. See docs/patterns/tiered-orchestration-pattern.md § calibration discipline.
 
 import { appendFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';

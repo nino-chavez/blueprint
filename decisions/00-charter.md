@@ -116,9 +116,9 @@ These had a clear canonical answer; taken as defaults to keep moving, reversible
 | ADR-0001 dual-protocol distribution | `blueprint-redesign/decisions/ADR-0001-*.md` | Distribution architecture (inherit verbatim) |
 | ADR-0002 reviewers-as-executable-plugins | `blueprint-redesign/decisions/ADR-0002-*.md` | Portability contract (build `.mjs` against it) |
 | `stamp.mjs` + git-history divergence classifier + chrome manifest | `tools/blueprint/template/tools/blueprint-init/stamp.mjs` | Bidirectional sync; the "how far behind" computation to generalize |
-| `execution.depth` + tiered-orchestration model ladder + archaeology 3-layer flag gate | `tools/blueprint/template/blueprint.yml`, `docs/tiered-orchestration-pattern.md` | Cost dial graft seam + enforcement shape |
+| `execution.depth` + tiered-orchestration model ladder + archaeology 3-layer flag gate | `tools/blueprint/template/blueprint.yml`, `docs/patterns/tiered-orchestration-pattern.md` | Cost dial graft seam + enforcement shape |
 | ai-hive (Worker + D1 + bearer-token + origin-allowlist + ~20 MCP tools) | `wip/ai-hive/`, `blueprint-redesign/research/current-state/01-ai-hive-as-companion.md` | Team adoption + access-control substrate (integrate) |
-| Amendments convention + `/blueprint-amendment` skill + triage Action sketch | `tools/blueprint/docs/amendment-classification-pattern.md` | Bidirectional UP feed |
+| Amendments convention + `/blueprint-amendment` skill + triage Action sketch | `tools/blueprint/docs/patterns/amendment-classification-pattern.md` | Bidirectional UP feed |
 | blueprint-redesign portal chrome (Pattern B shell, docs viewer, themes, audience pills) | `blueprint-redesign/portal/` | Onboarding/enablement hub seed (reskin "start here") |
-| 9-gap inventory + extended consumer audit + field case studies | `blueprint-redesign/research/current-state/02-*.md`, `tools/blueprint/docs/2026-05-27-extended-audit-findings.md`, case studies | Stage 1 evidence (extend, don't re-derive) |
-| tool_surface clustering + archaeology federation `per_project\|org_shared` + ALLOWED_PROJECTS | `tools/blueprint/docs/clustered-tool-surface-pattern.md` | Access-control precedents (operator-vs-stakeholder split, org-vs-project scoping) |
+| 9-gap inventory + extended consumer audit + field case studies | `blueprint-redesign/research/current-state/02-*.md`, `tools/blueprint/docs/_archive/2026-05-27-extended-audit-findings.md`, case studies | Stage 1 evidence (extend, don't re-derive) |
+| tool_surface clustering + archaeology federation `per_project\|org_shared` + ALLOWED_PROJECTS | `tools/blueprint/docs/patterns/clustered-tool-surface-pattern.md` | Access-control precedents (operator-vs-stakeholder split, org-vs-project scoping) |

@@ -97,7 +97,7 @@ The `slice` field links the page to a slice (which renders the per-slice sidebar
 | `product` | The page proposes a real product surface. It has — or will have — a production-code projection (`surface` / `currentState.sourceFiles` name it). | **Walked.** The 4-link chain (research → meta → prototype HTML → production code) is verified for this page. |
 | `blueprint` | The page is strategic / positioning / study content with no production projection by design — a competitor comparison, a partnership proposal, a pilot-integration sketch, a market teardown. | **Skipped.** There is no production code to diff against; walking it would false-flag it as "missing implementation." |
 
-**Why this field exists.** On a 2026-05 rally-hq migration sweep, every prototype page was promoted into production routes (`src/routes/`) because nothing declared which pages were product-bound versus positioning-only. Production then rendered fictional pilot integrations and unsigned partnership terms at full SEO-indexable status. `destination` is the mechanical guard: only `product` pages map to product surfaces; `blueprint` pages stay in the portal (which is wholly `noindex` — see the HTML contract) and are never promoted or sweep-walked. See `docs/prototype-vs-production-traceability-sweep.md` § "When to run".
+**Why this field exists.** On a 2026-05 rally-hq migration sweep, every prototype page was promoted into production routes (`src/routes/`) because nothing declared which pages were product-bound versus positioning-only. Production then rendered fictional pilot integrations and unsigned partnership terms at full SEO-indexable status. `destination` is the mechanical guard: only `product` pages map to product surfaces; `blueprint` pages stay in the portal (which is wholly `noindex` — see the HTML contract) and are never promoted or sweep-walked. See `docs/case-studies/prototype-vs-production-traceability-sweep.md` § "When to run".
 
 **Why two values, not three.** Rally HQ's local taxonomy carried a third value, `noindex-only` (a production route excluded from indexing). That value is degenerate in the canonical portal model: every portal page is already `noindex` via the page HTML contract, and positioning content lives in the portal as `blueprint`-destination pages rather than as deindexed production routes. Consumers running a drive-from-prototype workflow where positioning content ships as real production routes may extend the enum locally; the canonical schema stays at `product | blueprint` to match the only mechanism that reads the field (the traceability sweep).
 
@@ -198,7 +198,7 @@ When your strategic artifacts live in the canonical doc-discipline directories (
 
 Full rationale: methodology repo `docs/decisions/0003-portal-docs-manifest-driven-sync.md`.
 
-**Why data-driven, not hardcoded**: prior versions of the docs viewer shipped with 13 doc slugs baked into the HTML, the TITLES map, and the STRATEGIC_DOCS Set. Consumer projects copied the template and shipped a docs viewer full of project-specific vocabulary from whichever flagship project the template was extracted from. The data-driven shape means the canonical template ships with zero project-specific defaults — every consumer gets a working viewer by editing one manifest. Full incident: `docs/case-study-v3-portal-css-gap.md` § "Follow-up — docs viewer".
+**Why data-driven, not hardcoded**: prior versions of the docs viewer shipped with 13 doc slugs baked into the HTML, the TITLES map, and the STRATEGIC_DOCS Set. Consumer projects copied the template and shipped a docs viewer full of project-specific vocabulary from whichever flagship project the template was extracted from. The data-driven shape means the canonical template ships with zero project-specific defaults — every consumer gets a working viewer by editing one manifest. Full incident: `docs/case-studies/case-study-v3-portal-css-gap.md` § "Follow-up — docs viewer".
 
 ---
 
@@ -324,7 +324,7 @@ The `wrangler.toml` at `portal/` root is required so wrangler detects `functions
 
 ## Versioning
 
-**v3 (2026-06-03)** — added the required per-page `destination` field (`product | blueprint`). Aligns the page schema with `docs/prototype-vs-production-traceability-sweep.md`, which already keys on the field to decide which metas get the 4-link walk. Existing consumers add `destination` to each `_meta/<page-id>.json` in the same PR that pulls this convention bump; `portal-pattern-b-conformance-reviewer` BLOCKs on missing or invalid values.
+**v3 (2026-06-03)** — added the required per-page `destination` field (`product | blueprint`). Aligns the page schema with `docs/case-studies/prototype-vs-production-traceability-sweep.md`, which already keys on the field to decide which metas get the 4-link walk. Existing consumers add `destination` to each `_meta/<page-id>.json` in the same PR that pulls this convention bump; `portal-pattern-b-conformance-reviewer` BLOCKs on missing or invalid values.
 
 **v2 (2026-05-23)** — slice architecture: slice-aware per-page metadata, slice sidebar, slice header bar, top brand bar, retired the v1 footer nav. Multi-page slices (one slice can have many pages) are first-class.
 

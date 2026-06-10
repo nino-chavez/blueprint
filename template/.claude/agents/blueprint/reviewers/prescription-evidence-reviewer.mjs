@@ -578,7 +578,7 @@ export default async function review({ targetDir }) {
           `Declared: [${declaredSides.join(', ')}]. Covered: [${[...sidesCovered].join(', ') || 'none'}]. ` +
           'Either all changes serve the easiest side (cherry-pick) or a side was silently dropped.',
         remediation: 'Add at least one item per declared side, or `deferred: <reason>` naming the dropped side. Cross-side degradation must be named in the affected item\'s Why.',
-        reference: 'docs/2026-05-25-three-session-reconciliation.md § "Rally HQ session caught"',
+        reference: 'docs/_archive/2026-05-25-three-session-reconciliation.md § "Rally HQ session caught"',
       });
     }
   }

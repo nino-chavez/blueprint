@@ -33,7 +33,7 @@
  *
  * Prior version (pre-2026-05-25-evening) hard-coded a Rally-HQ-shaped
  * default 'docsLandingHref: /docs/?doc=cx-strategy'. That was a stamp
- * leak — see docs/case-study-v3-portal-css-gap.md "Follow-up — docs viewer".
+ * leak — see docs/case-studies/case-study-v3-portal-css-gap.md "Follow-up — docs viewer".
  */
 (function () {
   'use strict'

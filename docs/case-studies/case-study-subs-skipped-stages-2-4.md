@@ -156,7 +156,7 @@ runtime-complete. That's the gap subs-initiative illustrates.
 
 ## Cross-references
 
-- Sibling positive precedent: `docs/case-study-pp-cx.md` (a-pricing-initiative)
+- Sibling positive precedent: `docs/case-studies/case-study-pp-cx.md` (a-pricing-initiative)
 - subs-initiative walking-skeleton recovery work: synthesis `7f0691f9` + `53bcde79`
 - subs-initiative retrofit Decision: `6db9cc0f` + synthesis `ad0346f5`
 - This contribution: feature/subs-initiative-retrofit-contribution branch on blueprint

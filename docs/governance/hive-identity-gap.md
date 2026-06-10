@@ -70,6 +70,6 @@ will grow, harden first.
 
 ## See also
 
-- `docs/team-roles-and-conventions.md` — the conventions + the litmus for when the
+- `docs/governance/team-roles-and-conventions.md` — the conventions + the litmus for when the
   substrate (and therefore this gap) even comes into play.
-- `docs/hive-coordination-pattern.md` — the full substrate, when contention demands it.
+- `docs/patterns/hive-coordination-pattern.md` — the full substrate, when contention demands it.

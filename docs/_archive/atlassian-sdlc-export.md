@@ -21,8 +21,8 @@ sources:
 
 > **Portable pattern (big-blueprint).** A `big-blueprint`/`ai-hive`-shaped project
 > can hydrate a full Atlassian SDLC (Jira + Confluence + Xray) **headlessly from
-> its own substrate**. Tool: [`template/tools/jira-confluence-export/`](../template/tools/jira-confluence-export/)
-> — start with its [`PORTABILITY.md`](../template/tools/jira-confluence-export/PORTABILITY.md)
+> its own substrate**. Tool: [`template/tools/jira-confluence-export/`](../../template/tools/jira-confluence-export/)
+> — start with its [`PORTABILITY.md`](../../template/tools/jira-confluence-export/PORTABILITY.md)
 > for what to adapt. This doc is the **`subs-initiative` reference case study**
 > ([#685](the subscriptions initiative's repo (private)/issues/685)), proven
 > end-to-end at full scale (238 Jira issues, 443 Xray tests, 134 Confluence

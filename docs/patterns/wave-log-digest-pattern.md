@@ -13,8 +13,8 @@ canonical: true
 - `apps/rally-hq/blueprint/CLAUDE.md` (332 lines) + `apps/rally-hq/blueprint/STATE.md` (406 lines) = 738 lines of onboarding context for any new operator picking up the rally-hq Blueprint initiative cold.
 
 **Related patterns**:
-- [docs/operator-handoff-pattern.md](operator-handoff-pattern.md) (wave 25) — sibling pattern: lowers the cost of writing context for a specific session-transition reader. This pattern lowers the cost of reading context for a general-onboarding reader.
-- [docs/2026-05-27-loom-inspiration-candidates.md](2026-05-27-loom-inspiration-candidates.md) C3 — the inspiration candidate this wave closes.
+- [docs/patterns/operator-handoff-pattern.md](operator-handoff-pattern.md) (wave 25) — sibling pattern: lowers the cost of writing context for a specific session-transition reader. This pattern lowers the cost of reading context for a general-onboarding reader.
+- [docs/_archive/2026-05-27-loom-inspiration-candidates.md](../_archive/2026-05-27-loom-inspiration-candidates.md) C3 — the inspiration candidate this wave closes.
 
 ---
 
@@ -102,4 +102,4 @@ Same reasoning as wave 25's operator-handoff pattern: the demand is reader-drive
 
 ## Cross-reference
 
-Promotes inspiration-candidate **C3** from `docs/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C3 watch-and-promote loop. Loom's market analog (chapters + summary on a video) is structurally similar but operates on a different modality — the wave log is already textual and pre-chunked at the entry level; the work is filtering, not chunking-then-summarizing.
+Promotes inspiration-candidate **C3** from `docs/_archive/2026-05-27-loom-inspiration-candidates.md` based on the consumer-evidence audit at the same date. Closes the C3 watch-and-promote loop. Loom's market analog (chapters + summary on a video) is structurally similar but operates on a different modality — the wave log is already textual and pre-chunked at the entry level; the work is filtering, not chunking-then-summarizing.

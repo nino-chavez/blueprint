@@ -15,7 +15,7 @@ they're the most common first-week failures):
 1. **Authority is territory-bound, not centralized.** Surface owners (DRIs) are the
    *review-of-record* for their surface, not gates that approve everyone's work.
    Read your project's DRI table before filing on a surface you don't own. (See
-   `docs/team-roles-and-conventions.md`.)
+   `docs/governance/team-roles-and-conventions.md`.)
 2. **Spec changes go through a proposal, never a direct PR.** The BRD/PRD and other
    spec artifacts are not "docs you can PR." A change is a `[Spec]` proposal →
    synthesis → PR. Editing a spec file in a PR with no synthesis reference is the
@@ -67,7 +67,7 @@ Everyone (including the lead) runs:
 > `<your real full name>`.
 
 **Use your real name** — the decision log attributes to it, and the trust model is
-a shared token (see `docs/hive-identity-gap.md`). Capture your **session_id**.
+a shared token (see `docs/governance/hive-identity-gap.md`). Capture your **session_id**.
 
 Open `<HIVE_DASHBOARD_URL>`, pick your project from the dropdown, and the board
 hydrates live as people propose / react / synthesize.
@@ -122,5 +122,5 @@ optional — artifacts still land in D1 without it).
   60-second stale-session reaper.
 - **Dashboard:** `<HIVE_DASHBOARD_URL>` (Cloudflare Pages).
 - **Bootstrap a fresh Hive:** `blueprint hive setup --slug=<x>` — see [`./BOOTSTRAP.md`](./BOOTSTRAP.md).
-- **Coordination model + conventions:** `docs/team-roles-and-conventions.md`.
-- **The identity gap (read before client/multi-team use):** `docs/hive-identity-gap.md`.
+- **Coordination model + conventions:** `docs/governance/team-roles-and-conventions.md`.
+- **The identity gap (read before client/multi-team use):** `docs/governance/hive-identity-gap.md`.

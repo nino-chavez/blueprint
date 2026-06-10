@@ -67,7 +67,7 @@ The `terminology-linter` enforces the term-level bans; doc-quality-auditor catch
 
 ## When targeting BC B2B Edition
 
-Apply only if `blueprint.yml` has `b2b_edition.enabled: true`. See `docs/voice-b2b-addendum.md` for B2B-specific anti-patterns and actor-naming rules.
+Apply only if `blueprint.yml` has `b2b_edition.enabled: true`. See `docs/context/voice-b2b-addendum.md` for B2B-specific anti-patterns and actor-naming rules.
 
 ## Origin
 

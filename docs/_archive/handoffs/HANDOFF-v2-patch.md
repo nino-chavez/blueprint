@@ -2,7 +2,7 @@
 
 **Session date**: 2026-05-25
 **Status**: Increment 1 landed and validated against two live initiatives. Increments 2–3 not started.
-**Resume by reading**: this file → `METHODOLOGY-v2-harness-engineering-patch.md` → `docs/browser-legibility.md`.
+**Resume by reading**: this file → `METHODOLOGY-v2-harness-engineering-patch.md` → `docs/context/browser-legibility.md`.
 
 ## What this work is
 
@@ -17,7 +17,7 @@ Source PDF: `/Users/nino/Downloads/Harness engineering_ leveraging Codex in an a
 | File | What it is |
 |---|---|
 | `METHODOLOGY-v2-harness-engineering-patch.md` | Full proposal — separate doc for reversibility. Has not been merged into `METHODOLOGY.md` yet. |
-| `docs/browser-legibility.md` | Canonical Stage 0 reference — browse-tool default + four-trigger MCP escalation rubric |
+| `docs/context/browser-legibility.md` | Canonical Stage 0 reference — browse-tool default + four-trigger MCP escalation rubric |
 | `template/CLAUDE.md` | Stage 0 block added (browse-tool default + escalation table) |
 | `README.md` | Registered browser-legibility.md in the Reference Library table |
 
@@ -115,7 +115,7 @@ Lowest urgency of the three increments — only bites large initiatives, and sub
 ## Cross-references
 
 - v2 patch source: `tools/blueprint/METHODOLOGY-v2-harness-engineering-patch.md`
-- Stage 0 reference: `tools/blueprint/docs/browser-legibility.md`
+- Stage 0 reference: `tools/blueprint/docs/context/browser-legibility.md`
 - Template: `tools/blueprint/template/CLAUDE.md`
 - Rally HQ live consumer: `apps/rally-hq/blueprint/CLAUDE.md`
 - v3 live consumer: `apps/website-nc-v3/blueprint/CLAUDE.md`

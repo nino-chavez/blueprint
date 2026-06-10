@@ -85,7 +85,7 @@ One named operator (with a named backup) runs a **weekly synthesis** (~30 min,
 Friday-anchored on subs-initiative): open proposals → ratified decisions (ADRs in
 `docs/decisions/`), action items → tasks. The cadence is the heartbeat that keeps
 parallel work converging instead of forking. Fold a 5-minute decision-log audit
-into this slot (see `docs/hive-identity-gap.md` for why).
+into this slot (see `docs/governance/hive-identity-gap.md` for why).
 
 ### Spec changes go through proposal, never PR-first
 
@@ -114,7 +114,7 @@ commit).
 ## Litmus — when to escalate from conventions to the full substrate
 
 Stay on the conventions until **all** of these are true; then stand up the Hive
-substrate (`docs/hive-coordination-pattern.md`):
+substrate (`docs/patterns/hive-coordination-pattern.md`):
 
 - 5+ discrete parallel work streams, **and**
 - ≥2 concurrent agent sessions on the same repo, **and**
@@ -129,6 +129,6 @@ The canonical phrasing (`hive-coordination-pattern.md`): *"if you're about to sp
 up two Claude Code sessions on the same repo in parallel, you need Hive. If one
 session at a time is fine, you don't."*
 
-Before relying on the substrate for a real deadline, read `docs/hive-identity-gap.md`
+Before relying on the substrate for a real deadline, read `docs/governance/hive-identity-gap.md`
 (the trust model is a shared bearer token — a known limitation that matters for
 client-binding decisions) and run a contention/chaos test first.

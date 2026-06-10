@@ -6,7 +6,7 @@ canonical: true
 
 Append-only event log across all six project history streams, with explicit refs that join them. Answers archaeological questions — "what did we know on date T, why did we pick X, who decided Z" — without a new tool per question.
 
-**Pattern doc:** [`docs/archaeology-substrate-pattern.md`](../../../docs/archaeology-substrate-pattern.md) — design + decision boundaries
+**Pattern doc:** [`docs/patterns/archaeology-substrate-pattern.md`](../../../docs/patterns/archaeology-substrate-pattern.md) — design + decision boundaries
 **Reference implementation:** [`subs-initiative/tools/archaeology/`](the subscriptions initiative's repo (private)/tree/dev/tools/archaeology) — the proving ground (Phase 6 passed 2026-05-22)
 
 ## What this directory provides

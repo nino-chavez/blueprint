@@ -50,12 +50,12 @@ Canonical taxonomy: `$BLUEPRINT_HOME/docs/variant-selection.md` — pattern-matc
 
 | Flag | Reference doc | Read when starting |
 |---|---|---|
-| `b2b_edition.enabled: true` | `$BLUEPRINT_HOME/docs/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
-| `hive.enabled: true` | `$BLUEPRINT_HOME/docs/hive-coordination-pattern.md` | Session start — register with Hive before any work |
-| `cloudflare.enabled: true` | `$BLUEPRINT_HOME/docs/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
-| `archaeology.enabled: true` | `$BLUEPRINT_HOME/docs/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
-| `owner_spec.enabled: true` | `$BLUEPRINT_HOME/docs/owner-spec-pattern.md` | When project has >3 substrate tools |
-| Marketplace app (any BC initiative) | `$BLUEPRINT_HOME/docs/bc-marketplace-context.md` | Stage 1 research |
+| `b2b_edition.enabled: true` | `$BLUEPRINT_HOME/docs/context/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
+| `hive.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/hive-coordination-pattern.md` | Session start — register with Hive before any work |
+| `cloudflare.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
+| `archaeology.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
+| `owner_spec.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/owner-spec-pattern.md` | When project has >3 substrate tools |
+| Marketplace app (any BC initiative) | `$BLUEPRINT_HOME/docs/context/bc-marketplace-context.md` | Stage 1 research |
 
 ## Pipeline
 
@@ -74,7 +74,7 @@ export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
 # In Claude Code: /add-dir $HOME/Workspace/dev/tools/browse-tool
 ```
 
-Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `$BLUEPRINT_HOME/docs/browser-legibility.md`.
+Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `$BLUEPRINT_HOME/docs/context/browser-legibility.md`.
 
 ## Skills
 
@@ -118,7 +118,7 @@ Run exactly one of the two portal-conformance reviewers per initiative — pick 
 
 ## Document voice
 
-Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + citation rules + anti-patterns: `$BLUEPRINT_HOME/docs/voice-template.md`. B2B-specific addendum (loaded only when `b2b_edition.enabled: true`): `docs/voice-b2b-addendum.md`.
+Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + citation rules + anti-patterns: `$BLUEPRINT_HOME/docs/context/voice-template.md`. B2B-specific addendum (loaded only when `b2b_edition.enabled: true`): `docs/context/voice-b2b-addendum.md`.
 
 ## Prototype design
 

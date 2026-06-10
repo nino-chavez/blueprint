@@ -145,5 +145,5 @@ Add this to your project's `CLAUDE.md` or `WAYS-OF-WORKING.md`:
 
 ## See Also
 
-- `docs/hive-coordination-pattern.md` — when/how to bootstrap Hive for a new initiative
+- `docs/patterns/hive-coordination-pattern.md` — when/how to bootstrap Hive for a new initiative
 - `template/.github/workflows/hive-closure-sync.yml` — full workflow template with all four steps

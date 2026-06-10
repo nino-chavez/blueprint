@@ -5,7 +5,7 @@ from a project's substrate** — derived from a `big-blueprint`/`ai-hive`-shaped
 repo (GH issues + BRD stories + ADRs + `.feature` files + DoD gates). It was
 proven end-to-end on `subs-initiative` (spike #685): 238 Jira issues (28 epics +
 210 stories) + dependency links, 443 Xray tests with AC-coverage, 134 Confluence
-pages — all via API. See [`docs/atlassian-sdlc-export.md`](../../../docs/atlassian-sdlc-export.md)
+pages — all via API. See [`docs/_archive/atlassian-sdlc-export.md`](../../../docs/_archive/atlassian-sdlc-export.md)
 for the full product mapping + decision trail.
 
 ## What you adapt (project-specific constants)

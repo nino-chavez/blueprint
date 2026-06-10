@@ -8,7 +8,7 @@
 When open questions live as `// TODO: ask <person> about <topic>` in source files,
 they get forgotten. When they live here, they show up every time someone reviews
 the initiative state. The format below is from the a-pricing-initiative case study
-(`docs/case-study-pp-cx.md`) — a real precedent that produced 19 explicitly-tracked
+(`docs/case-studies/case-study-pp-cx.md`) — a real precedent that produced 19 explicitly-tracked
 questions before any implementation began.
 
 ## Unresolved Questions

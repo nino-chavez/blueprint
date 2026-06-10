@@ -62,7 +62,7 @@ export default async function review({ targetDir }) {
           `Either raise the stage to its anchor (effort: ${up.anchor.effort}, model_tier: ${up.anchor.modelTier}), ` +
           `or add a skip_justification explaining why this stage runs cheaper — e.g. ` +
           `\`${stage}: { effort: ${resolved.effort}, model_tier: ${resolved.modelTier}, skip_justification: "<reason>" }\`.`,
-        reference: 'ADR-0003-cost-effort-dial.md (skip-justification gate); docs/tiered-orchestration-pattern.md',
+        reference: 'ADR-0003-cost-effort-dial.md (skip-justification gate); docs/patterns/tiered-orchestration-pattern.md',
       });
     } else {
       // Below anchor but justified — surface it so the conscious choice is visible

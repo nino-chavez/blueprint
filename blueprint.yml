@@ -154,7 +154,7 @@ portal:
     # litmus (when it's worth it), not a pitch. Spans full-width as the odd 5th card.
     - card: discover
       title: Coordinating a team
-      path: docs/hive-coordination-pattern.md
+      path: docs/patterns/hive-coordination-pattern.md
       heading: When to Use Hive
   inspect:
     docs:
@@ -233,7 +233,7 @@ portal:
 # ──────────────────────────────────────────────────────────────────
 # Archaeology substrate (LIVE) — event-sourced provenance over the
 # productization's history. "What did we know on date T, why X, who decided Z."
-# Tooling: tools/archaeology/. Pattern: tools/blueprint/docs/archaeology-substrate-pattern.md
+# Tooling: tools/archaeology/. Pattern: tools/blueprint/docs/patterns/archaeology-substrate-pattern.md
 # ──────────────────────────────────────────────────────────────────
 archaeology:
   enabled: true

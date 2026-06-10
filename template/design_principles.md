@@ -2,7 +2,7 @@
 
 > Stage 2 output. Codify what this initiative CAN and CAN'T do BEFORE building.
 > The act of writing the "CAN'T do" section out loud is where most fixture-mode
-> debt gets prevented. See `docs/case-study-subs-initiative-skipped-stages-2-4.md`
+> debt gets prevented. See `docs/case-studies/case-study-subs-initiative-skipped-stages-2-4.md`
 > for what happens without this artifact.
 
 ## What this can do today

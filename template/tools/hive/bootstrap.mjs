@@ -2,7 +2,7 @@
 // BOOTSTRAP.md (18 steps) collapses into one command. Stands up a fresh Hive
 // coordination instance: a Cloudflare D1 + Worker + Pages dashboard derived from
 // an ai-hive kit the operator has already vendored (subtree/clone). This is the
-// "run" rung of crawl → walk → run (docs/team-roles-and-conventions.md) — only
+// "run" rung of crawl → walk → run (docs/governance/team-roles-and-conventions.md) — only
 // worth running when contention is real and the litmus is met.
 //
 // Shape mirrors the six libs under tools/lib/: dependency-free (node: builtins
@@ -374,7 +374,7 @@ function buildSummary(ctx, opts) {
     lines.push('    (or `gh secret set CF_API_TOKEN` + `gh secret set CF_ACCOUNT_ID` by hand).');
   }
   lines.push('');
-  lines.push('  Hand the team docs/team-roles-and-conventions.md + the kit ONBOARDING.md.');
+  lines.push('  Hand the team docs/governance/team-roles-and-conventions.md + the kit ONBOARDING.md.');
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   return lines.join('\n');
 }

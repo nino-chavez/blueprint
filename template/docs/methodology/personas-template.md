@@ -65,4 +65,4 @@ If you add a persona mid-initiative, that's a real change that affects everythin
 - Schema this expands: `template/blueprint.yml` § `pilot_profile:`
 - Methodology context: `template/docs/methodology/pilot-profile-template.md`
 - Enforcement: `template/.claude/agents/blueprint/reviewers/prescription-evidence-reviewer.md`
-- Trigger incident: 2026-05-22 rally-hq monetization-axis miss; see `docs/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught"
+- Trigger incident: 2026-05-22 rally-hq monetization-axis miss; see `docs/_archive/2026-05-25-three-session-reconciliation.md` § "Rally HQ session caught"

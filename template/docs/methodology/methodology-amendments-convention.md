@@ -94,4 +94,4 @@ A "we added a monetization-side column to personas" amendment is BOTH (methodolo
 
 - Schema source: this file (canonical at `template/docs/methodology/methodology-amendments-convention.md`)
 - Sibling conventions: `template/docs/methodology/pilot-profile-template.md`, `template/docs/methodology/personas-template.md`
-- Trigger incident: 2026-05-25 three-session reconciliation; full diagnosis in `docs/2026-05-25-three-session-reconciliation.md`. The reconciliation existed because per-initiative learning didn't have a structured home; this convention is the encoded response.
+- Trigger incident: 2026-05-25 three-session reconciliation; full diagnosis in `docs/_archive/2026-05-25-three-session-reconciliation.md`. The reconciliation existed because per-initiative learning didn't have a structured home; this convention is the encoded response.

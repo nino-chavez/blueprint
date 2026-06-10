@@ -9,7 +9,7 @@ File a methodology amendment by guiding the operator through the canonical entry
 
 Implements wave 27's amendment-classification pattern. Templates + conventions:
 - File shape + 3-scope axis: `$BLUEPRINT_HOME/template/docs/methodology/methodology-amendments-convention.md`
-- 4-bucket taxonomy: `$BLUEPRINT_HOME/docs/amendment-classification-pattern.md`
+- 4-bucket taxonomy: `$BLUEPRINT_HOME/docs/patterns/amendment-classification-pattern.md`
 - Slot-filled template: `$BLUEPRINT_HOME/template/methodology/amendments/METHODOLOGY-AMENDMENTS.template.md`
 
 ## When to use

@@ -13,7 +13,7 @@ contributions this channel exists to accept.
 ## The one routing question
 
 Every contribution fixes a problem at exactly one layer. The layer (the
-**4-bucket taxonomy**, `docs/amendment-classification-pattern.md`) decides both
+**4-bucket taxonomy**, `docs/patterns/amendment-classification-pattern.md`) decides both
 where the fix lands and whether it needs an RFC.
 
 ```

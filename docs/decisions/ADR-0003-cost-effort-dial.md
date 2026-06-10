@@ -11,7 +11,7 @@ references:
   - ../productization/canonical-research.md
   - "vendor: https://platform.claude.com/docs/en/build-with-claude/effort"
   - "vendor: https://code.claude.com/docs/en/sub-agents"
-  - "internal: docs/tiered-orchestration-pattern.md"
+  - "internal: docs/patterns/tiered-orchestration-pattern.md"
   - "internal: tools/specchain/specchain/docs/execution-profiles.md"
 ---
 

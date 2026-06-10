@@ -7,7 +7,7 @@
 // `cost:` block has a fixed, shallow shape we parse directly). If the block is
 // absent or malformed, every stage degrades to the built-in DEFAULT — never throws.
 //
-// Reference: ADR-0003-cost-effort-dial.md, docs/tiered-orchestration-pattern.md.
+// Reference: ADR-0003-cost-effort-dial.md, docs/patterns/tiered-orchestration-pattern.md.
 
 import { readFileSync } from 'node:fs';
 
