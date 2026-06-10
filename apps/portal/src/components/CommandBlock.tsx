@@ -30,7 +30,7 @@ export function CommandBlock({ command, prompt = '$', label }: CommandBlockProps
   return (
     <div>
       {label && (
-        <p className="mb-1.5 font-mono text-[11px] uppercase tracking-wide text-contrast-400">
+        <p className="mb-1.5 font-mono text-[12px] uppercase tracking-wide text-contrast-400">
           {label}
         </p>
       )}
@@ -46,7 +46,7 @@ export function CommandBlock({ command, prompt = '$', label }: CommandBlockProps
           type="button"
           onClick={copy}
           aria-label={copied ? 'Copied to clipboard' : 'Copy command to clipboard'}
-          className="shrink-0 rounded-md border border-contrast-200 bg-background px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:border-brand/60 hover:text-brand"
+          className="shrink-0 rounded-md border border-contrast-200 bg-background px-2.5 py-1 font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:border-brand/60 hover:text-brand"
         >
           {copied ? 'Copied ✓' : 'Copy'}
         </button>

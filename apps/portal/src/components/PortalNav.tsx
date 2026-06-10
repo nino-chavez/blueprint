@@ -51,7 +51,7 @@ export function PortalNav({ currentPath }: PortalNavProps) {
             href={NPM_URL}
             target="_blank"
             rel="noreferrer"
-            className="font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
+            className="font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
           >
             npm ↗
           </a>
@@ -66,7 +66,7 @@ export function PortalNav({ currentPath }: PortalNavProps) {
           <a
             key={item.href}
             href={item.href}
-            className="font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
+            className="font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
           >
             {item.label}
           </a>
