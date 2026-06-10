@@ -2,7 +2,7 @@
   "name": "@blueprint/ui",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared React component library for the Blueprint Pattern A portal — monolith + composable dual API, consumed by apps/portal.",
+  "description": "Shared React component library for the Blueprint Pattern A portal \u2014 monolith + composable dual API, consumed by apps/portal.",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -72,5 +72,6 @@
     "storybook": "^9.1.20",
     "tailwindcss": "^3.4.19",
     "vite": "^7.3.3"
-  }
+  },
+  "license": "MIT"
 }

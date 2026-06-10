@@ -15,5 +15,6 @@
     "gate-derive",
     "epic-dod",
     "substrate"
-  ]
+  ],
+  "license": "MIT"
 }
