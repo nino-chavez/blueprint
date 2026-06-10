@@ -1,6 +1,6 @@
 -- Daily spend / call-count counters for the public /derive/stream surface.
 -- Used to protect the Anthropic API budget from abuse on the public-facing
--- archaeology chat surface mounted in the-portal-app.
+-- archaeology chat surface mounted in the reference portal.
 
 CREATE TABLE IF NOT EXISTS spend_counters (
   scope_key       TEXT PRIMARY KEY,          -- "day:YYYY-MM-DD" for global, "ip:X.X.X.X:YYYY-MM-DD" for per-IP

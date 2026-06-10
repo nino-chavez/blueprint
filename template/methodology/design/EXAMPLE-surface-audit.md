@@ -227,7 +227,7 @@ Two methodology claims tested against a real consumer initiative:
 
 - It does not propose the closure (the L4 template dictionary). That's Stage 2 work. The amendment recommends Option 1 (`forge-site` archetypes folded into methodology), and Stage 2 design-system definition derives templates from this audit + the archetype reference.
 - It does not propose L0 token decisions for Blueprint-the-product. Audit-gap 2 names the gap; Stage 2 brand work closes it.
-- It does not audit consumer initiatives beyond this one. The methodology promotion will require running the same audit shape against Rally HQ, the blog redesign, and subs-initiative to confirm the framing generalizes.
+- It does not audit consumer initiatives beyond this one. The methodology promotion will require running the same audit shape against Rally HQ, the blog redesign, and blueprint-example to confirm the framing generalizes.
 
 ## Next moves
 

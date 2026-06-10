@@ -7,11 +7,11 @@ description: Prototype phase of a Blueprint initiative. Three target paradigms (
 
 Prototype phase of a Blueprint initiative. Three target paradigms; pick by reading `blueprint.yml prototype.host` + `prototype.design_system`.
 
-## the B2B client selector — read this first
+## the B2B client engagement selector — read this first
 
-| `prototype.host` | `prototype.design_system` | the B2B client |
+| `prototype.host` | `prototype.design_system` | the B2B client engagement |
 |---|---|---|
-| `standalone` (or unset) | `bigdesign` | **BC-pattern SliceShell.** Slice-per-directory under `prototypes/<slice-name>/`; each slice wraps in `<SliceShell>` with `tools` / `notes` / `traces`. Harness chrome shipped per slice. Existing pattern; documented below. |
+| `standalone` (or unset) | `bigdesign` | **Platform-pattern SliceShell.** Slice-per-directory under `prototypes/<slice-name>/`; each slice wraps in `<SliceShell>` with `tools` / `notes` / `traces`. Harness chrome shipped per slice. Existing pattern; documented below. |
 | `standalone` (or unset) | `custom` | **Standalone custom-design-system prototype.** Whole-webapp shape, not slice-per-directory. Project owns its own harness chrome (reviewer drawer, strategy panels, annotations, traceability) per `$BLUEPRINT_HOME/docs/case-studies/design-system-audit.md` D-1..D-10. No SliceShell. |
 | `atelier` | `custom` | **Atelier-hosted prototype.** Project ships content + `.atelier/prototype.yaml` declaring `content_path` + `traceability_source` + `surfaces` mapping. **Harness chrome is provided by Atelier's `/prototype` route** (ADR-057). Annotations land as `contributions` with `kind: 'design'`; strategy notes via `log_decision`; traceability via `get_context(scope_files)`. Project does NOT re-implement these primitives. |
 
@@ -98,7 +98,7 @@ A prototype that scaffolds, typechecks, and wraps slices in SliceShell but leave
 
 ---
 
-## the B2B client 2 — Standalone custom-design-system prototype
+## the B2B client engagement 2 — Standalone custom-design-system prototype
 
 Applies when `prototype.host: standalone` (or unset) AND `prototype.design_system: custom`.
 
@@ -120,7 +120,7 @@ Worked example: `wip/atelier-dashboard-blueprint/prototype/` — 7-route React +
 
 ---
 
-## the B2B client 3 — Atelier-hosted prototype
+## the B2B client engagement 3 — Atelier-hosted prototype
 
 Applies when `prototype.host: atelier`. The substrate provides harness chrome (per ADR-057, substrate-side); the project provides surface content.
 

@@ -6,7 +6,7 @@
 
 ## Context
 
-subs-initiative is a An example product initiative platform built
+subs-initiative is a the commerce platform-native subscription management platform built
 incrementally over weeks across multiple Claude Code sessions. It accumulated
 substantial structural substrate — BRD / PRD / ARCHITECTURE / decision records
 (ADRs) / per-task handoff dossiers / state-derive capability registry — but

@@ -83,10 +83,10 @@ consumers:
     owner: nino-chavez
     synced_at: "2026-06-06"
 
-  - repo: nino-chavez/subs-initiative
-    pattern: A                        # the code-shipping flagship (116k LOC shipped). Consumes the
-    methodology_version: null         #   methodology via METHODOLOGY.md/BRD (no blueprint.yml) + the
-    owner: nino-chavez                #   ai-hive substrate. The ONLY full `.hive/` consumer.
+  - repo: private/subs-initiative    # de-named for the public registry; real identity in
+    pattern: A                        #   consumers.local.yml (gitignored). The code-shipping
+    methodology_version: null         #   flagship (116k LOC shipped). Consumes the methodology via
+    owner: nino-chavez                #   METHODOLOGY.md/BRD + the ai-hive substrate. The ONLY full `.hive/` consumer.
     synced_at: "2026-06-06"
 
   # Operator-declared, NOT locally verified on THIS machine (the registry is machine-local).
@@ -97,7 +97,7 @@ consumers:
     owner: nino-chavez
     synced_at: "2026-06-06"
 
-  - repo: nino-chavez/promo-initiative
+  - repo: private/promo-initiative   # de-named for the public registry; real identity in consumers.local.yml
     pattern: null
     methodology_version: null         # operator-declared; confirm
     owner: nino-chavez
@@ -116,8 +116,8 @@ consumers:
     synced_at: "2026-06-10"
 
   # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
-  - repo: external-a/media-toolkit          # operator-declared; CONFIRM exact owner/repo slug
+  - repo: external-a/media-toolkit    # de-named (external operator, A.); real identity in consumers.local.yml
     pattern: null
     methodology_version: null
-    owner: external-a                       # external operator
+    owner: external-a                 # external operator (A.)
     synced_at: "2026-06-06"

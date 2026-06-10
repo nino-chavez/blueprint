@@ -1,7 +1,7 @@
 # jira-confluence-export
 
 Spike tooling for **Hive #685** — retro-generate a populated Jira + Confluence
-from the subs-initiative substrate, at high enough fidelity that an external
+from the blueprint-example substrate, at high enough fidelity that an external
 eng / business / QA / due-diligence audience experiences it as a real project.
 
 Status: **walking-skeleton slice.** Proves the full extract → emit → import
@@ -72,7 +72,7 @@ python3 importer.py --skeleton --execute \
     --project-key SUBS --space-id 12345
 ```
 
-The importer **refuses** `--site …the-org-production-host…` so synthetic data can't
+The importer **refuses** any site matching the configured production-host guard so synthetic data can't
 leak into corporate prod.
 
 ## What the operator must provide for the live round-trip

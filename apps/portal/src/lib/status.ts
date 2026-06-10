@@ -1,5 +1,5 @@
 /**
- * Native loaders for the surfaces that used to live at private-demo.example:
+ * Native loaders for the surfaces that used to live on the reference initiative's status site:
  *   - Gate status (10-gate Epic DoD compliance per epic)
  *   - Attestations (manual gate sign-offs, partner agreements, etc.)
  *   - Dependencies (blocking chains in the proposal graph)

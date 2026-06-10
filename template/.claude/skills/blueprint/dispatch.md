@@ -7,7 +7,7 @@ description: Orchestrate a parallel agent dispatch wave when a planning thread h
 
 Orchestrate a parallel agent dispatch wave when a planning thread has produced multiple inspectable artifact briefs whose file scopes don't overlap. Codifies the wave-dispatch workflow — brief construction, model selection, inline orchestrator work during wait, post-flight cross-review for inter-artifact consistency, and commit-and-push following the project's dev-push pattern.
 
-Pattern doc: this file. Worked example: subs-initiative commit `09036602` (2026-05-27) — three Sonnet agents drafted platform-shims feasibility + sibling strategy doc + methodology amendment in parallel while the orchestrator wrote a parallel ingester.
+Pattern doc: this file. Worked example: blueprint-example commit `09036602` (2026-05-27) — three Sonnet agents drafted platform-shims feasibility + sibling strategy doc + methodology amendment in parallel while the orchestrator wrote a parallel ingester.
 
 ## When to use
 
@@ -60,7 +60,7 @@ Skip when:
    - Stage **specific files** with `git add path1 path2` — never `git add -A`.
    - Commit subject in the project's conventional-commits format; body lists what each new file does.
    - Include `Co-Authored-By:` footer per project CLAUDE.md template.
-   - Push to integration branch (`dev` for subs-initiative and similarly-shaped projects) per the project's pattern-1 local-integration workflow. Fast-forward from remote before committing if behind.
+   - Push to integration branch (`dev` for blueprint-example and similarly-shaped projects) per the project's pattern-1 local-integration workflow. Fast-forward from remote before committing if behind.
 
 ## Output
 
@@ -89,4 +89,4 @@ Consider proactively suggesting this skill when:
 - `template/tools/parallel-dispatch-check/check.sh` — pre-flight file-scope overlap detector (run before every dispatch)
 - `template/tools/wave-digest/digest.mjs` — post-wave filter for the methodology log
 - `template/methodology/handoff/handoff-template.md` — the cross-session handoff format; precursor to multi-agent dispatch
-- subs-initiative `09036602` (2026-05-27) — canonical worked example: three Sonnet agents in parallel + orchestrator inline ingester work + post-flight cross-review caught one §C reclassification mismatch + commit-and-push to dev. Brief shape visible in the orchestrator's parent session.
+- blueprint-example `09036602` (2026-05-27) — canonical worked example: three Sonnet agents in parallel + orchestrator inline ingester work + post-flight cross-review caught one §C reclassification mismatch + commit-and-push to dev. Brief shape visible in the orchestrator's parent session.

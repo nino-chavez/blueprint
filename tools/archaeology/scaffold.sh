@@ -163,7 +163,7 @@ deploy_out=$(run_wrangler deploy)
 worker_url=$(echo "$deploy_out" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
 
 # Now that the Worker is deployed we know its full URL, extract the CF workers
-# subdomain (e.g. "example-account") and substitute into files that
+# subdomain (e.g. "example-account-1234") and substitute into files that
 # reference {{CF_WORKERS_SUBDOMAIN}}. Required by web/ArchaeologyChat.tsx,
 # ingesters/_common.py, and embed_drive.py.
 cf_subdomain=$(echo "$worker_url" | sed -E 's|https://[^.]+\.([^.]+)\.workers\.dev|\1|')

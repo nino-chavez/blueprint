@@ -4,7 +4,7 @@ canonical: true
 
 # `blueprint-init` — stamper for new Blueprint initiatives
 
-Mechanically-checkable scaffold for a Tier 1 Blueprint portal. Replaces the previous "copy `template/apps/portal/` and remember to de-bc-ize" pattern that left `subs-initiative` strings embedded in 6+ files (historical context: [`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../docs/_archive/handoffs/HANDOFF-debcization.md)).
+Mechanically-checkable scaffold for a Tier 1 Blueprint portal. Replaces the previous "copy `template/apps/portal/` and remember to de-bc-ize" pattern that left `blueprint-example` strings embedded in 6+ files (historical context: [`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../docs/_archive/handoffs/HANDOFF-debcization.md)).
 
 **The reason for a stamper, not a copier**: a stamper is mechanically checkable. After running, `grep -rl '<source-project-slug>' <target>/` returns only the substantive content files the operator chose to keep — never package metadata, footer brand, or repo URLs. A copier requires self-attestation ("did I get all the strings?"), which is the failure mode this tool exists to remove.
 
@@ -73,7 +73,7 @@ Not yet implemented. The Pattern A canonical chrome surface spans `template/pack
 | `--mode` | no (defaults to `stamp`) | yes (`restamp-chrome`) | Mode dispatch. See table above. |
 | `--pattern` | yes | yes | `A` \| `B`. Pattern A scaffolds `apps/portal/` + `packages/`. Pattern B targets the static-HTML `portal/`. |
 | `--target` | yes | yes | Initiative root directory. Must exist. |
-| `--name` | yes | — | Project slug. Substitutes `subs-initiative`. |
+| `--name` | yes | — | Project slug. Substitutes `blueprint-example`. |
 | `--display-name` | yes | — | Human-facing brand string. |
 | `--repo-url` | yes | — | Full GitHub URL. |
 | `--tagline` | yes | — | Footer tagline. |
@@ -101,24 +101,23 @@ Not yet implemented. The Pattern A canonical chrome surface spans `template/pack
 
 ## Substitution table
 
-The stamper performs only the substitutions below. Business content (e.g., the 10-gate framework in `inspect/gates.astro`, the strategy delivery-fork content) and substrate-aware governance views (`inspect/coverage.astro`, `inspect/attestations.astro`, `inspect/dependencies.astro` — these call `loadState`/`loadBoard` and will fail at build time without Hive / state-derive substrate) are subs-initiative-specific and left as example data with a `REPLACE_FOR_PROJECT` banner injected at the top of each affected file. Operators choose between rewriting, deleting, or running the substrate tooling. See `template/apps/portal/README.md` § "Known limitation — substrate build coupling" for workarounds.
+The stamper performs only the substitutions below. Business content (e.g., the 10-gate framework in `inspect/gates.astro`, the strategy delivery-fork content) and substrate-aware governance views (`inspect/coverage.astro`, `inspect/attestations.astro`, `inspect/dependencies.astro` — these call `loadState`/`loadBoard` and will fail at build time without Hive / state-derive substrate) are blueprint-example-specific and left as example data with a `REPLACE_FOR_PROJECT` banner injected at the top of each affected file. Operators choose between rewriting, deleting, or running the substrate tooling. See `template/apps/portal/README.md` § "Known limitation — substrate build coupling" for workarounds.
 
 | Source string | Replaced with |
 |---|---|
-| `subs-initiative` | `<name>` |
-| `BC Subscriptions` | `<display-name>` |
-| `@subs-initiative/` | `@<name>/` (already done in v1 snapshot, but checked for drift) |
-| `the subscriptions initiative's repo (private)` | `<repo-url>` |
+| `blueprint-example` | `<name>` |
+| `Blueprint Example` | `<display-name>` |
+| `@blueprint-example/` | `@<name>/` (already done in v1 snapshot, but checked for drift) |
+| `https://github.com/example/blueprint-example` | `<repo-url>` |
 | `An example product initiative` | `<tagline>` |
-| `/project-logo.png` | `/project-logo.png` |
-| `--bcs-` (CSS variable prefix) | `--<short>-` where `<short>` = first 4 chars of `<name>` (lowercase, alphanum) |
+| `--bpx-` (CSS variable prefix) | `--<short>-` where `<short>` = first 4 chars of `<name>` (lowercase, alphanum) |
 
 ## Mechanical check (the property a stamper provides over a copier)
 
 After running, the stamper executes:
 
 ```bash
-grep -rl 'subs-initiative\|An example product initiative\|/project-logo.png\|--bcs-' \
+grep -rl 'blueprint-example\|An example product initiative\|--bpx-' \
   <target>/apps/portal/ <target>/packages/
 ```
 

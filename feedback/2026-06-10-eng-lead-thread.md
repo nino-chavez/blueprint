@@ -33,7 +33,7 @@ Not automated — he's in the loop for each skill call. "A bit tedious but I
 find I have to pull less hair out at the end of the day."
 
 The author then shared the Blueprint README, the two demo portals
-(the-portal-app, promo-initiative), a Loom on the tooling's evolution, and an
+(the subscriptions and promotions demos — private), a Loom on the tooling's evolution, and an
 explicit ask: would folks throw some tokens at the tooling; repo access
 offered.
 

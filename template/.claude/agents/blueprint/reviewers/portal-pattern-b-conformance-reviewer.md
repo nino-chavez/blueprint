@@ -178,7 +178,7 @@ Per the blog session's diagnosis on 2026-05-25, the variant-walking shape is cor
 
 ### 11. Verify no REPLACE_FOR_PROJECT banner remains
 
-Wave 19 (2026-05-27) enforces what wave 17 declared. Wave 17's `stamp.mjs` upgraded the banner text from "warning" to "block" — but neither conformance reviewer grep'd for the banner, so the declaration was words without a gate. This step is the Pattern B gate. Pattern B portals consume the same `template/portal/` source as Pattern A's `template/apps/portal/`, so the same banner can appear in any stamped Pattern B page that originated as subs-initiative example content.
+Wave 19 (2026-05-27) enforces what wave 17 declared. Wave 17's `stamp.mjs` upgraded the banner text from "warning" to "block" — but neither conformance reviewer grep'd for the banner, so the declaration was words without a gate. This step is the Pattern B gate. Pattern B portals consume the same `template/portal/` source as Pattern A's `template/apps/portal/`, so the same banner can appear in any stamped Pattern B page that originated as reference-project example content.
 
 Grep for the banner string across the portal source:
 

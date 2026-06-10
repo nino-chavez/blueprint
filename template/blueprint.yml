@@ -4,7 +4,7 @@
 project:
   name: ""                          # e.g., "Self-Service Billing Portal"
   description: ""                   # One-line description of the initiative
-  product: ""                       # e.g., "the commerce platform BMP"
+  product: ""                       # e.g., "Acme Commerce Platform"
   audience:
     leadership: []                  # e.g., ["Daniel Lentz", "Austin Comer"]
     engineering: []                 # e.g., ["platform team"]
@@ -131,9 +131,8 @@ specchain:
   #   - Squad mode agents can parallelize research tasks
 
 # ──────────────────────────────────────────────────────────────────
-# the commerce platform B2B Edition — opt-in for B2B-targeted initiatives
-# Reference: docs/context/bc-b2b-edition-context.md
-#            docs/context/bc-b2b-buyer-portal-integration.md
+# Platform B2B edition — opt-in for B2B-targeted initiatives
+# Reference: the private platform B2B context packs (supplied per engagement)
 # ──────────────────────────────────────────────────────────────────
 
 b2b_edition:
@@ -155,7 +154,7 @@ b2b_edition:
 
 hive:
   enabled: false                    # set true to bootstrap Hive on a dedicated CF account
-  source: ""                        # e.g., "~/Workspace/dev/wip/subs-initiative/.hive"
+  source: ""                        # e.g., "~/Workspace/dev/wip/blueprint-example/.hive"
   mcp_server: ""                    # e.g., "myproject-hive-mcp"
   dashboard: ""                     # e.g., "myproject-hive-dashboard"
   cf_account: ""                    # CF account binding (named profile or account ID)
@@ -353,7 +352,7 @@ initiative_type: consumer-app       # consumer-app | platform-feature
 #
 # Three modes:
 #   - clustered  (default) — one deploy per cluster; recommended for new projects
-#   - separate            — each app its own deploy (current subs-initiative pattern)
+#   - separate            — each app its own deploy (current blueprint-example pattern)
 #   - unified             — single deploy hosting both clusters (rare; auth-gated at top)
 #
 # See the pattern doc for activation thresholds + retrofit guidance.

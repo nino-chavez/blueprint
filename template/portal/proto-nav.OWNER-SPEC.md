@@ -30,8 +30,8 @@ It's the load-bearing piece that makes 12 separate HTML pages feel like one cohe
 
 **Alternatives considered + rejected:**
 
-- **React SPA with React Router** (the subs-initiative `prototype/` model). Rejected because Rally HQ has no React requirement and the static-HTML model is faster to read + zero build tax. The proto-nav.js IIFE achieves equivalent UX with ~300 lines of vanilla JS.
-- **Auto-discovery via `import.meta.glob`** (subs-initiative pattern). Rejected because we're not on Vite. Replaced with a `_meta/index.json` manifest + explicit page list. Trade-off: adding a page requires updating the manifest, but it's one JSON edit and prevents silent slice rot.
+- **React SPA with React Router** (the blueprint-example `prototype/` model). Rejected because Rally HQ has no React requirement and the static-HTML model is faster to read + zero build tax. The proto-nav.js IIFE achieves equivalent UX with ~300 lines of vanilla JS.
+- **Auto-discovery via `import.meta.glob`** (reference-initiative pattern). Rejected because we're not on Vite. Replaced with a `_meta/index.json` manifest + explicit page list. Trade-off: adding a page requires updating the manifest, but it's one JSON edit and prevents silent slice rot.
 - **Hard-coded PAGES array in JS** (what we had pre-2026-05-23). Rejected because every nav change required editing JS. Manifest-driven is more authorable.
 - **Inline strategy/currentState data in each HTML page** (what we had pre-refactor). Rejected because it duplicated content across the HTML and was hard to query — the chat function couldn't easily ingest per-page strategy. The `_meta/*.json` split makes the data machine-readable.
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Headless REST importer for the substrate -> Jira/Confluence export (spike #685).
+Headless REST PROD_HOST_GUARD = __import__("os").environ.get("JIRA_PROD_HOST_GUARD", "")  # org production host substring to refuse
+importer for the substrate -> Jira/Confluence export (spike #685).
 
 Consumes export.py output (_out/jira-issues.json, _out/confluence-pages.json) and
 creates the artifacts in a target Atlassian Cloud instance via REST:
@@ -20,7 +21,7 @@ parent link, space targeting). Prove that round-trip before scaling.
 SAFETY. `--dry-run` is the DEFAULT. It prints the exact REST calls without
 sending anything. A live run requires BOTH `--execute` AND credentials, and
 targets only the instance/project/space you name — never corporate prod by
-default (the connected MCP instance is the-org-production.atlassian.example; this
+default (the connected MCP instance is the org's production Atlassian site; this
 importer deliberately does not read that connection and requires an explicit
 --site so synthetic data cannot leak into prod by accident).
 
@@ -447,7 +448,7 @@ def import_confluence(client: Atlassian, pages: list[dict], space_id: str,
         res = client.post("/wiki/api/v2/pages", {
             "spaceId": space_id, "status": "current", "title": title,
             "body": {"representation": "storage",
-                     "value": f"<p>{_esc(title)} — derived from the subs-initiative "
+                     "value": f"<p>{_esc(title)} — derived from the blueprint-example "
                               f"substrate via tools/jira-confluence-export.</p>"}},
             f"Parent: {title}")
         pid = (res or {}).get("id")
@@ -499,9 +500,9 @@ def main() -> int:
         if missing:
             sys.stderr.write(f"[error] --execute requires: {', '.join(missing)}\n")
             return 2
-        if "the-org-production-host" in site:
+        if PROD_HOST_GUARD and PROD_HOST_GUARD in site:
             sys.stderr.write("[error] refusing to import synthetic data into corporate prod "
-                             "(the-org-production.atlassian.example). Use a free sandbox site.\n")
+                             "(the org's production Atlassian site). Use a free sandbox site.\n")
             return 2
 
     mode = "EXECUTE" if args.execute else "DRY-RUN"

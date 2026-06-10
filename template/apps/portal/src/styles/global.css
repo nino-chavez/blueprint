@@ -1,4 +1,4 @@
-/* Order matters: design tokens first so packages/ui can resolve --bcs-* variables */
+/* Order matters: design tokens first so packages/ui can resolve --bpx-* variables */
 @import '@blueprint/design-tokens/css';
 @import '@blueprint/ui/styles';
 

@@ -37,7 +37,7 @@ Run this at project init. Answer in order; first "yes" wins.
 - **Rally HQ** — live tournament platform, but blueprint work targets unbuilt north-star surfaces (multi-format support, league standings, bracket export). Q1=yes, Q2=yes → **midstream**.
 - **website-nc-v3** — existing v2 site, blueprint work is an audit-driven redesign. Q1=yes, Q2=no (no in-flight build), Q3=yes → **brownfield**.
 - **Signal Dispatch blog** — live blog (275 items, RSS subscribers), blueprint work is UX/UI/CX audit. Q1=yes, Q2=no, Q3=yes → **brownfield**.
-- **subs-initiative** — gated; revisit at session reopen.
+- **the subscriptions initiative** — gated; revisit at session reopen.
 - **A new product idea (no code yet)** — Q1=no → **greenfield**.
 
 ## The entropy wall — the signal that it's time to adopt

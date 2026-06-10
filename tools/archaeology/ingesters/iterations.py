@@ -129,7 +129,7 @@ def parse_decision_lineage(block: str) -> Iterable[Event]:
             refs.append(Ref("lives_at", f"file:{adr_path}"))
         if synthesis_id:
             # Synthesis IDs may be UUIDs (`9c93c845-...`) or numeric (`#574`). Both
-            # work as targets — UUIDs match what the-hive D1 stores natively;
+            # work as targets — UUIDs match what the hive D1 stores natively;
             # numeric ids match the GH issue number form used throughout the codebase.
             refs.append(Ref("ratified_via", f"hive:synthesis#{synthesis_id}"))
 

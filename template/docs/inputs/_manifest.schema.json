@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "the subscriptions initiative's repo (private)/docs/inputs/_manifest.schema.json",
-  "title": "subs-initiative provenance manifest",
-  "description": "Schema for docs/inputs/_manifest.yaml — the single source of truth for every external input that informed subs-initiative. Track 2 of Hive #1473.",
+  "$id": "https://github.com/example/blueprint-example/docs/inputs/_manifest.schema.json",
+  "title": "blueprint-example provenance manifest",
+  "description": "Schema for docs/inputs/_manifest.yaml — the single source of truth for every external input that informed blueprint-example. Track 2 of Hive #1473.",
   "type": "object",
   "required": ["version", "entries"],
   "additionalProperties": false,

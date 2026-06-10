@@ -1,7 +1,7 @@
 # Archaeology substrate Worker — template
 #
 # Replace {{PROJECT_SLUG}} below with your project's short name (matches
-# CF resource naming convention). Example: subs-initiative → "subs",
+# CF resource naming convention). Example: blueprint-example → "subs",
 # dms-self-serve → "dms", an-internal-assistant-app → "askbc".
 #
 # scaffold-archaeology.sh handles this substitution automatically when run

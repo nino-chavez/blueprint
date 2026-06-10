@@ -7,32 +7,32 @@
  *   import '@blueprint/ui/styles';
  *
  * Order matters: design tokens must load before ui styles so component
- * declarations can resolve `--bcs-*` variables.
+ * declarations can resolve `--bpx-*` variables.
  */
 
 /* Type system baseline — body font + foreground color, set on the document */
 html {
-  font-family: var(--bcs-font-body);
-  color: oklch(var(--bcs-foreground-lch));
-  background: oklch(var(--bcs-background-lch));
+  font-family: var(--bpx-font-body);
+  color: oklch(var(--bpx-foreground-lch));
+  background: oklch(var(--bpx-background-lch));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--bcs-font-heading);
+  font-family: var(--bpx-font-heading);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 code, pre, kbd, samp {
-  font-family: var(--bcs-font-mono);
+  font-family: var(--bpx-font-mono);
 }
 
 /* Focus-visible default — components extend; never override `focus:outline-none`
    without immediately replacing the focus indicator on `focus-visible:`. */
 :focus-visible {
-  outline: var(--bcs-focus-ring-width) solid var(--bcs-focus-ring-color);
-  outline-offset: var(--bcs-focus-ring-offset);
+  outline: var(--bpx-focus-ring-width) solid var(--bpx-focus-ring-color);
+  outline-offset: var(--bpx-focus-ring-offset);
 }

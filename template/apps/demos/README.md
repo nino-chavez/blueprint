@@ -123,4 +123,4 @@ If your project uses the blueprint prototype harness (`template/prototype/`), it
 
 ## Origin
 
-This pattern was extracted from `subs-initiative` (May 2026) where it answered "how do we demo across Stencil / Catalyst / custom-headless / BC Admin without each demo turning into a 'go ask Nino' moment." The schema-driven JSON + static renderer + CI-baked status overlay was the durable shape — codified here so future blueprint projects inherit it on day one.
+This pattern was extracted from `blueprint-example` (May 2026) where it answered "how do we demo across Stencil / Catalyst / custom-headless / BC Admin without each demo turning into a 'go ask Nino' moment." The schema-driven JSON + static renderer + CI-baked status overlay was the durable shape — codified here so future blueprint projects inherit it on day one.

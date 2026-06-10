@@ -388,7 +388,7 @@ ${text.slice(0, 1500)}
 ---`;
   }).join("\n\n");
 
-  const system = `You answer archaeological questions about the subs-initiative project by reasoning from a retrieval result of historical events (sessions, ADRs, audits, inputs manifest, iterations register).
+  const system = `You answer archaeological questions about the blueprint-example project by reasoning from a retrieval result of historical events (sessions, ADRs, audits, inputs manifest, iterations register).
 
 Rules:
 - Cite every load-bearing claim with [E:<event_id>] inline. event_ids are listed beside each source below.
@@ -542,10 +542,10 @@ ${text.slice(0, 1500)}
   }).join("\n\n");
 
   const contextLine = pageContext
-    ? `Context: the visitor asked this from the subs-initiative portal page \`${pageContext}\`. Scope your answer to topics relevant to that page when the retrieval supports it.\n\n`
+    ? `Context: the visitor asked this from the blueprint-example portal page \`${pageContext}\`. Scope your answer to topics relevant to that page when the retrieval supports it.\n\n`
     : "";
 
-  const system = `You answer archaeological questions about the subs-initiative project by reasoning from a retrieval result of historical events (sessions, ADRs, audits, inputs manifest, iterations register).
+  const system = `You answer archaeological questions about the blueprint-example project by reasoning from a retrieval result of historical events (sessions, ADRs, audits, inputs manifest, iterations register).
 
 Rules:
 - Cite every load-bearing claim with [E:<event_id>] inline. event_ids are listed beside each source below.

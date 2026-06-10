@@ -7,7 +7,7 @@ canonical: true
 Append-only event log across all six project history streams, with explicit refs that join them. Answers archaeological questions — "what did we know on date T, why did we pick X, who decided Z" — without a new tool per question.
 
 **Pattern doc:** [`docs/patterns/archaeology-substrate-pattern.md`](../../../docs/patterns/archaeology-substrate-pattern.md) — design + decision boundaries
-**Reference implementation:** [`subs-initiative/tools/archaeology/`](the subscriptions initiative's repo (private)/tree/dev/tools/archaeology) — the proving ground (Phase 6 passed 2026-05-22)
+**Reference implementation:** [`blueprint-example/tools/archaeology/`](https://github.com/example/blueprint-example/tree/dev/tools/archaeology) — the proving ground (Phase 6 passed 2026-05-22)
 
 ## What this directory provides
 
@@ -111,7 +111,7 @@ Remaining tail wires per source are documented in the skeleton ingesters; each i
 
 ## Known issues / gotchas
 
-Captured from the subs-initiative production hydration:
+Captured from the blueprint-example production hydration:
 
 1. **CF token Vectorize scope is not implied by D1/R2 scope.** Tokens minted for "edit D1/R2/Workers" do *not* include Vectorize. Mint with Account / Vectorize / Edit explicitly or you'll hit error code 10000 on `vectorize create`.
 2. **Cloudflare bot protection (code 1010) rejects default `urllib` User-Agent.** Python ingesters must set `User-Agent: <name>/<version>`; the template's `_common.py` already does this.

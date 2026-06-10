@@ -2,7 +2,7 @@
 """
 Substrate -> Jira + Confluence exporter (spike #685).
 
-Extracts the subs-initiative substrate (GH issues, BRD stories, ADRs,
+Extracts the blueprint-example substrate (GH issues, BRD stories, ADRs,
 dossiers, attestations, methodology) into an instance-agnostic intermediate
 model, then emits import payloads:
 
@@ -53,7 +53,7 @@ BRD = REPO_ROOT / "BRD.md"
 DECISIONS_DIR = REPO_ROOT / "docs" / "decisions"
 METHODOLOGY_DIR = REPO_ROOT / "docs" / "methodology"
 ATTESTATIONS_DIR = REPO_ROOT / "docs" / "attestations"
-GH_REPO = "nino-chavez/subs-initiative"
+GH_REPO = "nino-chavez/blueprint-example"
 
 # Epic-N hive surface -> Jira Component name (mapping table, methodology doc)
 SURFACE_TO_COMPONENT = {

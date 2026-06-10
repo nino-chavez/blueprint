@@ -33,7 +33,7 @@ commit to the prototype/docs), **prompt the user**:
 Rationale: the `/blueprint-validate` skill is comprehensive (6-phase diagnosis
 loop) but optional under prior behavior. Making it a soft-gate precondition for
 deploy gives it teeth without rigid policy enforcement. See
-`docs/case-studies/case-study-subs-initiative-skipped-stages-2-4.md` for the failure mode
+`docs/case-studies/case-study-subs-skipped-stages-2-4.md` for the failure mode
 this guards against (a project that skipped Stage 2 + Stage 4 and accumulated
 fixture-mode + COMPLIANT-but-stubbed debt as a result).
 

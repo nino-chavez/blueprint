@@ -651,10 +651,10 @@ export default async function review({ targetDir, blueprintYml }) {
         });
       }
 
-      // Source-citation grep: "Source:" / the platform vendor docs / an internal doc path.
+      // Source-citation grep: "Source:" / a vendor docs.<domain> URL / an internal doc path.
       const hasCitation =
         /source:/i.test(body) ||
-        /docs\.bigcommerce\.com/i.test(body) ||
+        /docs\.[a-z][a-z0-9-]*\.[a-z]{2,}/i.test(body) ||
         /\bdocs\/[\w./-]+\.md\b/i.test(body) ||
         /https?:\/\//i.test(body);
       if (!hasCitation) {
@@ -662,7 +662,7 @@ export default async function review({ targetDir, blueprintYml }) {
         findings.push({
           severity: 'BLOCK',
           location: path.relative(targetDir, optionsFile),
-          message: 'ARCHITECT_CHALLENGE_UNCITED: platform-capability claims lack source citations ("Source:", a the platform vendor docs URL, or an internal doc path). The "what needs to be true" prerequisite is silent.',
+          message: 'ARCHITECT_CHALLENGE_UNCITED: platform-capability claims lack source citations ("Source:", a vendor docs URL, or an internal doc path). The "what needs to be true" prerequisite is silent.',
           remediation: 'Cite confirmed platform capabilities the comparison depends on with explicit Source: markers (vendor docs URL or internal doc path).',
           reference: 'template/docs/methodology/current-state-research-prompt.md',
         });
@@ -824,7 +824,7 @@ ${filler('Lead persona')}`;
       `## Escape hatch\nMigration path...\n` +
       `## Evaluation cost\np95 latency at the call site...\n` +
       `## Decision\nWe choose option B for reasons A, B, C.\n` +
-      `Source: https://the platform vendor docs/some-capability\n` +
+      `Source: https://docs.example-vendor.com/some-capability\n` +
       'padding '.repeat(160);
     const dir = await mkInitiative({
       yml: 'variant: greenfield\ninitiative_type: platform-feature\n',

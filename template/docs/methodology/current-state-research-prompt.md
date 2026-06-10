@@ -13,7 +13,7 @@ The pattern was named from the promo-initiative initiative, where the architectu
 - What does the Promotions data model look like for customer context at evaluation time?
 - Does BC's public API surface `customer.email` at promotion-evaluation time, or only post-checkout?
 
-These were answerable from `the platform vendor docs` in ~20 minutes. Without asking the question explicitly, the research skipped them — and they surfaced as gaps in the Gate 4 fact-check.
+These were answerable from the platform's public vendor docs in ~20 minutes. Without asking the question explicitly, the research skipped them — and they surfaced as gaps in the Gate 4 fact-check.
 
 ## The frame
 
@@ -25,7 +25,7 @@ Structure the answer as a checklist:
 
 ```
 [ ] <Capability or behavior the design depends on>
-    Source: <the platform vendor docs URL or internal doc path>
+    Source: <vendor docs URL or internal doc path>
     Verdict: confirmed / unconfirmed / false (see note)
     Note: <what was actually found, if different from assumption>
 ```
@@ -46,6 +46,6 @@ The "what needs to be true" frame is the *research* entry point. The [architect-
 
 ## Anti-patterns
 
-- Citing a capability that was "mentioned in a Slack thread" without a `the platform vendor docs` source
+- Citing a capability that was "mentioned in a Slack thread" without a vendor-docs source
 - Treating a BC internal RAG doc reference as equivalent to a verified public-API contract
 - Deferring "check if this works" to a spike after a proposal is already ratified

@@ -15,7 +15,7 @@
 #
 # Variables read from environment OR prompted interactively:
 #   PROJECT_SLUG               — short name (e.g. "subs", "dms", "askbc")
-#   PROJECT_ID                 — full project name (e.g. "subs-initiative")
+#   PROJECT_ID                 — full project name (e.g. "blueprint-example")
 #   CLOUDFLARE_API_TOKEN       — CF token (or path in CF_TOKEN_FILE)
 #   CLOUDFLARE_ACCOUNT_ID      — CF account UUID
 #   GH_REPO                    — owner/name for setting ARCHAEOLOGY_INGEST_TOKEN secret
@@ -38,7 +38,7 @@ read_or_prompt() {
 }
 
 read_or_prompt PROJECT_SLUG "Project slug (e.g. subs, dms, askbc)"
-read_or_prompt PROJECT_ID   "Project ID  (e.g. subs-initiative, dms-self-serve)"
+read_or_prompt PROJECT_ID   "Project ID  (e.g. blueprint-example, dms-self-serve)"
 
 if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
   if [ -f "$CF_TOKEN_FILE" ]; then

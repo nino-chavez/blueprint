@@ -20,7 +20,7 @@ block a session-end on a substrate hiccup. The backfill side is idempotent, so a
 miss is recoverable by running `sessions.py backfill` later.
 
 Templated values (scaffold.sh substitutes these at install time):
-  - PROJECT_MARKER:   substring to match in cwd (e.g. "subs-initiative")
+  - PROJECT_MARKER:   substring to match in cwd (e.g. "blueprint-example")
   - INGESTER_PATH:    absolute path to tools/archaeology/ingesters/sessions.py
   - WORKER_URL:       https://<slug>-archaeology.<subdomain>.workers.dev
   - PROJECT_ID:       full project name passed via ARCHAEOLOGY_PROJECT_ID

@@ -17,7 +17,7 @@ convention_version: 1
 
 Cloudflare Pages Function that proxies stakeholder questions to Claude (via OpenRouter) with the full blueprint documentation corpus loaded as system context. Lets reviewers ask grounded questions about any decision in the blueprint without leaving the portal.
 
-The chat is the "Ask the substrate" affordance — borrowed from subs-initiative' the-portal-app pattern.
+The chat is the "Ask the substrate" affordance — borrowed from the reference initiative's portal pattern.
 
 ## Why this shape
 

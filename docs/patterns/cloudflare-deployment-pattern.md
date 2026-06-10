@@ -15,7 +15,7 @@
 Use it when:
 
 - Initiative deploys to Cloudflare Workers, Pages, or both
-- Multi-app monorepo (subs-initiative, paradigm-b2b shape: `apps/*`, `packages/*`, `prototype/`, `.hive/`)
+- Multi-app monorepo (reference shape: `apps/*`, `packages/*`, `prototype/`, `.hive/`)
 - Path-scoped CI/CD (changes in `apps/api/**` should only trigger api deploy, not storefront)
 - Cloudflare-native primitives in use (D1, KV, R2, Vectorize, Workers AI, Queues)
 
@@ -29,16 +29,16 @@ Skip when:
 
 ## CF Resource Inventory (Reference Map)
 
-| Primitive | Use case | subs-initiative example | the B2B client example |
+| Primitive | Use case | subs-initiative example | the B2B client engagement example |
 |---|---|---|---|
-| **Worker** | API, agent runtime, MCP server | `the-api-worker`, `the-storefront-app-svelte`, `the-hive-worker` | `paradigm-api`, `paradigm-storefront`, `paradigm-hive-mcp` |
-| **Pages** | Static SPA, prototype, admin UI, dashboard | `the-prototype-app`, `the-admin-app`, `hive-dashboard-cwu` | `paradigm-prototype`, `paradigm-admin`, `paradigm-hive-dashboard` |
-| **D1** | Transactional state (orders, signals, configs) | `the-api-worker-d1`, `the-hive-d1` | `paradigm-api-d1`, `paradigm-hive-d1` |
+| **Worker** | API, agent runtime, MCP server | `acme-api`, `acme-storefront-svelte`, `acme-hive-mcp` | `<project>-api`, `<project>-storefront`, `<project>-hive-mcp` |
+| **Pages** | Static SPA, prototype, admin UI, dashboard | `acme-prototype`, `acme-admin`, `acme-hive-dashboard` | `<project>-prototype`, `<project>-admin`, `<project>-hive-dashboard` |
+| **D1** | Transactional state (orders, signals, configs) | `acme-api-d1`, `acme-hive-d1` | `<project>-api-d1`, `<project>-hive-d1` |
 | **Workers AI** | LLM inference (chat, vision, embeddings) | (none Phase 1) | `@cf/meta/llama-3.3-70b`, `@cf/meta/llama-3.2-11b-vision` |
-| **Vectorize** | RAG, semantic search | (reserved) | `paradigm-rag` |
-| **KV** | Caching, idempotency, session state | (reserved) | `paradigm-cache` |
-| **R2** | File uploads, generated PDFs, exports | (reserved) | `paradigm-uploads` |
-| **Queues** | Outbox events, async work | `the-events-queue` | `paradigm-events` |
+| **Vectorize** | RAG, semantic search | (reserved) | `<project>-rag` |
+| **KV** | Caching, idempotency, session state | (reserved) | `<project>-cache` |
+| **R2** | File uploads, generated PDFs, exports | (reserved) | `<project>-uploads` |
+| **Queues** | Outbox events, async work | `acme-events` | `<project>-events` |
 | **Cron Triggers** | Scheduled jobs (forecasting, scans, backfills) | charge dispatch every minute | at-risk scan every 5 min, vectorize backfill every 6 hr |
 | **Rate Limiter** | Per-customer / per-store limits | magic-link send caps | LLM call caps per scenario |
 | **Durable Objects** | Distributed coordination | (reserved) | (reserved) |
@@ -52,7 +52,7 @@ Skip when:
 Each app under `apps/*/` has its own `wrangler.toml`. Top-level `infra/cloudflare/wrangler.toml` only exists if there's a primary API Worker that lives at the repo root rather than under `apps/`.
 
 ```toml
-name = "paradigm-api"
+name = "<project>-api"
 main = "src/worker.ts"
 compatibility_date = "2026-04-01"
 compatibility_flags = ["nodejs_compat"]
@@ -60,13 +60,13 @@ compatibility_flags = ["nodejs_compat"]
 # Plain vars (committed, non-sensitive)
 [vars]
 ENVIRONMENT = "preview"
-BIGCOMMERCE_CHANNEL_ID = "1"
+PLATFORM_CHANNEL_ID = "1"
 LOCAL_BUYER_PORTAL_HOST = "http://localhost:3001"
 
 # D1
 [[d1_databases]]
 binding = "DB"
-database_name = "paradigm-api-d1"
+database_name = "<project>-api-d1"
 database_id = "<from wrangler d1 create>"
 
 # KV
@@ -77,12 +77,12 @@ id = "<from wrangler kv namespace create>"
 # R2
 [[r2_buckets]]
 binding = "UPLOADS"
-bucket_name = "paradigm-uploads"
+bucket_name = "<project>-uploads"
 
 # Vectorize
 [[vectorize]]
 binding = "VECTORIZE"
-index_name = "paradigm-rag"
+index_name = "<project>-rag"
 
 # Workers AI
 [ai]
@@ -104,7 +104,7 @@ crons = ["*/5 * * * *", "0 */6 * * *"]
 
 # Per-environment overrides
 [env.production]
-name = "paradigm-api"
+name = "<project>-api"
 [env.production.vars]
 ENVIRONMENT = "production"
 ```
@@ -118,7 +118,7 @@ ENVIRONMENT = "production"
 | **GitHub Actions secrets** | Repo settings → Secrets and variables | CF API tokens used by deploy workflows |
 
 **Never commit** these to `wrangler.toml`:
-- `BIGCOMMERCE_ACCESS_TOKEN`
+- `PLATFORM_ACCESS_TOKEN`
 - `B2B_API_TOKEN`
 - `STOREFRONT_SESSION_SECRET`
 - `CREDENTIAL_ENCRYPTION_KEY`
@@ -215,7 +215,7 @@ binding = "DB"
 database_id = "<preview db id>"
 
 [env.production]
-name = "paradigm-api"
+name = "<project>-api"
 [[env.production.d1_databases]]
 binding = "DB"
 database_id = "<prod db id>"
@@ -252,7 +252,7 @@ Don't schedule sub-minute crons unless absolutely required. `*/1 * * * *` is fin
 
 Free tier covers <1M messages/month. Producer rate is up to ~5k msg/sec; consumer batch size is configurable (10–100 default).
 
-Pattern: producer in any Worker (publishes outbox events); consumer is the same Worker subscribing via `[[queues.consumers]]`. For paradigm-b2b, `paradigm-events` is produced by `paradigm-api` and consumed by `paradigm-api` (same worker, separate handler).
+Pattern: producer in any Worker (publishes outbox events); consumer is the same Worker subscribing via `[[queues.consumers]]`. For paradigm-b2b, `<project>-events` is produced by `paradigm-api` and consumed by `paradigm-api` (same worker, separate handler).
 
 ### Workers AI
 

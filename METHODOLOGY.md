@@ -1,10 +1,10 @@
 # Blueprint Methodology
 
-Agent-assisted pipeline for product planning, prototyping, and stakeholder alignment
+Agent-assisted product delivery pipeline — research feeds BRD/PRD-class documents, the documents plan the prototype, the prototype validates the plan, and the validated package hands off to build
 
 ## State of the methodology
 
-Blueprint is a methodology I've been refining across a growing set of consumer initiatives — `rally-hq`, `website-nc-v3`, `apps/blog`, `blueprint-redesign`, `subs-initiative`, and `promo-initiative` were the first six; the live registry is [consumers.yml](consumers.yml) — with every change shipped as a wave captured in [WAVE-LOG.md](WAVE-LOG.md). Each initiative has caught gaps that became reviewer checks, schema fields, or stamper logic in subsequent waves.
+Blueprint is a methodology I've been refining across a growing set of consumer initiatives — `rally-hq`, `website-nc-v3`, `apps/blog`, `blueprint-redesign`, and two commerce-platform initiatives (subscriptions management, promotions targeting — real industry work, de-named here because this repo is public) were the first six; the live registry is [consumers.yml](consumers.yml) — with every change shipped as a wave captured in [WAVE-LOG.md](WAVE-LOG.md). Each initiative has caught gaps that became reviewer checks, schema fields, or stamper logic in subsequent waves.
 
 If you run an initiative through Blueprint and a gate feels wrong, or the methodology is missing a check you'd expect to find, [template/docs/methodology/methodology-amendments-convention.md](template/docs/methodology/methodology-amendments-convention.md) describes how to upstream the finding so the next initiative inherits it. The amendments convention is how a reader of this document becomes a contributor to it.
 
@@ -12,14 +12,14 @@ The rest of this document describes the current state of the methodology, not it
 
 ## Overview
 
-Blueprint is a jig — a repeatable structure that shapes how an agent assists with product initiatives. The human provides context (screenshots, BRDs, codebase access, competitive intelligence). The agent executes a seven-stage pipeline that produces an interactive prototype, strategic documents, and a deployable stakeholder site.
+Blueprint is a repeatable structure for running a product initiative end to end with an agent carrying the heavy lifting — more than a prototyping aid. The human provides context (screenshots, existing requirements, codebase access, competitive intelligence). The agent executes a seven-stage pipeline whose outputs feed each other: research produces the evidence; the documents stage turns that evidence into the BRD/PRD-class strategy package; those documents plan the prototype; the prototype validates the decisions the documents record; and the validated package hands off to build/implementation. A subscriptions-management initiative (May 2026) ran the full loop — research → BRD/PRD → planning → prototype → implementation — against a production commerce platform.
 
 The methodology integrates three existing tools:
 - **Specchain** — agent orchestration patterns and governance principles
 - **Forge Signal** — content generation engine with voice taxonomy and quality validation
 - **Claude Code** — agent runtime with tool use, codebase analysis, and web research
 
-Extracted from the a commerce-platform pricing & packaging CX initiative (March 2026), where it produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility validated against a production Rails codebase, and an embedded AI billing support agent.
+Extracted from a pricing & packaging CX initiative at a commerce platform (March 2026), where it produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility validated against a production Rails codebase, and an embedded AI billing support agent.
 
 ## First Principle: Agent Struggle Is a Missing Capability
 
@@ -42,7 +42,7 @@ The 2026-05-25 reconciliation added eight more encodings against the same princi
 | Four-way root-doc drift (METHODOLOGY + v2 patch + 2 handoffs) generated three different "what is Blueprint" answers | The three drift sources archived to `docs/_archive/handoffs/`; `METHODOLOGY.md` is the single source of truth |
 | Variant and tier got conflated in mid-stream reasoning | Variant × Tier matrix added to top of `docs/portal-and-tier-ladder.md`; they are orthogonal axes |
 | Port-registry literals (8765/8766/8767) got promoted to methodology invariant | Struck from Stage 0 here; replaced with "each initiative claims a free port via serve.sh; port assignments do not survive Tier 1 promotion" |
-| Copy-paste of `template/apps/portal/` left `subs-initiative` strings embedded in 6+ files | `template/tools/blueprint-init/stamp.mjs` stamps a fresh portal with mechanical post-stamp grep |
+| Copy-paste of `template/apps/portal/` left source-project strings embedded in 6+ files | `template/tools/blueprint-init/stamp.mjs` stamps a fresh portal with mechanical post-stamp grep |
 | `portal-shell-conformance-reviewer` existed but wasn't wired as a gate | Renamed to `portal-pattern-a-conformance-reviewer`; parallel `portal-pattern-b-conformance-reviewer` shipped; both wired at Stage 3 + any portal-touching commit |
 | "What survives a restart" rule was implicit; the next restart would have repeated the swirl | "Shell is throwaway; artifacts are forever" section added to `template/CLAUDE.md` enumerating evidence vs scaffolding directories |
 | Methodology evolved under three live consumer sessions at the same time, producing the drift | "Methodology freeze during consumer migration" rule added to `template/CLAUDE.md`: methodology repo and consumer sessions advance sequentially, not in parallel |
@@ -51,7 +51,7 @@ The 2026-05-25 reconciliation added eight more encodings against the same princi
 
 Non-learnings explicitly excluded from this round (kept in their respective project repos, not promoted to methodology): personal-software / harness positioning, buy-vs-build threshold thesis, port registry as a "concurrent comparison" feature. Positioning is project-specific; methodology is general-purpose. Conflating them is how Blueprint stops being reusable.
 
-The reconciliation execution plan (`docs/_archive/2026-05-25-three-session-reconciliation.md` lines 102-111) closed in two waves: items 1-2 in the morning (Tier 1 canonical extraction + portal-pattern-A/B conformance reviewers), items 3-5 in the evening (`pilot-profile-lock-reviewer` + `pilot_profile` block in `blueprint.yml`; `confident-preview-rule.md` + extended `design-principles-reviewer`; `prescription-evidence-reviewer` monetization extension + `personas-template.md` + `METHODOLOGY-AMENDMENTS.md` append-only convention). Three concurrent v3 consumer bugs surfaced and were folded into the same evening wave: chrome canonical drift (`shared.css` split + restamp-chrome mode + `portal-chrome-canonical-reviewer`); docs viewer Rally HQ leak (`docs/index.html` data-driven refactor + `_portal-shell.js` manifest-aware brand bar). A subsequent audit excised the remaining Pattern B leaks: chat-widget.js header comment, chat.js OpenRouter attribution (now request-URL + manifest-derived), index.html footer line + GitHub link (now manifest-driven via new `_meta/index.json footer:` block), and the four `rally-*` storage-key identifiers (`rally-bp-audience`, `rally-hq-blueprint-chrome-preview`, `rally-anno-enabled`, `rally-anno-notes-v1`, `window.rallyAnno`) renamed to the `blueprint-` prefix per ADR-0002 convention (recorded as ADR-0002 addendum). The pattern across all v3 bugs: template ships files that mix canonical chrome with project data — consumers either edit the chrome (drift) or copy verbatim (inherit project leak). Encoded fix: manifest-driven data + byte-identical chrome + reviewer-enforced separation. After all waves, `grep -rE 'rally|nino|chavez|subs-initiativecription' template/portal/` returns only documentation comments + ADR addendum references in code-path files.
+The reconciliation execution plan (`docs/_archive/2026-05-25-three-session-reconciliation.md` lines 102-111) closed in two waves: items 1-2 in the morning (Tier 1 canonical extraction + portal-pattern-A/B conformance reviewers), items 3-5 in the evening (`pilot-profile-lock-reviewer` + `pilot_profile` block in `blueprint.yml`; `confident-preview-rule.md` + extended `design-principles-reviewer`; `prescription-evidence-reviewer` monetization extension + `personas-template.md` + `METHODOLOGY-AMENDMENTS.md` append-only convention). Three concurrent v3 consumer bugs surfaced and were folded into the same evening wave: chrome canonical drift (`shared.css` split + restamp-chrome mode + `portal-chrome-canonical-reviewer`); docs viewer Rally HQ leak (`docs/index.html` data-driven refactor + `_portal-shell.js` manifest-aware brand bar). A subsequent audit excised the remaining Pattern B leaks: chat-widget.js header comment, chat.js OpenRouter attribution (now request-URL + manifest-derived), index.html footer line + GitHub link (now manifest-driven via new `_meta/index.json footer:` block), and the four `rally-*` storage-key identifiers (`rally-bp-audience`, `rally-hq-blueprint-chrome-preview`, `rally-anno-enabled`, `rally-anno-notes-v1`, `window.rallyAnno`) renamed to the `blueprint-` prefix per ADR-0002 convention (recorded as ADR-0002 addendum). The pattern across all v3 bugs: template ships files that mix canonical chrome with project data — consumers either edit the chrome (drift) or copy verbatim (inherit project leak). Encoded fix: manifest-driven data + byte-identical chrome + reviewer-enforced separation. After all waves, a grep for source-project strings (`rally|nino|chavez|<source-slug>`) over `template/portal/` returns only documentation comments + ADR addendum references in code-path files.
 
 When you hit an agent failure that isn't covered by an existing reviewer / invariant / sensor / doc, the question is not "how do I prompt around this." The question is "what capability is missing, and how do I encode it." Source: OpenAI's harness engineering practice (Ryan Lopopolo, Feb 11, 2026); adopted into Blueprint per the v2 patch.
 
@@ -209,10 +209,10 @@ As of 2026-05-23 there are two prototype-shell templates. Pick the one that matc
 
 | Shell | When to use | Template | Reference deploy |
 |---|---|---|---|
-| **`portal/` — static HTML + Pages Functions** *(default for new projects)* | Cloudflare-first stack, no React/the platform design system coupling, want zero build pipeline, want stakeholder-facing static site | `template/portal/` | `blueprint.rallyhq.app` (Rally HQ) |
-| **`prototype/` — Vite + React + the platform design system** *(legacy for BC-bound initiatives)* | Targeting BC the platform design system + React 18.3, need full SPA routing for many slices, building toward production-grade React components | `template/prototype/` | `private-demo.example` (subs-initiative) |
+| **`portal/` — static HTML + Pages Functions** *(default for new projects)* | Cloudflare-first stack, no framework/design-system coupling, want zero build pipeline, want stakeholder-facing static site | `template/portal/` | `blueprint.rallyhq.app` (Rally HQ) |
+| **`prototype/` — Vite + React + platform design system** *(legacy for platform-coupled initiatives)* | Targeting the production platform's React design system, need full SPA routing for many slices, building toward production-grade React components | `template/prototype/` | the subscriptions initiative's prototype (private) |
 
-The static-HTML `portal/` is the default for any non-BC project — it's faster to read, faster to ship, zero build tax, and stakeholders can inspect-element directly. Drop into React only when the production target itself is React.
+The static-HTML `portal/` is the default for any initiative not bound to a platform design system — it's faster to read, faster to ship, zero build tax, and stakeholders can inspect-element directly. Drop into React only when the production target itself is React.
 
 ### Structure (both shells)
 
@@ -257,7 +257,7 @@ Architecture:
 
 The prototype Studio Home links to the deployed demos page via `DemoStoryboardPanel`. Symmetric: the demos page's header nav links back to the prototype harness, traceability matrix, and any other family Pages deploys.
 
-See `template/apps/demos/README.md` for the full setup recipe. Origin: extracted from `subs-initiative` (May 2026) where it answered the multi-surface demo problem across Stencil / Catalyst / custom-headless / BC Admin.
+See `template/apps/demos/README.md` for the full setup recipe. Origin: extracted from the subscriptions initiative (May 2026) where it answered the multi-surface demo problem across several storefront paradigms plus the platform admin.
 
 ## Stage 4: Fact-Check
 
@@ -366,7 +366,7 @@ After each iteration, capture what was learned:
 
 Capability stages run alongside the main pipeline, gated by `blueprint.yml` flags. Each has its own Done-criteria and produces UI affordances that mount into the main-pipeline portal. Capability stages are NOT optional in the "skip if you want" sense — they are optional in the "activate per initiative need" sense. When the flag is `true`, the stage is mandatory and gated.
 
-### Stage S-A: Archaeology Substrate (added 2026-05-27 wave 21 — promo-initiative amendment)
+### Stage S-A: Archaeology Substrate (added 2026-05-27 wave 21 — promotions-initiative amendment)
 
 **Flag**: `blueprint.yml archaeology.enabled: true | false` (default: `false`)
 
@@ -376,7 +376,7 @@ Capability stages run alongside the main pipeline, gated by `blueprint.yml` flag
 
 **Skips when**: throwaway prototype that won't outlive the week, solo single-session work with no Hive coordination, strict regulatory environment that can't tolerate default-on session capture
 
-**Why this is a stage, not a cross-cutting discipline**: the substrate has a discrete linear lifecycle (scaffold → deploy → ingest → flip UI flag) with distinct Done-criteria at each step, and the wrong choreography produces the promo-initiative failure mode where a portal ships with the "Ask the substrate" widget live but pointed at a non-existent or wrong-project substrate.
+**Why this is a stage, not a cross-cutting discipline**: the substrate has a discrete linear lifecycle (scaffold → deploy → ingest → flip UI flag) with distinct Done-criteria at each step, and the wrong choreography produces the observed failure mode where a portal ships with the "Ask the substrate" widget live but pointed at a non-existent or wrong-project substrate.
 
 **Lifecycle (when `archaeology.enabled: true`):**
 
@@ -394,7 +394,7 @@ Capability stages run alongside the main pipeline, gated by `blueprint.yml` flag
 
 The `portal-pattern-{a,b}-conformance-reviewer` agents do NOT gate Stage S-A — the substrate is initiative-side infrastructure, not portal chrome. The gate is the combination of the three runtime + stamp-time defenses above.
 
-**Why the gates exist**: promo-initiative (May 2026) deployed a live "Ask the substrate" widget pointed at the subs-initiative reference Worker because the canonical Layout stamped the component unconditionally AND the component's `WORKER_URL` was hardcoded to subs-initiative. The widget surfaced subs-initiative suggested questions ("Why did we reject terraform-gcp-platform?") to promo-initiative stakeholders. Waves 17 + 18 closed the leak at three layers; this stage codifies the correct lifecycle so future consumers know when the operator flag flip is earned.
+**Why the gates exist**: the promotions initiative (May 2026) deployed a live "Ask the substrate" widget pointed at the subscriptions initiative's reference Worker, because the canonical Layout stamped the component unconditionally AND the component's `WORKER_URL` was hardcoded to the source project. The widget surfaced the *other* initiative's suggested questions to this initiative's stakeholders. Waves 17 + 18 closed the leak at three layers; this stage codifies the correct lifecycle so future consumers know when the operator flag flip is earned.
 
 ## Tools
 
@@ -402,7 +402,7 @@ The `portal-pattern-{a,b}-conformance-reviewer` agents do NOT gate Stage S-A —
 |------|---------|----------|
 | **md-to-docs.mjs** | Convert markdown to HTML + Word | `docs/scripts/` |
 | **forge-signal** | AI-powered document generation (when blog/thought-leadership voice is wanted) | External tool |
-| **a-figma-generator** | Design asset generation from Figma specs | External tool |
+| **figma generator** | Design asset generation from Figma specs | External tool (private) |
 | **Vercel** | Prototype deployment | `prototype/vercel.json` |
 | **Strategy panel** | Embedded design decision context | `prototype/strategy-panel.js` |
 | **Current-state panel** | Screenshot comparison | `prototype/current-state-panel.js` |
@@ -410,7 +410,7 @@ The `portal-pattern-{a,b}-conformance-reviewer` agents do NOT gate Stage S-A —
 
 ## Naming
 
-Originally **the original employer-prefixed name**, following the commerce platform tooling conventions (the platform design system, BigTools). Renamed to **Blueprint** on 2026-05-25 once the methodology proved project-agnostic across Rally HQ, Signal Dispatch, website-nc-v3, TNA, and the original BC work.
+Originally carried an employer-prefixed name following the platform's tooling conventions. Renamed to **Blueprint** on 2026-05-25 once the methodology proved project-agnostic across Rally HQ, Signal Dispatch, website-nc-v3, and the original platform work.
 
 ## Cross-Cutting Disciplines
 
@@ -425,10 +425,10 @@ The seven pipeline stages above describe *what to produce*. The following patter
 | [docs/patterns/doc-discipline-micro-patterns.md](docs/patterns/doc-discipline-micro-patterns.md) | Always (low overhead) | Small disciplines — surface-existing, capture-ambiguity, wrong-copy-is-signal, avoid multi-role templates |
 | [docs/case-studies/prototype-vs-production-traceability-sweep.md](docs/case-studies/prototype-vs-production-traceability-sweep.md) | Post-major-arc closure OR quarterly baseline (initiatives with a `destination: product` meta cohort) | Recurring 4-link chain walk (research → meta → prototype HTML → production code) per product-destination meta; 5-verdict taxonomy (bug / refinement / open-question / already-reconciled / structural-divergence); meta-schema extensions; feeds prescription P-items |
 
-These disciplines emerged from `subs-initiative` (May 2026) and the rally-hq 17-meta fan-out (May 2026). When they apply, they belong cross-cutting (not as a pipeline stage) — the pipeline produces the deliverables; the disciplines keep the surface around the deliverables coherent.
+These disciplines emerged from the subscriptions initiative (May 2026) and the rally-hq 17-meta fan-out (May 2026). When they apply, they belong cross-cutting (not as a pipeline stage) — the pipeline produces the deliverables; the disciplines keep the surface around the deliverables coherent.
 
 The archaeology substrate, while it ingests artifacts the cross-cutting disciplines produce, is NOT a cross-cutting discipline — it has a discrete lifecycle and a stamp-gated UI surface. See "Optional Capability Stages" → Stage S-A above.
 
 ## Origin
 
-Extracted from the a commerce-platform pricing & packaging CX initiative (March 2026). The full project is at `~/Workspace/dev/wip/a-pricing-initiative/` with the deployed prototype at `private-demo.example`. Cross-cutting disciplines added May 2026 from `subs-initiative` doc-reorg work.
+Extracted from a pricing & packaging CX initiative at a commerce platform (March 2026) — real industry work, de-named here because this repo is public. Cross-cutting disciplines added May 2026 from the subscriptions initiative's doc-reorg work.

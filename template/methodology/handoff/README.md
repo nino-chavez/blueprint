@@ -20,6 +20,6 @@ See the canonical pattern doc: `$BLUEPRINT_HOME/docs/patterns/operator-handoff-p
 ## Reference examples (consumer-side)
 
 - `apps/rally-hq/blueprint/HANDOFF-blueprint-template-gaps.md` (cross-repo dispatch — 5 template additions handed from rally-hq to tools/blueprint)
-- `wip/subs-initiative/HANDOFF.md` (session restart — Hive bootstrap continuation)
+- `wip/blueprint-example/HANDOFF.md` (session restart — Hive bootstrap continuation)
 
 Both predate the template and are kept as historical examples. New handoffs should use the template.

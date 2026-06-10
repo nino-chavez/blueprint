@@ -1,6 +1,6 @@
 # @blueprint/design-tokens
 
-Canonical design tokens for the subs-initiative family — OKLCH color, type scale, spacing, motion. Framework-agnostic; consumed by React (`packages/ui`), Svelte (`apps/storefront-svelte`), vanilla HTML (`apps/demos`), and any future surface that joins the family.
+Canonical design tokens for the blueprint-example family — OKLCH color, type scale, spacing, motion. Framework-agnostic; consumed by React (`packages/ui`), Svelte (`apps/storefront-svelte`), vanilla HTML (`apps/demos`), and any future surface that joins the family.
 
 ## Why OKLCH
 
@@ -9,11 +9,11 @@ OKLCH is perceptually uniform on the lightness axis — moving from L=0.55 to L=
 ```css
 .brand-tint {
   /* Derives a light-tinted background from the brand source — re-themes for free */
-  background: oklch(from var(--bcs-brand-lch) 0.97 0.03 h);
+  background: oklch(from var(--bpx-brand-lch) 0.97 0.03 h);
 }
 ```
 
-Change `--bcs-brand-lch` once and every derived shade re-themes automatically. The same idiom is used in the commerce platform's storefront-kit; we intentionally rhyme.
+Change `--bpx-brand-lch` once and every derived shade re-themes automatically. The same idiom is used in commercial storefront kits; we intentionally rhyme.
 
 ## Usage
 
@@ -55,8 +55,8 @@ Import the CSS variables and use them directly:
 @import '@blueprint/design-tokens/css';
 
 .headline {
-  color: oklch(var(--bcs-foreground-lch));
-  font-family: var(--bcs-font-heading);
+  color: oklch(var(--bpx-foreground-lch));
+  font-family: var(--bpx-font-heading);
   font-size: 2.5rem;
 }
 ```
@@ -74,7 +74,7 @@ interface BadgeProps {
 
 ## Namespace
 
-All variables are prefixed `--bcs-*` so they never collide with merchant-supplied tokens on the storefront, the platform design system tokens in the admin marketplace shell, or BC platform tokens elsewhere.
+All variables are prefixed `--bpx-*` so they never collide with merchant-supplied tokens on the storefront, the platform design system tokens in the admin marketplace shell, or BC platform tokens elsewhere.
 
 ## Files
 

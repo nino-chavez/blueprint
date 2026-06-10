@@ -63,7 +63,7 @@ Per the strengthened `prototype-smoke-runner`: **no portal change is "complete" 
 - Strengthened gate: `template/.claude/agents/blueprint/reviewers/prototype-smoke-runner.md`
 - Stage 0 recipe: `docs/context/browser-legibility.md`
 - First principle (why this case study exists): `METHODOLOGY.md` §"First Principle: Agent Struggle Is a Missing Capability"
-- Sibling case studies: `docs/case-studies/case-study-subs-initiative-skipped-stages-2-4.md`, `docs/case-studies/case-study-pp-cx.md`
+- Sibling case studies: `docs/case-studies/case-study-subs-skipped-stages-2-4.md`, `docs/case-studies/case-study-pp-cx.md`
 
 ---
 
@@ -115,7 +115,7 @@ Each consumer now needs to migrate (per the methodology freeze rule: sequenced, 
 - **website-nc-v3**: re-run `stamp.mjs --mode=restamp-chrome --pattern=B` to drop the rally-hq-derived drift; lift any v3-specific overrides into `project-tokens.css`.
 - **subs-initiative** (Pattern A): no migration yet. Pattern A canonical chrome surface needs an audit before the manifest can be declared. Tracked.
 
-Migration order: rally-hq first (it's the "freshest source" that v3 was reaching for; canonicalizing rally-hq de-canonicalizes the bad pattern). Then v3 (one-command restamp). Bc-subs separately when Pattern A surface is audited.
+Migration order: rally-hq first (it's the "freshest source" that v3 was reaching for; canonicalizing rally-hq de-canonicalizes the bad pattern). Then v3 (one-command restamp). The subscriptions initiative separately when its Pattern A surface is audited.
 
 ---
 

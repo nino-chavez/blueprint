@@ -4,7 +4,7 @@ description: Tier 0 → Tier 1 gate for Pattern A (platform-portal). Verifies th
 tools: [Read, Glob, Bash]
 ---
 
-You are the gate that catches portal drift before it ships. The single most common Blueprint failure mode at the front-door layer is **shell drift**: an initiative scaffolds its portal by copy-paste, deviates from the IA contract (renames a route, drops a route, invents a new audience pill), and ships a front door that doesn't match the rest of the Blueprint family. The result is the drift Nino flagged across the four reference projects (`subs-initiative`, `website-nc-v3`, `rally-hq`, `blog`) on 2026-05-25.
+You are the gate that catches portal drift before it ships. The single most common Blueprint failure mode at the front-door layer is **shell drift**: an initiative scaffolds its portal by copy-paste, deviates from the IA contract (renames a route, drops a route, invents a new audience pill), and ships a front door that doesn't match the rest of the Blueprint family. The result is the drift Nino flagged across the four reference projects (`blueprint-example`, `website-nc-v3`, `rally-hq`, `blog`) on 2026-05-25.
 
 This reviewer enforces the contract codified in [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md).
 
@@ -109,7 +109,7 @@ Reason: the portal is the stakeholder deliverable. Deliberation belongs in desig
 
 Wave 19 (2026-05-27) enforces what wave 17 declared. Wave 17's `stamp.mjs` upgraded the banner text from "warning" to "block" — but the conformance reviewer never actually grep'd for the banner, so the "block" declaration was words without a gate. This step is the gate.
 
-The promo-initiative failure mode: scaffold pages carrying subs-initiative example content (a 20-row native-shape gap matrix, an ENTRIES array with Jordan Sim attribution, suggested archaeology questions) shipped to a live stakeholder deploy because the banner was previously documented as a warning rather than a gate AND no reviewer enforced even the warning.
+The promo-initiative failure mode: scaffold pages carrying blueprint-example example content (a 20-row native-shape gap matrix, an ENTRIES array with Jordan Sim attribution, suggested archaeology questions) shipped to a live stakeholder deploy because the banner was previously documented as a warning rather than a gate AND no reviewer enforced even the warning.
 
 Grep for the banner string across the portal source:
 
@@ -118,7 +118,7 @@ grep -rln "REPLACE_FOR_PROJECT" apps/portal/src/
 grep -rln "REPLACE_FOR_PROJECT" packages/ui/preview/ 2>/dev/null
 ```
 
-Any match BLOCKS at the Stage 3 → Stage 4 gate. The banner is intentionally stamped onto subs-initiative-content-carrying files by `template/tools/blueprint-init/stamp.mjs`; the operator's job is to delete the banner (and replace or strip the surrounding content) before the portal goes to stakeholders. A passing portal has zero `REPLACE_FOR_PROJECT` markers.
+Any match BLOCKS at the Stage 3 → Stage 4 gate. The banner is intentionally stamped onto reference-content-carrying files by `template/tools/blueprint-init/stamp.mjs`; the operator's job is to delete the banner (and replace or strip the surrounding content) before the portal goes to stakeholders. A passing portal has zero `REPLACE_FOR_PROJECT` markers.
 
 The seven files that ship with the banner (per `BANNER_FILES` in `stamp.mjs`):
 - `apps/portal/src/pages/inspect/{gates,coverage,attestations,dependencies}.astro`
@@ -173,7 +173,7 @@ If STATUS=WARN, the portal may ship but the warnings must land as follow-up issu
 
 ## Why this gate exists
 
-Three Blueprint initiatives (`apps/blog`, `apps/rally-hq`, `apps/website-nc-v3`) drifted away from each other and from the template across three different generations of the portal shell. Each was correct against the canonical *at the time it was generated*; the canonical changed, and the snapshots didn't. `subs-initiative` leapfrogged the lot by writing the v2 shell as workspace packages — but neither the template nor the other three initiatives picked up the v2 jump.
+Three Blueprint initiatives (`apps/blog`, `apps/rally-hq`, `apps/website-nc-v3`) drifted away from each other and from the template across three different generations of the portal shell. Each was correct against the canonical *at the time it was generated*; the canonical changed, and the snapshots didn't. `blueprint-example` leapfrogged the lot by writing the v2 shell as workspace packages — but neither the template nor the other three initiatives picked up the v2 jump.
 
 This reviewer catches the drift mechanically. A passing portal is one that:
 
@@ -190,5 +190,5 @@ Drift caught here is a one-commit fix. Drift caught after deploy is a stakeholde
 - Contract: [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md)
 - Scaffolder: [`template/tools/blueprint-init/`](../../../../tools/blueprint-init/) — use `stamp.mjs` to scaffold a Pattern A portal mechanically rather than copying `template/apps/portal/` by hand
 - Pattern B counterpart: [`portal-pattern-b-conformance-reviewer.md`](./portal-pattern-b-conformance-reviewer.md)
-- Canonical Tier 2 reference: `subs-initiative` (`apps/portal/`, `packages/ui/`, `packages/design-tokens/`)
+- Canonical Tier 2 reference: `blueprint-example` (`apps/portal/`, `packages/ui/`, `packages/design-tokens/`)
 - Historical context: [`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../../../docs/_archive/handoffs/HANDOFF-debcization.md) — superseded by the stamper; archived for the audit trail

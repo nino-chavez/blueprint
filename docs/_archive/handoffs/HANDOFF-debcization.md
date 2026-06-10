@@ -45,7 +45,7 @@ Hard-coded `the subscriptions initiative's repo (private)` appears as:
 
 ### 4. Description copy
 
-Footer copy in `src/layouts/Layout.astro` says "An example product initiative" — subs-initiative-specific tagline.
+Footer copy in `src/layouts/Layout.astro` says "the commerce platform-native subscription management" — subs-initiative-specific tagline.
 
 **Fix:** `blueprint.config.ts` → `tagline` field. Layout reads it.
 
@@ -75,7 +75,7 @@ Fix in this order to keep each commit reviewable:
 2. Parameterize Layout.astro (title, footer brand, GitHub link, logo path).
 3. Parameterize index.astro + each lane page (title + heading).
 4. Parameterize ExcerptCard.tsx (`DEFAULT_REPO_PREFIX`).
-5. Rename `public/project-logo.png` → `public/project-logo.png` and add a placeholder.
+5. Rename the reference logo → `public/project-logo.png` and add a placeholder.
 6. Gate substrate-specific Inspect pages behind `substrate !== 'none'`.
 
 After step 5, the scaffold passes `grep -L "subs-initiative" .` for everything except inline `subs-initiative` references in the README (which is a separate de-bcization pass on the doc).

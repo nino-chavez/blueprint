@@ -55,7 +55,7 @@ You are the Stage 1 gate for a Blueprint initiative. Your job: prevent the "Stag
      - Escape hatch — migration path when an option doesn't cover a use case
      - Evaluation cost — p95 latency of evaluating at the call site
    - Verify an explicit choice with reasoning. Either: "we choose option X for reasons A, B, C" — or the *"typed-condition wins ties"* heuristic invocation from the pattern doc (smaller expression surface preferred on identical short-term costs). **Silence is not acceptable.**
-   - Verify the "what needs to be true" research frame was run BEFORE the architect challenge (per the pattern doc's "Run [current-state research prompt] before applying this pattern") — at minimum, the architectural-options doc must cite confirmed platform capabilities (not assumptions). Look for explicit `Source: <the platform vendor docs URL or internal doc path>` markers or equivalent citations on the platform-behavior claims the comparison depends on.
+   - Verify the "what needs to be true" research frame was run BEFORE the architect challenge (per the pattern doc's "Run [current-state research prompt] before applying this pattern") — at minimum, the architectural-options doc must cite confirmed platform capabilities (not assumptions). Look for explicit `Source: <vendor docs URL or internal doc path>` markers or equivalent citations on the platform-behavior claims the comparison depends on.
 
    Fail codes:
      - `ARCHITECT_CHALLENGE_MISSING` — file absent

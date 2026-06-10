@@ -1,6 +1,6 @@
 /**
  * Demo scenarios — JSON-driven storyboard previously served at
- * private-demo.example. Source: apps/demos/scenarios.json. Read natively
+ * . Source: apps/demos/scenarios.json. Read natively
  * so /try renders scenarios in portal chrome rather than linking out.
  */
 import { existsSync, readFileSync } from 'node:fs';

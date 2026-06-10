@@ -10,7 +10,7 @@ Canonical reference for how a Blueprint initiative externalizes itself across au
 
 The first generation of Blueprint shipped a static-HTML "portal" template. It was a copy source, not a dependency. Three projects pulled it at different times — Signal Dispatch blog (`_providers.js` + `_shell.css` shape), Rally HQ (path-drifted to `blueprint/prototype/`), ninochavez.co v3 (`blueprint/portal/` v2 static). They drifted from each other and from the template.
 
-The `subs-initiative` initiative built a *different* portal — Astro 5 + React 19 + Tailwind 3 consuming `@blueprint/ui` and `@blueprint/design-tokens` as workspace packages — with a 6-verb IA and audience switcher.
+The subscriptions initiative built a *different* portal — Astro 5 + React 19 + Tailwind 3 consuming `@blueprint/ui` and `@blueprint/design-tokens` as workspace packages — with a 6-verb IA and audience switcher.
 
 **Both are canonical.** They are two patterns for two different use cases, not two generations of one pattern. The drift between the four projects was real, but the fix isn't to collapse them into one shape. The fix is to name the two patterns explicitly and let each project pick the one that fits.
 
@@ -50,7 +50,7 @@ Pick before scaffolding. Wrong choice produces retrofit feel that costs a full r
 - Audiences: executive (strategy), evaluator (hands-on / trial evaluation), engineering (methodology + behind-the-scenes)
 - Live demos embedded via iframe
 - Hive / state-derive substrate optional
-- **Canonical reference:** `subs-initiative` (`private-demo.example`)
+- **Canonical reference:** the subscriptions initiative's portal (shared privately on request)
 
 ### Pattern B — redesign-review-portal
 
@@ -240,7 +240,7 @@ A Blueprint initiative occupies one tier at a time. The tier ladder applies inde
 - Monorepo with the portal **plus** one or more product surfaces.
 - Pattern A Tier 2: `apps/portal/` + `apps/<product>/`. The portal links to product surfaces; it does not contain them.
 - Pattern B Tier 2: `portal/` + `apps/<product>/` (or `src/` for single-app projects). The portal reviews the product; the product ships separately.
-- `subs-initiative` is the canonical Pattern A Tier 2 reference.
+- The subscriptions initiative is the canonical Pattern A Tier 2 reference.
 - `apps/website-nc-v3` is the canonical Pattern B Tier 2 reference (post-graduation; currently on the redesign branch).
 
 **The portal is forever.** Even at Tier 2, the portal stays. It gains depth (live iframes for A; populated drawers / chat corpus / shipped comparisons for B) but doesn't get deleted.
@@ -261,7 +261,7 @@ For projects sitting at an older or path-drifted portal:
 
 | Project | Pattern | Current tier | Migration |
 |---|---|---|---|
-| `subs-initiative` | A — canonical | Tier 2 | None. This is the source of `@blueprint/ui` + `@blueprint/design-tokens` + `apps/portal/`. |
+| the subscriptions initiative | A — canonical | Tier 2 | None. This is the source of `@blueprint/ui` + `@blueprint/design-tokens` + `apps/portal/`. |
 | `apps/website-nc-v3` | B — canonical (per ADR-0008) | Tier 2 (in flight on redesign branch) | None for the portal pattern itself. Continue ADR-0008's paired-deploy buildout. Optional follow-up: convert Pattern B static HTML to Astro consuming `@blueprint/design-tokens` (keeps Pattern B chrome, gains token consistency) — future ADR. |
 | `apps/rally-hq` | B — canonical | Tier 2 | Rename `blueprint/prototype/` → `blueprint/portal/` (path drift only). Otherwise conformant. |
 | `apps/blog` | B — pre-pivot (still on v1 `_providers.js` + `_shell.css`; the v1→v2 shell upgrade hasn't landed) | Tier 1 → Tier 2 | Two paths: upgrade to v2 Pattern B shell (drawers + toggle + chat), or graduate past the portal entirely if the redesign is shipping at `astro-build/` and no audit review is needed. The blog session is currently rebuilding from variant-walking v1 to confident-preview v2 — that work covers the upgrade. |
@@ -279,6 +279,6 @@ When in doubt: blueprint is process, portals are IA contracts (two patterns, A o
 - **Pattern A v2 reviewer**: ~~the existing `portal-shell-conformance-reviewer` checks Pattern A only. A parallel Pattern B reviewer is required.~~ **Resolved 2026-05-25.** Both reviewers ship in `template/.claude/agents/blueprint/reviewers/portal-pattern-a-conformance-reviewer.md` and `portal-pattern-b-conformance-reviewer.md`. Wired into the reviewer roster as Stage 3 + portal-touching-commit gates.
 - **Pattern B Astro variant**: should Pattern B keep static HTML or move to Astro consuming `@blueprint/design-tokens`? Trade-off: zero-build property vs. design-token consistency with Pattern A. Future ADR.
 - **`@blueprint/ui-svelte` parity**: when does the React-only `@blueprint/ui` get a Svelte equivalent for Pattern A SvelteKit consumers? Demand-driven.
-- ~~**Audience switcher pill naming**: subs-initiative uses `executive / discovery / internal`. "Internal" is overloaded. ADR candidate.~~ **Resolved 2026-05-25.** Renamed to `executive / evaluator / engineering` per [ADR-0001](decisions/0001-audience-pill-naming.md). Storage-key prefix cleanup (`bcs-` → `blueprint-`) tracked as follow-up ADR-0002.
+- ~~**Audience switcher pill naming**: the source initiative used `executive / discovery / internal`. "Internal" is overloaded. ADR candidate.~~ **Resolved 2026-05-25.** Renamed to `executive / evaluator / engineering` per [ADR-0001](decisions/0001-audience-pill-naming.md). Storage-key prefix cleanup (`bcs-` → `blueprint-`) tracked as follow-up ADR-0002.
 - **Pattern coexistence**: when a project genuinely needs both A and B portals (multi-audience platform that *also* publishes audit work), how does the workspace plumb both? Single project with `apps/portal/` (A) and `portal/` (B)? Future ADR.
 - **Operator-console archetype (candidate Pattern C)**: A and B both assume stakeholder-facing externalization; an operator-facing process console (a cockpit for running a recurring operation) fits neither. First instance: `ai-content-engine` (`decisions/0001-bespoke-portal-ops-console.md`). Until a *second* instance appears, such initiatives use a bespoke portal with a mandatory divergence ADR (see "When neither pattern fits the archetype") — they are NOT forced into A/B, and NOT canonized into a third frozen contract from one example. Promote when a second console consumer lands; the second instance defines the contract (verbs reweighted/relabeled — cockpit/overview/convert; audience pills operator-first). Tracked: `METHODOLOGY-AMENDMENTS.md` 2026-06-05.

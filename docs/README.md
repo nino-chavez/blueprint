@@ -2,6 +2,14 @@
 
 This is the navigation index for the Blueprint methodology corpus. The docs are organized by the [Diátaxis](https://diataxis.fr/) framework: Tutorials, How-to guides, Reference, Explanation. Links are relative to this file (`docs/`); `../` points at the repo root.
 
+## The reader-path manifest (Stage-4-gated surface)
+
+The docs a **stranger** reads to answer "what is this and how do I use it" have no usage-feedback loop (a confused reader bounces; they don't file amendments), so they drift silently. This manifest names that surface; each doc on it gets a periodic Stage-4-style fact-check (sanitize + adjudicate every claim: accurate / drifted / stale-evidence) — the same gate consumer deliverables get. Functional docs (patterns, reviewer specs, prompts read mid-initiative) are NOT on it: usage self-heals them via the amendments loop.
+
+`README.md` · `START-HERE.md` · `METHODOLOGY.md` · `CONTRIBUTING.md` · `docs/README.md` (this file) · `docs/variant-selection.md` · `docs/portal-and-tier-ladder.md` · `docs/prompts/add-blueprint-to-project.md` · `docs/prompts/pick-up-blueprint-updates.md` · `template/CLAUDE.md` · the portal `/` + `/learn` pages
+
+Last full review: 2026-06-10 (wave 56). Cadence: every wave that touches positioning, naming, or the portal — and any time a reader's question reveals a wrong claim.
+
 ## New here? Read these 3 first
 
 The universal on-ramp. In order:
@@ -34,7 +42,7 @@ Decision trees, setup, integration recipes, and actionable patterns.
 | [`docs/context/browser-legibility.md`](context/browser-legibility.md) | Stage 0 sensor setup + Chrome DevTools escalation triggers |
 | [`docs/patterns/cloudflare-deployment-pattern.md`](patterns/cloudflare-deployment-pattern.md) | Stage 6 deploy recipe for Cloudflare |
 | [`docs/prompts/run-validate-to-goal.md`](prompts/run-validate-to-goal.md) | Drive the Stage 4 validate loop to a goal state |
-| [`docs/context/bc-b2b-buyer-portal-integration.md`](context/bc-b2b-buyer-portal-integration.md) | the commerce platform B2B buyer-portal integration recipe |
+| Platform B2B buyer-portal integration recipe | private context pack — supplied per engagement |
 | [`docs/governance/team-roles-and-conventions.md`](governance/team-roles-and-conventions.md) | Running with >1 operator: the three zero-infra conventions + the crawl→walk→run litmus for escalating to Hive |
 | [`docs/patterns/hive-coordination-pattern.md`](patterns/hive-coordination-pattern.md) | Hive-enabled multi-agent coordination + `blueprint hive setup` |
 | [`docs/governance/hive-identity-gap.md`](governance/hive-identity-gap.md) | Hive's shared-bearer trust limitation; read before any client engagement |
@@ -80,8 +88,7 @@ Numbered consumer-local decisions (`docs/decisions/0001`..`0005`) cover narrower
 
 | Doc | Context |
 |---|---|
-| [`docs/context/bc-marketplace-context.md`](context/bc-marketplace-context.md) | the commerce platform Marketplace |
-| [`docs/context/bc-b2b-edition-context.md`](context/bc-b2b-edition-context.md) | the commerce platform B2B Edition |
+| Platform marketplace + B2B Edition context packs | private — supplied per engagement (`b2b_edition.enabled: true`) |
 
 **Pattern library** (reference patterns, applied as needed): [`docs/patterns/archaeology-substrate-pattern.md`](patterns/archaeology-substrate-pattern.md), [`docs/patterns/clustered-tool-surface-pattern.md`](patterns/clustered-tool-surface-pattern.md), [`docs/patterns/dependency-graph-view-pattern.md`](patterns/dependency-graph-view-pattern.md), [`docs/patterns/doc-discipline-micro-patterns.md`](patterns/doc-discipline-micro-patterns.md), [`docs/patterns/hive-closure-drift-sync-pattern.md`](patterns/hive-closure-drift-sync-pattern.md), [`docs/patterns/invariants-registry-pattern.md`](patterns/invariants-registry-pattern.md), [`docs/patterns/owner-spec-pattern.md`](patterns/owner-spec-pattern.md), [`docs/patterns/proposal-grain-pattern.md`](patterns/proposal-grain-pattern.md), [`docs/case-studies/prototype-vs-production-traceability-sweep.md`](case-studies/prototype-vs-production-traceability-sweep.md), [`docs/patterns/register-pattern.md`](patterns/register-pattern.md), [`docs/patterns/skill-categories-pattern.md`](patterns/skill-categories-pattern.md), [`docs/patterns/traceability-state-join-pattern.md`](patterns/traceability-state-join-pattern.md), [`docs/patterns/wave-log-digest-pattern.md`](patterns/wave-log-digest-pattern.md).
 
@@ -95,7 +102,7 @@ Why the methodology exists and how it reasons.
 | [`docs/productization/README.md`](productization/README.md) | The goal, the gap scorecard, the six tracks, the ADR→feature→wave map |
 | [`docs/case-studies/case-study-pp-cx.md`](case-studies/case-study-pp-cx.md) | Worked example — 11 pages, embedded agent |
 | [`docs/case-studies/case-study-v3-portal-css-gap.md`](case-studies/case-study-v3-portal-css-gap.md) | Incident → encoding → durable fix |
-| [`docs/case-studies/case-study-subs-initiative-skipped-stages-2-4.md`](case-studies/case-study-subs-initiative-skipped-stages-2-4.md) | Worked example — skipping stages 2 and 4 with justification |
+| [`docs/case-studies/case-study-subs-skipped-stages-2-4.md`](case-studies/case-study-subs-skipped-stages-2-4.md) | Worked example — skipping stages 2 and 4 with justification |
 | [`docs/_archive/2026-05-25-three-session-reconciliation.md`](_archive/2026-05-25-three-session-reconciliation.md) | Concurrent-drift analysis + eight encoding solutions |
 | [`docs/_archive/2026-05-27-extended-audit-findings.md`](_archive/2026-05-27-extended-audit-findings.md) | Extended audit findings |
 | [`docs/_archive/2026-05-27-loom-market-comparison.md`](_archive/2026-05-27-loom-market-comparison.md) | Loom market comparison |
@@ -125,7 +132,7 @@ Then stage-specific:
 - **Stage 5 (documents):** [`docs/context/voice-template.md`](context/voice-template.md)
 - **Stage 6 (deploy):** [`docs/patterns/cloudflare-deployment-pattern.md`](patterns/cloudflare-deployment-pattern.md) (Cloudflare) or `README.md` § Deploy (Vercel)
 
-Variant context: [`docs/context/bc-marketplace-context.md`](context/bc-marketplace-context.md), [`docs/context/bc-b2b-edition-context.md`](context/bc-b2b-edition-context.md) + [`docs/context/bc-b2b-buyer-portal-integration.md`](context/bc-b2b-buyer-portal-integration.md), [`docs/patterns/hive-coordination-pattern.md`](patterns/hive-coordination-pattern.md).
+Variant context: the private platform context packs (marketplace, B2B edition, buyer portal — supplied per engagement), [`docs/patterns/hive-coordination-pattern.md`](patterns/hive-coordination-pattern.md).
 
 Coordination + infra (>1 operator): [`docs/governance/team-roles-and-conventions.md`](governance/team-roles-and-conventions.md) (start here — the litmus), [`docs/patterns/hive-coordination-pattern.md`](patterns/hive-coordination-pattern.md) + [`docs/governance/hive-identity-gap.md`](governance/hive-identity-gap.md), [`docs/patterns/multi-operator-collab-pattern.md`](patterns/multi-operator-collab-pattern.md), [`docs/patterns/operator-handoff-pattern.md`](patterns/operator-handoff-pattern.md), [`docs/patterns/tiered-orchestration-pattern.md`](patterns/tiered-orchestration-pattern.md), [`CLAUDE.md`](../CLAUDE.md) § Operating Invariants.
 

@@ -44,7 +44,7 @@ These extend `terminology-linter`'s base ban list for B2B contexts:
 
 ## Platform-fidelity citations
 
-Every storefront claim that touches B2B surfaces must cite a contract method from `docs/context/bc-b2b-buyer-portal-integration.md`. The `citation-checker` sub-agent enforces this.
+Every storefront claim that touches B2B surfaces must cite a contract method from the private buyer-portal integration pack (supplied per engagement). The `citation-checker` sub-agent enforces this.
 
 | Surface | Required citation |
 |---|---|
@@ -56,8 +56,8 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 ## References
 
-- `~/Workspace/dev/tools/blueprint/docs/context/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
-- `~/Workspace/dev/tools/blueprint/docs/context/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
+- the private B2B edition context pack — data model, surfaces, ownership boundaries (supplied per engagement)
+- the private buyer-portal integration pack — framework-agnostic integration contract (supplied per engagement)
 
 ## Origin
 

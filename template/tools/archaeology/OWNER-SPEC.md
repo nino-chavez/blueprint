@@ -51,7 +51,7 @@ Mirror the pattern: `commits.py`, `prs.py`, `issues.py` (or `hive.py`), `adrs.py
 
 ## Failure modes seen
 
-(Populate on first incident. Reference pattern: subs-initiative saw the silent-failure mode where `docs/strategy/` shipped without an ingester — chat island returned nothing when interrogated. Codified the wire-up rule afterward.)
+(Populate on first incident. Reference pattern: blueprint-example saw the silent-failure mode where `docs/strategy/` shipped without an ingester — chat island returned nothing when interrogated. Codified the wire-up rule afterward.)
 
 ## Coupling
 
@@ -65,7 +65,7 @@ Mirror the pattern: `commits.py`, `prs.py`, `issues.py` (or `hive.py`), `adrs.py
 
 ### Add a new `docs/<category>/` corpus
 
-**The two-artifacts rule (codified after subs-initiative' silent-failure incident):**
+**The two-artifacts rule (codified after blueprint-example' silent-failure incident):**
 1. Ingester at `tools/archaeology/ingesters/<category>.py` emitting `<category>_doc` events
 2. Path filter + ingest step in `.github/workflows/archaeology-tail-docs.yml`
 

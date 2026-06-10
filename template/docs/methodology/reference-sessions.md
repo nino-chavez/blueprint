@@ -20,7 +20,7 @@ Sessions run on prior Blueprint initiatives that are canonical examples for meth
 - [architect-challenge-pattern.md](architect-challenge-pattern.md) — expression-surface comparison, named from the architectural-options analysis
 
 **Scaffold contamination caught**:
-- The stamped portal inherited subs-initiative strategy content verbatim (delivery-fork.astro contained a 20-row native-shape gap matrix with RabbitMQ/BigPay/Nomad references; strategy/index.astro had a subs-initiative delivery-fork entry). 
+- The stamped portal inherited blueprint-example strategy content verbatim (delivery-fork.astro contained a 20-row native-shape gap matrix with RabbitMQ/BigPay/Nomad references; strategy/index.astro had a blueprint-example delivery-fork entry). 
 - Root cause: the stamper performed string substitutions but never blanked the archaeology WORKER_URL or replaced strategy page content with neutral skeletons.
 - Fix: four stamp.mjs + template changes (see Amendment 1 in METHODOLOGY-AMENDMENTS.md in promo-initiative).
 

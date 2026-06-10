@@ -1,12 +1,12 @@
 # Definition-of-Done Verification Ladder
 
-**Status: spec-side (wave 52).** Instance 1 — the `subs-initiative` consumer — is standing up the mechanical implementation now; its ratified design gets upstreamed in a follow-up wave per the proof-first discipline (same sequencing as the Mom Test wave: spec first, mechanics after a live initiative proves the shape).
+**Status: spec-side (wave 52).** Instance 1 — the `blueprint-example` consumer — is standing up the mechanical implementation now; its ratified design gets upstreamed in a follow-up wave per the proof-first discipline (same sequencing as the Mom Test wave: spec first, mechanics after a live initiative proves the shape).
 
 ## The principle: a presence oracle is not a function oracle
 
 `tools/state-derive` answers one question well: **do the expected code artifacts exist?** Every check primitive it ships is static — `file_exists`, `grep_present`/`grep_absent`/`grep_count`, `schema_has_table`/`schema_has_column`, `commit_message_grep`. None of them execute code, hit an endpoint, or assert that a test passed.
 
-That makes `COMPLIANT` a **presence** verdict, not a **function** verdict. The failure mode this distinction prevents (observed on subs-initiative, 2026-06-10): a storefront widget injector emitted `<subs-initiative-widget>` while the PDP renderer read `[data-bcs-widget]`. Both files existed, both checks matched, the capability read COMPLIANT — and the feature was broken. Presence checks can never catch a seam bug, because seam bugs live in *behavior between* artifacts that each individually exist.
+That makes `COMPLIANT` a **presence** verdict, not a **function** verdict. The failure mode this distinction prevents (observed on blueprint-example, 2026-06-10): a storefront widget injector emitted `<blueprint-example-widget>` while the PDP renderer read `[data-bcs-widget]`. Both files existed, both checks matched, the capability read COMPLIANT — and the feature was broken. Presence checks can never catch a seam bug, because seam bugs live in *behavior between* artifacts that each individually exist.
 
 The bug isn't state-derive — it does exactly what it claims. The bug is **authority bleed**: a presence register gets enshrined as "the implementation-state authority," and "present" quietly starts meaning "built and working." Once a portal tile, a roadmap, or a stakeholder doc renders COMPLIANT as "shipped," the conflation is institutional.
 
@@ -33,12 +33,12 @@ Rules that make the ladder honest:
 
 ## Design decisions delegated to instance 1
 
-These are open until subs-initiative ratifies its design (Hive [Decision] + ADR); do not pre-build them in the template:
+These are open until blueprint-example ratifies its design (Hive [Decision] + ADR); do not pre-build them in the template:
 
 1. **Behavioral primitive vs sibling tool.** A `scenario_passes`-style check primitive inside state-derive (reading a CI-produced test-results artifact — keeps the tool deterministic and zero-dep, since it parses evidence rather than executing tests) vs a sibling `behavior-derive` tool joined downstream. Either way, the oracle is *recorded results*, not inline execution.
 2. **Per-AC ↔ scenario linkage** in the traceability registry (candidate fields: `acVerified`, `scenarioStatus`) and the join-key contract that keeps it drift-resistant — the same discipline as the `BRD.md §US-X.Y:` reference prefix in `docs/patterns/traceability-state-join-pattern.md`.
 3. **Blocked-external modeling** — where the marker lives (catalog field vs registry annotation) and how it expires.
-4. **Drift resistance** — how the DoD checks avoid the catalog-drift failure mode (subs-initiative reconciliation found ~90% of one register's RED flags were drift, not regressions). Candidate: the defrag/doc-currency cadence treats the catalog itself as an audited surface.
+4. **Drift resistance** — how the DoD checks avoid the catalog-drift failure mode (the subscriptions-initiative reconciliation found ~90% of one register's RED flags were drift, not regressions). Candidate: the defrag/doc-currency cadence treats the catalog itself as an audited surface.
 
 ## What changed spec-side in wave 52 (already true)
 

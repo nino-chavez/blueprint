@@ -4,7 +4,7 @@
  *   import * as NavBar from '@blueprint/ui/navbar';
  *
  *   <NavBar.Root>
- *     <NavBar.Brand href="/">subs-initiative</NavBar.Brand>
+ *     <NavBar.Brand href="/">blueprint-example</NavBar.Brand>
  *     <NavBar.Switcher>
  *       <NavBar.Item href="/discover" active>Discover</NavBar.Item>
  *       <NavBar.Item href="/try">Try</NavBar.Item>

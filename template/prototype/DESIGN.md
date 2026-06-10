@@ -381,7 +381,7 @@ Every flow must name *which actor* (per the multi-actor role pattern):
 
 ### Additional Platform-Fidelity Requirement
 
-Every storefront claim that touches B2B surfaces must cite a contract method from `docs/context/bc-b2b-buyer-portal-integration.md`:
+Every storefront claim that touches B2B surfaces must cite a contract method from the private buyer-portal integration pack (supplied per engagement):
 
 | Surface | Required citation |
 |---|---|
@@ -393,6 +393,6 @@ Every storefront claim that touches B2B surfaces must cite a contract method fro
 
 ### Additional Reference
 
-- `$BLUEPRINT_HOME/docs/context/bc-b2b-edition-context.md` — data model, surfaces, ownership boundaries
-- `$BLUEPRINT_HOME/docs/context/bc-b2b-buyer-portal-integration.md` — framework-agnostic integration contract
-- Multi-actor role pattern: `wip/subs-initiative/docs/decisions/0023-b2b-checkout-ownership.md`
+- the private B2B edition context pack — data model, surfaces, ownership boundaries
+- the private buyer-portal integration pack — framework-agnostic integration contract
+- Multi-actor role pattern: `wip/blueprint-example/docs/decisions/0023-b2b-checkout-ownership.md`

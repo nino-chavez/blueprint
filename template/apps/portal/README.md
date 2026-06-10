@@ -56,17 +56,17 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=<absolute path to initiative root>
 ```
 
-The stamper handles project name, repo URL, tagline, package scope, `--bcs-*` CSS prefix, and logo substitution. Post-stamp mechanical check fails on any unexpected residual `subs-initiative` strings.
+The stamper handles project name, repo URL, tagline, package scope, `--bpx-*` CSS prefix, and logo substitution. Post-stamp mechanical check fails on any unexpected residual `blueprint-example` strings.
 
 ## Substrate-specific extensions
 
-Some surfaces in this scaffold are substrate-aware (Hive, state-derive, the commerce platform governance views) and are NOT generic Tier-1 features:
+Some surfaces in this scaffold are substrate-aware (Hive, state-derive, platform governance views) and are NOT generic Tier-1 features:
 
 | Surface | What it does | Tier-1 default |
 |---|---|---|
 | `src/lib/derived.ts` + `src/components/DerivedRoadmap.tsx` | Reads `docs/audits/_state.json` (state-derive output) and Hive substrate data | Replace with hand-authored markdown roadmap if `substrate: 'none'` in `blueprint.yml` |
 | `src/components/SubstrateDashboards.tsx`, `src/pages/inspect/gates.astro`, `coverage.astro`, `dependencies.astro`, `attestations.astro` | Hive-and-state-derive governance dashboards | Ship `/inspect` as a single methodology overview page linking to `docs/decisions/` (ADRs) for Tier 1 without Hive |
-| Content paths in `src/lib/content.ts` (`PRD.md`, `BRD.md`, `STRATEGY.md`, etc.) | Hard-coded to subs-initiative document filenames | Initiative may override by editing the doc-name list; future ADR to parameterize via `blueprint.yml` |
+| Content paths in `src/lib/content.ts` (`PRD.md`, `BRD.md`, `STRATEGY.md`, etc.) | Hard-coded to the reference initiative's document filenames | Initiative may override by editing the doc-name list; future ADR to parameterize via `blueprint.yml` |
 
 The substrate-specific paths are advanced Tier-2 features that should ideally move to an optional `@blueprint/ui-substrate-hive` add-on package — tracked in the methodology backlog.
 

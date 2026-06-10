@@ -3,7 +3,7 @@
 This tool hydrates a full Atlassian SDLC (Jira + Confluence + Xray) **headlessly
 from a project's substrate** — derived from a `big-blueprint`/`ai-hive`-shaped
 repo (GH issues + BRD stories + ADRs + `.feature` files + DoD gates). It was
-proven end-to-end on `subs-initiative` (spike #685): 238 Jira issues (28 epics +
+proven end-to-end on `blueprint-example` (spike #685): 238 Jira issues (28 epics +
 210 stories) + dependency links, 443 Xray tests with AC-coverage, 134 Confluence
 pages — all via API. See [`docs/_archive/atlassian-sdlc-export.md`](../../../docs/_archive/atlassian-sdlc-export.md)
 for the full product mapping + decision trail.
@@ -18,9 +18,9 @@ for the full product mapping + decision trail.
 | `export.py` | `STORY_HEADER_RE` / `META_LINE_RE` | your BRD story-heading + metadata-line format |
 | `xray_csv.py` / `xray_graphql.py` | `FEATURE_DIR`, `DURABLE_TEAM` | your `.feature` dir + team name |
 | `compass.py` | `APPS_DIR`, `DOD_DIR`, `DOD_FRAMEWORK`, `TYPE_MAP` | your services + DoD gate doc |
-| `importer.py` | the `the-org-production-host` prod-guard | your org's prod host(s) to refuse |
+| `importer.py` | the production-host guard | your org's prod host(s) to refuse |
 
-## Operator one-time setup (per the subs-initiative run)
+## Operator one-time setup (per the blueprint-example run)
 
 1. **Free Atlassian Cloud site** where you are admin (personal site is fine).
 2. **Jira: company-managed project** — team-managed projects can't host Xray.

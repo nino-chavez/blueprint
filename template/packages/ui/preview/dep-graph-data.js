@@ -22,7 +22,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1395"
+      "url": "https://github.com/example/blueprint-example/issues/1395"
     },
     {
       "id": "1387",
@@ -33,7 +33,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1387"
+      "url": "https://github.com/example/blueprint-example/issues/1387"
     },
     {
       "id": "1385",
@@ -44,18 +44,18 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1385"
+      "url": "https://github.com/example/blueprint-example/issues/1385"
     },
     {
       "id": "1373",
-      "label": "Extract scheduled() + queue producers from the-api-worker → d…",
+      "label": "Extract scheduled() + queue producers from the api worker → d…",
       "status": "compliant",
       "meta": "#1373",
       "phase": "1",
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1373"
+      "url": "https://github.com/example/blueprint-example/issues/1373"
     },
     {
       "id": "1368",
@@ -66,7 +66,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1368"
+      "url": "https://github.com/example/blueprint-example/issues/1368"
     },
     {
       "id": "1367",
@@ -77,7 +77,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1367"
+      "url": "https://github.com/example/blueprint-example/issues/1367"
     },
     {
       "id": "1366",
@@ -88,7 +88,7 @@ window.GRAPH_DATA = {
       "surface": "storefront",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1366"
+      "url": "https://github.com/example/blueprint-example/issues/1366"
     },
     {
       "id": "1359",
@@ -99,7 +99,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1359"
+      "url": "https://github.com/example/blueprint-example/issues/1359"
     },
     {
       "id": "1346",
@@ -110,7 +110,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "in-flight",
-      "url": "the subscriptions initiative's repo (private)/issues/1346"
+      "url": "https://github.com/example/blueprint-example/issues/1346"
     },
     {
       "id": "1345",
@@ -121,7 +121,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1345"
+      "url": "https://github.com/example/blueprint-example/issues/1345"
     },
     {
       "id": "1338",
@@ -132,7 +132,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1338"
+      "url": "https://github.com/example/blueprint-example/issues/1338"
     },
     {
       "id": "1336",
@@ -143,7 +143,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1336"
+      "url": "https://github.com/example/blueprint-example/issues/1336"
     },
     {
       "id": "1334",
@@ -154,7 +154,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1334"
+      "url": "https://github.com/example/blueprint-example/issues/1334"
     },
     {
       "id": "1333",
@@ -165,7 +165,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1333"
+      "url": "https://github.com/example/blueprint-example/issues/1333"
     },
     {
       "id": "1332",
@@ -176,7 +176,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1332"
+      "url": "https://github.com/example/blueprint-example/issues/1332"
     },
     {
       "id": "1331",
@@ -187,7 +187,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1331"
+      "url": "https://github.com/example/blueprint-example/issues/1331"
     },
     {
       "id": "1330",
@@ -198,7 +198,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1330"
+      "url": "https://github.com/example/blueprint-example/issues/1330"
     },
     {
       "id": "1329",
@@ -209,7 +209,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1329"
+      "url": "https://github.com/example/blueprint-example/issues/1329"
     },
     {
       "id": "1328",
@@ -220,7 +220,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1328"
+      "url": "https://github.com/example/blueprint-example/issues/1328"
     },
     {
       "id": "1327",
@@ -231,7 +231,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1327"
+      "url": "https://github.com/example/blueprint-example/issues/1327"
     },
     {
       "id": "1324",
@@ -242,7 +242,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1324"
+      "url": "https://github.com/example/blueprint-example/issues/1324"
     },
     {
       "id": "1323",
@@ -253,7 +253,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1323"
+      "url": "https://github.com/example/blueprint-example/issues/1323"
     },
     {
       "id": "1321",
@@ -264,7 +264,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1321"
+      "url": "https://github.com/example/blueprint-example/issues/1321"
     },
     {
       "id": "1320",
@@ -275,7 +275,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1320"
+      "url": "https://github.com/example/blueprint-example/issues/1320"
     },
     {
       "id": "1319",
@@ -286,7 +286,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1319"
+      "url": "https://github.com/example/blueprint-example/issues/1319"
     },
     {
       "id": "1317",
@@ -297,7 +297,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1317"
+      "url": "https://github.com/example/blueprint-example/issues/1317"
     },
     {
       "id": "1312",
@@ -308,7 +308,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "in-flight",
-      "url": "the subscriptions initiative's repo (private)/issues/1312"
+      "url": "https://github.com/example/blueprint-example/issues/1312"
     },
     {
       "id": "1310",
@@ -319,7 +319,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1310"
+      "url": "https://github.com/example/blueprint-example/issues/1310"
     },
     {
       "id": "1307",
@@ -330,7 +330,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1307"
+      "url": "https://github.com/example/blueprint-example/issues/1307"
     },
     {
       "id": "1303",
@@ -341,7 +341,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1303"
+      "url": "https://github.com/example/blueprint-example/issues/1303"
     },
     {
       "id": "1299",
@@ -352,7 +352,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1299"
+      "url": "https://github.com/example/blueprint-example/issues/1299"
     },
     {
       "id": "1294",
@@ -363,7 +363,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1294"
+      "url": "https://github.com/example/blueprint-example/issues/1294"
     },
     {
       "id": "1288",
@@ -374,7 +374,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "decision",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1288"
+      "url": "https://github.com/example/blueprint-example/issues/1288"
     },
     {
       "id": "1284",
@@ -385,7 +385,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/1284"
+      "url": "https://github.com/example/blueprint-example/issues/1284"
     },
     {
       "id": "1283",
@@ -396,7 +396,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/1283"
+      "url": "https://github.com/example/blueprint-example/issues/1283"
     },
     {
       "id": "1282",
@@ -407,7 +407,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1282"
+      "url": "https://github.com/example/blueprint-example/issues/1282"
     },
     {
       "id": "1281",
@@ -418,7 +418,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/1281"
+      "url": "https://github.com/example/blueprint-example/issues/1281"
     },
     {
       "id": "1280",
@@ -429,7 +429,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/1280"
+      "url": "https://github.com/example/blueprint-example/issues/1280"
     },
     {
       "id": "1279",
@@ -440,7 +440,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/1279"
+      "url": "https://github.com/example/blueprint-example/issues/1279"
     },
     {
       "id": "1278",
@@ -451,7 +451,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1278"
+      "url": "https://github.com/example/blueprint-example/issues/1278"
     },
     {
       "id": "1269",
@@ -462,7 +462,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "shipped-not-closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1269"
+      "url": "https://github.com/example/blueprint-example/issues/1269"
     },
     {
       "id": "1227",
@@ -473,7 +473,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1227"
+      "url": "https://github.com/example/blueprint-example/issues/1227"
     },
     {
       "id": "1187",
@@ -484,7 +484,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1187"
+      "url": "https://github.com/example/blueprint-example/issues/1187"
     },
     {
       "id": "1173",
@@ -495,7 +495,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1173"
+      "url": "https://github.com/example/blueprint-example/issues/1173"
     },
     {
       "id": "1167",
@@ -506,7 +506,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1167"
+      "url": "https://github.com/example/blueprint-example/issues/1167"
     },
     {
       "id": "1165",
@@ -517,7 +517,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/1165"
+      "url": "https://github.com/example/blueprint-example/issues/1165"
     },
     {
       "id": "1160",
@@ -528,7 +528,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1160"
+      "url": "https://github.com/example/blueprint-example/issues/1160"
     },
     {
       "id": "1155",
@@ -539,7 +539,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1155"
+      "url": "https://github.com/example/blueprint-example/issues/1155"
     },
     {
       "id": "1154",
@@ -550,7 +550,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1154"
+      "url": "https://github.com/example/blueprint-example/issues/1154"
     },
     {
       "id": "1153",
@@ -561,7 +561,7 @@ window.GRAPH_DATA = {
       "surface": "storefront",
       "type": "spike",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1153"
+      "url": "https://github.com/example/blueprint-example/issues/1153"
     },
     {
       "id": "1152",
@@ -572,7 +572,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1152"
+      "url": "https://github.com/example/blueprint-example/issues/1152"
     },
     {
       "id": "1148",
@@ -583,7 +583,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1148"
+      "url": "https://github.com/example/blueprint-example/issues/1148"
     },
     {
       "id": "1141",
@@ -594,7 +594,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1141"
+      "url": "https://github.com/example/blueprint-example/issues/1141"
     },
     {
       "id": "1136",
@@ -605,7 +605,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1136"
+      "url": "https://github.com/example/blueprint-example/issues/1136"
     },
     {
       "id": "1129",
@@ -616,7 +616,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "in-flight",
-      "url": "the subscriptions initiative's repo (private)/issues/1129"
+      "url": "https://github.com/example/blueprint-example/issues/1129"
     },
     {
       "id": "1127",
@@ -627,7 +627,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1127"
+      "url": "https://github.com/example/blueprint-example/issues/1127"
     },
     {
       "id": "1125",
@@ -638,7 +638,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1125"
+      "url": "https://github.com/example/blueprint-example/issues/1125"
     },
     {
       "id": "1112",
@@ -649,7 +649,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1112"
+      "url": "https://github.com/example/blueprint-example/issues/1112"
     },
     {
       "id": "1109",
@@ -660,7 +660,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "decision",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1109"
+      "url": "https://github.com/example/blueprint-example/issues/1109"
     },
     {
       "id": "1094",
@@ -671,7 +671,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1094"
+      "url": "https://github.com/example/blueprint-example/issues/1094"
     },
     {
       "id": "1035",
@@ -682,7 +682,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1035"
+      "url": "https://github.com/example/blueprint-example/issues/1035"
     },
     {
       "id": "1026",
@@ -693,7 +693,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1026"
+      "url": "https://github.com/example/blueprint-example/issues/1026"
     },
     {
       "id": "1024",
@@ -704,7 +704,7 @@ window.GRAPH_DATA = {
       "surface": "merchant-admin",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/1024"
+      "url": "https://github.com/example/blueprint-example/issues/1024"
     },
     {
       "id": "998",
@@ -715,7 +715,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/998"
+      "url": "https://github.com/example/blueprint-example/issues/998"
     },
     {
       "id": "996",
@@ -726,7 +726,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/996"
+      "url": "https://github.com/example/blueprint-example/issues/996"
     },
     {
       "id": "989",
@@ -737,7 +737,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/989"
+      "url": "https://github.com/example/blueprint-example/issues/989"
     },
     {
       "id": "975",
@@ -745,7 +745,7 @@ window.GRAPH_DATA = {
       "status": "neutral",
       "meta": "#975",
       "bucket": "other",
-      "url": "the subscriptions initiative's repo (private)/issues/975"
+      "url": "https://github.com/example/blueprint-example/issues/975"
     },
     {
       "id": "890",
@@ -756,7 +756,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "decision",
       "bucket": "in-flight",
-      "url": "the subscriptions initiative's repo (private)/issues/890"
+      "url": "https://github.com/example/blueprint-example/issues/890"
     },
     {
       "id": "881",
@@ -767,7 +767,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spike",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/881"
+      "url": "https://github.com/example/blueprint-example/issues/881"
     },
     {
       "id": "880",
@@ -778,7 +778,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/880"
+      "url": "https://github.com/example/blueprint-example/issues/880"
     },
     {
       "id": "879",
@@ -789,7 +789,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/879"
+      "url": "https://github.com/example/blueprint-example/issues/879"
     },
     {
       "id": "842",
@@ -797,7 +797,7 @@ window.GRAPH_DATA = {
       "status": "neutral",
       "meta": "#842",
       "bucket": "other",
-      "url": "the subscriptions initiative's repo (private)/issues/842"
+      "url": "https://github.com/example/blueprint-example/issues/842"
     },
     {
       "id": "813",
@@ -808,7 +808,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/813"
+      "url": "https://github.com/example/blueprint-example/issues/813"
     },
     {
       "id": "811",
@@ -819,7 +819,7 @@ window.GRAPH_DATA = {
       "surface": "storefront",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/811"
+      "url": "https://github.com/example/blueprint-example/issues/811"
     },
     {
       "id": "773",
@@ -830,7 +830,7 @@ window.GRAPH_DATA = {
       "surface": "storefront",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/773"
+      "url": "https://github.com/example/blueprint-example/issues/773"
     },
     {
       "id": "769",
@@ -841,7 +841,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/769"
+      "url": "https://github.com/example/blueprint-example/issues/769"
     },
     {
       "id": "685",
@@ -852,7 +852,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "spike",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/685"
+      "url": "https://github.com/example/blueprint-example/issues/685"
     },
     {
       "id": "587",
@@ -863,7 +863,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "decision",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/587"
+      "url": "https://github.com/example/blueprint-example/issues/587"
     },
     {
       "id": "584",
@@ -874,7 +874,7 @@ window.GRAPH_DATA = {
       "surface": "api",
       "type": "spike",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/584"
+      "url": "https://github.com/example/blueprint-example/issues/584"
     },
     {
       "id": "495",
@@ -885,7 +885,7 @@ window.GRAPH_DATA = {
       "surface": "storefront",
       "type": "spec",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/495"
+      "url": "https://github.com/example/blueprint-example/issues/495"
     },
     {
       "id": "100",
@@ -893,7 +893,7 @@ window.GRAPH_DATA = {
       "status": "manual-review",
       "meta": "#100",
       "bucket": "awaiting-synthesis",
-      "url": "the subscriptions initiative's repo (private)/issues/100"
+      "url": "https://github.com/example/blueprint-example/issues/100"
     },
     {
       "id": "59",
@@ -904,7 +904,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/59"
+      "url": "https://github.com/example/blueprint-example/issues/59"
     },
     {
       "id": "58",
@@ -915,7 +915,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/58"
+      "url": "https://github.com/example/blueprint-example/issues/58"
     },
     {
       "id": "57",
@@ -926,7 +926,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/57"
+      "url": "https://github.com/example/blueprint-example/issues/57"
     },
     {
       "id": "56",
@@ -937,7 +937,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/56"
+      "url": "https://github.com/example/blueprint-example/issues/56"
     },
     {
       "id": "55",
@@ -948,7 +948,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/55"
+      "url": "https://github.com/example/blueprint-example/issues/55"
     },
     {
       "id": "54",
@@ -959,7 +959,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/54"
+      "url": "https://github.com/example/blueprint-example/issues/54"
     },
     {
       "id": "53",
@@ -970,7 +970,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/53"
+      "url": "https://github.com/example/blueprint-example/issues/53"
     },
     {
       "id": "52",
@@ -981,7 +981,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/52"
+      "url": "https://github.com/example/blueprint-example/issues/52"
     },
     {
       "id": "50",
@@ -992,7 +992,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/50"
+      "url": "https://github.com/example/blueprint-example/issues/50"
     },
     {
       "id": "49",
@@ -1003,7 +1003,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/49"
+      "url": "https://github.com/example/blueprint-example/issues/49"
     },
     {
       "id": "48",
@@ -1014,7 +1014,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/48"
+      "url": "https://github.com/example/blueprint-example/issues/48"
     },
     {
       "id": "47",
@@ -1025,7 +1025,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/47"
+      "url": "https://github.com/example/blueprint-example/issues/47"
     },
     {
       "id": "45",
@@ -1036,7 +1036,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/45"
+      "url": "https://github.com/example/blueprint-example/issues/45"
     },
     {
       "id": "44",
@@ -1047,7 +1047,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/44"
+      "url": "https://github.com/example/blueprint-example/issues/44"
     },
     {
       "id": "43",
@@ -1058,7 +1058,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/43"
+      "url": "https://github.com/example/blueprint-example/issues/43"
     },
     {
       "id": "42",
@@ -1069,7 +1069,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/42"
+      "url": "https://github.com/example/blueprint-example/issues/42"
     },
     {
       "id": "41",
@@ -1080,7 +1080,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/41"
+      "url": "https://github.com/example/blueprint-example/issues/41"
     },
     {
       "id": "40",
@@ -1091,7 +1091,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/40"
+      "url": "https://github.com/example/blueprint-example/issues/40"
     },
     {
       "id": "39",
@@ -1102,7 +1102,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/39"
+      "url": "https://github.com/example/blueprint-example/issues/39"
     },
     {
       "id": "38",
@@ -1113,7 +1113,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/38"
+      "url": "https://github.com/example/blueprint-example/issues/38"
     },
     {
       "id": "37",
@@ -1124,7 +1124,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/37"
+      "url": "https://github.com/example/blueprint-example/issues/37"
     },
     {
       "id": "36",
@@ -1135,7 +1135,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/36"
+      "url": "https://github.com/example/blueprint-example/issues/36"
     },
     {
       "id": "35",
@@ -1146,7 +1146,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/35"
+      "url": "https://github.com/example/blueprint-example/issues/35"
     },
     {
       "id": "34",
@@ -1157,7 +1157,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/34"
+      "url": "https://github.com/example/blueprint-example/issues/34"
     },
     {
       "id": "32",
@@ -1168,7 +1168,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/32"
+      "url": "https://github.com/example/blueprint-example/issues/32"
     },
     {
       "id": "31",
@@ -1179,7 +1179,7 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/31"
+      "url": "https://github.com/example/blueprint-example/issues/31"
     },
     {
       "id": "30",
@@ -1190,133 +1190,133 @@ window.GRAPH_DATA = {
       "surface": "cross-cutting",
       "type": "epic",
       "bucket": "reference",
-      "url": "the subscriptions initiative's repo (private)/issues/30"
+      "url": "https://github.com/example/blueprint-example/issues/30"
     },
     {
       "id": "1309",
       "label": "#1309 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1309"
+      "url": "https://github.com/example/blueprint-example/issues/1309"
     },
     {
       "id": "1311",
       "label": "#1311 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1311"
+      "url": "https://github.com/example/blueprint-example/issues/1311"
     },
     {
       "id": "1313",
       "label": "#1313 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1313"
+      "url": "https://github.com/example/blueprint-example/issues/1313"
     },
     {
       "id": "1314",
       "label": "#1314 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1314"
+      "url": "https://github.com/example/blueprint-example/issues/1314"
     },
     {
       "id": "1315",
       "label": "#1315 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1315"
+      "url": "https://github.com/example/blueprint-example/issues/1315"
     },
     {
       "id": "1316",
       "label": "#1316 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1316"
+      "url": "https://github.com/example/blueprint-example/issues/1316"
     },
     {
       "id": "1304",
       "label": "#1304 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1304"
+      "url": "https://github.com/example/blueprint-example/issues/1304"
     },
     {
       "id": "1305",
       "label": "#1305 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1305"
+      "url": "https://github.com/example/blueprint-example/issues/1305"
     },
     {
       "id": "1306",
       "label": "#1306 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1306"
+      "url": "https://github.com/example/blueprint-example/issues/1306"
     },
     {
       "id": "1308",
       "label": "#1308 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1308"
+      "url": "https://github.com/example/blueprint-example/issues/1308"
     },
     {
       "id": "1290",
       "label": "#1290 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1290"
+      "url": "https://github.com/example/blueprint-example/issues/1290"
     },
     {
       "id": "1291",
       "label": "#1291 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1291"
+      "url": "https://github.com/example/blueprint-example/issues/1291"
     },
     {
       "id": "1292",
       "label": "#1292 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1292"
+      "url": "https://github.com/example/blueprint-example/issues/1292"
     },
     {
       "id": "1293",
       "label": "#1293 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1293"
+      "url": "https://github.com/example/blueprint-example/issues/1293"
     },
     {
       "id": "1286",
       "label": "#1286 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/1286"
+      "url": "https://github.com/example/blueprint-example/issues/1286"
     },
     {
       "id": "901",
       "label": "#901 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/901"
+      "url": "https://github.com/example/blueprint-example/issues/901"
     },
     {
       "id": "834",
       "label": "#834 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/834"
+      "url": "https://github.com/example/blueprint-example/issues/834"
     },
     {
       "id": "878",
       "label": "#878 (closed)",
       "status": "compliant",
       "meta": "closed",
-      "url": "the subscriptions initiative's repo (private)/issues/878"
+      "url": "https://github.com/example/blueprint-example/issues/878"
     }
   ],
   "edges": [

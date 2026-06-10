@@ -62,12 +62,12 @@ def emit_components() -> list[dict]:
         comps.append({
             "name": f"subs-{name}",
             "type": TYPE_MAP.get(name, "OTHER"),
-            "description": f"subs-initiative {name} surface",
+            "description": f"blueprint-example {name} surface",
             "ownerId": "<team-id>",                       # operator fills (Compass team)
             "links": [{"type": "REPOSITORY",
-                       "url": "the subscriptions initiative's repo (private)",
+                       "url": "https://github.com/example/blueprint-example",
                        "name": f"apps/{name}"}],
-            "labels": ["subs-initiative"],
+            "labels": ["blueprint-example"],
         })
     return comps
 
@@ -81,7 +81,7 @@ def emit_scorecard() -> dict:
                           "weight": 1, "required": int(num) in (1, 3, 5)})
     return {
         "name": "Epic Definition of Done (10-gate)",
-        "description": "subs-initiative per-epic launch-readiness gates "
+        "description": "blueprint-example per-epic launch-readiness gates "
                        "(docs/methodology/epic-definition-of-done.md v0.4).",
         "criteria": gates,
         "scoringStrategy": "WEIGHTED",

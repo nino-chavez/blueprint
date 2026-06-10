@@ -56,7 +56,7 @@ for "existing live product + full redesign":
 STEP 3 — After I confirm, scaffold. Ask me first whether the blueprint
 surface lives at `blueprint/` (subdirectory; the redesign sits alongside
 the existing product) or at the repo root (the redesign replaces the project
-entirely — subs-initiative did this). Then:
+entirely — the subscriptions initiative did this). Then:
 
   - Copy ~/Workspace/dev/tools/blueprint/template/portal/ into the chosen
     location. Pattern B has no stamper yet (per the 2026-05-25 deferred-L5

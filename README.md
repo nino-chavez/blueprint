@@ -1,6 +1,6 @@
 # Blueprint
 
-**Run a product initiative end-to-end, agent-assisted** — research, prototype, strategy docs, fact-check, deploy. You bring the context (screenshots, BRDs, codebase, competitive intel); an AI agent runs the pipeline and ships one portal that serves leadership, engineering, and everyone.
+**Run a product initiative end-to-end, agent-assisted** — research feeds BRD/PRD-class strategy docs, the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel); an AI agent runs the pipeline and ships one portal that serves leadership, engineering, and everyone.
 
 [![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint-platform.pages.dev)
 
@@ -26,7 +26,7 @@ Seven commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` �
 
 ---
 
-A note on the name: originally **the original employer-prefixed name** (extracted from a the commerce platform CX initiative, March 2026); renamed **Blueprint** on 2026-05-25 once it proved general-purpose. The methodology never required a vertical.
+A note on the name: originally carried an employer-prefixed name (extracted from a commerce-platform CX initiative, March 2026); renamed **Blueprint** on 2026-05-25 once it proved general-purpose. The methodology never required a vertical.
 
 ## What This Is
 
@@ -88,24 +88,6 @@ my-initiative/
 └── research/                     # Competitive analysis, market research
 ```
 
-## Quick Start
-
-```bash
-# 1. Create your initiative from the template
-cp -r template/ my-initiative/
-cd my-initiative/
-
-# 2. Configure
-# Edit blueprint.yml — set project name, audience, research scope, execution depth
-
-# 3. Add screenshots of the current product (if available)
-# cp ~/screenshots/*.png prototype/current-state/
-
-# 4. Run the pipeline
-# The CLAUDE.md provides skills (/blueprint-research, /blueprint-prototype, etc.)
-# and agent definitions that an AI assistant can use to execute each stage.
-```
-
 ## Command-line interface — `@nino-chavez-labs/blueprint-cli`
 
 Blueprint ships a thin, dependency-free CLI that operationalizes the methodology
@@ -150,10 +132,10 @@ Blueprint from a single-operator workflow into a team-adoptable platform — was
 *as a Blueprint initiative*, in this repo, and its evidence lives at the root:
 
 - **`blueprint.yml`** — the self-application config (`variant: brownfield`, `tier: 2`,
-  `portal_pattern: A`). The methodology working on itself.
-- **`apps/portal/`** — the **reference-implementation Pattern A portal**: a live demo
-  of what a Blueprint portal looks like, *and* the onboarding knowledge base for new
-  consumers (discover → try → build → operate → inspect → roadmap).
+  `portal_pattern: bespoke` with a divergence ADR at `decisions/02-portal-bespoke-product-site.md`). The methodology working on itself.
+- **`apps/portal/`** — the live product site (bespoke pattern): the public demo
+  of Blueprint *and* the onboarding knowledge base for new consumers
+  (discover → try → build → operate → inspect → roadmap, plus `/learn`).
 - **`research/`, `decisions/`** — the recon synthesis, canonical research, charter, and
   prescription that drove the productization. The promoted ADRs are canon at
   [`docs/decisions/ADR-0003..0007`](docs/decisions/); the methodology's own decision
@@ -170,10 +152,10 @@ substrate everyone else pulls. See `CLAUDE.md` for the invariant.
 
 ### Optional: Add Forge Signal (strategic content generation)
 
-If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline:
+If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline (the tool formerly named Forge Signal — the `signal_forge:` config key is kept for compatibility):
 
 ```bash
-# Clone Forge Signal (if not already installed)
+# Clone Forge Signal (private repo — request access)
 git clone git@github.com:nino-chavez/forge-signal.git ~/tools/forge-signal
 cd ~/tools/forge-signal && npm install
 
@@ -186,14 +168,12 @@ cd ~/tools/forge-signal && npm install
 
 What this gives you: four voice modes (thought-leadership, executive-advisory, solution-architecture, internal-strategy), document quality audit framework, content generation with Ghost Writer → Copywriter → Editor pipeline, and export to Word/PDF/PPTX/HTML.
 
-GitHub: https://github.com/nino-chavez/forge-signal
-
 ### Optional: Add Specchain (implementation specs)
 
 If your initiative needs to produce implementation specs, task breakdowns, or multi-agent development workflows:
 
 ```bash
-# Clone Specchain
+# Clone Specchain (private repo — request access)
 git clone git@github.com:nino-chavez/specchain.git ~/tools/specchain
 cd ~/tools/specchain && bash setup.sh
 
@@ -228,7 +208,7 @@ Every document passes a four-check audit before sharing:
 3. **Logic gaps** — no section contradicts another
 4. **Scannable format** — context in bullets/tables, not dense paragraphs
 
-Full audit framework: the Forge Signal toolchain (separate repo); the in-repo voice rules live at `docs/context/voice-template.md`
+Full audit framework: the Forge Signal toolchain (separate, private repo); the in-repo voice rules live at `docs/context/voice-template.md`
 
 ## Voice Modes
 
@@ -253,41 +233,37 @@ Every prototype follows five rules (detailed in `template/prototype/DESIGN.md`; 
 
 ## Origin
 
-Extracted from the a commerce-platform pricing & packaging CX initiative (March 2026). That project produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility against a production Rails codebase, and an embedded AI billing support agent — all deployed as a single Vercel site.
+Extracted from a pricing & packaging CX initiative at a commerce platform (March 2026) — real industry work, de-named here because this repo is public. That project produced: 11 prototype pages, 4 strategic documents, cross-industry research across 14 platforms, technical feasibility against a production Rails codebase, and an embedded AI billing support agent — all deployed as a single Vercel site.
 
 ## Related Tools
 
-- **[Forge Signal](https://github.com/nino-chavez/forge-signal)** — strategic content generation with voice taxonomy
-- **Specchain** — spec-driven development with multi-agent orchestration
-- **a-figma-generator** — design asset generation from Figma specs
+- **Forge Signal** — strategic content generation with voice taxonomy (private)
+- **Specchain** — spec-driven development with multi-agent orchestration (private)
+- **Figma generator** — design asset generation from Figma specs (private)
 
-## BC + Cloudflare Reference Library
+## Initiative Context Reference Library
 
 Reusable Stage-1 baseline docs for common initiative targets. Copy the relevant ones into your initiative's `research/current-state/` directory.
 
+Platform-specific context packs (marketplace apps, B2B edition, buyer-portal integration — activated by `b2b_edition.enabled: true`) are **supplied privately per engagement**: they document a specific commerce platform's APIs and are not published in this public repo.
+
 | Doc | When to use | Reference for |
 |---|---|---|
-| [docs/context/bc-marketplace-context.md](docs/context/bc-marketplace-context.md) | Initiative includes a BC marketplace app (admin UI in iframe under `/manage/app/{appId}`) | iframe canvas behavior, install-flow ownership, scope-list source, the platform design system patterns, `an-internal-admin-app` and `an-internal-assistant-app` references |
-| [docs/context/bc-b2b-edition-context.md](docs/context/bc-b2b-edition-context.md) | Initiative integrates with BC B2B Edition (Companies, Buyers, Quotes, Customer Contracts) | Data model, two-API-host split, Buyer Portal SPA architecture, multi-actor role pattern, ownership boundaries |
-| [docs/context/bc-b2b-buyer-portal-integration.md](docs/context/bc-b2b-buyer-portal-integration.md) | Initiative embeds the B2B Buyer Portal in any host storefront | Framework-agnostic integration contract (5-step), port table for React/SvelteKit/Solid/Vue/Astro, env vars, troubleshooting |
 | [docs/patterns/hive-coordination-pattern.md](docs/patterns/hive-coordination-pattern.md) | Initiative needs multiple agents working in parallel | When to use Hive, bootstrap sequence, working rules, integration with Blueprint stages |
 | [docs/patterns/cloudflare-deployment-pattern.md](docs/patterns/cloudflare-deployment-pattern.md) | Initiative deploys on Cloudflare (Workers, Pages, D1, Workers AI, Vectorize, etc.) | Wrangler config conventions, path-scoped GitHub Actions, secrets, multi-environment, cost envelope |
 | [docs/context/browser-legibility.md](docs/context/browser-legibility.md) | Every initiative with a `prototype/` or `portal/` shell (Stage 0) | `browse-tool` as the default browser sensor (~few hundred tokens vs MCP's ~18k), four-trigger escalation rubric to Chrome DevTools MCP, per-worktree bootability via cwd-named profiles |
 | [docs/variant-selection.md](docs/variant-selection.md) | Every new initiative — picked at `blueprint.yml` init | Three-variant taxonomy (greenfield / midstream / brownfield), pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Wrong variant produces retrofit feel that cannot be un-retrofitted without restart. |
 | [docs/context/voice-template.md](docs/context/voice-template.md) | Every initiative producing deliverables — loaded on demand by `doc-writer` agent | Canonical voice rules + 5-check document quality audit + citation rules + 7 universal anti-patterns. Carved out of `template/CLAUDE.md` 2026-05-25 so the per-session map stays slim. Enforced by `doc-quality-auditor` + `terminology-linter` reviewers. |
-| [docs/context/voice-b2b-addendum.md](docs/context/voice-b2b-addendum.md) | BC B2B Edition initiatives (`b2b_edition.enabled: true`) only | B2B-specific anti-patterns (8-13), actor-naming rules (Owner/Payer/Beneficiary/Manager/Org Admin), terminology overrides (Buyer not User, Quote not RFQ), platform-fidelity citation requirements |
+| [docs/context/voice-b2b-addendum.md](docs/context/voice-b2b-addendum.md) | Platform B2B initiatives (`b2b_edition.enabled: true`) only | B2B-specific anti-patterns (8-13), actor-naming rules (Owner/Payer/Beneficiary/Manager/Org Admin), terminology overrides (Buyer not User, Quote not RFQ), platform-fidelity citation requirements |
 | [docs/prompts/add-blueprint-to-project.md](docs/prompts/add-blueprint-to-project.md) | Adopting Blueprint in a project that doesn't yet use it | Paste-ready prompt for a fresh Claude Code session. Manual invocation only — adoption is a human decision, not a default. |
 | [docs/prompts/pick-up-blueprint-updates.md](docs/prompts/pick-up-blueprint-updates.md) | Resuming a Blueprint initiative across the 2026-05-25 rename + v3 taxonomy + reviewer-agents threshold | Paste-ready prompt + optional `SessionStart` hook recipe for auto-injection per initiative. Removes drift between when an initiative was last touched and current methodology state. |
 
 **How blueprint.yml flags activate these:**
-- `b2b_edition.enabled: true` → use both `bc-b2b-edition-context.md` and `bc-b2b-buyer-portal-integration.md`
+- `b2b_edition.enabled: true` → request the platform B2B context packs (supplied privately per engagement)
 - `hive.enabled: true` → use `hive-coordination-pattern.md`
 - `cloudflare.enabled: true` → use `cloudflare-deployment-pattern.md` and switch `prototype.deploy_target: cloudflare-pages`
 
-**Origin context:**
-- Marketplace context distilled from the a marketplace pricing initiative CX initiative (March 2026) and `an-internal-admin-app` / `an-internal-assistant-app` reference apps
-- B2B Edition + Buyer Portal docs distilled from a B2B client engagement (May 2026) and the open-source `the platform's open-source buyer portal` repo
-- Hive + Cloudflare patterns distilled from `subs-initiative` (March 2026) and a B2B client engagement
+**Origin context:** distilled from real commerce-platform initiatives (a marketplace CX initiative, March 2026; a B2B client engagement, May 2026; the subscriptions initiative, March 2026) plus the platform's open-source buyer-portal repo — de-named here because this repo is public.
 
 ## Methodology Reference Library
 
@@ -301,12 +277,12 @@ Cross-cutting disciplines that apply across initiative types. Pull in when the a
 | [docs/patterns/inventory-as-evidence-pattern.md](docs/patterns/inventory-as-evidence-pattern.md) | Operator asks for cleanup/reorg/consolidation on a surface with >50 items | Methodology pattern: read-only walk → classify against rubric → surface surprises → present to operator → file as [Spec] body's evidence section |
 | [docs/patterns/doc-discipline-micro-patterns.md](docs/patterns/doc-discipline-micro-patterns.md) | Always (small disciplines, low overhead) | Surface-existing-discipline-before-inventing-new; capture-ambiguity-via-secondary-tags; wrong-copy-is-signal; avoid-multi-role-template-files; memory-entries-point-at-proposals; trigger-to-revisit on anchored forks |
 | [docs/patterns/clustered-tool-surface-pattern.md](docs/patterns/clustered-tool-surface-pattern.md) | New project decision: how the tooling around the project deploys (Hive dashboard / prototype / demos / traceability) | Unify by **auth profile**, not by vibes. Three modes (unified / clustered / separate) gated on auth cleavage. Companion: `template/apps/tool-shell/` (Vite+React skeleton) and `blueprint.yml` `tool_surface:` schema |
-| [docs/portal-and-tier-ladder.md](docs/portal-and-tier-ladder.md) | Every initiative that needs to externalize itself to an audience (stakeholders, hiring managers, peer reviewers) | Two canonical portal patterns: **Pattern A** (platform-portal — subs-initiative Astro shape, 6-verb IA + audience switcher, consumes `@blueprint/ui` + `@blueprint/design-tokens`) and **Pattern B** (redesign-review-portal — rally-hq/ninochavez.co static-HTML shape, strategy + current-state drawers + PROPOSED/COMPARE/SHIPPED toggle + chat FAB, copy-stamped from `template/portal/`). Three-tier ladder applies independently to each pattern. Decision tree for choosing A vs B — plus a bespoke-with-ADR escape for archetypes that fit neither (e.g. an operator-facing process console; candidate Pattern C, not yet canonized). Migration recipe for path-drifted projects. Enforced by `portal-pattern-a-conformance-reviewer` and `portal-pattern-b-conformance-reviewer`. |
+| [docs/portal-and-tier-ladder.md](docs/portal-and-tier-ladder.md) | Every initiative that needs to externalize itself to an audience (stakeholders, hiring managers, peer reviewers) | Two canonical portal patterns: **Pattern A** (platform-portal — the subscriptions-initiative Astro shape, 6-verb IA + audience switcher, consumes `@blueprint/ui` + `@blueprint/design-tokens`) and **Pattern B** (redesign-review-portal — rally-hq/ninochavez.co static-HTML shape, strategy + current-state drawers + PROPOSED/COMPARE/SHIPPED toggle + chat FAB, copy-stamped from `template/portal/`). Three-tier ladder applies independently to each pattern. Decision tree for choosing A vs B — plus a bespoke-with-ADR escape for archetypes that fit neither (e.g. an operator-facing process console; candidate Pattern C, not yet canonized). Migration recipe for path-drifted projects. Enforced by `portal-pattern-a-conformance-reviewer` and `portal-pattern-b-conformance-reviewer`. |
 
 **Companion template artifacts** (in `template/` — get stamped into new projects):
 - `template/docs/invalidated-paths.md` — register skeleton (high-value default for any project with pivots)
 - `template/docs/differentiators.md` — register skeleton (optional, project-dependent)
 - `template/tools/frontmatter-lint/` — Node validator + CI workflow scaffold for the `canonical: true|false` convention
-- `template/STATE.md` (refactored) — tiered guidance for solo / Hive-enabled / state-derive-enabled projects, prevents the multi-role drift the subs-initiative retrofit hit
+- `template/STATE.md` (refactored) — tiered guidance for solo / Hive-enabled / state-derive-enabled projects, prevents the multi-role drift the subscriptions-initiative retrofit hit
 
-**Origin:** Methodology patterns distilled from `subs-initiative` doc-reorg session (Hive #929, May 2026). That session is the canonical worked example.
+**Origin:** Methodology patterns distilled from the subscriptions initiative's doc-reorg session (May 2026). That session is the canonical worked example.

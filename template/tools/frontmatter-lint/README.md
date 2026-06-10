@@ -63,4 +63,4 @@ Apply this lint when the project has >20 markdown docs. Below that, hand-discipl
 
 ## Source
 
-`$BLUEPRINT_HOME/template/tools/frontmatter-lint/`. Distilled from `subs-initiative` doc-reorg work (Hive #929, May 2026).
+`$BLUEPRINT_HOME/template/tools/frontmatter-lint/`. Distilled from `blueprint-example` doc-reorg work (Hive #929, May 2026).

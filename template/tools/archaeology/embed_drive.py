@@ -35,7 +35,7 @@ def post(path: str, batch: int) -> dict:
         data=b"",
         headers={
             "X-Archaeology-Token": INGEST_TOKEN,
-            "User-Agent": "archaeology-embed-driver/0.1 (+subs-initiative)",
+            "User-Agent": "archaeology-embed-driver/0.1 (+blueprint-example)",
         },
         method="POST",
     )
@@ -46,7 +46,7 @@ def post(path: str, batch: int) -> dict:
 def get(path: str) -> dict:
     req = urllib.request.Request(
         f"{WORKER_URL}{path}",
-        headers={"User-Agent": "archaeology-embed-driver/0.1 (+subs-initiative)"},
+        headers={"User-Agent": "archaeology-embed-driver/0.1 (+blueprint-example)"},
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read().decode())

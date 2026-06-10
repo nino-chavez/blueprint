@@ -15,7 +15,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   'support-ops':    'Support ops',
 };
 
-const REPO = 'the subscriptions initiative's repo (private)/blob/main/apps/demos/scenarios.json';
+const REPO = 'https://github.com/example/blueprint-example/blob/main/apps/demos/scenarios.json';
 
 function ScenarioCard({ scenario }: { scenario: Scenario }) {
   return (

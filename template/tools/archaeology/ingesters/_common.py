@@ -53,7 +53,7 @@ def post_batch(events: list[Event]) -> dict[str, Any]:
         headers={
             "content-type": "application/json",
             "X-Archaeology-Token": INGEST_TOKEN,
-            "User-Agent": "archaeology-ingester/0.1 (+subs-initiative)",
+            "User-Agent": "archaeology-ingester/0.1 (+blueprint-example)",
         },
         method="POST",
     )

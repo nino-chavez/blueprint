@@ -44,6 +44,7 @@ documents, deploy, iterate), driven by a thin CLI:
 | `blueprint fleet` | see every consumer initiative's drift from the methodology version |
 | `blueprint upgrade` | preview/apply a non-breaking methodology bump in your repo |
 | `blueprint doctor` | conformance/health check — actually runs the gates, not a files-exist green |
+| `blueprint hive setup` | stand up the team coordination substrate (one command, dry-run by default) |
 
 Configurable cost, git-native access (CODEOWNERS + rulesets, no auth service),
 bidirectional updates (push non-breaking down, accept fixes/RFCs up), and
@@ -52,9 +53,9 @@ org-authored reviewers without forking.
 ## Blueprint vs Hive — two parts, on purpose
 
 - **Blueprint** (this) — the planning/prototyping methodology + toolchain.
-- **Hive** — the multi-operator coordination layer (separate repo, owned by
-  T.). Blueprint *plans*; Hive *coordinates*. Companions, integrated, not
-  merged.
+- **Hive** — the multi-operator coordination layer (separate repo, separately
+  maintained). Blueprint *plans*; Hive *coordinates*. Companions, integrated,
+  not merged.
 
 ## How your team tries it
 
@@ -74,5 +75,5 @@ Honest state today:
 - **Go deeper** — `decisions/00-charter.md` (the why + the six tracks),
   `decisions/01-prescription.md` (what ships, the build order).
 
-Want a 20-minute walkthrough for the team, or to be a pilot? Open an issue or ping
-in #ai-hive.
+Want a 20-minute walkthrough for the team, or to be a pilot? Open an issue on
+this repo.

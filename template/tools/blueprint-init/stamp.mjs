@@ -3,7 +3,7 @@
  * blueprint-init/stamp.mjs — mechanically-checkable Pattern A portal scaffolder.
  *
  * Replaces the 2026-05-25 "copy template/apps/portal/ and remember to de-bc-ize"
- * pattern that left subs-initiative strings embedded in 6+ files. The stamper
+ * pattern that left blueprint-example strings embedded in 6+ files. The stamper
  * substitutes a fixed token set, renames the logo, writes blueprint.yml, and
  * runs a post-stamp grep to confirm no unexpected source strings remain.
  *
@@ -84,13 +84,15 @@ function substitutions({ name, displayName, repoUrl, tagline, theme }) {
   const shortPrefix = name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 4) || "bp";
   return [
     // Order matters: longer specific strings before shorter generic ones.
-    { from: "the subscriptions initiative's repo (private)", to: repoUrl },
+    // The template tree carries the neutral source identity "blueprint-example"
+    // (2026-06-10 sanitization: the public repo names no real source project);
+    // these rules parameterize it into the consumer's identity at stamp time.
+    { from: "https://github.com/example/blueprint-example", to: repoUrl },
     { from: "An example product initiative", to: tagline },
-    { from: "@subs-initiative/", to: `@${name}/` },
-    { from: "BC Subscriptions", to: displayName },
-    { from: "/project-logo.png", to: "/project-logo.png" },
-    { from: "--bcs-", to: `--${shortPrefix}-` },
-    { from: "subs-initiative", to: name },
+    { from: "@blueprint-example/", to: `@${name}/` },
+    { from: "Blueprint Example", to: displayName },
+    { from: "--bpx-", to: `--${shortPrefix}-` },
+    { from: "blueprint-example", to: name },
     // Explicit fill-me tokens the de-narrated pages use for brand + repo, so the
     // generic shell carries no reference-project name (PortalNav brand, Layout
     // fullTitle, strategy REPO const). NOTE: the banner prose "REPLACE_FOR_PROJECT —"
@@ -103,26 +105,15 @@ function substitutions({ name, displayName, repoUrl, tagline, theme }) {
     // before JS loads. Runtime theme-switcher.js can override at the operator's
     // choosing (it reads ?theme= query param + localStorage first).
     { from: '<html lang="en">', to: `<html lang="en" data-theme="${theme}">` },
-    // Amendment 2026-05-26: blank the archaeology WORKER_URL so stamped portals
-    // don't inherit subs-initiative' substrate endpoint. The component renders
-    // a disabled "substrate not yet configured" state when the URL is empty.
-    { from: "", to: "" },
-    // Substrate-satellite URLs from the reference initiative. The portal renders
-    // these surfaces natively now; the external links are leaks. Blank them so a
-    // freshly-stamped portal carries no reference-project endpoints. Also asserted
-    // absent by SUBSTRATE_TRIPWIRES (de-narration regression sentinel).
-    { from: "https://private-demo.example", to: "" },
-    { from: "https://private-demo.example", to: "" },
-    { from: "https://private-demo.example", to: "" },
-    { from: "https://private-demo.example", to: "" },
-    { from: "private-demo.example", to: "" },
-    { from: "private-demo.example", to: "" },
-    { from: "private-demo.example", to: "" },
-    { from: "private-demo.example", to: "" },
+    // The archaeology WORKER_URL and the reference initiative's satellite URLs
+    // were blanked IN the template tree itself (2026-06-10 sanitization), so the
+    // historical blank-at-stamp rules are gone: a stamped portal is born with an
+    // empty WORKER_URL (the component renders the disabled "substrate not yet
+    // configured" state) and no external reference-project endpoints.
   ];
 }
 
-// Files where the subs-initiative strings are business content (10-gate framework,
+// Files where the reference-project strings are business content (10-gate framework,
 // delivery-fork strategy, dependency-graph example issues) OR substrate-aware
 // governance pages that will fail at build time if the initiative doesn't run
 // Hive / state-derive (the substrate produces docs/audits/derived/_state.json
@@ -399,21 +390,15 @@ async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline
   log.stamped.push("blueprint.yml");
 }
 
-// Substrate de-narration tripwires. These strings are leaks from the
-// subs-initiative reference initiative — example URLs, framework jargon, and
-// example-issue markers. They're blanked by substitutions() and asserted absent
-// here so a de-narration regression fails mechanically. Kept in sync with the
-// substrate subs in substitutions().
+// Substrate de-narration tripwires. These strings are narrative leaks from the
+// reference initiative's substrate (governance jargon and example-issue markers).
+// The reference URLs themselves were removed from the template tree in the
+// 2026-06-10 sanitization, so URL tripwires are gone; what remains guards
+// against substrate NARRATIVE re-entering stamped pages via bad merges.
 const SUBSTRATE_TRIPWIRES = [
-  "private-demo.example",
-  "private-demo.example",
-  "private-demo.example",
-  "private-demo.example",
   "five-actor",
   "trust axioms",
   "synthesis #",
-  "Catalyst",
-  "BigEng",
   "[Epic-",
 ];
 
@@ -435,9 +420,8 @@ async function mechanicalCheck({ target, log }) {
   if (await fs.stat(rootPkg).catch(() => null)) allFiles.push(rootPkg);
 
   const tripwires = [
-    "subs-initiative",
+    "blueprint-example",
     "An example product initiative",
-    "/project-logo.png",
     ...SUBSTRATE_TRIPWIRES,
   ];
   for (const f of allFiles) {

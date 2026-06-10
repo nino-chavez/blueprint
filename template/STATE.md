@@ -23,7 +23,7 @@ This file ships in the template scaffold as a **fallback** for solo projects wit
 
 **The anti-pattern this guidance prevents:** STATE.md becomes a parallel decision register that drifts from ADRs, a parallel blocker tracker that drifts from issues, and a parallel session log that drifts from git. Three drift surfaces, none authoritative, all hand-maintained. See `$BLUEPRINT_HOME/docs/patterns/doc-discipline-micro-patterns.md` § "Avoid multi-role template files" for the rationale.
 
-**If your project has Hive + state-derive + ADRs:** you probably don't need STATE.md at all. Delete it and rely on the derived sources. The `subs-initiative` project filed retirement of its STATE.md in Hive #929 for exactly this reason.
+**If your project has Hive + state-derive + ADRs:** you probably don't need STATE.md at all. Delete it and rely on the derived sources. The `blueprint-example` project filed retirement of its STATE.md in Hive #929 for exactly this reason.
 
 ---
 

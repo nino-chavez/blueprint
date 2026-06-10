@@ -14,7 +14,7 @@ This is the **trust-restoration surface** companion to the substrate itself. The
 
 ## Integration
 
-The component is portal-agnostic. The reference integration (`subs-initiative/apps/portal/`) mounts it as a global island in the Astro layout so every page gets it.
+The component is portal-agnostic. The reference integration (`blueprint-example/apps/portal/`) mounts it as a global island in the Astro layout so every page gets it.
 
 ### For Astro projects (recommended)
 

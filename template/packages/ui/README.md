@@ -1,6 +1,6 @@
 # @blueprint/ui
 
-Shared React component library for the subs-initiative family. Patterns adapted from the commerce platform's `storefront-kit` (React + Tailwind + Radix + CVA), tuned for our portfolio: portal, prototype, storefront-catalyst, subscriber portal, admin.
+Shared React component library for the blueprint-example family. Patterns adapted from a commercial storefront kit (React + Tailwind + Radix + CVA), tuned for our portfolio: portal, prototype, storefront-catalyst, subscriber portal, admin.
 
 ## Dual API: Monolith + Composable
 

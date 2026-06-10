@@ -50,12 +50,12 @@ Canonical taxonomy: `$BLUEPRINT_HOME/docs/variant-selection.md` — pattern-matc
 
 | Flag | Reference doc | Read when starting |
 |---|---|---|
-| `b2b_edition.enabled: true` | `$BLUEPRINT_HOME/docs/context/bc-b2b-edition-context.md` + `bc-b2b-buyer-portal-integration.md` + `voice-b2b-addendum.md` | Stage 1 research |
+| `b2b_edition.enabled: true` | the private platform B2B context packs (supplied per engagement) + `$BLUEPRINT_HOME/docs/context/voice-b2b-addendum.md` | Stage 1 research |
 | `hive.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/hive-coordination-pattern.md` | Session start — register with Hive before any work |
 | `cloudflare.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
 | `archaeology.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
 | `owner_spec.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/owner-spec-pattern.md` | When project has >3 substrate tools |
-| Marketplace app (any BC initiative) | `$BLUEPRINT_HOME/docs/context/bc-marketplace-context.md` | Stage 1 research |
+| Marketplace app (platform initiatives) | the private platform marketplace context pack (supplied per engagement) | Stage 1 research |
 
 ## Pipeline
 
@@ -144,7 +144,7 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=<absolute path to initiative root>
 ```
 
-The stamper substitutes the subs-initiative reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + pattern, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. Pattern B has no stamper yet — copy `template/portal/` and rely on `portal-pattern-b-conformance-reviewer` to catch drift at Stage 3.
+The stamper substitutes the source-project reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + pattern, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. Pattern B has no stamper yet — copy `template/portal/` and rely on `portal-pattern-b-conformance-reviewer` to catch drift at Stage 3.
 
 ## Session prompts
 

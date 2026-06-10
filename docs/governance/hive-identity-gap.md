@@ -3,9 +3,9 @@
 **Status:** known limitation, honest disclosure. Decide per-engagement.
 
 The Hive coordination substrate authenticates with a **single shared bearer
-token**. Anyone holding it can `hive_register_session(human_name='T.')` and
+token**. Anyone holding it can `hive_register_session(human_name='<any-name>')` and
 then file proposals, claim tasks, and synthesize decisions — all attributed to
-"T." with **no cryptographic proof of who actually acted.** The decision log is
+"the partner SA (T.)" with **no cryptographic proof of who actually acted.** The decision log is
 therefore *spoofable and unauditable*: "when did we decide to change the auth
 model, and who decided it?" is answered by an attribution anyone on the token could
 have forged.
