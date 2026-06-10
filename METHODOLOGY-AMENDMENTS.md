@@ -4,6 +4,20 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-10 — Changesets cannot version the root package of a workspace monorepo; the release pipeline broke silently at the fold
+
+**Candidate for promotion (release-engineering fix; latent since wave 45).**
+
+**Observed:** the first changesets authored since 0.1.0 crashed the Release workflow: `Found changeset … for package @nino-chavez-labs/blueprint-cli which is not in the workspace`. Root cause: the publishable package IS the repo root, but the wave-45 fold added `workspaces: ["apps/*", "packages/*"]` — and `@changesets/cli` excludes the monorepo root from its package set. The pipeline was *present* and *green* for six waves only because no changeset existed to exercise it — the same presence ≠ function class as the doctor-CI gap, in the release layer. The deferred changeset-presence CI check (2026-06-10 enforcement-gaps entry) would have caught this six waves earlier by forcing a changeset (and thus this crash) at the first consumer-affecting wave.
+
+**Worked around (this change):** version bumped to 0.2.0 by hand, the two pending changesets folded into a hand-written CHANGELOG entry (ADR-0007's register is the migration guide, not the tool), changeset files removed so the workflow's no-changeset path runs `changeset publish` for the unpublished 0.2.0. Whether `changeset publish` also root-blinds post-fold is answered by the next Release run — if it no-ops, the publish step swaps to a plain `npm publish --access public` + tag.
+
+**Candidate fix (proper):** move the CLI into `packages/cli/` as a real workspace member (bin + template + libs relocate or get path-mapped), restoring the changesets flow end-to-end — or pin the policy to hand-written CHANGELOG entries for the root package and delete the changesets dependency. Decide at the next release-engineering wave; the changeset-presence CI check lands with it.
+
+**References:** Release run failure on `277fbc1`, `CHANGELOG.md` § 0.2.0, `.github/workflows/release.yml`.
+
+---
+
 ## 2026-06-10 — Enforcement gaps: checks exist but nothing runs them; claims rot that no reviewer reads
 
 **Two candidates for promotion (one sibling promoted directly as wave 55).**
