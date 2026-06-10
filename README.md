@@ -228,7 +228,7 @@ Every document passes a four-check audit before sharing:
 3. **Logic gaps** — no section contradicts another
 4. **Scannable format** — context in bullets/tables, not dense paragraphs
 
-Full audit framework in Forge Signal: `docs/voice/document-quality-audit.md`
+Full audit framework: the Forge Signal toolchain (separate repo); the in-repo voice rules live at `docs/context/voice-template.md`
 
 ## Voice Modes
 
@@ -243,7 +243,7 @@ Documents map to Forge Signal's content modes:
 
 ## Design Principles
 
-Every prototype follows five rules (detailed in `prototype/DESIGN.md`):
+Every prototype follows five rules (detailed in `template/prototype/DESIGN.md`; stamped into each initiative as `prototype/DESIGN.md`):
 
 1. **Match the existing product** — only use components that exist today
 2. **User terminology** — no internal jargon in user-facing copy

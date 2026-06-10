@@ -1,7 +1,7 @@
 # HANDOFF — Blueprint methodology source (self-hosting)
 
-**Date:** 2026-06-06
-**State:** Productization **COMPLETE**. The methodology is published, public, and self-hosting — it is its own first consumer. Current frontier: **team adoption** (Blueprint + hive for a real client build) and doc/quality hygiene.
+**Date:** 2026-06-10
+**State:** Productization **COMPLETE**. The methodology is published, public, and self-hosting — it is its own first consumer. Current frontier: **team adoption** (Blueprint + hive for a real client build) and **demand validation** — organic stakeholder feedback is flowing (`feedback/`, demand-evidence log at `docs/content/validation-script.md`) and drove waves 51/53 (Mom Test bridge + ask-outcome discipline). Recent: wave 52 (DoD verification ladder), wave 54 (docs/ reorg into typed subdirs — stamped consumers carry stale `$BLUEPRINT_HOME/docs/` paths until they re-run pick-up-updates).
 
 > This file orients the next session. It replaced a 2026-06-04 pre-fold snapshot (blueprint-platform as a separate in-progress repo) — all of which is now done; see git history if you need it.
 
@@ -11,13 +11,14 @@
 - **CLI published:** `@nino-chavez-labs/blueprint-cli@0.1.0` on npm (MIT, public repo). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
 - **Build order 0–13 complete** across tracks A–E. `main-protection` ruleset bound + active.
 - **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint-platform.pages.dev` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
-- **Latest wave (49):** Blueprint + hive **team onboarding/adoption kit** — `docs/governance/team-roles-and-conventions.md`, `docs/governance/hive-identity-gap.md`, `template/tools/hive/{ONBOARDING,BOOTSTRAP}.md`, and the keystone `blueprint hive setup --slug=<x>` (`template/tools/hive/bootstrap.mjs`). Full log in `WAVE-LOG.md`.
+- **Latest wave (54):** docs/ reorg into typed subdirs (`patterns/`, `context/`, `case-studies/`, `governance/`, `_archive/`); only the two hook-injected canonicals + README stay loose. Recent prior waves: 53 Mom Test ask-outcome discipline, 52 DoD verification ladder, 51 Mom Test validation bridge, 50 defrag + doc-currency gates, 49 team onboarding kit + `blueprint hive setup`. Full log in `WAVE-LOG.md`.
 
 ## In flight / next
 
 - **Team adoption (the live driver):** T. is adopting Blueprint + hive for a client the commerce platform build — the first real *team* engagement. Treat his needs as the priority signal for hive productization. The `blueprint hive setup --execute` path is operator-gated (real billable CF infra; needs the client repo) — do not run it autonomously.
 - **Hive identity hardening — TRIGGER, not yet due:** the substrate authenticates with a shared bearer (spoofable attribution; see `docs/governance/hive-identity-gap.md`). For ≤3 trusted/co-located operators, option (a) trust + risk-register is the accepted call. **Harden to per-session JWT BEFORE a 2nd team or any external contributor joins** — that onboarding is the trigger, and the hardening must land before it.
 - **Multi-operator chaos test:** the substrate is built but never run under contention. Owned by the first real parallel engagement (T.).
+- **Demand validation (open asks):** the A6 working-session ask to "R." (map his four-skill loop onto Blueprint primitives — whether he shows up IS the A6 test) and the P4 cold-open re-test with "D." after the front-door fix shipped. Both are operator sends; log outcomes in `docs/content/validation-script.md` (the Log's `Ask made → outcome` column is waiting).
 - **The false-green gap (no-regret, deferred):** Fact-Check (Stage 4) does not gate on runtime/browser verification; `doctor` is honest about this boundary. Closing it is the next quality frontier.
 
 ## Standing constraints
