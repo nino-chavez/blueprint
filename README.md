@@ -152,7 +152,7 @@ substrate everyone else pulls. See `CLAUDE.md` for the invariant.
 
 ### Optional: Add Forge Signal (strategic content generation)
 
-If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline (the tool formerly named Forge Signal — the `signal_forge:` config key is kept for compatibility):
+If your initiative needs thought-leadership voice, slide decks, or Forge Signal's full content pipeline (recently renamed — the `signal_forge:` config key reflects the prior name and is kept for compatibility):
 
 ```bash
 # Clone Forge Signal (private repo — request access)
