@@ -1,29 +1,20 @@
-# Feedback — D., 2026-06-09 (Slack DM)
+# Feedback — "D.", casual-visitor persona, 2026-06-09 (Slack DM)
 
 First organic stakeholder feedback on the live portal (blueprint-platform.pages.dev).
-Unprompted; she found the link and tried to understand the product cold.
+Unprompted; a colleague (non-practitioner) found the link and tried to
+understand the product cold. Identity anonymized for the public repo —
+verbatim original retained in `feedback/raw/` (gitignored, local only).
 
-## Verbatim exchange
+## The exchange (condensed)
 
-> **D.** [11:22 AM]
-> hiiiiiiiiii
-> I want to understand this - https://blueprint-platform.pages.dev/
->
-> **nino.chavez** [11:23 AM]
-> I'm your huckleberry
->
-> **D.** [11:24 AM]
-> I opened it and then was like.... My attention is not going to allow me to dig in
-> :joy:
->
-> **nino.chavez** [11:24 AM]
-> ha! that's what Claude is for
-> "Claude, how do i use this?"
->
-> **D.** [11:26 AM]
-> noooo I don't want to replace real humans with claude
-> unless you don't want to be friends
-> in which case....
+- D. opened the conversation with the link and a declared intent: "I want to
+  understand this."
+- She opened the site and bounced inside one visit — it demanded more
+  attention than a casual visit had to give ("not going to allow me to dig
+  in").
+- The author offered the reflex remediation — ask an agent ("Claude, how do I
+  use this?") — and she explicitly declined it: "I don't want to replace real
+  humans with claude."
 
 ## What this is (in methodology terms)
 

@@ -13,3 +13,4 @@ dist/
 *.log
 .env
 .env.*
+feedback/raw/
