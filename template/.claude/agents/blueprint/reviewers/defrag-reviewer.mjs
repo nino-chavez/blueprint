@@ -240,7 +240,10 @@ export function resolveSpecifier(fromFile, spec, fileSet, stopDir) {
 
 function isEntryLike(rel, src) {
   const lower = rel.toLowerCase();
-  if (/(^|\/)(pages|routes|bin|scripts|hooks|reviewers|workers|functions|api|cli|tests?|__tests__|e2e|fixtures)\//.test(lower)) return true;
+  // `layouts/` is entry-like: Astro markdown pages reference layouts via
+  // `layout:` frontmatter, which is invisible to the import graph (found the
+  // hard way — DocLayout.astro false-positived in the wave-50 disposal pass).
+  if (/(^|\/)(pages|routes|layouts|bin|scripts|hooks|reviewers|workers|functions|api|cli|tests?|__tests__|e2e|fixtures)\//.test(lower)) return true;
   if (/\.(test|spec|config|stories)\.[^.]+$/.test(lower)) return true;
   if (/\.d\.ts$/.test(lower)) return true;
   if (/(^|\/)(index|main|app|server|worker|setup|entry)\.[^.]+$/.test(lower)) return true;

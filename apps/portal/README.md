@@ -64,8 +64,8 @@ Some surfaces in this scaffold are substrate-aware (Hive, state-derive, the comm
 
 | Surface | What it does | Tier-1 default |
 |---|---|---|
-| `src/lib/derived.ts` + `src/components/DerivedRoadmap.tsx` | Reads `docs/audits/_state.json` (state-derive output) and Hive substrate data | Replace with hand-authored markdown roadmap if `substrate: 'none'` in `blueprint.yml` |
-| `src/components/SubstrateDashboards.tsx`, `src/pages/inspect/gates.astro`, `coverage.astro`, `dependencies.astro`, `attestations.astro` | Hive-and-state-derive governance dashboards | Ship `/inspect` as a single methodology overview page linking to `docs/decisions/` (ADRs) for Tier 1 without Hive |
+| `src/lib/derived.ts` | Reads `docs/audits/_state.json` (state-derive output) and Hive substrate data | Replace with hand-authored markdown roadmap if `substrate: 'none'` in `blueprint.yml` |
+| Substrate dashboard components (`DerivedRoadmap`, `SubstrateDashboards`, `CoverageView`, etc.) | Hive-and-state-derive governance dashboards. Removed from THIS bespoke instance (wave 50 defrag — orphaned by the product-site rebuild); the Pattern A boilerplate at `template/apps/portal/src/components/` retains them | Ship `/inspect` as a single methodology overview page linking to `docs/decisions/` (ADRs) for Tier 1 without Hive |
 | Content paths in `src/lib/content.ts` (`PRD.md`, `BRD.md`, `STRATEGY.md`, etc.) | Hard-coded to subs-initiative document filenames | Initiative may override by editing the doc-name list; future ADR to parameterize via `blueprint.yml` |
 
 The substrate-specific paths are advanced Tier-2 features that should ideally move to an optional `@blueprint/ui-substrate-hive` add-on package — tracked in the methodology backlog.
