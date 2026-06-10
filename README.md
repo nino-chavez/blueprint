@@ -43,17 +43,17 @@ The output is a deployable site that serves three audiences simultaneously:
 You provide context → Agent executes the pipeline → Deployable deliverable package
 ```
 
-The pipeline has seven stages. Each produces artifacts that feed the next:
+The pipeline runs Stage 0 (application legibility — the agent can drive the running app) plus seven stages whose outputs feed each other ([METHODOLOGY.md](METHODOLOGY.md) is the canonical description; this is the sketch):
 
 1. **Research** — competitive analysis, codebase exploration, market comparables
 2. **Design Principles** — codify what the prototype can/can't do before building
 3. **Prototype** — HTML pages matching the existing product's design language
 4. **Fact-Check** — validate every claim against screenshots and source code
-5. **Documents** — strategy, feasibility, research, integration plans
-6. **Deploy** — Vercel site with docs + prototype + AI chat
+5. **Documents** — the BRD/PRD-class strategy package: strategy, feasibility, research, integration plans
+6. **Deploy** — a deployable stakeholder site (Vercel or Cloudflare Pages) with docs + prototype + AI chat
 7. **Iterate** — stakeholder feedback, AI review, copy/IA audit
 
-The key insight: **prototype and documents are built simultaneously.** The prototype tests design decisions. The documents capture rationale. Strategy panels on each prototype page connect the two.
+Two key loops: **prototype and documents are built simultaneously** (the prototype tests the decisions the documents record), and the fact-checked package **hands off to build/implementation** — research feeds the docs, the docs plan the prototype, the prototype validates the plan.
 
 ## Built On
 
@@ -66,27 +66,22 @@ The key insight: **prototype and documents are built simultaneously.** The proto
 
 ## Project Structure
 
+What `init --pattern=A` actually stamps today:
+
 ```
 my-initiative/
-├── CLAUDE.md                      # Agent instructions for this initiative
-├── prototype/                     # Deployable interactive prototype
-│   ├── index.html                # Landing page (docs + prototype links)
-│   ├── shared.css                # Design system (CSS custom properties)
-│   ├── proto-nav.js              # Footer nav with drawer toggles
-│   ├── strategy-panel.js         # Right drawer: design decisions + citations
-│   ├── current-state-panel.js    # Left drawer: screenshot comparison
-│   ├── chat-widget.js            # AI agent (optional)
-│   ├── current-state/            # Screenshots of current product
-│   ├── DESIGN.md                 # Design principles for this initiative
-│   ├── package.json
-│   └── vercel.json
-├── docs/
-│   ├── content/                  # Markdown source files
-│   ├── deliverables/             # Generated HTML + Word
-│   └── scripts/
-│       └── md-to-docs.mjs       # Markdown → HTML + Word converter
-└── research/                     # Competitive analysis, market research
+├── blueprint.yml                  # Variant, tier, pattern, capability flags
+├── package.json                   # Workspace root
+├── apps/
+│   └── portal/                    # The Astro stakeholder portal (Pattern A)
+├── packages/                      # @<name>/ui, design tokens (workspace pkgs)
+└── portal/                        # Static-HTML shell (Pattern B surface)
 ```
+
+The initiative then grows `research/`, `docs/content/`, `decisions/`, and (per
+variant) `prototype/` as the stages run — the evidence column the methodology
+exists to produce. Pattern B initiatives copy `template/portal/` instead (no
+stamper yet).
 
 ## Command-line interface — `@nino-chavez-labs/blueprint-cli`
 

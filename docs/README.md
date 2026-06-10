@@ -10,6 +10,11 @@ The docs a **stranger** reads to answer "what is this and how do I use it" have 
 
 Last full review: 2026-06-10 (wave 56). Cadence: every wave that touches positioning, naming, or the portal — and any time a reader's question reveals a wrong claim.
 
+**Set-level questions the per-file review must ALSO ask** (added after the wave-56 review missed both — per-file claim adjudication can't see between-doc problems):
+
+1. **Deletion test, per doc**: if this doc disappeared, what would a reader lose that no other surface provides? A doc that fails it gets folded, not maintained. (Miss it caught: README vs START-HERE — three surfaces answering "what is this" once the portal became the evaluator front door.)
+2. **Claim ownership, per shared claim**: every reader-path claim (the pipeline shape, the command list, the positioning) has ONE owning doc; every other surface links or sketches-with-a-pointer, never restates in full. Duplicated claims rot at different rates — the wave-56 repositioning reached the README tagline but not its "How It Works" section, and the Project Structure tree drifted a whole portal-architecture behind the stamper. Partial updates are the symptom; duplication is the disease.
+
 ## New here? Read these 3 first
 
 The universal on-ramp. In order:
