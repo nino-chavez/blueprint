@@ -50,6 +50,7 @@ Weighting rules:
 
 - A **scope-add** with `gave: none` is a wishlist item — default `deferred` unless the maintainer overrides. The same ask backed by `money` or `reputation` is a roadmap signal — recommend `scoped-in`.
 - **kudos** never counts toward demand validation regardless of volume. Log it, enjoy it, don't cite it.
+- If a commitment ask was **made** during the exchange, record its outcome in the validation script's Log (`taken` / `not taken` / `no ask made`). An untaken ask is first-class negative evidence — enthusiasm plus an open ask is the compliment trap at full strength (the zombie-lead rule in the canonical pattern doc § Ask outcomes).
 - If the initiative shipped a validation script (`docs/content/validation-script.md`), append each item that touches a scripted assumption to the script's Log table — that table, not the kudos file, is the demand-evidence record.
 
 ## States

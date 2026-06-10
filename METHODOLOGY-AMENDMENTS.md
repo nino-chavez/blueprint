@@ -4,6 +4,22 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-10 — Triage has no slot for market evidence; validation script has no assumption archetypes
+
+**Candidate for promotion (two deferred candidates; a sibling gap promoted directly as wave 53).**
+
+**Observed:** triaging the first buyer-persona feedback (`feedback/2026-06-10-eng-lead-thread.md`): an eng lead described his own four-skill spec loop — past-specific behavior about HIS practice, the highest-value Mom Test evidence class — and the triage state machine had no honest category for it. It is not bug / scope-add / scope-clarify / opinion / question / kudos; it is evidence about the market, not about the deliverable. It got shoehorned into `opinion` with a prose note (`feedback/2026-06-10-triage.md` item 3). Second gap from the same exchange: "personal-incumbent displacement" (practitioners with hand-rolled loops keep their kitchen) had to be *discovered* from the feedback as assumption A6 — the validation-script generator never prompted for it at script-generation time, though it is a predictable archetype for any tool whose buyers already hand-roll a version of the thing.
+
+**Candidate fixes (second-instance gated):**
+- A `market-signal` category in `/blueprint-triage`: evidence about the stakeholder's own practice/problem, not about the deliverable; weighted by the past-specific rule; logged to the validation script rather than dispositioned against the deliverable.
+- An assumption-archetype checklist in the validation-script generator (`/blueprint-docs`): incumbent-displacement ("does the buyer already hand-roll this? displacement is its own assumption"), plus whatever archetypes the next instances surface.
+
+**Promoted directly (wave 53), not deferred:** the ask-outcome gap — the Log shape recorded what stakeholders GAVE but had nowhere to record an ask made-and-not-taken, so the load-bearing negative datum of this instance (explicit time ask on the table, complimented, not taken) would have evaporated. Landed in `template/docs/methodology/mom-test-validation-pattern.md` (§ Ask outcomes + Log column) and the `/blueprint-triage` weighting rules. Direct promotion is justified because it is a faithful restatement of Fitzpatrick's advancement/zombie-lead rule — source-grounded, not invented from n=1.
+
+**References:** `feedback/2026-06-10-triage.md` (the shoehorn note), `docs/content/validation-script.md` (A6, scary question 4, the re-shaped Log).
+
+---
+
 ## 2026-06-05 — Pattern A/B portal contract has no archetype for an operator-facing process console (ops cockpit)
 
 **Candidate for promotion (significant — missing pattern category).**

@@ -60,8 +60,8 @@ The close for each conversation — what advancement looks like:
 - Money: <e.g., pilot agreement, LOI, budget line named>
 
 ## Log
-| Date | Who | What they said (summary) | What they GAVE | Assumptions touched |
-|---|---|---|---|---|
+| Date | Who | What they said (summary) | What they GAVE | Ask made → outcome | Assumptions touched |
+|---|---|---|---|---|---|
 ```
 
 ### Question rules (the test itself)
@@ -86,6 +86,18 @@ Feedback weight in `/blueprint-triage` is set by what the stakeholder gave:
 | **none** | lowest | compliments, opinions, hallway "looks great" |
 
 A scope-add backed by `none` is a wishlist item; the same ask backed by `money` is a roadmap signal. Kudos with `gave: none` never counts toward demand validation, no matter the volume.
+
+### Ask outcomes — advancement or rejection, both are data
+
+The Log records what stakeholders gave; it must ALSO record every commitment ask **made**, with its outcome. Three outcomes:
+
+| Outcome | Meaning | Evidence value |
+|---|---|---|
+| **taken** | the stakeholder gave the currency | positive — log the gave |
+| **not taken** | the ask was on the table; the stakeholder responded without taking it | negative — first-class disconfirming signal for whatever assumption the ask tests |
+| **no ask made** | the conversation closed without an ask | not evidence — a failure of the script, not of demand |
+
+This is Fitzpatrick's advancement rule: a conversation that ends in enthusiasm with an open, untaken ask is a *zombie lead*, not a good meeting. Kudos plus an untaken ask is the compliment trap at full strength — the no-take, not the praise, is the datum worth logging. Without an ask-outcome column the no-take silently evaporates and the log reads warmer than reality. First instance: the self-application's buyer-persona feedback (2026-06-10) — problem affirmed unprompted, work complimented, two explicit asks on the table, neither taken.
 
 ## What this pattern is NOT
 
