@@ -44,6 +44,14 @@ After research and prototype are complete (or in parallel with prototyping).
    - Cost estimates
    - Open questions for the engineering team
 
+   **Validation script** (always generated when the package contains demand claims):
+   - Canonical shape + question rules: `$BLUEPRINT_HOME/template/docs/methodology/mom-test-validation-pattern.md`
+   - Extract the riskiest demand assumptions from the strategy/prescription docs; tag each with its evidence class (repo-grounded / stakeholder-given / agent-hypothesis)
+   - The three scary questions (most likely to kill the prescription) listed first
+   - Per-assumption conversation plan: past-specific, their-life-not-our-idea, non-leading questions, each with the disconfirming answer spelled out
+   - Commitment asks (time / reputation / money) as the close
+   - The reason this doc exists: generated demand claims are hypotheses wearing evidence's clothes — the script is the explicit bridge from generated research to real validation, and `/blueprint-triage` weighs the returning feedback by commitment
+
 3. **Run quality audit** — Before generating final output, validate each document:
    - "So what?" in the first sentence of every section
    - Tables show conclusions, not require mental math
@@ -84,3 +92,5 @@ If forge-signal is not available, the doc-writer agent applies the same voice ru
 - Reading order is stated at the top of the strategy doc
 - Technical details (code references, model names) only in feasibility/integration docs, not strategy
 - Citations on every factual claim in the research doc
+- Demand claims carry an evidence class; load-bearing agent-hypothesis claims appear in the validation script's assumptions table (a package may ship all-hypothesis — the check is that the script NAMES them, not that they are validated)
+- Validation-script questions pass all three Mom Test rules (their life / past specifics / non-leading); no "would you…" phrasing anywhere in the script

@@ -41,6 +41,8 @@ You are the Stage 1 gate for a Blueprint initiative. Your job: prevent the "Stag
 
    A persona may declare multiple JTBDs (one per surface they touch). At least one JTBD per persona per surface named in the funnel is required. JTBDs that reference surfaces not in the funnel are flagged as `JTBD_ORPHAN_SURFACE` (warning, not block — may indicate funnel-out-of-date).
 
+   **Past-behavior grounding (wave 51, Mom Test rule).** A JTBD's `job` must describe behavior the research observed or can cite (a funnel artifact, an analytics figure, a support ticket, a quoted conversation, current-state evidence) — not a desire invented for the persona. JTBDs whose job has no observable basis anywhere in `research/` are flagged `JTBD_INVENTED_DESIRE` (warning, not block — early greenfield legitimately hypothesizes, but the hypothesis must surface in the validation script per `template/docs/methodology/mom-test-validation-pattern.md`, not hide inside a persona file as fact).
+
 7. **Funnel ↔ persona ↔ JTBD coherence check.** For every persona-surface pair named in `research/funnel/`, verify there is a matching JTBD entry. Missing JTBDs for funnel-named surfaces are blocking. Personas without any funnel reference are flagged as `PERSONA_OUT_OF_FUNNEL` (warning).
 
 8. **Architect-challenge check** (`initiative_type: platform-feature` only — added wave 20, 2026-05-27, per promo-initiative amendment promoted at wave 17). Read `blueprint.yml` for `initiative_type`. If absent or `consumer-app`, SKIP this check. If `platform-feature`:

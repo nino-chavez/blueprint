@@ -15,6 +15,7 @@ You fan out to leaf sub-reviewers, collect their results, and decide convergence
 | `citation-checker` | Every market-research citation and strategy-panel claim resolves to a real source |
 | `current-state-claim-verifier` | Every "this is what exists today" claim matches a screenshot in `current-state/` or `research/current-state/` |
 | `codebase-claim-verifier` | Every claim about what's buildable / what exists in the source code matches the actual code (when codebase access is available) |
+| `hypothetical-demand-claim-checker` | Every future-tense demand claim ("users will/would want/love/pay…") is either anchored to past-specific evidence (analytics, tickets, quotes, recorded behavior) or appears in `docs/content/validation-script.md`'s assumptions table with evidence class `agent-hypothesis`. Unanchored + unlisted → BLOCK; listed → PASS (a hypothesis named as a hypothesis is honest). Per `template/docs/methodology/mom-test-validation-pattern.md` — wave 51 |
 
 Other reviewer agents (`research-completeness-reviewer`, `prescription-evidence-reviewer`, `design-principles-reviewer`, `doc-quality-auditor`, `terminology-linter`, `prototype-smoke-runner`) are NOT part of this loop — they gate other stages.
 
@@ -31,6 +32,7 @@ Other reviewer agents (`research-completeness-reviewer`, `prescription-evidence-
    - citation-checker over the inventory
    - current-state-claim-verifier over the inventory
    - codebase-claim-verifier over the inventory (if codebase_path set in blueprint.yml)
+   - hypothetical-demand-claim-checker over the inventory (skipped only when the package contains no demand claims at all)
 
 3. Collect results. If all sub-reviewers PASS, mark Stage 4 complete and exit.
 

@@ -35,6 +35,23 @@ Every piece of feedback gets exactly one category:
 
 If feedback is ambiguous between categories, ask the maintainer once. Don't guess.
 
+## Commitment weight (the Mom Test axis)
+
+Alongside its category, every item records what the stakeholder **gave**, because feedback that cost nothing is noise no matter how enthusiastic it sounds (canonical reference: `$BLUEPRINT_HOME/template/docs/methodology/mom-test-validation-pattern.md`):
+
+| gave | Weight | Examples |
+|---|---|---|
+| **money** | highest | pilot/LOI agreed, budget line named |
+| **reputation** | high | intro to the budget owner, brought their team, public sponsorship |
+| **time** | medium | booked a follow-up working session, multi-hour annotated review |
+| **none** | lowest | hallway compliments, unprompted opinions, "looks great" |
+
+Weighting rules:
+
+- A **scope-add** with `gave: none` is a wishlist item — default `deferred` unless the maintainer overrides. The same ask backed by `money` or `reputation` is a roadmap signal — recommend `scoped-in`.
+- **kudos** never counts toward demand validation regardless of volume. Log it, enjoy it, don't cite it.
+- If the initiative shipped a validation script (`docs/content/validation-script.md`), append each item that touches a scripted assumption to the script's Log table — that table, not the kudos file, is the demand-evidence record.
+
 ## States
 
 Every categorized item gets one state:
@@ -66,7 +83,7 @@ If feedback isn't yet in `feedback/`, copy it there first so it's preserved alon
 For each piece of feedback, present a single line:
 
 ```
-[N] "<feedback excerpt, ≤80 chars>" — category: <X>, recommend state: <Y>, rationale: <one sentence>
+[N] "<feedback excerpt, ≤80 chars>" — category: <X>, gave: <money|reputation|time|none>, recommend state: <Y>, rationale: <one sentence>
 ```
 
 Cluster related items if multiple stakeholders raised the same thing — note "(also raised by: name1, name2)".
@@ -110,13 +127,14 @@ Make scoped-in items visible in the deliverable update; make won't-fix rationale
 - **Treating all feedback as scope-add** — most feedback is opinions or questions, not changes. Categorize first.
 - **Skipping the rationale on wontfix** — the rationale is the reason the deliverable holds up under scrutiny. Always include.
 - **Triaging in isolation** — every state change should be visible to the team in `docs/content/` or `feedback/`. No silent decisions.
+- **Counting compliments as validation** — "everyone loved the demo" is the Mom Test's false-positive trap. Demand evidence is what stakeholders gave (time/reputation/money), recorded in the validation script's log — not what they said.
 
 ## Output
 
 A triage record at `feedback/[date]-triage.md`:
 
-| # | Excerpt | Category | State | Disposition | Source |
-|---|---------|----------|-------|-------------|--------|
+| # | Excerpt | Category | Gave | State | Disposition | Source |
+|---|---------|----------|------|-------|-------------|--------|
 
 Plus updates to: `docs/content/deferred.md`, `docs/content/decisions.md`, `feedback/kudos.md`, `followups.md` as applicable.
 
