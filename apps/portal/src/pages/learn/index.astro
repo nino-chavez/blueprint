@@ -71,7 +71,7 @@ const ROLES = [
   </section>
 
   <h2 class="mb-1 font-heading text-2xl font-semibold tracking-tight">Then pick your role</h2>
-  <p class="mb-6 text-sm text-contrast-500">The lanes reorder by who you are. These are the four.</p>
+  <p class="mb-6 text-sm text-contrast-500">Each role gets a first action and three reads. These are the four.</p>
 
   <div class="grid gap-5 lg:grid-cols-2">
     {ROLES.map((r) => (
@@ -106,8 +106,8 @@ const ROLES = [
     <h2 class="mb-1 font-heading text-lg font-semibold tracking-tight">Going further — running a team</h2>
     <p class="mb-4 max-w-2xl text-sm leading-relaxed text-contrast-500">
       Solo Blueprint needs none of this. The moment a second operator (or a second concurrent agent
-      session) joins, coordination is the <strong>Hive</strong> substrate — optional, off by default,
-      and worth standing up only when contention is real. Read the litmus before the bootstrap.
+      session) joins, coordination is <strong>Hive</strong> — optional, off by default, and worth
+      standing up only when sessions genuinely contend. Read the readiness test before setting one up.
     </p>
     <ul class="space-y-1.5">
       <li class="text-sm leading-snug">
@@ -120,7 +120,7 @@ const ROLES = [
       </li>
       <li class="text-sm leading-snug">
         <a href={`${GH}/docs/governance/hive-identity-gap.md`} target="_blank" rel="noreferrer" class="font-mono text-[13px] text-brand hover:underline">hive-identity-gap.md</a>
-        <span class="text-contrast-500"> — the shared-bearer trust limitation; required reading before any client engagement</span>
+        <span class="text-contrast-500"> — the shared-credential trust limitation; required reading before any client engagement</span>
       </li>
     </ul>
   </section>

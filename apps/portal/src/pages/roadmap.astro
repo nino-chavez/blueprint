@@ -23,8 +23,8 @@ const commit = board?.commit || epicProgress?.sourceCommit || '';
       Where it's going.
     </h1>
     <p class="text-lg leading-relaxed text-contrast-500">
-      Forward-looking view of open work — the dependency-ordered build ladder when one is
-      wired, otherwise the coordination-board horizon, phase bands, and epic activity.
+      Forward-looking view of open work — what ships in what order, what's in flight
+      now, and what's queued behind it.
     </p>
   </header>
 
@@ -42,7 +42,7 @@ const commit = board?.commit || epicProgress?.sourceCommit || '';
         Not configured for this initiative
       </p>
       <p class="text-sm leading-relaxed text-contrast-500">
-        The roadmap populates once your coordination board or build-order source is wired.
+        The roadmap populates once your coordination board or build-order source is connected.
         Point <code class="font-mono text-xs">portal.sources.build_order</code> or
         <code class="font-mono text-xs">portal.sources.board</code> in
         <code class="font-mono text-xs">blueprint.yml</code> at a generated plan, then rebuild.
