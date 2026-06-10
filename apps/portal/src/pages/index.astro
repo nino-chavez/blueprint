@@ -39,7 +39,7 @@ const DEEPER = [
 ---
 <Layout
   title="Blueprint"
-  description="Blueprint is a methodology and CLI for running product initiatives end-to-end with an AI agent — research, prototype, strategy docs, fact-check, deploy. Install with npx @nino-chavez-labs/blueprint-cli."
+  description="AI-assisted projects move fast — and rot fast. Blueprint adds the checkpoints and the paper trail: an agent runs research, prototype, strategy docs, and fact-check; you ship work that holds up."
 >
   <!-- HERO ------------------------------------------------------------------ -->
   <section class="mx-auto max-w-3xl pt-6 pb-16 text-center sm:pt-10">
@@ -51,10 +51,10 @@ const DEEPER = [
       Run a product initiative,<br />end&nbsp;to&nbsp;end.
     </h1>
     <p class="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-contrast-500">
-      Blueprint is a methodology and CLI for running product work with an AI agent.
-      You bring the context — screenshots, BRDs, codebase, competitive intel. The
-      agent runs the pipeline and ships one portal that serves leadership,
-      engineering, and everyone.
+      AI-assisted projects move fast — and rot fast. Blueprint is a working method
+      for product work with an AI agent: the agent does the building, the method
+      supplies the checkpoints and the paper trail, and what ships is researched,
+      prototyped, fact-checked, and explained.
     </p>
     <div class="mx-auto mb-6 max-w-xl text-left">
       <CommandBlock command={INSTALL} client:visible />
@@ -63,6 +63,45 @@ const DEEPER = [
       <a href="#quickstart" class="rounded-md bg-brand px-4 py-2 text-background no-underline transition-opacity hover:opacity-90">Quickstart ↓</a>
       <a href={NPM_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">npm ↗</a>
       <a href={REPO_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">github ↗</a>
+    </div>
+  </section>
+
+  <!-- THE 30-SECOND VERSION --------------------------------------------------- -->
+  <!-- Serves the casual-visitor JTBD (single scroll, no practitioner vocabulary).
+       Prescription: docs/content/2026-06-09-front-door-prescription.md (P2).
+       This strip answers what/why/who itself — never defer comprehension to an
+       agent (P3). Practitioner depth starts at #what, behind this. -->
+  <section id="in-30-seconds" class="border-t border-contrast-100 py-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h2 class="mb-3 font-heading text-3xl font-semibold tracking-tight">The 30-second version.</h2>
+      <p class="mx-auto mb-10 max-w-2xl text-contrast-500">Plain language. Everything below this strip goes deeper; nothing in it is required to understand the idea.</p>
+    </div>
+    <div class="mx-auto grid max-w-5xl gap-3 sm:grid-cols-3">
+      <div class="rounded-lg border border-contrast-200 bg-background p-5 text-left">
+        <h3 class="mb-2 font-heading text-base font-semibold tracking-tight">What it is</h3>
+        <p class="text-sm leading-relaxed text-contrast-500">
+          A method for doing product work with an AI carrying the heavy lifting.
+          The AI researches, prototypes, and drafts the documents; Blueprint is
+          the set of checkpoints that makes it show its work.
+        </p>
+      </div>
+      <div class="rounded-lg border border-contrast-200 bg-background p-5 text-left">
+        <h3 class="mb-2 font-heading text-base font-semibold tracking-tight">Why it exists</h3>
+        <p class="text-sm leading-relaxed text-contrast-500">
+          AI-built work is fast and convincing — and that's the problem.
+          Confident claims nobody verified, decisions nobody wrote down.
+          Blueprint forces the receipts: every claim traced, every decision
+          recorded, every stage checked before the next one starts.
+        </p>
+      </div>
+      <div class="rounded-lg border border-contrast-200 bg-background p-5 text-left">
+        <h3 class="mb-2 font-heading text-base font-semibold tracking-tight">Who it's for</h3>
+        <p class="text-sm leading-relaxed text-contrast-500">
+          People shipping product work with an AI in the loop — solo builders
+          through client teams. If that's not you, the one-line takeaway:
+          it's quality control for AI-built work.
+        </p>
+      </div>
     </div>
   </section>
 
