@@ -130,7 +130,7 @@ portal:
     hero_headline: Run a product initiative end-to-end, agent-assisted.
     hero_subhead: "You bring the context — screenshots, BRDs, codebase, competitive intel. The agent runs the pipeline: research, prototype, strategy docs, fact-check, deploy — and ships one portal that serves leadership, engineering, and everyone. Team-adoptable and portable: configurable cost, git-native access, non-breaking updates."
   # Discover = the front door: what Blueprint is, how it works, why this approach,
-  # and proof. Sourced from the methodology canon (README / METHODOLOGY / START-HERE),
+  # and proof. Sourced from the methodology canon (README / METHODOLOGY),
   # NOT from the productization initiative's internal charter (lineage / gap-tracks /
   # scope-ceiling belong in Inspect, not on a newcomer's first screen).
   excerpts:
@@ -147,9 +147,9 @@ portal:
       path: METHODOLOGY.md
       heading: "First Principle: Agent Struggle Is a Missing Capability"
     - card: discover
-      title: See it in action
-      path: START-HERE.md
-      heading: See it in action
+      title: Evaluating for your team
+      path: README.md
+      heading: Evaluating Blueprint for your team?
     # The team/scale beat: hive is opt-in, off by default — this card surfaces the
     # litmus (when it's worth it), not a pitch. Spans full-width as the odd 5th card.
     - card: discover

@@ -297,12 +297,13 @@ Not every initiative needs all four. But every initiative needs at least the Str
 
 ### Document quality audit
 
-Before sharing any document, run the four checks:
+Before sharing any document, run the five checks (canonical definitions + failure thresholds: [docs/context/voice-template.md](docs/context/voice-template.md) § Quality audit, enforced by `doc-quality-auditor` at the Stage 5 → 6 gate):
 
 1. **"So what?" placement** — Is the takeaway in the first sentence, or buried?
 2. **Mental math** — Do tables show the conclusion, or require calculation?
 3. **Logic gaps** — Does any section contradict another?
 4. **Scannable format** — Is context trapped in paragraphs?
+5. **Methodology statement for derived data** — Can a skeptical reader see how every derived number was produced?
 
 ### Voice: Internal Strategy
 

@@ -6,9 +6,9 @@ This is the navigation index for the Blueprint methodology corpus. The docs are 
 
 The docs a **stranger** reads to answer "what is this and how do I use it" have no usage-feedback loop (a confused reader bounces; they don't file amendments), so they drift silently. This manifest names that surface; each doc on it gets a periodic Stage-4-style fact-check (sanitize + adjudicate every claim: accurate / drifted / stale-evidence) — the same gate consumer deliverables get. Functional docs (patterns, reviewer specs, prompts read mid-initiative) are NOT on it: usage self-heals them via the amendments loop.
 
-`README.md` · `START-HERE.md` · `METHODOLOGY.md` · `CONTRIBUTING.md` · `docs/README.md` (this file) · `docs/variant-selection.md` · `docs/portal-and-tier-ladder.md` · `docs/prompts/add-blueprint-to-project.md` · `docs/prompts/pick-up-blueprint-updates.md` · `template/CLAUDE.md` · the portal `/` + `/learn` pages
+`README.md` · `METHODOLOGY.md` · `CONTRIBUTING.md` · `docs/README.md` (this file) · `docs/variant-selection.md` · `docs/portal-and-tier-ladder.md` · `docs/prompts/add-blueprint-to-project.md` · `docs/prompts/pick-up-blueprint-updates.md` · `template/CLAUDE.md` · the portal `/` + `/learn` pages
 
-Last full review: 2026-06-10 (wave 56). Cadence: every wave that touches positioning, naming, or the portal — and any time a reader's question reveals a wrong claim.
+Last full review: 2026-06-10 (wave 56); first set-level pass 2026-06-11 (wave 58 — START-HERE folded into README, claim-ownership fixes: the five-check audit and voice-mode tables now have one owning doc each). Cadence: every wave that touches positioning, naming, or the portal — and any time a reader's question reveals a wrong claim.
 
 **Set-level questions the per-file review must ALSO ask** (added after the wave-56 review missed both — per-file claim adjudication can't see between-doc problems):
 
@@ -19,8 +19,8 @@ Last full review: 2026-06-10 (wave 56). Cadence: every wave that touches positio
 
 The universal on-ramp. In order:
 
-1. **[`START-HERE.md`](../START-HERE.md)** — 5-minute overview. What Blueprint is, see it running, how to try it. The only doc that answers "should we use this?" in under 10 minutes.
-2. **[`README.md`](../README.md)** — project scope, quickstart, command table, design principles. Moves from "interesting" to "here's what the output looks like."
+1. **The live portal** — [blueprint-platform.pages.dev](https://blueprint-platform.pages.dev): what Blueprint is and what it produces, in the product's own front door. The only surface that answers "should we use this?" in under 5 minutes.
+2. **[`README.md`](../README.md)** — the team-evaluation path (§ "Evaluating Blueprint for your team?", folded from the former START-HERE), quickstart, command table, design principles.
 3. **[`docs/variant-selection.md`](variant-selection.md)** — greenfield / midstream / brownfield decision tree, with the stage pipeline shape per variant. "Which variant are we?" gates every downstream decision; pick wrong and the retrofit costs a restart.
 
 After step 3, jump to your role's read-first set under [By role](#by-role).
@@ -31,7 +31,6 @@ After step 3, jump to your role's read-first set under [By role](#by-role).
 
 | Doc | What it does |
 |---|---|
-| [`START-HERE.md`](../START-HERE.md) | 5-minute pitch — what it is, see it running, how to try |
 | [`docs/prompts/add-blueprint-to-project.md`](prompts/add-blueprint-to-project.md) | Onboard an existing project into Blueprint |
 | [`docs/prompts/pick-up-blueprint-updates.md`](prompts/pick-up-blueprint-updates.md) | Pull methodology updates into a live initiative |
 
@@ -172,7 +171,7 @@ Then by gate type:
 
 ### Stakeholder — executive oversight, approval authority
 
-1. [`START-HERE.md`](../START-HERE.md) — why we're using this.
+1. [`README.md` § Evaluating Blueprint for your team?](../README.md#evaluating-blueprint-for-your-team) — why we're using this (+ the live portal).
 2. [`decisions/00-charter.md`](../decisions/00-charter.md) — the charter: six requirements, gap scorecard, scope-ceiling decision.
 3. [`docs/productization/README.md`](productization/README.md) — what shipped and when.
 

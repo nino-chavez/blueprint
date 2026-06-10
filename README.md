@@ -28,6 +28,16 @@ Seven commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` �
 
 A note on the name: originally carried an employer-prefixed name (extracted from a commerce-platform CX initiative, March 2026); renamed **Blueprint** on 2026-05-25 once it proved general-purpose. The methodology never required a vertical.
 
+## Evaluating Blueprint for your team?
+
+The five-minute path (formerly `START-HERE.md`):
+
+- **See it running first**: [blueprint-platform.pages.dev](https://blueprint-platform.pages.dev) is Blueprint applied to *itself* — the same shape of portal it generates for any initiative, so it doubles as "here's what the output looks like." Worth clicking: **discover** (what it is), **roadmap** (the build, end-to-end), **inspect** (the ADRs + research behind every choice).
+- **Blueprint vs Hive — two parts, on purpose**: Blueprint (this repo) is the planning/prototyping methodology + toolchain; **Hive** is the multi-operator coordination layer (separate repo, separately maintained). Blueprint *plans*; Hive *coordinates*. Companions, integrated, not merged.
+- **Try it**: the [Quickstart](#quickstart) above — nothing to install to explore; the CLI is live on npm.
+- **Go deeper**: [`decisions/00-charter.md`](decisions/00-charter.md) (the why + the six tracks), [`decisions/01-prescription.md`](decisions/01-prescription.md) (what shipped, the build order).
+- Want a 20-minute walkthrough for the team, or to be a pilot? Open an issue on this repo.
+
 ## What This Is
 
 Blueprint is a methodology and toolset for running product initiatives with AI assistance. You provide the context — screenshots, BRDs, codebase access, competitive intelligence. The agent does research, builds prototypes, writes strategic documents, validates claims against source code, and iterates based on stakeholder feedback.
@@ -138,7 +148,7 @@ Blueprint from a single-operator workflow into a team-adoptable platform — was
 - **`tools/archaeology/`** — an event-sourced provenance substrate over the whole
   productization history (sessions, ADRs, git, memory) — "what did we know on date T,
   why X, who decided Z." See `docs/patterns/archaeology-substrate-pattern.md`.
-- **`START-HERE.md`** — the team on-ramp.
+- **[Evaluating Blueprint for your team?](#evaluating-blueprint-for-your-team)** — the team on-ramp (folded from the former `START-HERE.md`).
 
 The boundary that keeps the methodology reusable is a **directory boundary, not a repo
 boundary**: external consumers only ever stamp from `template/` (the stamper reads
@@ -196,25 +206,11 @@ Each page serves three audiences via three interaction layers:
 
 ## Document Quality
 
-Every document passes a four-check audit before sharing:
-
-1. **"So what?" placement** — takeaway in the first sentence, not buried
-2. **Mental math** — tables show conclusions, don't require calculation
-3. **Logic gaps** — no section contradicts another
-4. **Scannable format** — context in bullets/tables, not dense paragraphs
-
-Full audit framework: the Forge Signal toolchain (separate, private repo); the in-repo voice rules live at `docs/context/voice-template.md`
+Every document passes a five-check audit before sharing — "so what?" placement, mental math, logic gaps, scannable format, and a methodology statement for derived data. The owning doc (definitions, failure thresholds, the enforcing reviewer): [`docs/context/voice-template.md`](docs/context/voice-template.md) § Quality audit. The full content-generation framework lives in the Forge Signal toolchain (separate, private repo).
 
 ## Voice Modes
 
-Documents map to Forge Signal's content modes:
-
-| Document type | Voice mode | Characteristics |
-|--------------|-----------|----------------|
-| Strategy / CX plan | Internal Strategy | "We" voice, scannable, named owners |
-| Technical feasibility | Solution Architecture | Precise, code references, open questions |
-| Market research | Research / Evidence | Cited sources, pattern → decision mapping |
-| Integration plan | Solution Architecture | Ruby/JS examples, phased rollout |
+Each document type maps to a voice mode (internal-strategy, solution-architecture, research/evidence). The owning doc — the per-type mapping, characteristics, and the `voices:` config that selects them: [`docs/context/voice-template.md`](docs/context/voice-template.md) § When to use which voice.
 
 ## Design Principles
 
