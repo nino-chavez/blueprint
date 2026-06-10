@@ -11,7 +11,7 @@
 - **CLI published:** `@nino-chavez-labs/blueprint-cli@0.1.0` on npm (MIT, public repo). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
 - **Build order 0–13 complete** across tracks A–E. `main-protection` ruleset bound + active.
 - **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint-platform.pages.dev` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
-- **Latest wave (54):** docs/ reorg into typed subdirs (`patterns/`, `context/`, `case-studies/`, `governance/`, `_archive/`); only the two hook-injected canonicals + README stay loose. Recent prior waves: 53 Mom Test ask-outcome discipline, 52 DoD verification ladder, 51 Mom Test validation bridge, 50 defrag + doc-currency gates, 49 team onboarding kit + `blueprint hive setup`. Full log in `WAVE-LOG.md`.
+- **Latest wave (55):** enforcement wiring — `.github/workflows/doctor.yml` gates every push/PR to main on doctor's 7 checks (they were invocation-only before) + `/blueprint-triage` anonymize-by-default capture. Recent prior waves: 54 docs/ reorg into typed subdirs, 53 Mom Test ask-outcome discipline, 52 DoD verification ladder, 51 Mom Test validation bridge, 50 defrag + doc-currency gates, 49 team onboarding kit + `blueprint hive setup`. Full log in `WAVE-LOG.md`.
 
 ## In flight / next
 
@@ -19,11 +19,12 @@
 - **Hive identity hardening — TRIGGER, not yet due:** the substrate authenticates with a shared bearer (spoofable attribution; see `docs/governance/hive-identity-gap.md`). For ≤3 trusted/co-located operators, option (a) trust + risk-register is the accepted call. **Harden to per-session JWT BEFORE a 2nd team or any external contributor joins** — that onboarding is the trigger, and the hardening must land before it.
 - **Multi-operator chaos test:** the substrate is built but never run under contention. Owned by the first real parallel engagement (T.).
 - **Demand validation (open asks):** the A6 working-session ask to "R." (map his four-skill loop onto Blueprint primitives — whether he shows up IS the A6 test) and the P4 cold-open re-test with "D." after the front-door fix shipped. Both are operator sends; log outcomes in `docs/content/validation-script.md` (the Log's `Ask made → outcome` column is waiting).
-- **The false-green gap (no-regret, deferred):** Fact-Check (Stage 4) does not gate on runtime/browser verification; `doctor` is honest about this boundary. Closing it is the next quality frontier.
+- **Privacy residuals (operator-only):** (1) file the GitHub Support request to purge unreachable objects from `nino-chavez/blueprint` — the pre-rewrite commit with identity data is still fetchable by exact SHA until GitHub gc's (zero forks/watchers, so low urgency, but the content class warrants it); (2) decide whether "T." stays first-named in the 6 public files (WAVE-LOG, HANDOFF, START-HERE, CLAUDE.md, governance docs) — sweep to role + initial on a word.
+- **The false-green gap:** the *enforcement* half closed in wave 55 (`doctor` now gates CI on every push/PR to main). The *Stage-4* half remains deferred: Fact-Check does not gate on runtime/browser verification; `doctor` is honest about this boundary. Closing it is the next quality frontier.
 
 ## Standing constraints
 
-- **Methodology freeze:** no `template/` edits land while an EXTERNAL consumer is mid-migration without an explicit operator waiver. The in-repo self-application (`methodology_version: self`) does not trip this. Consumers currently at rest: `apps/rally-hq`, `apps/website-nc-v3`, `apps/blog/blueprint`, `wip/subs-initiative`.
+- **Methodology freeze:** no `template/` edits land while an EXTERNAL consumer is mid-migration without an explicit operator waiver. The in-repo self-application (`methodology_version: self`) does not trip this. The consumer registry is `consumers.yml` (inspect with `blueprint fleet`); external initiatives at rest as of wave 55, with subs-initiative mid-flight on its own pinned methodology copy (not mid-migration).
 - **Concurrent sessions use worktrees** (the `worktree-guard` hook enforces it; a solo session in main is never blocked).
 - **ai-hive: integrate, not absorb.** Hold the line against SaaS-scope-creep — scope ceiling A (methodology-native: git-host + npm + local files, no hosted service).
 - **`template/` is the clean substrate.** If you find yourself editing `template/` to make the self-application's portal build, that's the leak — fix it at the root (`apps/portal/`, `packages/`).

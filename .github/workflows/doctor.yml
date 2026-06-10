@@ -1,0 +1,24 @@
+name: Doctor
+
+# The enforcement half of the false-green fix (wave 55): doctor's 7 checks
+# (config + reviewer loads + portal conformance + doc-currency) used to be
+# invocation-gated — green only when someone remembered to run them. This
+# makes every push/PR to main carry the gate. Dependency-free by design
+# (ADR-0002): bare checkout + node, no install step.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: blueprint doctor
+        run: node bin/blueprint.mjs doctor

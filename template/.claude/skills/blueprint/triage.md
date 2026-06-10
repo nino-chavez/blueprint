@@ -73,11 +73,15 @@ State transitions: `needs-review` → one of the others. The maintainer can over
 ### Step 1 — Collect
 
 Read the feedback source. Common locations:
-- `feedback/[date]-[stakeholder].md` — written feedback in markdown
+- `feedback/[date]-[slug].md` — written feedback in markdown
 - A pasted Slack thread or email
 - Notes from a live demo
 
-If feedback isn't yet in `feedback/`, copy it there first so it's preserved alongside the deliverable.
+If feedback isn't yet in `feedback/`, capture it there first so it's preserved alongside the deliverable — but **anonymize before anything is committed**, because feedback is private communication and the repo may be (or become) public:
+
+1. **Verbatim original** → `feedback/raw/` and add `feedback/raw/` to `.gitignore` (verify with `git check-ignore feedback/raw/` before writing). The verbatim stays local-only, full names and all.
+2. **Committed capture** → `feedback/[date]-[slug].md` with identities reduced to role + initial ("R., engineering lead"), DMs condensed to paraphrase + short non-identifying quotes, and personal disclosures (health, family, anything the person didn't say for an audience) paraphrased out entirely. Slug by persona, not name (`casual-visitor`, `eng-lead-thread`).
+3. Treat private-repo initiatives the same way — repos go public later (this one did), and git history keeps what the working tree deletes. Anonymizing after a push means a history rewrite.
 
 ### Step 2 — Categorize and recommend
 
@@ -129,6 +133,7 @@ Make scoped-in items visible in the deliverable update; make won't-fix rationale
 - **Skipping the rationale on wontfix** — the rationale is the reason the deliverable holds up under scrutiny. Always include.
 - **Triaging in isolation** — every state change should be visible to the team in `docs/content/` or `feedback/`. No silent decisions.
 - **Counting compliments as validation** — "everyone loved the demo" is the Mom Test's false-positive trap. Demand evidence is what stakeholders gave (time/reputation/money), recorded in the validation script's log — not what they said.
+- **Committing verbatim identity** — full names, exact private-DM quotes, or personal disclosures in committed feedback files. The triage record's evidence value survives anonymization (persona + what they gave is the data); the person's trust does not survive publication. Verbatim belongs in gitignored `feedback/raw/`, nothing else.
 
 ## Output
 

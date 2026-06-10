@@ -4,6 +4,22 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-10 — Enforcement gaps: checks exist but nothing runs them; claims rot that no reviewer reads
+
+**Two candidates for promotion (one sibling promoted directly as wave 55).**
+
+**Observed (operator challenge: "is Blueprint failing its own reviews?"):** a same-day audit found that every failure caught in the 2026-06-10 session — PII pushed public, a 41-file docs/ dump, stateful claims stale for 5 waves ("forty-nine waves captured in CLAUDE.md"), a 6-wave changeset lapse despite ADR-0007's own policy — was caught by the *operator*, not a gate. The mechanical gates that exist (doctor's 7 checks, doc-currency) were green and did catch what they cover (30 broken links during the reorg) — but they are invocation-gated: **no CI workflow ran doctor or any reviewer**, so a doctor-failing state could land on main and deploy. Presence ≠ function, applied to the enforcement layer itself (the wave-52 critique, one level up).
+
+**Promoted directly (wave 55):** `.github/workflows/doctor.yml` — doctor's 7 checks run on every push/PR to main (dependency-free, bare checkout + node). Plus the `/blueprint-triage` privacy fix: anonymize-by-default capture (verbatim → gitignored `feedback/raw/`; committed files carry role + initial, paraphrased disclosures) — the skill previously *instructed* the verbatim-copy behavior that caused the 2026-06-09/10 PII leak.
+
+**Candidate fixes (deferred):**
+- **Changeset-presence check** (mechanical, near-free): CI fails when `template/**` changes without a `.changeset/*.md` in the same PR/push — enforces ADR-0007's "every consumer-affecting change adds a changeset" instead of trusting memory. Deferred only for sequencing; promote with the next CI touch.
+- **Stateful-claim lint** (instance 1, second-instance gated): flag number-words and "latest X" claims near wave/consumer/reviewer nouns in prose docs and verify against the source of truth (WAVE-LOG count, consumers.yml length, reviewer registry). The 2026-06-10 sweep is instance one of the rot class; build the reviewer when it bites again.
+
+**References:** `.github/workflows/doctor.yml`, `template/.claude/skills/blueprint/triage.md` § Step 1, the 2026-06-10 currency-sweep commit (`249c47d`).
+
+---
+
 ## 2026-06-10 — Triage has no slot for market evidence; validation script has no assumption archetypes
 
 **Candidate for promotion (two deferred candidates; a sibling gap promoted directly as wave 53).**
