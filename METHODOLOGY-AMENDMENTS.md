@@ -25,6 +25,32 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-10 — Terminology-linter has no surface taxonomy; reader-facing jargon ships ungated
+
+**Trigger**: an operator jargon audit of the self-application's entry surfaces ("what is Pattern A? without context it means nothing") found insider vocabulary used cold across the portal landing page, README, METHODOLOGY.md, and both learn pages — none of it caught by any gate.
+
+**Scope**: Candidate for methodology promotion (instance 1; mechanical rewrite second-instance gated, scan-set extension promotable with the next reviewer-touching wave)
+
+**Bucket**: reviewer
+
+**Status**: Active
+
+**Observed:** the 2026-06-10 audit found two distinct gaps in `terminology-linter`:
+
+1. **Wrong scan set.** The spec scans "every HTML page in `prototype/` or `portal/`" plus `_meta/*.json` and `index.html`. Pattern A portals (`apps/portal/src/**` — `.astro` + `.md` pages) and the repo README are not in the scan set at all. The self-application's worst offenders — the portal landing page's CLI cards ("Classify every consumer's drift", "Bump a consumer's methodology pin"), README's command list, the learn pages — were never gateable, regardless of rules.
+2. **No surface awareness.** The linter applies one rule class everywhere it does scan. The audit showed the correct policy is surface-scoped, two rule classes — and explicitly *not* a glossary artifact (a glossary externalizes the cost onto the reader and rots):
+   - **Reader-facing surfaces** (portal pages, README, learn/tutorial content, deploy-visible meta descriptions): insider terms are banned outright — the fix is a plain-language rewrite, not a definition. Seed list from the audit: drift, methodology pin, stamp/stamper/restamp, chrome, wave, substrate, consumer (as a noun for a project), lanes, litmus, wired, design oracles, shared-bearer.
+   - **Practitioner/canonical docs** (METHODOLOGY.md, `docs/*.md`): load-bearing vocabulary is allowed but must be defined or glossed on first use, with a link to the canonical definition when one exists elsewhere (`docs/variant-selection.md` is the in-repo model — it already passes).
+   - **Agent-facing files** (CLAUDE.md files, `template/` internals, `.claude/**`): exempt — insider vocabulary is their working language.
+
+**Worked around (manual):** two hand-audit-and-rewrite passes over the self-application, commits `a1dbd4a` (entry surfaces) + `7257539` (verb pages). The sweep also caught a broken instruction the jargon lens surfaced for free: `learn/tutorial.md` scaffolded with `init --pattern=B`, which `stamp.mjs:842` refuses — evidence that reader-path review has correctness teeth, not just tone teeth.
+
+**Candidate fix:** extend the scan set per portal pattern (Pattern A: `apps/portal/src/pages/**`; Pattern B: existing HTML set; both: repo README + `docs/content/` deliverables), then teach the reviewer the three-surface taxonomy above — convention-defaulted by path, overridable via a `blueprint.yml` surfaces map. The scan-set extension is cheap and mechanical; the surface-scoped rule classes are the real rewrite and wait for a second instance (first external consumer whose portal copy ships jargon past the gate).
+
+**References:** commits `a1dbd4a`, `7257539`; `template/.claude/agents/blueprint/reviewers/terminology-linter.md` (current spec, § "What you check"); the 2026-06-10 jargon-audit session.
+
+---
+
 ## 2026-06-10 — Changesets cannot version the root package of a workspace monorepo; the release pipeline broke silently at the fold
 
 **Candidate for promotion (release-engineering fix; latent since wave 45).**
