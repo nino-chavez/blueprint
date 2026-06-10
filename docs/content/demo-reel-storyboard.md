@@ -1,78 +1,113 @@
-# Demo reel storyboard — /demo scene player
+# Demo storyboard — /demo scene player (job-ordered rebuild)
 
-The portal route `/demo` (apps/portal) is an HTML scene player: it replays
-REAL captured CLI transcripts with scripted typing/transitions, in two reels.
+The portal route `/demo` (apps/portal) plays two cuts from one scene script.
 This doc is the contract the player implements — edit here first, then mirror
 in `apps/portal/src/data/demo-scenes.ts`.
 
-**Why HTML instead of a recorded video**: a recording rots the moment CLI
-output changes, and this repo ships waves weekly. The player reads fixtures
-captured from real runs (`apps/portal/scripts/capture-demo-fixtures.mjs` →
-`src/data/demo-fixtures.json`); re-capture + re-record and the reel is current
-again. The mp4 for social/decks is produced by screen-recording the autoplay
-reel (`scripts/record-demo.mjs`), not by editing video.
+**v2 (2026-06-10): rebuilt job-first.** v1 was a feature tour of the CLI's
+operations layer — terminal scene after terminal scene, no artifacts, the job
+never on screen. The rebuild follows an IDEA through the pipeline: what you
+type, what the agent produced, what the gate said, what ships. The spine is
+the self-application (the initiative that productized Blueprint itself),
+because it's the one initiative whose artifacts are public and checkable.
 
-**The no-fabrication rule**: terminal scenes replay captured output verbatim
-(paths redacted, nothing else). The methodology's pitch is fact-checked
-claims; a demo of Blueprint built on mocked CLI output fails its own gate.
+## The three no-fabrication rules
+
+1. **Terminal scenes replay captured CLI transcripts** verbatim (paths
+   redacted, nothing else) — `scripts/capture-demo-fixtures.mjs` →
+   `src/data/demo-fixtures.json`. Re-capture per wave; the demo re-renders.
+2. **Artifact scenes quote real repo files** with their path on the pane and
+   trims marked `…` (sources: `blueprint.yml`, `research/00-recon-synthesis.md`,
+   `decisions/01-prescription.md` — re-verify quotes when those files change).
+3. **Prompt scenes show only what you type** (`/blueprint-research`). The
+   agent's response is never invented — the artifact scene that follows IS
+   the response, as it actually landed in the repo.
+
+A demo of a fact-checking methodology built on mocked output fails its own
+gate; these rules are the reason an HTML demo can be honest where a produced
+video drifts.
+
+## Design tests (from the mom-test log, `docs/content/validation-script.md`)
+
+- **D. — casual visitor (A1 disconfirmed):** can she say what Blueprint is
+  after the sizzle *without parsing monospace*? Captions carry the story in
+  plain language; terminal scenes are spectacle (the stamp burst, the green
+  capstone), not required reading. Receipts beat is prose cards, not CLI.
+- **R. — incumbent personal loop ("hard part is team alignment"):** does the
+  walkthrough show the team seam, not just a better kitchen? The fleet beat
+  is framed as "every project on one pinned methodology — alignment checked,
+  not hoped," and the gates are presented as a *shared* definition of done.
+- **V. — artifact reviewer ("solo cycle is demo, not prod"):** does it show
+  evidence and where humans sign off? Artifact scenes show `grounded_by` /
+  evidence-path structure; the fact-check beat says agent gates LAYER UNDER
+  team sign-offs (PM/Eng), citing the governance doc's position.
 
 ## Scene types
 
-| Type | Renders | Animation |
+| Type | Renders | Honesty source |
 |---|---|---|
-| `title` | kicker / headline / sub on an empty stage | fade+rise per line, stagger |
-| `terminal` | macOS-style terminal chrome; types the command, streams the fixture's lines | typewriter (command), line-stream (output); outputs >28 lines burst-scroll; holds on `holdTail` lines |
-| `stages` | the 7-stage pipeline ladder | stages light up sequentially with a check tick |
-| `outro` | closing claim + install command | fade+rise |
+| `title` | kicker / headline / sub | — |
+| `terminal` | terminal chrome; types command, streams fixture lines (burst >28) | captured transcript |
+| `prompt` | Claude Code pane; types skill invocation(s), no response shown | what you'd type |
+| `artifact` | file pane: path + stage badge + "real file · this repo" + excerpt | quoted repo file |
+| `receipts` | three prose proof cards, staggered | summarizes real artifacts |
+| `stages` | 7-stage ladder lighting up | homepage stage list |
+| `outro` | claim + install command + /learn + /inspect links | — |
 
-Both reels share scene definitions; a scene lists which reels include it.
+## Sizzle (autoplay, ~35s — the attention-budget cut)
 
-## Sizzle reel (autoplay — the social/deck cut; ~34s as recorded 2026-06-10)
+Job arc: idea → workspace → receipts → gates → ship.
 
-| # | Scene | Fixture | Beat / caption |
-|---|---|---|---|
-| 1 | title | — | "AI-assisted projects move fast — and rot fast." / "Blueprint adds the checkpoints and the paper trail." |
-| 2 | terminal | `init` | One command stamps a whole portal — burst-scroll the stamp report, end on `mechanical check: PASS` |
-| 3 | stages | — | "Seven stages. Every gate enforced by a reviewer." |
-| 4 | terminal | `review-list` | "The gates are executable — not a checklist in a wiki." (15 reviewers discovered) |
-| 5 | terminal | `doctor-self` | "doctor is honest about what it didn't check." — the `not checked (by design)` block + `overall: PASS` |
-| 6 | outro | — | "What ships is researched, prototyped, fact-checked, documented." + `npx @nino-chavez-labs/blueprint-cli init` |
+| # | Scene | Beat |
+|---|---|---|
+| 1 | title | "You have an idea." / "An agent can build it fast. Fast isn't the problem — proof is." |
+| 2 | terminal `init` | the workspace materializes (burst-scroll spectacle); caption says what it is in plain words |
+| 3 | receipts | "The agent does the work. Blueprint keeps the receipts." — research / decisions / fact-check cards |
+| 4 | terminal `doctor-self` | the honest green: what it didn't check is on record |
+| 5 | stages | "Seven stages. A gate between each." |
+| 6 | outro | "Ship work that holds up." + install + tutorial/receipts links |
 
-## Deep walkthrough (stepped by default — the onboarding cut)
+## Deep walkthrough (stepped — the "how would I use this with MY idea" cut)
 
-Adds the failure beats the sizzle omits. The fresh-stamp FAIL is the
-centerpiece: gates with teeth, and the finding names the exact fix.
+Job-ordered: each beat is (what you do) → (what landed) → (what the gate said).
 
-| # | Scene | Fixture | Beat / caption |
-|---|---|---|---|
-| 1 | title | — | same cold open |
-| 2 | terminal | `init` | full stamp report, slower pace |
-| 3 | terminal | `doctor-fresh` | a fresh stamp FAILS its own gate — placeholder content not yet replaced; honest state, named |
-| 4 | terminal | `review-conformance-fresh` | the BLOCK finding in full: 12 files, the fix, the doc ref |
-| 5 | stages | — | the pipeline those gates guard |
-| 6 | terminal | `review-list` | reviewer discovery: canonical + org, shadowing rules |
-| 7 | terminal | `review-stateful-claims` | the methodology gates itself — self-application PASS |
-| 8 | terminal | `cost` | effort below anchor without `skip_justification` → BLOCKs at the step-6 gate |
-| 9 | terminal | `fleet` | one registry classifies every consumer's drift |
-| 10 | terminal | `upgrade-fresh` | terraform-plan style: dry-run by default, unpinned adopts the current release |
-| 11 | terminal | `doctor-self` | the capstone green — including what it did NOT check |
-| 12 | outro | — | same close |
+| # | Scene | Beat |
+|---|---|---|
+| 1 | title | everything here is real; the initiative shown productized Blueprint itself |
+| 2 | terminal `init` | day zero — stamp the workspace (existing app = `variant: brownfield`) |
+| 3 | artifact `blueprint.yml` | stage 0: name the pain before any work; pilot profile is a gate |
+| 4 | prompt `/blueprint-research` | stages are skills; the agent fans out |
+| 5 | artifact `research/00-recon-synthesis.md` | what landed: method + findings + evidence paths (6 agents, ~612k tokens) |
+| 6 | terminal `review-research-fresh` | skip ahead → the gate names what's missing; done is defined |
+| 7 | artifact `decisions/01-prescription.md` | decisions cite their research (`grounded_by`) and what they authorize (`informs`) |
+| 8 | prompt `/blueprint-prototype` `/blueprint-docs` | prototype tests the decision, docs capture the rationale |
+| 9 | terminal `review-stateful-claims` | fact-check is a stage; agent gates layer under team sign-offs |
+| 10 | terminal `doctor-fresh` | ship gate BEFORE the work: placeholders FAIL |
+| 11 | terminal `doctor-self` | ship gate AFTER: honest green — this site deploys from it |
+| 12 | stages | the pipeline you just walked |
+| 13 | terminal `fleet` | the team seam: one pinned methodology across every project |
+| 14 | outro | your turn: install + /learn tutorial + /inspect receipts |
+
+Known-honest gap: the self-app itself currently BLOCKs
+`research-completeness-reviewer` (its research predates the leg-directory
+convention), so the walkthrough never claims that gate passes — the
+before/after teeth arc uses `doctor` (fresh FAIL → self PASS), which is true.
 
 ## Player modes
 
 - `?reel=sizzle|deep` — scene set (default sizzle).
-- `?mode=auto|step` — autoplay vs click/keyboard advance (sizzle defaults
-  auto, deep defaults step). No Play overlay — scenes are DOM animation, not
-  media, so autoplay restrictions don't apply.
+- `?mode=auto|step` — sizzle defaults auto, deep defaults step. No Play
+  overlay — scenes are DOM animation, not media; autoplay restrictions
+  don't apply.
 - `?record=1` — hides nav/controls chrome; the recording rig's stage.
-- Deterministic pacing (fixed per-char/per-line delays, no randomness) so a
-  recording is reproducible frame-for-frame.
+- Deterministic pacing (fixed delays, no randomness) → reproducible recording.
 - `prefers-reduced-motion`: typewriter/stream collapse to instant render.
-- When the reel ends the player sets `window.__DEMO_DONE__ = true` — the
-  recording script waits on it.
+- Reel end sets `window.__DEMO_DONE__ = true` — the recording script waits on it.
 
-## Regeneration procedure (per wave, when CLI output changes)
+## Regeneration procedure (per wave, when CLI output or quoted files change)
 
 1. `node apps/portal/scripts/capture-demo-fixtures.mjs` — re-capture transcripts.
-2. Eyeball `/demo?reel=deep` — captions still match the output beats?
-3. `node apps/portal/scripts/record-demo.mjs` — re-render the mp4/webm cut.
+2. Re-verify the three artifact excerpts in `demo-scenes.ts` against their sources.
+3. Eyeball `/demo?reel=deep` — captions still match the beats?
+4. `node apps/portal/scripts/record-demo.mjs` — re-render the webm cut
+   (`ffmpeg -i in.webm -c:v libx264 -pix_fmt yuv420p out.mp4` for socials).

@@ -1,11 +1,11 @@
 {
-  "capturedAt": "2026-06-10T23:11:30.834Z",
+  "capturedAt": "2026-06-10T23:34:43.641Z",
   "pathsRedacted": true,
   "fixtures": {
     "init": {
       "command": "npx @nino-chavez-labs/blueprint-cli init --pattern=A --variant=greenfield --tier=1 --name=field-guide --target=field-guide",
       "exitCode": 0,
-      "durationMs": 92,
+      "durationMs": 101,
       "lines": [
         "blueprint-init: stamping Pattern A scaffold into ~/work/field-guide",
         "  variant=greenfield tier=1 (default)",
@@ -165,7 +165,7 @@
     "review-list": {
       "command": "blueprint review --list",
       "exitCode": 0,
-      "durationMs": 32,
+      "durationMs": 36,
       "lines": [
         "blueprint review — 15 reviewer(s) discovered  (target: ~/work/field-guide)",
         "",
@@ -190,7 +190,7 @@
     "review-conformance-fresh": {
       "command": "blueprint review portal-pattern-a-conformance-reviewer",
       "exitCode": 1,
-      "durationMs": 38,
+      "durationMs": 43,
       "lines": [
         "✗ BLOCKED — portal-pattern-a-conformance-reviewer  (7/7 routes, ui=8 tokens=1, banners=12)",
         "",
@@ -200,19 +200,52 @@
         "    ref: portal-pattern-a-conformance-reviewer.md#7-no-replace_for_project-banner"
       ]
     },
+    "review-research-fresh": {
+      "command": "blueprint review research-completeness-reviewer",
+      "exitCode": 1,
+      "durationMs": 36,
+      "lines": [
+        "✗ BLOCKED — research-completeness-reviewer  (variant=greenfield type=consumer-app; legs 0/4 populated; personas 0/0 with JTBD; MISSING research/current-state,research/competitive,research/personas,research/funnel)",
+        "",
+        "  [BLOCK] research/current-state/",
+        "    Required greenfield research leg 'research/current-state/' does not exist.",
+        "    fix: Create research/current-state/ and populate it with substantive research (≥500 bytes of real content, not a .gitkeep).",
+        "    ref: research-completeness-reviewer.md#why-this-gate-exists",
+        "",
+        "  [BLOCK] research/competitive/",
+        "    Required greenfield research leg 'research/competitive/' does not exist.",
+        "    fix: Create research/competitive/ and populate it with substantive research (≥500 bytes of real content, not a .gitkeep).",
+        "    ref: research-completeness-reviewer.md#why-this-gate-exists",
+        "",
+        "  [BLOCK] research/personas/",
+        "    Required greenfield research leg 'research/personas/' does not exist.",
+        "    fix: Create research/personas/ and populate it with substantive research (≥500 bytes of real content, not a .gitkeep).",
+        "    ref: research-completeness-reviewer.md#why-this-gate-exists",
+        "",
+        "  [BLOCK] research/funnel/",
+        "    Required greenfield research leg 'research/funnel/' does not exist.",
+        "    fix: Create research/funnel/ and populate it with substantive research (≥500 bytes of real content, not a .gitkeep).",
+        "    ref: research-completeness-reviewer.md#why-this-gate-exists",
+        "",
+        "  [INFO] blueprint.yml initiative_type",
+        "    initiative_type is 'consumer-app' (not platform-feature) — architect-challenge check skipped per .md spec step 8.",
+        "    fix: No action — informational.",
+        "    ref: research-completeness-reviewer.md#what-you-check"
+      ]
+    },
     "review-stateful-claims": {
       "command": "blueprint review stateful-claim-lint-reviewer",
       "exitCode": 0,
-      "durationMs": 81,
+      "durationMs": 84,
       "lines": [
-        "✓ PASS — stateful-claim-lint-reviewer  (docs=44, claims-checked=3, mismatches=0, skipped=[])",
+        "✓ PASS — stateful-claim-lint-reviewer  (docs=45, claims-checked=3, mismatches=0, skipped=[])",
         "  no findings."
       ]
     },
     "doctor-self": {
       "command": "blueprint doctor",
       "exitCode": 0,
-      "durationMs": 103,
+      "durationMs": 108,
       "lines": [
         "blueprint doctor — ~/dev/blueprint",
         "",
@@ -222,8 +255,8 @@
         "  ✓ reviewers-loadable   15 reviewer(s) load + validate",
         "  ✓ consumers-registry   12 consumer(s) registered",
         "  ✓ portal-conformance   bespoke portal — divergence recorded in 02-portal-bespoke-product-site.md; Pattern A/B conformance not applicable",
-        "  ✓ doc-currency         PASS — docs=56, broken-links=0, missing-citations=21, unknown-cli=0",
-        "  ✓ stateful-claims      PASS — docs=44, claims-checked=3, mismatches=0, skipped=[]",
+        "  ✓ doc-currency         PASS — docs=57, broken-links=0, missing-citations=21, unknown-cli=0",
+        "  ✓ stateful-claims      PASS — docs=45, claims-checked=3, mismatches=0, skipped=[]",
         "",
         "  not checked (by design — a green here is not a build/browser green):",
         "    · full build (npm/astro build) — run it in CI / the deploy step",
@@ -235,7 +268,7 @@
     "doctor-fresh": {
       "command": "blueprint doctor",
       "exitCode": 1,
-      "durationMs": 49,
+      "durationMs": 54,
       "lines": [
         "blueprint doctor — ~/work/field-guide",
         "",
@@ -259,7 +292,7 @@
     "cost": {
       "command": "blueprint cost",
       "exitCode": 1,
-      "durationMs": 25,
+      "durationMs": 28,
       "lines": [
         "blueprint cost — ~/dev/blueprint",
         "",
@@ -281,10 +314,10 @@
     "fleet": {
       "command": "blueprint fleet",
       "exitCode": 0,
-      "durationMs": 46,
+      "durationMs": 47,
       "lines": [
         "blueprint fleet — methodology @ ~/dev/blueprint",
-        "current: 0.2.0  (HEAD 1b4afe7, latest tag v0.2.0)",
+        "current: 0.2.0  (HEAD 162f1d8, latest tag v0.2.0)",
         "",
         "  repo                                pattern  pin        class          distance      owner",
         "  nino-chavez/rally-hq                B       —          unpinned       —             nino-chavez",
@@ -308,10 +341,10 @@
     "upgrade-fresh": {
       "command": "blueprint upgrade",
       "exitCode": 0,
-      "durationMs": 43,
+      "durationMs": 48,
       "lines": [
         "blueprint upgrade — ~/work/field-guide",
-        "pinned: (unpinned)   methodology current: 0.2.0 (HEAD 1b4afe7)",
+        "pinned: (unpinned)   methodology current: 0.2.0 (HEAD 162f1d8)",
         "verdict: unpinned — no methodology_version pin (informational)",
         "delta: (nothing to narrate — already current or no released versions in range)",
         "proposed: bump methodology_version (none) -> 0.2.0 in blueprint.yml   [--apply to write]",

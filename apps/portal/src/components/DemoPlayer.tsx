@@ -9,10 +9,12 @@ import {
 } from '@/data/demo-scenes';
 
 /**
- * /demo scene player. Replays REAL captured CLI transcripts (demo-fixtures.json)
- * with scripted typing and scene transitions. Two reels (sizzle / deep), two
- * modes (auto / step). Deterministic pacing — fixed delays, no randomness — so
- * a screen recording of ?reel=sizzle&record=1 is reproducible frame-for-frame.
+ * /demo scene player. Job-ordered walkthrough of an idea moving through the
+ * pipeline: terminal scenes replay REAL captured CLI transcripts, artifact
+ * scenes quote REAL repo files, prompt scenes show only what you type (no
+ * invented agent output). Two reels (sizzle / deep), two modes (auto / step).
+ * Deterministic pacing — fixed delays, no randomness — so a recording of
+ * ?reel=sizzle&record=1 is reproducible frame-for-frame.
  * Contract: docs/content/demo-reel-storyboard.md.
  */
 
@@ -27,6 +29,9 @@ const TYPE_TO_RUN_PAUSE_MS = 350; // beat between "enter" and first output line
 const DEFAULT_HOLD: Record<Scene['type'], number> = {
   title: 2600,
   terminal: 3000,
+  prompt: 2200,
+  artifact: 4200,
+  receipts: 3200,
   stages: 2000,
   outro: 2400,
 };
@@ -95,7 +100,114 @@ function TerminalScene({ fixture, instant, onDone }: { fixture: Fixture; instant
         </div>
         {fixture.lines.slice(0, shown).map((line, i) => (
           <div key={i} className={`whitespace-pre-wrap break-words ${lineTone(line) || 'text-slate-300'}`}>
-            {line || ' '}
+            {line || ' '}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * What you type in Claude Code — and ONLY that. The agent's response is the
+ * artifact scene that follows; rendering invented agent chatter here would
+ * break the no-fabrication rule the whole demo rests on.
+ */
+function PromptScene({ commands, instant, onDone }: { commands: string[]; instant: boolean; onDone: () => void }) {
+  const total = commands.reduce((n, c) => n + c.length, 0);
+  const [typed, setTyped] = useState(instant ? total : 0);
+  const fireDone = useOnce(onDone);
+
+  useEffect(() => {
+    if (typed < total) {
+      // Pause between commands: when the cursor sits at a command boundary.
+      let acc = 0;
+      let atBoundary = false;
+      for (const c of commands.slice(0, -1)) {
+        acc += c.length;
+        if (typed === acc) atBoundary = true;
+      }
+      const t = setTimeout(() => setTyped((n) => n + 1), atBoundary ? 700 : CHAR_MS * 2);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(fireDone, 400);
+    return () => clearTimeout(t);
+  }, [typed, total, commands, fireDone]);
+
+  // Distribute the typed-character budget across the command list.
+  let remaining = typed;
+  const rendered = commands.map((c) => {
+    const take = Math.max(0, Math.min(c.length, remaining));
+    remaining -= take;
+    return { text: c.slice(0, take), started: take > 0, active: take > 0 && take < c.length };
+  });
+  const lastStarted = rendered.reduce((acc, r, i) => (r.started ? i : acc), 0);
+
+  return (
+    <div className="flex h-full flex-col items-center justify-center">
+      <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-700/60 bg-[#16181d] shadow-2xl">
+        <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-2.5">
+          <span className="font-mono text-[12px] text-slate-500">Claude Code — your-initiative</span>
+        </div>
+        <div className="space-y-3 px-5 py-6 font-mono text-[15px]">
+          {rendered.map((r, i) =>
+            r.started || i === 0 ? (
+              <div key={i} className="text-slate-100">
+                <span className="select-none text-brand">&gt; </span>
+                {r.text}
+                {(r.active || (i === lastStarted && typed < total) || (typed === 0 && i === 0)) && <span className="demo-caret" />}
+              </div>
+            ) : null
+          )}
+        </div>
+      </div>
+      <p className="mt-4 font-mono text-[12px] uppercase tracking-wide text-slate-600">stages are skills — the agent runs them, the artifacts land in your repo</p>
+    </div>
+  );
+}
+
+/** A REAL file from the self-application, quoted with its path. Trims marked with …. */
+function ArtifactScene({ path, stage, excerpt, onDone }: { path: string; stage: string; excerpt: string; onDone: () => void }) {
+  const fireDone = useOnce(onDone);
+  useEffect(() => {
+    const t = setTimeout(fireDone, 900);
+    return () => clearTimeout(t);
+  }, [fireDone]);
+
+  return (
+    <div className="demo-rise flex h-full flex-col items-center justify-center">
+      <div className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-slate-700/60 bg-[#0d1117] shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-800 px-4 py-2.5">
+          <span className="font-mono text-[12px] text-slate-300">{path}</span>
+          <span className="flex items-center gap-3">
+            <span className="font-mono text-[11px] uppercase tracking-wide text-brand">{stage}</span>
+            <span className="rounded border border-slate-700 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-slate-500">real file · this repo</span>
+          </span>
+        </div>
+        <pre className="min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap break-words px-5 py-4 font-mono text-[12.5px] leading-relaxed text-slate-300">{excerpt}</pre>
+      </div>
+    </div>
+  );
+}
+
+/** The sizzle's plain-language proof beat — what exists when the agent is done. */
+function ReceiptsScene({ cards, onDone }: { cards: { title: string; line: string }[]; onDone: () => void }) {
+  const fireDone = useOnce(onDone);
+  useEffect(() => {
+    const t = setTimeout(fireDone, 350 * cards.length + 700);
+    return () => clearTimeout(t);
+  }, [cards.length, fireDone]);
+
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-8">
+      <p className="demo-rise font-mono text-[12px] uppercase tracking-[0.2em] text-brand">what exists when the agent is done</p>
+      <div className="grid w-full max-w-3xl gap-3 sm:grid-cols-3">
+        {cards.map((c, i) => (
+          <div key={c.title} className="demo-rise rounded-xl border border-slate-700/60 bg-[#0d1117] p-5" style={{ animationDelay: `${250 + i * 350}ms` }}>
+            <p className="mb-2 flex items-center gap-2 font-heading text-base font-semibold text-slate-100">
+              <span className="text-emerald-400">✓</span> {c.title}
+            </p>
+            <p className="text-sm leading-relaxed text-slate-400">{c.line}</p>
           </div>
         ))}
       </div>
@@ -147,12 +259,12 @@ function StagesScene({ instant, onDone }: { instant: boolean; onDone: () => void
           );
         })}
       </ol>
-      <p className="h-5 text-sm text-slate-400">{current >= 0 ? STAGES[current][1] : ' '}</p>
+      <p className="h-5 text-sm text-slate-400">{current >= 0 ? STAGES[current][1] : ' '}</p>
     </div>
   );
 }
 
-function TitleScene({ kicker, headline, sub, onDone }: { kicker: string; headline: string; sub?: string; onDone: () => void }) {
+function TitleScene({ kicker, headline, sub, onDone }: { kicker?: string; headline: string; sub?: string; onDone: () => void }) {
   const fireDone = useOnce(onDone);
   useEffect(() => {
     const t = setTimeout(fireDone, 1600);
@@ -160,14 +272,16 @@ function TitleScene({ kicker, headline, sub, onDone }: { kicker: string; headlin
   }, [fireDone]);
   return (
     <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
-      <p className="demo-rise font-mono text-[13px] uppercase tracking-[0.2em] text-brand" style={{ animationDelay: '0ms' }}>
-        {kicker}
-      </p>
+      {kicker && (
+        <p className="demo-rise font-mono text-[13px] uppercase tracking-[0.2em] text-brand" style={{ animationDelay: '0ms' }}>
+          {kicker}
+        </p>
+      )}
       <h1 className="demo-rise max-w-3xl font-heading text-4xl font-semibold leading-tight tracking-tight text-slate-100 sm:text-5xl" style={{ animationDelay: '250ms' }}>
         {headline}
       </h1>
       {sub && (
-        <p className="demo-rise max-w-xl text-lg text-slate-400" style={{ animationDelay: '600ms' }}>
+        <p className="demo-rise max-w-2xl text-lg text-slate-400" style={{ animationDelay: '600ms' }}>
           {sub}
         </p>
       )}
@@ -190,6 +304,11 @@ function OutroScene({ headline, sub, command, onDone }: { headline: string; sub:
       <div className="demo-rise flex items-center gap-3 rounded-lg border border-slate-700 bg-[#0d1117] px-5 py-3 font-mono text-sm text-slate-200" style={{ animationDelay: '600ms' }}>
         <span className="select-none text-slate-500">$</span> {command}
       </div>
+      <p className="demo-rise font-mono text-[12px] uppercase tracking-wide" style={{ animationDelay: '900ms' }}>
+        <a href="/learn" className="text-brand hover:opacity-80">run the tutorial →</a>
+        <span className="mx-3 text-slate-700">·</span>
+        <a href="/inspect" className="text-brand hover:opacity-80">read the receipts →</a>
+      </p>
     </div>
   );
 }
@@ -274,7 +393,7 @@ export function DemoPlayer() {
                   onClick={() => switchReel(r)}
                   className={`px-2 py-1 ${reel === r ? 'text-brand' : 'text-slate-500 hover:text-slate-300'}`}
                 >
-                  {r}
+                  {r === 'sizzle' ? 'sizzle · 35s' : 'walkthrough'}
                 </button>
               ))}
             </span>
@@ -294,10 +413,13 @@ export function DemoPlayer() {
         <div key={`${reel}-${idx}`} className="demo-fade-in h-[440px] w-full max-w-4xl">
           {scene.type === 'title' && <TitleScene kicker={scene.kicker} headline={scene.headline} sub={scene.sub} onDone={onDone} />}
           {scene.type === 'terminal' && <TerminalScene fixture={fixtureFor(scene.fixture)} instant={instant} onDone={onDone} />}
+          {scene.type === 'prompt' && <PromptScene commands={scene.commands} instant={instant} onDone={onDone} />}
+          {scene.type === 'artifact' && <ArtifactScene path={scene.path} stage={scene.stage} excerpt={scene.excerpt} onDone={onDone} />}
+          {scene.type === 'receipts' && <ReceiptsScene cards={scene.cards} onDone={onDone} />}
           {scene.type === 'stages' && <StagesScene instant={instant} onDone={onDone} />}
           {scene.type === 'outro' && <OutroScene headline={scene.headline} sub={scene.sub} command={scene.command} onDone={onDone} />}
         </div>
-        <p className="h-6 max-w-3xl text-center text-[15px] text-slate-400">{scene.caption ?? ' '}</p>
+        <p className="min-h-12 max-w-3xl text-center text-[15px] leading-relaxed text-slate-400">{scene.caption ?? ' '}</p>
       </main>
 
       {!record && (

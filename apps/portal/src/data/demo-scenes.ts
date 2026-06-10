@@ -1,10 +1,18 @@
 /**
- * Demo reel scene script — the data half of /demo.
+ * Demo scene script — the data half of /demo.
  *
  * Mirrors docs/content/demo-reel-storyboard.md (edit the storyboard first,
- * then this). Terminal scenes replay fixtures captured from REAL CLI runs
- * (scripts/capture-demo-fixtures.mjs → demo-fixtures.json) — never inline
- * fabricated output here.
+ * then this). Job-ordered, not feature-ordered: the walkthrough follows an
+ * idea through the pipeline — what you type, what the agent produced, what
+ * the gate said — using the self-application as the spine, because it's the
+ * one initiative whose artifacts are public and checkable.
+ *
+ * Two no-fabrication rules:
+ *  - terminal scenes replay fixtures captured from REAL CLI runs
+ *    (scripts/capture-demo-fixtures.mjs → demo-fixtures.json);
+ *  - artifact scenes quote REAL files in this repo (path on the pane;
+ *    trims marked with …). prompt scenes show only what YOU type — never
+ *    invented agent output.
  */
 import fixturesJson from './demo-fixtures.json';
 
@@ -37,101 +45,190 @@ export const STAGES: ReadonlyArray<readonly [string, string]> = [
 ] as const;
 
 interface SceneBase {
-  /** Which reels include this scene; deep is a superset of sizzle. */
+  /** Which reels include this scene; deep is the teaching cut. */
   reels: Reel[];
-  /** Caption shown under the stage while the scene plays. */
+  /** Caption shown under the stage — carries the teaching, so panes stay clean. */
   caption?: string;
 }
 
 export type Scene = SceneBase &
   (
-    | { type: 'title'; kicker: string; headline: string; sub?: string }
-    | { type: 'terminal'; fixture: string; /** ms to dwell on the finished transcript (auto mode) */ holdMs?: number }
+    | { type: 'title'; kicker?: string; headline: string; sub?: string }
+    | { type: 'terminal'; fixture: string; /** auto-mode dwell on the finished transcript */ holdMs?: number }
+    | { type: 'prompt'; commands: string[] }
+    | { type: 'artifact'; path: string; stage: string; excerpt: string }
+    | { type: 'receipts'; cards: { title: string; line: string }[] }
     | { type: 'stages' }
     | { type: 'outro'; headline: string; sub: string; command: string }
   );
 
+// Real-file excerpts (trims marked with …). Sources verified 2026-06-10:
+// blueprint.yml (root), research/00-recon-synthesis.md, decisions/01-prescription.md.
+const EXCERPT_BLUEPRINT_YML = `project:
+  name: "blueprint-platform"
+  product: "Blueprint methodology"
+
+pilot_profile:
+  pain_point: "A team that wants to run initiatives with
+    Blueprint cannot adopt it without re-deriving shape from
+    a single operator's machine … so adoption stalls at
+    'read METHODOLOGY.md and hope.'"
+  walkthrough_citation: "research/00-recon-synthesis.md"`;
+
+const EXCERPT_RECON = `method: 6-agent recon workflow
+        (5 parallel domain readers + 1 synthesis)
+…
+6 agents, ~612k tokens, 102 tool uses.
+
+### 1. Self-application (blueprint-redesign)
+- ADR-0001 is a one-way invocation-surface decision, NOT a
+  bidirectional update channel. … Updates are unidirectional:
+  consumers PULL via \`blueprint upgrade\`.
+- Evidence: blueprint-redesign/decisions/
+  {ADR-0001,ADR-0002,01-prescription}.md`;
+
+const EXCERPT_PRESCRIPTION = `stage: 2
+grounded_by: "research/01-canonical-research.md
+              (Stage 1 canonical-pattern research)"
+informs:
+  - "ADR-0003 cost/effort dial"
+  - "ADR-0005 bidirectional non-breaking update protocol"
+  - "ADR-0006 native extensibility (org-authored reviewers)"
+  …
+ratified_by: "pending — first non-Nino team consumer"`;
+
 export const SCENES: Scene[] = [
+  // ── cold open ──────────────────────────────────────────────────────────
   {
     type: 'title',
-    reels: ['sizzle', 'deep'],
+    reels: ['sizzle'],
     kicker: 'blueprint',
-    headline: 'AI-assisted projects move fast — and rot fast.',
-    sub: 'Blueprint adds the checkpoints and the paper trail.',
+    headline: 'You have an idea.',
+    sub: "An agent can build it fast. Fast isn't the problem — proof is.",
   },
+  {
+    type: 'title',
+    reels: ['deep'],
+    kicker: 'the deep walkthrough',
+    headline: 'Run a real idea through Blueprint.',
+    sub: 'Everything here is real: the initiative shown is the one that productized Blueprint itself, and every artifact is a file in its public repo.',
+  },
+
+  // ── day zero: stamp ────────────────────────────────────────────────────
   {
     type: 'terminal',
     reels: ['sizzle', 'deep'],
     fixture: 'init',
-    caption: 'One command stamps a whole portal — validated against the variant × tier matrix.',
+    caption: 'One command stamps the workspace: research, decisions, prototype, portal. An existing app is the same command with variant: brownfield.',
     holdMs: 2600,
   },
+
+  // ── stage 0: the config IS the contract ────────────────────────────────
   {
-    type: 'terminal',
+    type: 'artifact',
     reels: ['deep'],
-    fixture: 'doctor-fresh',
-    caption: 'A fresh stamp fails its own gate — placeholder content, named. Gates have teeth.',
-    holdMs: 3600,
+    path: 'blueprint.yml',
+    stage: 'stage 0 · pilot profile',
+    excerpt: EXCERPT_BLUEPRINT_YML,
+    caption: 'Before any work: name the pain and who feels it. The pilot profile is a gate, not paperwork — the next stage is blocked without it.',
+  },
+
+  // ── stage 1: research, then its gate ───────────────────────────────────
+  {
+    type: 'prompt',
+    reels: ['deep'],
+    commands: ['/blueprint-research'],
+    caption: 'Each stage is a Claude Code skill. The agent fans out — you review what lands.',
+  },
+  {
+    type: 'artifact',
+    reels: ['deep'],
+    path: 'research/00-recon-synthesis.md',
+    stage: 'stage 1 · what landed',
+    excerpt: EXCERPT_RECON,
+    caption: 'Findings with evidence paths and the method on record — not vibes. This file is in the repo today.',
   },
   {
     type: 'terminal',
     reels: ['deep'],
-    fixture: 'review-conformance-fresh',
-    caption: 'The finding in full: the 12 files, the exact fix, the doc reference.',
+    fixture: 'review-research-fresh',
+    caption: "Try to skip ahead and the gate names exactly what's missing. 'Done' is defined per stage, per variant.",
     holdMs: 4200,
   },
+
+  // ── the receipts, compressed (sizzle's plain-language proof beat) ──────
   {
-    type: 'stages',
-    reels: ['sizzle', 'deep'],
-    caption: 'Seven stages. Every gate enforced by a reviewer.',
+    type: 'receipts',
+    reels: ['sizzle'],
+    caption: 'The agent does the work. Blueprint keeps the receipts.',
+    cards: [
+      { title: 'Research', line: '6-agent recon, ~612k tokens — findings with evidence paths' },
+      { title: 'Decisions', line: 'ADRs that cite the research grounding them' },
+      { title: 'Fact-check', line: 'every claim checked against source before ship' },
+    ],
+  },
+
+  // ── stages 2–5: decide, build, document, fact-check ────────────────────
+  {
+    type: 'artifact',
+    reels: ['deep'],
+    path: 'decisions/01-prescription.md',
+    stage: 'stage 2 · the decision record',
+    excerpt: EXCERPT_PRESCRIPTION,
+    caption: 'Decisions cite the research that grounds them and the ADRs they authorize. The paper trail is structural, not voluntary.',
   },
   {
-    type: 'terminal',
-    reels: ['sizzle', 'deep'],
-    fixture: 'review-list',
-    caption: 'The gates are executable — not a checklist in a wiki.',
-    holdMs: 2800,
+    type: 'prompt',
+    reels: ['deep'],
+    commands: ['/blueprint-prototype', '/blueprint-docs'],
+    caption: 'Prototype and documents build together — the prototype tests the decision, the docs capture the rationale.',
   },
   {
     type: 'terminal',
     reels: ['deep'],
     fixture: 'review-stateful-claims',
-    caption: 'The methodology gates itself — Blueprint is its own first consumer.',
-    holdMs: 2800,
+    caption: "Fact-check is a stage, not a hope. These are agent gates — your team's sign-offs (PM, Eng) layer on top of them, not under.",
+    holdMs: 3000,
   },
+
+  // ── the ship gate, before and after ────────────────────────────────────
   {
     type: 'terminal',
     reels: ['deep'],
-    fixture: 'cost',
-    caption: 'Effort below anchor without justification BLOCKs at the gate — spend is a dial, not a vibe.',
+    fixture: 'doctor-fresh',
+    caption: 'The ship gate, before the work: a scaffold full of placeholders FAILS. You cannot share a portal of stubs.',
     holdMs: 3600,
-  },
-  {
-    type: 'terminal',
-    reels: ['deep'],
-    fixture: 'fleet',
-    caption: "One registry classifies every consumer's drift from the methodology.",
-    holdMs: 3600,
-  },
-  {
-    type: 'terminal',
-    reels: ['deep'],
-    fixture: 'upgrade-fresh',
-    caption: 'Terraform-plan style: dry-run by default, --apply to write.',
-    holdMs: 3200,
   },
   {
     type: 'terminal',
     reels: ['sizzle', 'deep'],
     fixture: 'doctor-self',
-    caption: "doctor is honest about what it didn't check.",
+    caption: "The same gate after the work: honest green — what it did NOT check is on record. This site deploys from that green.",
     holdMs: 3600,
   },
+
+  // ── the map, now earned ────────────────────────────────────────────────
+  {
+    type: 'stages',
+    reels: ['sizzle', 'deep'],
+    caption: "Seven stages. A gate between each — work doesn't advance until it passes.",
+  },
+
+  // ── the team seam ──────────────────────────────────────────────────────
+  {
+    type: 'terminal',
+    reels: ['deep'],
+    fixture: 'fleet',
+    caption: 'The team seam: every project pinned to one methodology version. Alignment is checked, not hoped.',
+    holdMs: 3600,
+  },
+
+  // ── do ─────────────────────────────────────────────────────────────────
   {
     type: 'outro',
     reels: ['sizzle', 'deep'],
-    headline: 'What ships is researched, prototyped, fact-checked, documented.',
-    sub: 'MIT · on npm · Blueprint is its own first consumer.',
+    headline: 'Ship work that holds up.',
+    sub: 'This site is Blueprint output — its receipts are public.',
     command: 'npx @nino-chavez-labs/blueprint-cli init',
   },
 ];

@@ -53,6 +53,11 @@ const SCENARIOS = [
     argv: [cli, 'review', 'portal-pattern-a-conformance-reviewer', `--target=${target}`],
   },
   {
+    id: 'review-research-fresh',
+    display: 'blueprint review research-completeness-reviewer',
+    argv: [cli, 'review', 'research-completeness-reviewer', `--target=${target}`],
+  },
+  {
     id: 'review-stateful-claims',
     display: 'blueprint review stateful-claim-lint-reviewer',
     argv: [cli, 'review', 'stateful-claim-lint-reviewer', `--target=${repoRoot}`],
