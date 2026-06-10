@@ -177,6 +177,24 @@ export async function runDoctor({ home, targetDir }) {
     add('doc-currency', 'fail', `doc-currency reviewer threw: ${e.message}`);
   }
 
+  // 8. stateful-claim lint — counts/versions/"latest" claims in living docs
+  //    match their sources of truth (wave 59). Drifted wave-currency claims →
+  //    fail; count/version drift → warn; consumer repos without the sources
+  //    (WAVE-LOG, consumers.yml) skip those checks inside the reviewer.
+  try {
+    const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'stateful-claim-lint-reviewer.mjs');
+    if (existsSync(reviewerPath)) {
+      const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+      const res = await fn({ targetDir, methodologyHome: home });
+      const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
+      add('stateful-claims', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''}`, res.status !== 'PASS' ? 'run `blueprint review stateful-claim-lint-reviewer` for details' : undefined);
+    } else {
+      add('stateful-claims', 'skip', 'stateful-claim-lint reviewer not present in this methodology home');
+    }
+  } catch (e) {
+    add('stateful-claims', 'fail', `stateful-claim-lint reviewer threw: ${e.message}`);
+  }
+
   const status = checks.reduce((acc, c) => worst(acc, c.status), 'pass');
   // Honesty about the boundary: name what doctor did NOT verify, so a green is
   // never read as more than it is.

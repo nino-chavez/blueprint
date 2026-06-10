@@ -8,6 +8,7 @@ Canonical reference: `tools/blueprint/docs/variant-selection.md`.
 
 | Agent | Gate | Variants |
 |---|---|---|
+| `stateful-claim-lint-reviewer` | Cadence + `doctor` check 8 (counts/versions/latest-claims vs sources of truth) | All (checks skip where sources are absent) |
 | `pilot-profile-lock-reviewer` | Stage 0 → Stage 1 | All |
 | `research-completeness-reviewer` | Stage 1 → Stage 2 | All |
 | `design-principles-reviewer` | Stage 2 → Stage 3 | Greenfield |

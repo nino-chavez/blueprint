@@ -126,7 +126,7 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 `CONTRIBUTING.md` (Rust-RFC-lite) + amendment/RFC issue form + triage classifier,
 `CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
 
-> Status: **published** — `@nino-chavez-labs/blueprint-cli@0.1.0` is live on npm.
+> Status: **published** — `@nino-chavez-labs/blueprint-cli` is live on npm (`npm view` for the current version; releases ship automatically from main).
 > `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all seven
 > commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`) are real.
 

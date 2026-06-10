@@ -6,6 +6,14 @@ Entries are authored via [Changesets](https://github.com/changesets/changesets):
 
 Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LOG.md](./WAVE-LOG.md).
 
+## Unreleased
+
+### Added
+
+- `stateful-claim-lint-reviewer` (wave 59) — lints hardcoded counts/versions/"latest" claims in living docs against their sources of truth (WAVE-LOG, consumers.yml, the reviewer registry, doctor.mjs, package.json); wired as `doctor` check 8. Checks skip gracefully in consumer repos that lack the sources.
+- `market-signal` triage category + `logged` state in `/blueprint-triage`; assumption-archetype checklist in the Mom Test pattern doc (wave 57).
+- README § "Evaluating Blueprint for your team?" replaces `START-HERE.md` (wave 58); reader-path manifest gains set-level review questions (deletion test, claim ownership).
+
 ## 0.2.0
 
 Waves 49–56 rollup. Authored by hand: the changeset→root-package linkage broke silently at the wave-45 fold (the root became a workspace monorepo root, which `@changesets/cli` excludes from its package set), so the two pending changesets crashed the release workflow — folded here instead, and the breakage is filed as an amendment.

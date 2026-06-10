@@ -1,6 +1,6 @@
 # HANDOFF — Blueprint methodology source (self-hosting)
 
-**Date:** 2026-06-10
+**Date:** 2026-06-11
 **State:** Productization **COMPLETE**. The methodology is published, public, and self-hosting — it is its own first consumer. Current frontier: **team adoption** (Blueprint + hive for a real client build) and **demand validation** — organic stakeholder feedback is flowing (`feedback/`, demand-evidence log at `docs/content/validation-script.md`) and drove waves 51/53 (Mom Test bridge + ask-outcome discipline). Recent: wave 52 (DoD verification ladder), wave 54 (docs/ reorg into typed subdirs — stamped consumers carry stale `$BLUEPRINT_HOME/docs/` paths until they re-run pick-up-updates).
 
 > This file orients the next session. It replaced a 2026-06-04 pre-fold snapshot (blueprint-platform as a separate in-progress repo) — all of which is now done; see git history if you need it.
@@ -8,10 +8,10 @@
 ## Where things stand
 
 - **Folded (wave 45):** `blueprint-platform` is no longer a separate repo — it is this repo's in-repo self-application. Root `blueprint.yml`, `research/`, `decisions/`, `apps/portal/`, `packages/`, `tools/archaeology/`. Source≠consumer is a **DIRECTORY boundary** (`template/` is the clean stampable substrate), not a repo boundary. See `CLAUDE.md`.
-- **CLI published:** `@nino-chavez-labs/blueprint-cli@0.1.0` on npm (MIT, public repo). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
+- **CLI published:** `@nino-chavez-labs/blueprint-cli` on npm (MIT, public repo; `npm view` for the live version). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
 - **Build order 0–13 complete** across tracks A–E. `main-protection` ruleset bound + active.
 - **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint-platform.pages.dev` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
-- **Latest wave (55):** enforcement wiring — `.github/workflows/doctor.yml` gates every push/PR to main on doctor's 7 checks (they were invocation-only before) + `/blueprint-triage` anonymize-by-default capture. Recent prior waves: 54 docs/ reorg into typed subdirs, 53 Mom Test ask-outcome discipline, 52 DoD verification ladder, 51 Mom Test validation bridge, 50 defrag + doc-currency gates, 49 team onboarding kit + `blueprint hive setup`. Full log in `WAVE-LOG.md`.
+- **Latest wave:** read the LAST entry of `WAVE-LOG.md` (the single source of wave state — `tail -3 WAVE-LOG.md` or the wave-digest tool). Recent arc: enforcement wiring (55), public-repo sanitization + reader-path manifest (56), Mom Test promotions + ground-truth-scope gap (57), START-HERE fold + claim-ownership (58), stateful-claim lint (59).
 
 ## In flight / next
 
@@ -25,7 +25,7 @@
 
 ## Standing constraints
 
-- **Methodology freeze:** no `template/` edits land while an EXTERNAL consumer is mid-migration without an explicit operator waiver. The in-repo self-application (`methodology_version: self`) does not trip this. The consumer registry is `consumers.yml` (inspect with `blueprint fleet`); external initiatives at rest as of wave 55, with subs-initiative mid-flight on its own pinned methodology copy (not mid-migration).
+- **Methodology freeze:** no `template/` edits land while an EXTERNAL consumer is mid-migration without an explicit operator waiver. The in-repo self-application (`methodology_version: self`) does not trip this. The consumer registry is `consumers.yml` (inspect with `blueprint fleet`); external initiatives at rest (subs-initiative mid-flight on its own pinned methodology copy — not mid-migration); verify with `blueprint fleet`.
 - **Concurrent sessions use worktrees** (the `worktree-guard` hook enforces it; a solo session in main is never blocked).
 - **ai-hive: integrate, not absorb.** Hold the line against SaaS-scope-creep — scope ceiling A (methodology-native: git-host + npm + local files, no hosted service).
 - **`template/` is the clean substrate.** If you find yourself editing `template/` to make the self-application's portal build, that's the leak — fix it at the root (`apps/portal/`, `packages/`).

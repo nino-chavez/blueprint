@@ -49,7 +49,7 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 **Candidate fixes (deferred):**
 - **Changeset-presence check** (mechanical, near-free): CI fails when `template/**` changes without a `.changeset/*.md` in the same PR/push — enforces ADR-0007's "every consumer-affecting change adds a changeset" instead of trusting memory. Deferred only for sequencing; promote with the next CI touch.
-- **Stateful-claim lint** (instance 1, second-instance gated): flag number-words and "latest X" claims near wave/consumer/reviewer nouns in prose docs and verify against the source of truth (WAVE-LOG count, consumers.yml length, reviewer registry). The 2026-06-10 sweep is instance one of the rot class; build the reviewer when it bites again.
+- **Stateful-claim lint** (instance 1, second-instance gated): flag number-words and "latest X" claims near wave/consumer/reviewer nouns in prose docs and verify against the source of truth (WAVE-LOG count, consumers.yml length, reviewer registry). The 2026-06-10 sweep is instance one of the rot class; build the reviewer when it bites again. **PROMOTED wave 59** (2026-06-11, after the third sighting): `stateful-claim-lint-reviewer.{md,mjs}`, wired as doctor check 8.
 
 **References:** `.github/workflows/doctor.yml`, `template/.claude/skills/blueprint/triage.md` § Step 1, the 2026-06-10 currency-sweep commit (`249c47d`).
 
