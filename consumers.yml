@@ -109,6 +109,12 @@ consumers:
     owner: nino-chavez
     synced_at: "2026-06-06"
 
+  - repo: nino-chavez/nino-chavez-photography
+    pattern: A                        # platform-portal; midstream variant, tier 2
+    methodology_version: null         # apps/photography/blueprint/blueprint.yml — no pin yet
+    owner: nino-chavez
+    synced_at: "2026-06-10"
+
   # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
   - repo: external-a/media-toolkit          # operator-declared; CONFIRM exact owner/repo slug
     pattern: null
