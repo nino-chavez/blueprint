@@ -99,6 +99,21 @@ The Log records what stakeholders gave; it must ALSO record every commitment ask
 
 This is Fitzpatrick's advancement rule: a conversation that ends in enthusiasm with an open, untaken ask is a *zombie lead*, not a good meeting. Kudos plus an untaken ask is the compliment trap at full strength — the no-take, not the praise, is the datum worth logging. Without an ask-outcome column the no-take silently evaporates and the log reads warmer than reality. First instance: the self-application's buyer-persona feedback (2026-06-10) — problem affirmed unprompted, work complimented, two explicit asks on the table, neither taken.
 
+## Assumption archetypes (prompt these at script-generation time)
+
+Predictable riskiest-assumption shapes the generator should ask about rather than
+waiting for feedback to discover them (promoted on the second-instance rule —
+both archetypes below were *discovered* from feedback twice before being named):
+
+| Archetype | The question that surfaces it | First instances |
+|---|---|---|
+| **Incumbent displacement** | Does the buyer already hand-roll a version of this? Their incumbent practice competing with adoption is its own assumption — name it. | Two eng leads in two days described their own loops (a four-skill spec loop; an AI-mobbing practice) before engaging with the product |
+| **Solo-vs-team credibility** | Does the deliverable's credibility depend on who ran the cycle? A solo-produced artifact may read as demo-grade to an org that requires role-gated sign-offs per stage. | "Solo the entire cycle may look good for demo project, but probably not… push to prod" |
+| **Ground-truth scope** | Do the technical claims depend on the analyzed codebase being the RIGHT codebase? Fact-check validates against the repo it has; it cannot see a domain implemented elsewhere. | An architectural recommendation grounded in a repo that implemented only a slice of the domain — verified green, wrong |
+
+The list grows by the same rule: an assumption shape discovered from feedback
+twice gets a row.
+
 ## What this pattern is NOT
 
 - **Not a prose style for generated docs.** Rewriting agent output to "sound mom-tested" launders hypotheses; the test governs how evidence is *collected from humans*, not how documents read.

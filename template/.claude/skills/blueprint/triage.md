@@ -32,6 +32,7 @@ Every piece of feedback gets exactly one category:
 | **opinion** | A preference about phrasing, framing, or emphasis that doesn't change facts. Discretionary. |
 | **question** | Stakeholder doesn't understand something; needs clarification, not a change. |
 | **kudos** | Positive feedback, no action required, but capture for retrospective. |
+| **market-signal** | Evidence about the stakeholder's OWN practice or problem, not about the deliverable — their hand-rolled loop, their team process, their named pain. The highest-value Mom Test class (past-specific behavior); it never gets dispositioned against the deliverable — it gets `logged` to the validation script's Log, weighted by what they gave. Promoted on the second-instance rule (two stakeholders in two days described their incumbent practice and the state machine had no honest slot). |
 
 If feedback is ambiguous between categories, ask the maintainer once. Don't guess.
 
@@ -65,6 +66,7 @@ Every categorized item gets one state:
 | **answered** | A question has been answered; no doc change needed |
 | **wontfix** | Will not be addressed; rationale required |
 | **clarified** | A scope-clarify was resolved by sharpening scope language in the doc |
+| **logged** | Captured in the validation script's Log (market-signal) or the kudos file (kudos); no deliverable disposition exists or is needed |
 
 State transitions: `needs-review` → one of the others. The maintainer can override at any time.
 

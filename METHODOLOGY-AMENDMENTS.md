@@ -4,6 +4,27 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-11 — Ground-truth scope: fact-check verifies green against the wrong codebase; plus two second-instance promotions fired
+
+**One new candidate (instance 1); two prior candidates PROMOTED (wave 57).**
+
+**Observed (eng-team thread, June 7–9):** an engineering lead reviewed the promotions initiative's generated architecture against his own domain knowledge: "It's not very accurate" — the analysis was pointed at a service repo that implements only a slice of the domain (translation behavior); the main domain logic lives in the monolith. Stage-4 fact-check had verified the claims GREEN — correctly, against the repo it was given. The loop has no check that the analyzed codebase is the right ground truth. This is the false-green class at the research boundary: a domain insider catches it instantly; no in-repo gate can.
+
+**Candidate fix (instance 1, second-instance gated for the mechanical half; spec-side question promoted into the archetype checklist now):**
+- Stage-1 research gains a mandatory scope question: "name every system that implements this domain; is the analyzed repo the load-bearing one?" — answered by a stakeholder or flagged `unverified-scope`.
+- Stage-4 fact-check gains a `GROUND_TRUTH_SCOPE` criterion: architectural claims carry which-repo-implements-this citations; a claim whose behavior could live elsewhere is flagged, not greened.
+- The live test is the accepted second-attempt experiment (full repo scope) — its outcome calibrates the fix.
+
+**Promoted this wave (second-instance rule fired):**
+- **`market-signal` triage category** — instance 1: R.'s four-skill loop (2026-06-10, shoehorned into `opinion`); instance 2: V.'s AI-mobbing practice + 3-cycle model (2026-06-09 thread). Landed in `/blueprint-triage` (new category + explicit `logged` state).
+- **Assumption-archetype checklist** — instance 1: A6 incumbent-displacement discovered from R.; instance 2: V.'s incumbent practice + the A7 solo-credibility challenge. Landed as `mom-test-validation-pattern.md` § "Assumption archetypes" (incumbent-displacement, solo-vs-team credibility, ground-truth scope).
+
+**Also filed (instance 1):** role-mapped approval gates — V.'s model requires PM sign-off before spec, PM+Eng before codegen, Eng through ops; Blueprint's reviewer fleet is agent gates, not role sign-offs. `docs/governance/team-roles-and-conventions.md` covers the conventions half; the gate mechanics wait for a second instance (likely the partner-SA engagement).
+
+**References:** `feedback/2026-06-09-eng-team-thread.md`, `feedback/2026-06-11-triage.md`, `docs/content/validation-script.md` (A7, both new Log rows).
+
+---
+
 ## 2026-06-10 — Changesets cannot version the root package of a workspace monorepo; the release pipeline broke silently at the fold
 
 **Candidate for promotion (release-engineering fix; latent since wave 45).**
