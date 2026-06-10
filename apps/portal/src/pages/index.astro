@@ -12,7 +12,7 @@ const REPO_URL = 'https://github.com/nino-chavez/blueprint';
 // The seven-stage pipeline (README § How It Works), public framing.
 const STAGES = [
   ['Research', 'competitive analysis, codebase, comparables'],
-  ['Design', 'codify what the prototype can and cannot do'],
+  ['Design', "define scope — what the prototype will and won't do"],
   ['Prototype', 'HTML pages matching the real product'],
   ['Fact-check', 'every claim validated against source'],
   ['Document', 'strategy, feasibility, integration plans'],
@@ -42,7 +42,7 @@ const DEEPER = [
   description="AI-assisted projects move fast — and rot fast. Blueprint adds the checkpoints and the paper trail: an agent runs research, prototype, strategy docs, and fact-check; you ship work that holds up."
 >
   <!-- HERO ------------------------------------------------------------------ -->
-  <section class="mx-auto max-w-3xl pt-6 pb-16 text-center sm:pt-10">
+  <section class="mx-auto max-w-3xl pt-10 pb-20 text-center sm:pt-16">
     <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-contrast-200 bg-contrast-100/50 px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-contrast-500">
       <span class="inline-block h-1.5 w-1.5 rounded-full bg-brand"></span>
       Agent-assisted product initiatives · MIT · on npm
@@ -52,16 +52,17 @@ const DEEPER = [
     </h1>
     <p class="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-contrast-500">
       AI-assisted projects move fast — and rot fast. Blueprint is a working method
-      for product work with an AI agent: the agent does the building, the method
-      supplies the checkpoints and the paper trail, and what ships is researched,
-      prototyped, fact-checked, and explained.
+      for running a product initiative with an AI agent — research through
+      deployment. The agent does the building; the method supplies the checkpoints
+      and the paper trail. What ships is researched, prototyped, fact-checked, and
+      documented.
     </p>
     <div class="mx-auto mb-6 max-w-xl text-left">
       <CommandBlock command={INSTALL} client:visible />
     </div>
     <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[12px] uppercase tracking-wide">
       <a href="#quickstart" class="rounded-md bg-brand px-4 py-2 text-background no-underline transition-opacity hover:opacity-90">Quickstart ↓</a>
-      <a href="#in-30-seconds" class="text-contrast-500 hover:text-brand">the 30-second version ↓</a>
+      <a href="#in-30-seconds" class="text-contrast-500 hover:text-brand">What is this? ↓</a>
       <a href={NPM_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">npm ↗</a>
       <a href={REPO_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">github ↗</a>
     </div>
@@ -72,11 +73,11 @@ const DEEPER = [
        Prescription: docs/content/2026-06-09-front-door-prescription.md (P2).
        This strip answers what/why/who itself — never defer comprehension to an
        agent (P3). Practitioner depth starts at #what, behind this. -->
-  <section id="in-30-seconds" class="border-t border-contrast-100 py-16">
+  <section id="in-30-seconds" class="border-t border-contrast-100 bg-contrast-100/40 py-16">
     <div class="mx-auto max-w-3xl text-center">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">plain language</p>
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">plain language</p>
       <h2 class="mb-3 font-heading text-3xl font-semibold tracking-tight">The 30-second version.</h2>
-      <p class="mx-auto mb-10 max-w-2xl text-contrast-500">Plain language. Everything below this strip goes deeper; nothing in it is required to understand the idea.</p>
+      <p class="mx-auto mb-10 max-w-2xl text-contrast-500">Just the strip. Everything below goes deeper.</p>
     </div>
     <div class="mx-auto grid max-w-5xl gap-3 sm:grid-cols-3">
       <div class="rounded-lg border border-contrast-200 bg-background p-5 text-left">
@@ -84,7 +85,7 @@ const DEEPER = [
         <p class="text-base leading-relaxed text-contrast-500">
           A method for doing product work with an AI carrying the heavy lifting.
           The AI researches, prototypes, and drafts the documents; Blueprint is
-          the set of checkpoints that makes it show its work.
+          the set of checkpoints that keeps the work verifiable.
         </p>
       </div>
       <div class="rounded-lg border border-contrast-200 bg-background p-5 text-left">
@@ -99,9 +100,9 @@ const DEEPER = [
       <div class="rounded-lg border border-contrast-200 bg-background p-5 text-left">
         <h3 class="mb-2 font-heading text-base font-semibold tracking-tight">Who it's for</h3>
         <p class="text-base leading-relaxed text-contrast-500">
-          People shipping product work with an AI in the loop — solo builders
-          through client teams. If that's not you, the one-line takeaway:
-          it's quality control for AI-built work.
+          Anyone shipping product work with an AI agent — solo or in a team.
+          The one-line version: quality control for AI-built work, so fast
+          doesn't mean sloppy.
         </p>
       </div>
     </div>
@@ -110,7 +111,7 @@ const DEEPER = [
   <!-- PIPELINE --------------------------------------------------------------- -->
   <section id="what" class="border-t border-contrast-100 py-16">
     <div class="mx-auto max-w-3xl text-center">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">how it works</p>
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">how it works</p>
       <h2 class="mb-3 font-heading text-3xl font-semibold tracking-tight">One pipeline. Seven stages.</h2>
       <p class="mx-auto mb-10 max-w-2xl text-contrast-500">
         Each stage produces artifacts that feed the next. The insight:
@@ -118,11 +119,14 @@ const DEEPER = [
         the prototype tests the decision, the docs capture the rationale.
       </p>
     </div>
-    <ol class="mx-auto flex max-w-5xl flex-wrap justify-center gap-3">
+    <!-- A real grid, left-aligned: the 7th card lands in column 1 of its row.
+         Audit evidence: a centered flex-wrap bottom row floats OFF the column
+         grid and reads as misalignment — column snap IS the polish signal. -->
+    <ol class="mx-auto grid max-w-5xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {STAGES.map(([name, desc], i) => (
-        <li class="w-full rounded-lg border border-contrast-200 bg-background p-4 sm:w-[calc(50%-0.375rem)] lg:w-[calc(25%-0.5625rem)]">
+        <li class="rounded-lg border border-contrast-200 bg-background p-4">
           <div class="mb-1.5 flex items-center gap-2">
-            <span class="font-mono text-[11px] font-medium text-brand">{String(i + 1).padStart(2, '0')}</span>
+            <span class="font-mono text-[11px] font-medium text-brand-strong">{String(i + 1).padStart(2, '0')}</span>
             <span class="font-heading text-base font-semibold tracking-tight">{name}</span>
           </div>
           <p class="text-sm leading-relaxed text-contrast-500">{desc}</p>
@@ -132,9 +136,9 @@ const DEEPER = [
   </section>
 
   <!-- PROOF ------------------------------------------------------------------ -->
-  <section id="demo" class="border-t border-contrast-100 py-16">
+  <section id="demo" class="border-t border-contrast-100 bg-contrast-100/40 py-16">
     <div class="mx-auto max-w-3xl text-center">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">proof</p>
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">proof</p>
       <h2 class="mb-3 font-heading text-3xl font-semibold tracking-tight">This site is Blueprint output.</h2>
       <p class="mx-auto mb-8 max-w-2xl text-contrast-500">
         Every page here was generated from a single <code class="font-mono text-[14px]">blueprint.yml</code>
@@ -145,7 +149,7 @@ const DEEPER = [
         <div><span class="font-heading text-2xl font-semibold text-foreground">{adrCount}</span><span class="ml-1.5 text-sm text-contrast-500">ADRs</span></div>
         <div><span class="font-heading text-2xl font-semibold text-foreground">6</span><span class="ml-1.5 text-sm text-contrast-500">CLI commands</span></div>
         <div><span class="font-heading text-2xl font-semibold text-foreground">1</span><span class="ml-1.5 text-sm text-contrast-500">config → whole portal</span></div>
-        <a href="/discover" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">explore it →</a>
+        <a href="/discover" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">Open the portal →</a>
       </div>
     </div>
   </section>
@@ -153,7 +157,7 @@ const DEEPER = [
   <!-- QUICKSTART ------------------------------------------------------------- -->
   <section id="quickstart" class="border-t border-contrast-100 py-16">
     <div class="mx-auto max-w-3xl">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">get started</p>
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">get started</p>
       <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">Up and running in five steps.</h2>
       <p class="mb-10 text-contrast-500">Copy, paste, go. No decisions to make first.</p>
 
@@ -169,7 +173,7 @@ const DEEPER = [
           <span class="font-heading text-lg font-semibold text-brand">2</span>
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Scaffold your initiative</h3>
-            <p class="mb-3 text-sm leading-relaxed text-contrast-500">Stamps a portal you own, validated against the variant × tier matrix.</p>
+            <p class="mb-3 text-sm leading-relaxed text-contrast-500">Stamps a portal you own, validated against your config.</p>
             <CommandBlock command="npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative" client:visible />
           </div>
         </li>
@@ -178,9 +182,9 @@ const DEEPER = [
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Configure</h3>
             <p class="mb-3 text-sm leading-relaxed text-contrast-500">Set the three things that matter in <code class="font-mono text-[13px]">blueprint.yml</code> — the rest has sane defaults.</p>
-            <pre class="overflow-x-auto rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground"><code>variant: brownfield   <span class="text-contrast-400"># greenfield | midstream | brownfield</span>
-tier: 1               <span class="text-contrast-400"># deliverable sophistication 0–2</span>
-portal_pattern: A     <span class="text-contrast-400"># A = platform portal · B = redesign review</span></code></pre>
+            <pre class="overflow-x-auto rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground"><code>variant: brownfield   <span class="text-contrast-500"># greenfield | midstream | brownfield</span>
+tier: 1               <span class="text-contrast-500"># deliverable sophistication 0–2</span>
+portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B = redesign review</span></code></pre>
           </div>
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
@@ -195,7 +199,7 @@ portal_pattern: A     <span class="text-contrast-400"># A = platform portal · B
           <span class="font-heading text-lg font-semibold text-brand">5</span>
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Ship &amp; check</h3>
-            <p class="mb-3 text-sm leading-relaxed text-contrast-500">Push and your portal deploys. Verify conformance — doctor is honest about what it didn’t check.</p>
+            <p class="mb-3 text-sm leading-relaxed text-contrast-500">Push and your portal deploys. Verify conformance — <code class="font-mono text-[13px] text-foreground">doctor</code> is honest about what it didn’t check.</p>
             <CommandBlock command="npx @nino-chavez-labs/blueprint-cli doctor" client:visible />
           </div>
         </li>
@@ -209,11 +213,16 @@ portal_pattern: A     <span class="text-contrast-400"># A = platform portal · B
   </section>
 
   <!-- COMMANDS --------------------------------------------------------------- -->
-  <section id="commands" class="border-t border-contrast-100 py-16">
+  <section id="commands" class="border-t border-contrast-100 py-12">
     <div class="mx-auto max-w-5xl">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">reference</p>
-      <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">The CLI</h2>
-      <p class="mb-10 text-contrast-500">Six commands, all real. <code class="font-mono text-[13px]">npx @nino-chavez-labs/blueprint-cli &lt;command&gt;</code> — zero install.</p>
+      <!-- Header lives in the 3xl column even though the grid is 5xl — section
+           headings keep ONE left edge downpage (audit: 128px jumps between
+           3xl and 5xl sections read as a ragged margin). -->
+      <div class="mx-auto max-w-3xl">
+        <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">reference</p>
+        <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">The CLI</h2>
+        <p class="mb-10 text-contrast-500">Six commands, all real. <code class="font-mono text-[13px]">npx @nino-chavez-labs/blueprint-cli &lt;command&gt;</code> — zero install.</p>
+      </div>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {COMMANDS.map(([name, desc]) => (
           <div class="rounded-lg border border-contrast-200 bg-background p-5">
@@ -226,9 +235,9 @@ portal_pattern: A     <span class="text-contrast-400"># A = platform portal · B
   </section>
 
   <!-- CONTRIBUTE ------------------------------------------------------------- -->
-  <section id="contribute" class="border-t border-contrast-100 py-16">
+  <section id="contribute" class="border-t border-contrast-100 py-12">
     <div class="mx-auto max-w-3xl">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">ecosystem</p>
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">ecosystem</p>
       <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">Stay current. Feed back upstream.</h2>
       <p class="mb-10 text-contrast-500">Updates flow down without breaking you; your fixes and gaps flow back up.</p>
       <div class="grid gap-6 md:grid-cols-2">
@@ -239,7 +248,7 @@ portal_pattern: A     <span class="text-contrast-400"># A = platform portal · B
         </div>
         <div class="rounded-lg border border-contrast-200 bg-background p-6">
           <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Report &amp; request upstream</h3>
-          <p class="mb-4 text-sm leading-relaxed text-contrast-500">Hit a gap, a bug, or a feature need? File an amendment or RFC. The 4-bucket triage routes it automatically — substantial change → RFC first, bug-fix → straight PR.</p>
+          <p class="mb-4 text-sm leading-relaxed text-contrast-500">Hit a gap, a bug, or a feature need? File an amendment or RFC. Triage routes it automatically — substantial change → RFC first, bug-fix → straight PR.</p>
           <a href={`${REPO_URL}/blob/main/CONTRIBUTING.md`} target="_blank" rel="noreferrer" class="inline-block rounded-md border border-contrast-200 px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:border-brand/60 hover:text-brand">How to contribute →</a>
         </div>
       </div>
@@ -247,13 +256,17 @@ portal_pattern: A     <span class="text-contrast-400"># A = platform portal · B
   </section>
 
   <!-- DEEPER ----------------------------------------------------------------- -->
-  <section id="docs" class="border-t border-contrast-100 py-16">
+  <section id="docs" class="border-t border-contrast-100 py-12">
     <div class="mx-auto max-w-5xl">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand">library</p>
-      <h2 class="mb-10 font-heading text-3xl font-semibold tracking-tight">Go deeper</h2>
+      <div class="mx-auto max-w-3xl">
+        <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">further reading</p>
+        <h2 class="mb-10 font-heading text-3xl font-semibold tracking-tight">Go deeper</h2>
+      </div>
+      <!-- 5 cards in 2 cols = an empty cell; the Learn card spans the first
+           row as the featured entry instead (audit finding #5). -->
       <div class="grid gap-4 sm:grid-cols-2">
-        {DEEPER.map(([title, desc, href]) => (
-          <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} class="group block rounded-lg border border-contrast-200 bg-background p-5 transition-colors hover:border-brand/60">
+        {DEEPER.map(([title, desc, href], i) => (
+          <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} class:list={['group block rounded-lg border border-contrast-200 bg-background p-5 transition-colors hover:border-brand/60', i === 0 && 'sm:col-span-2']}>
             <h3 class="mb-1 font-heading text-base font-semibold tracking-tight text-foreground group-hover:text-brand">{title}</h3>
             <p class="text-sm leading-relaxed text-contrast-500">{desc}</p>
           </a>

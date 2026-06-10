@@ -35,7 +35,10 @@ export function CommandBlock({ command, prompt = '$', label }: CommandBlockProps
         </p>
       )}
       <div className="flex items-center gap-3 rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3">
-        <code className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-foreground">
+        {/* min-w-0: a flex child defaults to min-width:auto and refuses to shrink
+            below its nowrap content, which silently disables overflow-x-auto and
+            drags the whole page wide on mobile (WCAG 1.4.10). */}
+        <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-foreground">
           {prompt && <span className="select-none text-contrast-400">{prompt} </span>}
           {command}
         </code>

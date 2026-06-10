@@ -29,32 +29,49 @@ export function PortalNav({ currentPath }: PortalNavProps) {
   const onDocs = currentPath !== '/' && currentPath !== '' && !onLearn;
 
   return (
-    <NavBar.Root>
-      <NavBar.Brand href="/">
-        <img src="/project-logo.svg" alt={PROJECT_NAME} className="h-5 w-5 object-contain" />
-        <span>{PROJECT_NAME}</span>
-      </NavBar.Brand>
-      <NavBar.Switcher>
+    <>
+      <NavBar.Root>
+        <NavBar.Brand href="/">
+          <img src="/project-logo.svg" alt={PROJECT_NAME} className="h-5 w-5 object-contain" />
+          <span>{PROJECT_NAME}</span>
+        </NavBar.Brand>
+        <NavBar.Switcher>
+          {NAV.map((item) => (
+            <NavBar.Item
+              key={item.href}
+              href={item.href}
+              active={(item.label === 'Learn' && onLearn) || (item.label === 'Docs' && onDocs)}
+            >
+              {item.label}
+            </NavBar.Item>
+          ))}
+        </NavBar.Switcher>
+        <NavBar.Actions>
+          <a
+            href={NPM_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
+          >
+            npm ↗
+          </a>
+        </NavBar.Actions>
+      </NavBar.Root>
+      {/* NavBar.Switcher is display:none below md with no hamburger behind it —
+          on mobile the 4 destinations must still be reachable from the chrome,
+          so they render as a wrapped row under the bar (no JS, fits the sparse
+          chrome better than a disclosure menu). */}
+      <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 pb-2 md:hidden" aria-label="Primary, compact">
         {NAV.map((item) => (
-          <NavBar.Item
+          <a
             key={item.href}
             href={item.href}
-            active={(item.label === 'Learn' && onLearn) || (item.label === 'Docs' && onDocs)}
+            className="font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
           >
             {item.label}
-          </NavBar.Item>
+          </a>
         ))}
-      </NavBar.Switcher>
-      <NavBar.Actions>
-        <a
-          href={NPM_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-[11px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
-        >
-          npm ↗
-        </a>
-      </NavBar.Actions>
-    </NavBar.Root>
+      </nav>
+    </>
   );
 }
