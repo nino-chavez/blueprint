@@ -1,8 +1,10 @@
 # Traceability × State Join Pattern
 
-**Purpose:** Wire `_state.json` (capability/AC check results from state-derive) into the traceability registry so the matrix shows a complete spec → prototype → implemented pipeline in one view.
+**Purpose:** Wire `_state.json` (capability/AC check results from state-derive) into the traceability registry so the matrix shows a complete spec → prototype → artifacts-present pipeline in one view.
 
 **Extracted from:** `subs-initiative` session 2026-05-16.
+
+> **Scope caveat (wave 52):** `implementationStatus: compliant` is a **presence** signal — state-derive's checks are all static, so "compliant" means the expected code artifacts exist (DoD gate 3), not that the story works or passes its ACs (gates 4–5). subs-initiative proved this the hard way: two artifacts both COMPLIANT, joined by a mismatched selector, feature broken. Render this column as "present," never "shipped/done." See `template/docs/methodology/dod-verification-ladder-pattern.md`.
 
 ---
 
@@ -150,7 +152,7 @@ Combined with the phase filter (Phase 1 = 100% prototype coverage), the matrix a
 - "What's designed?" — with prototype count
 - "What's spec-worthy?" — demo-worthy count  
 - "What's missing a screen?" — coverage gaps
-- "What's actually shipped?" — implemented count
+- "What has its expected artifacts in place?" — implemented count (presence, gate 3 — not "works")
 
 ---
 

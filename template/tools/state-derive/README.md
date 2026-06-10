@@ -1,12 +1,14 @@
 # `tools/state-derive`
 
-Derives current implementation state from the codebase. Single source of truth for shipped-vs-spec audits.
+Derives current artifact-presence state from the codebase. Single source of truth for the **presence axis** of shipped-vs-spec audits.
+
+> **Scope: presence oracle, not function oracle.** Every check primitive below is static — none execute code, hit an endpoint, or assert a test passed. `COMPLIANT` means "the expected artifacts exist," which is gate 3 of the five-gate DoD ladder; it does NOT mean "works / passes its AC / runs E2E" (gates 4–5). Rendering COMPLIANT as "shipped" or "done" is the authority-bleed failure mode this note exists to prevent. See `template/docs/methodology/dod-verification-ladder-pattern.md`.
 
 ## Why this exists
 
 Spec docs, roadmaps, and audit findings decay the moment they ship. A capability written up as "in flight" in week N becomes "done" in week N+1, but the doc still says "in flight." Downstream audits quote the stale doc verbatim and produce recommendations on top of state that's already wrong.
 
-This tool replaces prose-claim audit findings with **mechanically derived evidence**. Run it before any audit, before any "what shipped" review, before any roadmap status update — trust its output, not the docs.
+This tool replaces prose-claim audit findings with **mechanically derived evidence**. Run it before any audit, before any "what shipped" review, before any roadmap status update — trust its output for what exists, not the docs. (For what *works*, you need the behavioral layer — see the scope note above.)
 
 ## Usage
 
@@ -68,7 +70,7 @@ See `catalog/_example.ts` for a full example covering all check types.
 
 | Status | Meaning |
 |--------|---------|
-| `COMPLIANT` | All checks matched expectations |
+| `COMPLIANT` | All checks matched expectations (artifact presence only — not behavior) |
 | `PARTIAL` | Some checks matched, some did not |
 | `NON-COMPLIANT` | No checks matched (the capability is missing or broken) |
 | `ABSENT` | Capability intentionally absent — absence confirmed |
@@ -134,7 +136,7 @@ Add a capability when:
 - A spec doc, BRD, or ADR makes a claim about what's shipped — encode the claim mechanically
 - A convention is established that you want enforced over time — add an inverted capability that scans for violations
 - A feature flag retires — add a `feature_flag_inactive` capability so the catalog flags re-introduction
-- An integration test exists for a BRD acceptance criterion — add a `scenario-coverage` capability pointing at the test
+- An integration test exists for a BRD acceptance criterion — add a `scenario-coverage` capability pointing at the test. Note: this proves the scenario *exists* (gate 4 authored), not that it *passes* (gate 4 green) — pass/fail needs the behavioral layer, not a grep
 
 Don't add a capability for things the type system or test suite already covers. State-derive is for cross-cutting claims that can't be verified by a single test.
 

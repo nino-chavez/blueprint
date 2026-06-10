@@ -252,7 +252,7 @@ When a project grows beyond a single surface (prototype + production app + admin
 Architecture:
 - Static HTML site (no build step) — `index.html` + `app.js` + `styles.css` + `scenarios.json`
 - Schema-driven: each scenario lists per-surface status + click-paths + prose guide
-- Optional `state.json` overlay from a mechanical capability tracker (e.g., `state-derive`) cross-checks declared status against reality
+- Optional `state.json` overlay from a mechanical capability tracker (e.g., `state-derive`) cross-checks declared status against artifact presence (DoD gate 3 — not behavior; see `template/docs/methodology/dod-verification-ladder-pattern.md`)
 - Mode toggle — same content serves as **demo script** (presenter-paced) and **how-to guide** (self-serve docs)
 
 The prototype Studio Home links to the deployed demos page via `DemoStoryboardPanel`. Symmetric: the demos page's header nav links back to the prototype harness, traceability matrix, and any other family Pages deploys.

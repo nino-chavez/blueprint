@@ -43,7 +43,11 @@ export type CapabilityCategory =
    * production implementation lands.
    */
   | 'feature_flag_inactive'
-  /** A BRD/spec acceptance criterion exercised end-to-end by an integration test. */
+  /**
+   * A BRD/spec acceptance criterion covered by an integration test. The static
+   * checks here prove the test EXISTS, not that it passes — pass/fail evidence
+   * belongs to the behavioral layer (DoD gate 4), not this tool.
+   */
   | 'scenario-coverage';
 
 export interface Capability {
