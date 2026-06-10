@@ -50,28 +50,28 @@ blueprint --version
 
 ---
 
-## Scaffold the portal — `blueprint init`
+## Scaffold the portal
 
-`blueprint init` delegates to the canonical stamper. Stamp a fresh Pattern B portal for the brownfield initiative:
+Pattern B has no `blueprint init` scaffold path yet — `init` stamps Pattern A only and refuses `--pattern=B`. Scaffold by copying the canonical Pattern B shell out of the methodology repo:
 
 ```bash
-npx @nino-chavez-labs/blueprint-cli init \
-  --name=acme-checkout \
-  --display-name="Acme Checkout Redesign" \
-  --repo-url=https://github.com/acme/acme-checkout-blueprint \
-  --tagline="Audit-driven redesign of the Acme checkout flow" \
-  --variant=brownfield \
-  --tier=1 \
-  --pattern=B \
-  --target=/abs/path/to/acme-checkout-blueprint
+git clone https://github.com/nino-chavez/blueprint /tmp/blueprint
+mkdir -p /abs/path/to/acme-checkout-blueprint
+cp -R /tmp/blueprint/template/portal /abs/path/to/acme-checkout-blueprint/portal
 ```
 
-What lands: a stamped initiative directory with `blueprint.yml`, the Pattern B portal shell (`portal/` with `index.html`, `shared.css`, `_portal-shell.js`, `chat-widget.js`, `proto-nav.js`, `_meta/index.json`), and a post-stamp grep that confirms no template project strings leaked through.
+What lands: the Pattern B portal shell — `portal/` with `index.html`, `shared.css`, `_portal-shell.js`, `chat-widget.js`, `proto-nav.js`, `_meta/index.json`.
 
-After stamping, declare the brownfield variant and its stage requirements in `blueprint.yml`:
+Then create `blueprint.yml` at the initiative root, declaring the project, the brownfield variant, and its stage requirements:
 
 ```yaml
+project:
+  name: "acme-checkout"
+  description: "Audit-driven redesign of the Acme checkout flow"
+
 variant: brownfield
+tier: 1
+portal_pattern: B
 
 stages:
   stage_1:
@@ -83,7 +83,7 @@ stages:
       - "research/competitive/"
 ```
 
-You will also fill in the `pilot_profile:` block — Stage 0's gate reads it.
+You will also fill in the `pilot_profile:` block — Stage 0's gate reads it. It locks the pilot's scope — whose pain, which competitors are in frame, what's explicitly out — so the pipeline can't drift mid-run.
 
 ---
 

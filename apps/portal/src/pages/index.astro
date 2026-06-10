@@ -21,17 +21,17 @@ const STAGES = [
 ] as const;
 
 const COMMANDS = [
-  ['init', 'Scaffold a new initiative and its portal — validated against the variant × tier matrix.'],
-  ['review', 'Run an executable stage-gate reviewer. `--list` shows canonical + org-authored ones.'],
+  ['init', 'Scaffold a new initiative and its portal — your variant, tier, and pattern choices validated before anything is written.'],
+  ['review', 'Run a stage gate: an automated reviewer that checks a stage is actually done. `--list` shows built-in + your own.'],
   ['cost', 'Per-stage effort/model configuration and telemetry — dial spend up or down.'],
-  ['fleet', 'Classify every consumer’s drift from the methodology, from one registry.'],
-  ['upgrade', 'Bump a consumer’s methodology pin — terraform-style, dry-run by default.'],
-  ['doctor', 'Conformance + health: loads the config, every reviewer, and portal checks.'],
+  ['fleet', 'One report across every project running Blueprint: which are current, which have fallen behind.'],
+  ['upgrade', 'Move a project to the latest methodology version — preview first, dry-run by default.'],
+  ['doctor', 'Health check: loads the config, every reviewer, and the portal — and says what it didn’t check.'],
 ] as const;
 
 const DEEPER = [
   ['Learn — run your first initiative', 'Getting started, the full end-to-end tutorial, and role-routed paths.', '/learn'],
-  ['Methodology', 'The first principles, the seven stages, the variant ladder.', '/inspect'],
+  ['Methodology', 'The first principles, the seven stages, how variant and tier get picked.', '/inspect'],
   ['Decisions', `${adrCount} architecture decision records — the why behind every primitive.`, '/inspect'],
   ['The live portal', 'Discover · Try · Build · Operate · Inspect · Roadmap — the deeper reference.', '/discover'],
   ['Source on GitHub', 'The methodology, the CLI, the template, the reviewer set.', REPO_URL],
@@ -154,7 +154,7 @@ const DEEPER = [
       <p class="mx-auto mb-8 max-w-2xl text-contrast-500">
         Every page here was generated from a single <code class="font-mono text-[14px]">blueprint.yml</code>
         by the same pipeline you’d run. The CLI is live on npm; the portal deploys from one config.
-        Blueprint is its own first consumer — the methodology used to productize the methodology.
+        Blueprint runs on itself — the methodology, applied to productizing the methodology.
       </p>
       <div class="mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-lg border border-contrast-200 bg-contrast-100/40 px-6 py-5">
         <div><span class="font-heading text-2xl font-semibold text-foreground">{adrCount}</span><span class="ml-1.5 text-sm text-contrast-500">ADRs</span></div>
@@ -184,7 +184,7 @@ const DEEPER = [
           <span class="font-heading text-lg font-semibold text-brand">2</span>
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Scaffold your initiative</h3>
-            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Stamps a portal you own, validated against your config.</p>
+            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Generates a portal you own, validated against your config.</p>
             <CommandBlock command="npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative" client:visible />
           </div>
         </li>
@@ -254,7 +254,7 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
       <div class="grid gap-6 md:grid-cols-2">
         <div class="rounded-lg border border-contrast-200 bg-background p-6">
           <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Pull updates</h3>
-          <p class="mb-4 text-[15px] leading-relaxed text-contrast-500"><code class="font-mono text-[13px] text-foreground">blueprint upgrade</code> reads your methodology pin, shows the delta, and bumps it — non-breaking, dry-run by default. <code class="font-mono text-[13px] text-foreground">blueprint fleet</code> shows drift across every initiative.</p>
+          <p class="mb-4 text-[15px] leading-relaxed text-contrast-500"><code class="font-mono text-[13px] text-foreground">blueprint upgrade</code> reads the methodology version your project is pinned to, shows what changed, and updates it — non-breaking, dry-run by default. <code class="font-mono text-[13px] text-foreground">blueprint fleet</code> shows which of your initiatives have fallen behind.</p>
           <CommandBlock command="npx @nino-chavez-labs/blueprint-cli upgrade" client:visible />
         </div>
         <div class="rounded-lg border border-contrast-200 bg-background p-6">

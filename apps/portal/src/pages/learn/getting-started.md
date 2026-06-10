@@ -39,7 +39,7 @@ Before any of that, three orthogonal choices set the shape of the work. **Varian
 
 ## 3. Install and scaffold your first portal
 
-`blueprint init` scaffolds a Pattern A portal at Tier 1. It delegates to the canonical stamper, which copies the template, substitutes a fixed token set, writes `blueprint.yml`, and runs a post-stamp grep to prove no source-project strings leaked in.
+`blueprint init` scaffolds a Pattern A portal at Tier 1. Under the hood it *stamps*: copies the template, substitutes your name/repo/tagline for a fixed token set, writes `blueprint.yml`, and finishes with a post-stamp grep — a search proving no strings from the template's source project leaked into your copy.
 
 The CLI dispatcher passes all flags straight through to the stamper:
 
@@ -60,7 +60,7 @@ Flag notes:
 - `--name` is the project slug (used in package metadata, footer brand, file substitutions).
 - `--variant` is `greenfield`, `midstream`, or `brownfield`.
 - `--tier` is `0`, `1`, or `2`. Tier 1 is the default starting point for a serious initiative.
-- `--pattern=A` is the supported initial stamp today. **Pattern B has no initial-stamp path yet** — the stamper supports Pattern B only through `--mode=restamp-chrome` against an existing portal, not a fresh scaffold.
+- `--pattern=A` is the supported initial stamp today. **Pattern B has no initial-stamp path yet** — the stamper supports Pattern B only through `--mode=restamp-chrome`, which refreshes the shared shell files (the "chrome") of an existing portal, not a fresh scaffold. Pattern B initiatives copy `template/portal/` from the methodology repo instead.
 - `--target` is the absolute path to the new initiative root.
 
 ## 4. What you just got

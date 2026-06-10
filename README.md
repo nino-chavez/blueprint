@@ -1,6 +1,6 @@
 # Blueprint
 
-**Run a product initiative end-to-end, agent-assisted** — research feeds BRD/PRD-class strategy docs, the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel); an AI agent runs the pipeline and ships one portal that serves leadership, engineering, and everyone.
+**Run a product initiative end-to-end, agent-assisted** — research feeds the strategy documents (business- and product-requirements class — BRD/PRD), the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel); an AI agent runs the pipeline and ships one portal that serves leadership, engineering, and everyone.
 
 [![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint-platform.pages.dev)
 
@@ -11,7 +11,8 @@ npx @nino-chavez-labs/blueprint-cli init
 ## Quickstart
 
 ```bash
-# 1. Scaffold a new initiative + its portal (validated against the variant × tier matrix)
+# 1. Scaffold a new initiative + its portal (your variant/tier/pattern choices are
+#    validated at scaffold time — defined in docs/variant-selection.md + docs/portal-and-tier-ladder.md)
 npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
 
 # 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield), tier (0–2),
@@ -22,7 +23,7 @@ npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
 npx @nino-chavez-labs/blueprint-cli doctor
 ```
 
-Seven commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor` · `hive`. Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Seven commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor` · `hive`. (`fleet` reports how far each project running Blueprint has fallen behind the current methodology; `hive` sets up multi-agent coordination — see the Hive note below.) Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
@@ -33,7 +34,7 @@ A note on the name: originally carried an employer-prefixed name (extracted from
 The five-minute path (formerly `START-HERE.md`):
 
 - **See it running first**: [blueprint-platform.pages.dev](https://blueprint-platform.pages.dev) is Blueprint applied to *itself* — the same shape of portal it generates for any initiative, so it doubles as "here's what the output looks like." Worth clicking: **discover** (what it is), **roadmap** (the build, end-to-end), **inspect** (the ADRs + research behind every choice).
-- **Blueprint vs Hive — two parts, on purpose**: Blueprint (this repo) is the planning/prototyping methodology + toolchain; **Hive** is the multi-operator coordination layer (separate repo, separately maintained). Blueprint *plans*; Hive *coordinates*. Companions, integrated, not merged.
+- **Blueprint vs Hive — two parts, on purpose**: Blueprint (this repo) is the planning/prototyping methodology + toolchain; **Hive** lets several agents — or several people's agents — work the same initiative in parallel without colliding (separate repo, separately maintained; the pattern: [`docs/patterns/hive-coordination-pattern.md`](docs/patterns/hive-coordination-pattern.md)). Blueprint *plans*; Hive *coordinates*. Companions, integrated, not merged.
 - **Try it**: the [Quickstart](#quickstart) above — nothing to install to explore; the CLI is live on npm.
 - **Go deeper**: [`decisions/00-charter.md`](decisions/00-charter.md) (the why + the six tracks), [`decisions/01-prescription.md`](decisions/01-prescription.md) (what shipped, the build order).
 - Want a 20-minute walkthrough for the team, or to be a pilot? Open an issue on this repo.
@@ -76,7 +77,7 @@ Two key loops: **prototype and documents are built simultaneously** (the prototy
 
 ## Project Structure
 
-What `init --pattern=A` actually stamps today:
+What `init --pattern=A` actually generates today:
 
 ```
 my-initiative/
@@ -90,14 +91,16 @@ my-initiative/
 
 The initiative then grows `research/`, `docs/content/`, `decisions/`, and (per
 variant) `prototype/` as the stages run — the evidence column the methodology
-exists to produce. Pattern B initiatives copy `template/portal/` instead (no
-stamper yet).
+exists to produce. Pattern B initiatives copy `template/portal/` instead — `init`
+can't scaffold Pattern B yet.
 
 ## Command-line interface — `@nino-chavez-labs/blueprint-cli`
 
 Blueprint ships a thin, dependency-free CLI that operationalizes the methodology
 as a team-adoptable, portable platform (scope ceiling A — methodology-native: no
-hosted server; everything runs on the git host + npm + local files). The
+hosted server; everything runs on the git host + npm + local files). A
+**consumer**, here and in the registry ([`consumers.yml`](consumers.yml)), is a
+project that runs Blueprint. The
 methodology home is resolved automatically (`$BLUEPRINT_HOME` → a consumer's
 `blueprint.yml methodology_home` → the CLI's own installed package → local dev
 paths), so an `npm install` user gets a working CLI with zero config.
@@ -109,8 +112,10 @@ npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
 blueprint review <name> [--target=<dir>] [--json]   # run an executable reviewer (ADR-0002);
 blueprint review --list                              #   discovers canonical + org reviewers (ADR-0006)
 blueprint cost   [--target=<dir>] [--json]           # per-stage effort/model config + telemetry (ADR-0003)
-blueprint fleet  [--json] [--strict]                 # classify each consumer's drift from consumers.yml (ADR-0005)
-blueprint upgrade [--target=<dir>] [--apply]         # preview/apply a consumer's methodology pin bump (ADR-0005);
+blueprint fleet  [--json] [--strict]                 # how far each consumer has drifted from the current
+                                                     #   methodology (registry: consumers.yml, ADR-0005)
+blueprint upgrade [--target=<dir>] [--apply]         # preview/apply a bump of a consumer's pinned
+                                                     #   methodology version (ADR-0005);
                   [--ack-untagged] [--require-pin]    #   dry-run by default (terraform-plan style)
 blueprint doctor [--target=<dir>] [--json]           # conformance/health — loads the config + every reviewer
                                                      #   + runs portal conformance (the false-green guard)
