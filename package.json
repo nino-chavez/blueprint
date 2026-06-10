@@ -1,7 +1,7 @@
 {
   "name": "@nino-chavez-labs/blueprint-cli",
   "version": "0.2.0",
-  "description": "Blueprint methodology distribution — canonical docs, reviewer agents, stampers, and the blueprint CLI.",
+  "description": "Blueprint methodology distribution \u2014 canonical docs, reviewer agents, stampers, and the blueprint CLI.",
   "license": "MIT",
   "author": "Nino Chavez",
   "homepage": "https://github.com/nino-chavez/blueprint#readme",
@@ -41,7 +41,7 @@
   "scripts": {
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish",
+    "release": "node bin/release-if-unpublished.mjs",
     "dev": "npm run dev -w apps/portal",
     "build": "npm run build -w apps/portal",
     "typecheck": "npm run typecheck -w apps/portal"
