@@ -5,8 +5,8 @@
  * Prototype Studio, and Docs viewer. Injected as HTML on page load so
  * the three pages can't drift visually — they all consume this file.
  *
- * Origin: extracted from Rally HQ 2026-05-24 polish pass. Promoted to
- * wip/blueprint/template as the canonical going-forward shell.
+ * Origin: extracted from the origin consumer's 2026-05-24 polish pass.
+ * Promoted to wip/blueprint/template as the canonical going-forward shell.
  *
  * Usage in any portal page:
  *
@@ -31,7 +31,7 @@
  * editing one field in _meta/index.json, not by hunting for
  * PORTAL_SHELL_CONFIG occurrences across the portal.
  *
- * Prior version (pre-2026-05-25-evening) hard-coded a Rally-HQ-shaped
+ * Prior version (pre-2026-05-25-evening) hard-coded a consumer-shaped
  * default 'docsLandingHref: /docs/?doc=cx-strategy'. That was a stamp
  * leak — see docs/case-studies/case-study-v3-portal-css-gap.md "Follow-up — docs viewer".
  */
@@ -89,7 +89,7 @@
 
   function deriveProductName(rawName) {
     if (!rawName) return null
-    // "PROJECT_NAME Blueprint" → "PROJECT_NAME"; consumer's "Rally HQ Blueprint" → "Rally HQ"
+    // "PROJECT_NAME Blueprint" → "PROJECT_NAME"; consumer's "Acme Blueprint" → "Acme"
     return rawName.replace(/\s+Blueprint\s*$/, '').trim() || null
   }
 

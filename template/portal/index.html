@@ -321,13 +321,13 @@
       <div class="paths-grid" id="paths-grid"></div>
       <div class="audience-note">
         <strong>The three pills above reorder the cards for whoever's looking.</strong>
-        Reviewer (default) leads with Try + Discover. Engineer leads with Inspect + Operate. Operator leads with Roadmap + Discover. Selection persists in this session.
+        Reviewer (default) leads with Try + Discover. Engineer leads with Operate + Validate. Operator leads with Roadmap + Discover. Selection persists in this session.
       </div>
     </section>
 
     <footer class="footer-note" id="footer-note">
       <!-- Populated from _meta/index.json `name`, `tagline`, and `repo_url`.
-           Prior version had Rally HQ project content baked in (2026-05-25
+           Prior version had consumer project content baked in (2026-05-25
            leak). Now project-agnostic; consumer edits the manifest only. -->
       <span data-footer-line>—</span>
       <a data-footer-repo target="_blank" rel="noopener" style="display:none">github ↗</a>
@@ -340,13 +340,13 @@
         id: 'try', title: 'Try', status: 'ready',
         icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>',
         description: 'Walk the prototype pages with strategy + current-state drawers, proposed-vs-shipped toggle, and multi-page flows. The interactive study.',
-        links: 'Catalog: <a href="/prototype/">/prototype/</a> · Sample: <a href="/pages/tournament">tournament</a>, <a href="/pages/operator-game-day">operator game-day</a>',
+        links: 'Catalog: <a href="/prototype/">/prototype/</a> · Sample: <a href="/pages/example">example page</a>',
         priority: { reviewer: 1, engineer: 3, operator: 4 }
       },
       {
         id: 'discover', title: 'Discover', status: 'ready',
         icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16 8l-3 5-5 3 3-5 5-3z" fill="currentColor" stroke="none"/></svg>',
-        description: 'Why the blueprint makes its decisions. CX strategy plus the four system docs — business model, monetization, tournament lifecycle, adaptive chrome.',
+        description: 'Why the blueprint makes its decisions. CX strategy plus the four system docs — business model, monetization, product lifecycle, adaptive chrome.',
         links: '<a href="/docs/?doc=cx-strategy">CX Strategy</a> · <a href="/docs/?doc=business-model">Business model</a> · <a href="/docs/?doc=research-synthesis">Research synthesis</a>',
         priority: { reviewer: 2, engineer: 5, operator: 2 }
       },

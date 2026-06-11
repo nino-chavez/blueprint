@@ -11,10 +11,10 @@
  * Function). Without that endpoint deployed (e.g., local file:// serving),
  * the widget shows a "not configured" message instead of attempting requests.
  *
- * Origin: extracted from Rally HQ 2026-05-24 polish pass. Promoted to canonical
- * chrome 2026-05-25 after the Rally HQ string in the header was excised (it
- * was the last Rally-HQ-leak in the Pattern B chrome surface). Added to
- * PATTERN_B_CHROME_FILES manifest the same day.
+ * Origin: extracted from the origin consumer's 2026-05-24 polish pass.
+ * Promoted to canonical chrome 2026-05-25 after the consumer product name in
+ * the header was excised (it was the last product-name leak in the Pattern B
+ * chrome surface). Added to PATTERN_B_CHROME_FILES manifest the same day.
  */
 (function () {
   if (window.PROTO_CHAT_DISABLED) return;
@@ -167,7 +167,7 @@
 
   const SUGGESTIONS = [
     "What's the biggest gap?",
-    "Why per-tournament accent?",
+    "What's the riskiest assumption?",
     "How does the viral loop work?",
     "What's deferred to Phase 3?"
   ];

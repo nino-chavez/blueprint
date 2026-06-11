@@ -1,10 +1,10 @@
-/* Rally HQ Blueprint — Proto-nav + panels + comparison toggle + flow mode
+/* Blueprint canonical chrome — Proto-nav + panels + comparison toggle + flow mode
  *
  * Reads the portal manifest from /_meta/index.json and the per-page metadata
  * from /_meta/<id>.json so the nav is auto-derived from filesystem instead
  * of hard-coded. Pages only need to declare their id:
  *
- *   window.PROTO_PAGE = { id: 'tournament' };
+ *   window.PROTO_PAGE = { id: 'example-page' };
  *
  * Everything else (title, group, strategy, currentState) comes from the JSON.
  *
@@ -84,7 +84,7 @@
     // meta-only product destinations (a documented Pattern B feature) live at
     // production URLs, not ./pages/<id>.html — without this, every chrome
     // surface that builds hrefs from ids (jump-to, flow nav) emits phantom
-    // links for them (rally-hq audit, 2026-06-11).
+    // links for them (cognitive audit 2026-06-11).
     const route = MANIFEST?.routes?.[id];
     if (route) return route;
     return isProtoRoot() ? `./pages/${id}.html` : `./${id}.html`;
@@ -365,7 +365,7 @@
         </div>
         <div class="top-bar-actions">
           ${chipHtml}
-          ${currentPageMeta?.chrome && currentPageMeta.chrome !== 'specialized' ? `<button class="chrome-toggle" type="button" title="Toggle production-chrome preview"><span class="toggle-dot"></span>production chrome</button>` : ''}
+          ${currentPageMeta?.chrome && currentPageMeta.chrome !== 'specialized' ? `<button class="chrome-toggle" type="button" title="Show this page with the real product navbar it ships with"><span class="toggle-dot"></span>real product navbar</button>` : ''}
           <nav class="top-bar-nav" aria-label="Primary">
             ${navHtml}
           </nav>
@@ -394,12 +394,12 @@
       });
     }
 
-    // Lifecycle strip — only on tournament-state pages (skip cross-phase)
+    // Lifecycle strip — only on phase-scoped pages (skip cross-phase)
     if (currentPageMeta?.lifecycle_phase && currentPageMeta.lifecycle_phase !== 'cross-phase') {
       const stripHtml = renderLifecycleStrip(currentPageMeta);
       const stripEl = document.createElement('nav');
       stripEl.className = 'proto-lifecycle-strip';
-      stripEl.setAttribute('aria-label', 'Tournament lifecycle phase');
+      stripEl.setAttribute('aria-label', 'Lifecycle phase');
       stripEl.innerHTML = stripHtml;
       bar.insertAdjacentElement('afterend', stripEl);
     }
@@ -425,7 +425,7 @@
       return `<span class="${cls}" data-phase="${p.id}"><span class="lifecycle-dot" aria-hidden="true"></span><span class="lifecycle-label">${p.label}</span></span>${sep}`;
     }).join('');
     return `<div class="proto-lifecycle-inner">
-      <span class="lifecycle-leader" title="Tournament lifecycle — see docs/tournament-lifecycle.md">lifecycle</span>
+      <span class="lifecycle-leader" title="Lifecycle — where this page sits in the product's operating cycle">lifecycle</span>
       ${cells}
     </div>`;
   }
@@ -435,6 +435,16 @@
     const panel = document.querySelector(sel);
     if (!panel) return;
     panel.classList.toggle('open');
+  }
+
+  // Drawer × buttons close their own drawer unconditionally — toggle
+  // semantics on × flipped the opposite drawer open when class state
+  // desynced (cognitive audit 2026-06-11).
+  function closePanel(which) {
+    const sel = which === 'strategy' ? '.strategy-panel' : '.current-state-panel';
+    const panel = document.querySelector(sel);
+    if (!panel) return;
+    panel.classList.remove('open');
   }
 
   // ─────────────── panels (built from meta) ───────────────
@@ -463,7 +473,7 @@
     }
 
     const panel = el('aside', { class: 'strategy-panel', id: 'strategy-panel' },
-      el('button', { class: 'panel-close', onclick: () => togglePanel('strategy') }, '×'),
+      el('button', { class: 'panel-close', onclick: (e) => { e.stopPropagation(); closePanel('strategy'); } }, '×'),
       el('h3', {}, 'Strategy'),
       el('p', { class: 'tiny muted mt-4' }, `Page: ${meta.title}`),
       ...(systemsParts.length ? [el('div', { class: 'panel-section panel-systems', html: systemsParts.join('') })] : []),
@@ -491,16 +501,23 @@
     document.body.appendChild(panel);
   }
 
+  // Fallback copy derives the product name from the manifest — never a
+  // hard-coded consumer name in canonical chrome (cognitive audit 2026-06-11).
+  function shippedProductLabel() {
+    const product = (MANIFEST?.name || '').replace(/\s*Blueprint\s*$/i, '').trim();
+    return product ? `shipped ${escapeHtml(product)}` : 'the shipped product';
+  }
+
   function buildCurrentStatePanel(meta) {
     if (!meta || !meta.currentState) return;
     const cs = meta.currentState;
     const panel = el('aside', { class: 'current-state-panel', id: 'current-state-panel' },
-      el('button', { class: 'panel-close', onclick: () => togglePanel('current-state') }, '×'),
+      el('button', { class: 'panel-close', onclick: (e) => { e.stopPropagation(); closePanel('current-state'); } }, '×'),
       el('h3', {}, 'Shipped state'),
       el('p', { class: 'tiny muted mt-4' }, cs.route ? `Route: ${cs.route}` : 'No equivalent surface today'),
       el('div', { class: 'panel-section' },
         el('h4', {}, 'What exists today'),
-        el('p', { html: cs.summary || '<em>No equivalent surface in shipped Rally HQ.</em>' })
+        el('p', { html: cs.summary || `<em>No equivalent surface in ${shippedProductLabel()}.</em>` })
       ),
       cs.sourceFiles && cs.sourceFiles.length ? el('div', { class: 'panel-section' },
         el('h4', {}, 'Source files'),
@@ -721,9 +738,11 @@
 
   // ─────────────── init ───────────────
 
-  // Apply the demo tournament's per-event accent from the manifest, so every
-  // tournament-scoped surface (Public + Authenticated when scoped) renders the
+  // Apply the demo event's per-event accent from the manifest, so every
+  // event-scoped surface (Public + Authenticated when scoped) renders the
   // same accent. Replaces per-page `:root { --tournament-accent: ... }` blocks.
+  // Manifest key `demo_tournament` + meta key `uses_tournament_accent` are
+  // back-compat config keys shared with consumer manifests — do not rename.
   // Pages opt in via meta.uses_tournament_accent === true OR meta.chrome === 'public'.
   function applyTournamentAccent(meta) {
     const demo = MANIFEST?.demo_tournament;

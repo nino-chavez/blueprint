@@ -400,8 +400,8 @@
   }
 
   // Expose a console helper so testers can enable it from any page
-  // Global handle for the annotation overlay. Renamed 2026-05-25 from
-  // `window.rallyAnno` (Rally HQ stamp leak) to project-agnostic name.
+  // Global handle for the annotation overlay. Renamed 2026-05-25 from a
+  // consumer-branded handle (stamp leak) to project-agnostic name.
   // ADR-0002 convention extended.
   window.blueprintAnno = {
     enable: () => { localStorage.setItem(ENABLED_KEY, 'true'); location.reload(); },

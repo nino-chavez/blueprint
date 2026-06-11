@@ -607,20 +607,45 @@ p { color: var(--text-secondary); }
 [data-view="shipped"] .proposed-view  { display: none; }
 [data-view="split"] {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, …): plain 1fr bottoms out at the content's min-width, so a
+     wide panel pushed its sibling past the viewport edge and clipped it
+     (cognitive audit 2026-06-11). */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-4);
 }
+/* The compare root is usually <body>; in-flow chrome (lifecycle strip,
+   footer) must span both columns or auto-placement pairs it with a view
+   panel and the 50/50 split breaks (cognitive audit 2026-06-11). */
+[data-view="split"] > *:not(.proposed-view):not(.shipped-view) {
+  grid-column: 1 / -1;
+}
+[data-view="split"] .proposed-view { grid-column: 1; }
+[data-view="split"] .shipped-view { grid-column: 2; }
 [data-view="split"] .proposed-view, [data-view="split"] .shipped-view {
   display: block;
+  min-width: 0;
+  /* Grid gap owns the spacing in split mode; page-level utility margins
+     (e.g. mt-8 on a view) would knock the two panels out of alignment. */
+  margin: 0;
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   position: relative;
+  /* Both panels fit the viewport and scroll internally instead of forcing
+     page-level overflow that drifts them out of sync; 140px clears the
+     fixed top bar + lifecycle strip (cognitive audit 2026-06-11). */
+  max-height: calc(100vh - 140px);
+  overflow: auto;
 }
 [data-view="split"] .proposed-view::before {
   content: "PROPOSED";
-  position: absolute;
-  top: -10px; left: var(--space-4);
+  /* sticky, not absolute: the panels are scroll containers now, and an
+     absolute badge at top:-10px gets clipped (cognitive audit 2026-06-11). */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: table;
+  margin-bottom: var(--space-2);
   background: var(--victory-500);
   color: var(--arena-900);
   font-size: 10px;
@@ -631,8 +656,11 @@ p { color: var(--text-secondary); }
 }
 [data-view="split"] .shipped-view::before {
   content: "SHIPPED";
-  position: absolute;
-  top: -10px; left: var(--space-4);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: table;
+  margin-bottom: var(--space-2);
   background: var(--arena-700);
   color: white;
   font-size: 10px;
