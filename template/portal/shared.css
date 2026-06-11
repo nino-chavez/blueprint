@@ -607,6 +607,11 @@ p { color: var(--text-secondary); }
 [data-view="shipped"] .proposed-view  { display: none; }
 [data-view="split"] {
   display: grid;
+  /* start, not stretch: when the container ends up taller than its tracks
+     (fixed-position drawers, min-height), stretch distributes the surplus
+     into the auto rows — measured +256px each on the lifecycle strip and
+     page-header rows (create-tournament, 2026-06-11). */
+  align-content: start;
   /* minmax(0, …): plain 1fr bottoms out at the content's min-width, so a
      wide panel pushed its sibling past the viewport edge and clipped it
      (cognitive audit 2026-06-11). */
