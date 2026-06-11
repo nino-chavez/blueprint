@@ -8,8 +8,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+## 0.3.0
+
+Waves 57–61 rollup.
+
 ### Added
 
+- **`blueprint init` scaffolds with defaults** (wave 61): `--name` is the only required flag — display-name (title-cased slug), tagline, repo-url placeholder, `--variant=greenfield --tier=1 --pattern=A`, and `--target=./<name>` (created when missing) all derive; every applied default is echoed on a `defaulted:` line. Explicit flags override everything; existing full-flag scripts are unaffected.
+- `terminology-linter` scan-set extension (wave 60): `.md` pages join the scan set via a Markdown text extractor; root README scanned; operator-doc basenames exempt; universally-understood dev acronyms allow-listed.
 - `stateful-claim-lint-reviewer` (wave 59) — lints hardcoded counts/versions/"latest" claims in living docs against their sources of truth (WAVE-LOG, consumers.yml, the reviewer registry, doctor.mjs, package.json); wired as `doctor` check 8. Checks skip gracefully in consumer repos that lack the sources.
 - `market-signal` triage category + `logged` state in `/blueprint-triage`; assumption-archetype checklist in the Mom Test pattern doc (wave 57).
 - README § "Evaluating Blueprint for your team?" replaces `START-HERE.md` (wave 58); reader-path manifest gains set-level review questions (deletion test, claim ownership).

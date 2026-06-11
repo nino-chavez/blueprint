@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-06-11T01:03:19.124Z",
+  "capturedAt": "2026-06-11T01:08:45.117Z",
   "pathsRedacted": true,
   "fixtures": {
     "init": {
@@ -166,7 +166,7 @@
     "review-list": {
       "command": "blueprint review --list",
       "exitCode": 0,
-      "durationMs": 33,
+      "durationMs": 32,
       "lines": [
         "blueprint review — 15 reviewer(s) discovered  (target: ~/work/field-guide)",
         "",
@@ -191,7 +191,7 @@
     "review-conformance-fresh": {
       "command": "blueprint review portal-pattern-a-conformance-reviewer",
       "exitCode": 1,
-      "durationMs": 40,
+      "durationMs": 41,
       "lines": [
         "✗ BLOCKED — portal-pattern-a-conformance-reviewer  (7/7 routes, ui=8 tokens=1, banners=12)",
         "",
@@ -237,7 +237,7 @@
     "review-stateful-claims": {
       "command": "blueprint review stateful-claim-lint-reviewer",
       "exitCode": 0,
-      "durationMs": 160,
+      "durationMs": 82,
       "lines": [
         "✓ PASS — stateful-claim-lint-reviewer  (docs=45, claims-checked=3, mismatches=0, skipped=[])",
         "  no findings."
@@ -246,7 +246,7 @@
     "doctor-self": {
       "command": "blueprint doctor",
       "exitCode": 0,
-      "durationMs": 110,
+      "durationMs": 102,
       "lines": [
         "blueprint doctor — ~/dev/blueprint",
         "",
@@ -269,7 +269,7 @@
     "doctor-fresh": {
       "command": "blueprint doctor",
       "exitCode": 1,
-      "durationMs": 51,
+      "durationMs": 48,
       "lines": [
         "blueprint doctor — ~/work/field-guide",
         "",
@@ -293,7 +293,7 @@
     "cost": {
       "command": "blueprint cost",
       "exitCode": 1,
-      "durationMs": 28,
+      "durationMs": 26,
       "lines": [
         "blueprint cost — ~/dev/blueprint",
         "",
@@ -315,10 +315,10 @@
     "fleet": {
       "command": "blueprint fleet",
       "exitCode": 0,
-      "durationMs": 51,
+      "durationMs": 47,
       "lines": [
         "blueprint fleet — methodology @ ~/dev/blueprint",
-        "current: 0.2.0  (HEAD 959be8a, latest tag v0.2.0)",
+        "current: 0.3.0  (HEAD 1f4b7d5, latest tag v0.2.0)",
         "",
         "  repo                                pattern  pin        class          distance      owner",
         "  nino-chavez/rally-hq                B       —          unpinned       —             nino-chavez",
@@ -345,10 +345,10 @@
       "durationMs": 47,
       "lines": [
         "blueprint upgrade — ~/work/field-guide",
-        "pinned: (unpinned)   methodology current: 0.2.0 (HEAD 959be8a)",
+        "pinned: (unpinned)   methodology current: 0.3.0 (HEAD 1f4b7d5)",
         "verdict: unpinned — no methodology_version pin (informational)",
         "delta: (nothing to narrate — already current or no released versions in range)",
-        "proposed: bump methodology_version (none) -> 0.2.0 in blueprint.yml   [--apply to write]",
+        "proposed: bump methodology_version (none) -> 0.3.0 in blueprint.yml   [--apply to write]",
         "gate: insert — unpinned — --apply will add a methodology_version pin to blueprint.yml",
         "",
         "exit 0 (dry-run; --apply to write)"
