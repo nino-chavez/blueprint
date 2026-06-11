@@ -17,7 +17,7 @@ npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
 
 # 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield), tier (0–2),
 #    and portal_pattern (A|B). Then run the pipeline in Claude Code:
-#    /blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy
+#    /blueprint-research → /blueprint-prototype → /blueprint-validate → /blueprint-docs → /blueprint-deploy
 
 # 3. Push to deploy your portal, then verify conformance
 npx @nino-chavez-labs/blueprint-cli doctor
@@ -119,6 +119,8 @@ blueprint upgrade [--target=<dir>] [--apply]         # preview/apply a bump of a
                   [--ack-untagged] [--require-pin]    #   dry-run by default (terraform-plan style)
 blueprint doctor [--target=<dir>] [--json]           # conformance/health — loads the config + every reviewer
                                                      #   + runs portal conformance (the false-green guard)
+blueprint hive setup --slug=<x> [--execute]          # stand up the team coordination substrate — dry-run
+                                                     #   plan by default; --execute provisions (see the Hive note)
 ```
 
 Each command is a thin front door over a dependency-free, self-tested lib under

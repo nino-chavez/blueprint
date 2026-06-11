@@ -197,7 +197,7 @@ portal:
   operate:
     items:
       - title: "Install / run the CLI"
-        description: "npx @nino-chavez-labs/blueprint-cli — zero install. Subcommands: init · review · cost · fleet · upgrade · doctor."
+        description: "npx @nino-chavez-labs/blueprint-cli — zero install. Subcommands: init · review · cost · fleet · upgrade · doctor · hive."
         href: "https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli"
         status: Available
       - title: "Scaffold a new initiative"

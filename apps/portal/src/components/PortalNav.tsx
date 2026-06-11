@@ -6,12 +6,14 @@ const PROJECT_NAME = 'Blueprint';
 
 // Product nav — a linear adoption path, not an audience-routed lane switcher.
 // Anchors jump to the home sections so the story stays on one page ("don't make
-// people think"); Docs opens the deeper reference portal.
+// people think"); Demo plays the live walkthrough; Strategy opens the strategy
+// excerpts at /discover (labelled "Docs" before — that lied about the content).
 const NAV = [
   { href: '/learn', label: 'Learn' },
+  { href: '/demo', label: 'Demo' },
   { href: '/#commands', label: 'Commands' },
   { href: '/#contribute', label: 'Contribute' },
-  { href: '/discover', label: 'Docs' },
+  { href: '/discover', label: 'Strategy' },
 ] as const;
 
 const NPM_URL = 'https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli';
@@ -26,7 +28,10 @@ export interface PortalNavProps {
  */
 export function PortalNav({ currentPath }: PortalNavProps) {
   const onLearn = currentPath === '/learn' || currentPath.startsWith('/learn/');
-  const onDocs = currentPath !== '/' && currentPath !== '' && !onLearn;
+  const onDemo = currentPath === '/demo' || currentPath.startsWith('/demo/');
+  // Strategy stays the catch-all for the deeper portal pages (/discover,
+  // /inspect, /operate, ...) — everything that isn't home, Learn, or Demo.
+  const onStrategy = currentPath !== '/' && currentPath !== '' && !onLearn && !onDemo;
 
   return (
     <>
@@ -40,7 +45,11 @@ export function PortalNav({ currentPath }: PortalNavProps) {
             <NavBar.Item
               key={item.href}
               href={item.href}
-              active={(item.label === 'Learn' && onLearn) || (item.label === 'Docs' && onDocs)}
+              active={
+                (item.label === 'Learn' && onLearn) ||
+                (item.label === 'Demo' && onDemo) ||
+                (item.label === 'Strategy' && onStrategy)
+              }
             >
               {item.label}
             </NavBar.Item>
@@ -58,9 +67,9 @@ export function PortalNav({ currentPath }: PortalNavProps) {
         </NavBar.Actions>
       </NavBar.Root>
       {/* NavBar.Switcher is display:none below md with no hamburger behind it —
-          on mobile the 4 destinations must still be reachable from the chrome,
-          so they render as a wrapped row under the bar (no JS, fits the sparse
-          chrome better than a disclosure menu). */}
+          on mobile every NAV destination must still be reachable from the
+          chrome, so they render as a wrapped row under the bar (no JS, fits
+          the sparse chrome better than a disclosure menu). */}
       <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 pb-2 md:hidden" aria-label="Primary, compact">
         {NAV.map((item) => (
           <a

@@ -1,9 +1,12 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { CommandBlock } from '@/components/CommandBlock';
-import { loadAdrCount } from '@/lib/derived';
+import { loadAdrCount, loadConsumerCount, loadReviewerCount, loadWaveCount } from '@/lib/derived';
 
 const adrCount = loadAdrCount();
+const waveCount = loadWaveCount();
+const consumerCount = loadConsumerCount();
+const reviewerCount = loadReviewerCount();
 
 const INSTALL = 'npx @nino-chavez-labs/blueprint-cli init';
 const NPM_URL = 'https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli';
@@ -27,13 +30,16 @@ const COMMANDS = [
   ['fleet', 'One report across every project running Blueprint: which are current, which have fallen behind.'],
   ['upgrade', 'Move a project to the latest methodology version — preview first, dry-run by default.'],
   ['doctor', 'Health check: loads the config, every reviewer, and the portal — and says what it didn’t check.'],
+  ['hive', 'Set up the shared workspace a team of agents coordinates through. `hive setup` shows its plan first — nothing is provisioned until you pass `--execute`.'],
 ] as const;
 
 const DEEPER = [
   ['Learn — run your first initiative', 'Getting started, the full end-to-end tutorial, and role-routed paths.', '/learn'],
+  ['Watch the demo', '35-second sizzle or the step-through walkthrough — real transcripts, real artifacts.', '/demo'],
   ['Methodology', 'The first principles, the seven stages, how variant and tier get picked.', '/inspect'],
   ['Decisions', `${adrCount} architecture decision records — the why behind every primitive.`, '/inspect'],
   ['The live portal', 'Discover · Try · Build · Operate · Inspect · Roadmap — the deeper reference.', '/discover'],
+  ['FAQ — the honest objections', 'The questions a skeptic asks first, answered straight.', '/faq'],
   ['Source on GitHub', 'The methodology, the CLI, the template, the reviewer set.', REPO_URL],
 ] as const;
 ---
@@ -156,9 +162,16 @@ const DEEPER = [
         by the same pipeline you’d run. The CLI is live on npm; the portal deploys from one config.
         Blueprint runs on itself — the methodology, applied to productizing the methodology.
       </p>
-      <div class="mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-lg border border-contrast-200 bg-contrast-100/40 px-6 py-5">
-        <div><span class="font-heading text-2xl font-semibold text-foreground">{adrCount}</span><span class="ml-1.5 text-sm text-contrast-500">ADRs</span></div>
-        <div><span class="font-heading text-2xl font-semibold text-foreground">6</span><span class="ml-1.5 text-sm text-contrast-500">CLI commands</span></div>
+      <!-- Receipts, not adjectives: every count derives at build time from the
+           artifact it claims (src/lib/derived.ts loaders; commands from
+           COMMANDS.length) so a stale literal can't ship — the wave-59
+           stateful-claim rule applied to the front door. -->
+      <div class="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-lg border border-contrast-200 bg-contrast-100/40 px-6 py-5">
+        <div><span class="font-heading text-2xl font-semibold text-foreground">{waveCount}</span><span class="ml-1.5 text-sm text-contrast-500">gated updates</span></div>
+        <div><span class="font-heading text-2xl font-semibold text-foreground">{adrCount}</span><span class="ml-1.5 text-sm text-contrast-500">decision records</span></div>
+        <div><span class="font-heading text-2xl font-semibold text-foreground">{reviewerCount}</span><span class="ml-1.5 text-sm text-contrast-500">automated reviewers</span></div>
+        <div><span class="font-heading text-2xl font-semibold text-foreground">{consumerCount}</span><span class="ml-1.5 text-sm text-contrast-500">projects running Blueprint</span></div>
+        <div><span class="font-heading text-2xl font-semibold text-foreground">{COMMANDS.length}</span><span class="ml-1.5 text-sm text-contrast-500">CLI commands</span></div>
         <div><span class="font-heading text-2xl font-semibold text-foreground">1</span><span class="ml-1.5 text-sm text-contrast-500">config → whole portal</span></div>
         <a href="/discover" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">Open the portal →</a>
       </div>
@@ -170,7 +183,7 @@ const DEEPER = [
     <div class="mx-auto max-w-3xl">
       <p class="mb-2 font-mono text-[12px] uppercase tracking-wide text-brand-strong">get started</p>
       <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">Up and running in five steps.</h2>
-      <p class="mb-10 text-contrast-500">Copy, paste, go. No decisions to make first.</p>
+      <p class="mb-10 text-contrast-500">Five steps. The choices you make are written out below — every command runs as printed.</p>
 
       <ol class="space-y-8">
         <li class="grid grid-cols-[2rem_1fr] gap-4">
@@ -184,8 +197,20 @@ const DEEPER = [
           <span class="font-heading text-lg font-semibold text-brand">2</span>
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Scaffold your initiative</h3>
-            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Generates a portal you own, validated against your config.</p>
-            <CommandBlock command="npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative" client:visible />
+            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Generates a portal you own, validated against your config. Two starting points — the name/url/tagline flags brand your scaffold; swap in your own values:</p>
+            <!-- Full flag set on purpose: the stamper requires every flag, so a
+                 trimmed "friendly" command errors when pasted (adversarial-audit
+                 finding, 2026-06-10). Both commands verified to run as printed. -->
+            <div class="space-y-3">
+              <div>
+                <p class="mb-1.5 text-[13px] leading-relaxed text-contrast-500"><span class="font-medium text-foreground">New idea</span> — nothing exists yet. That’s all <code class="font-mono text-[12px] text-foreground">greenfield</code> means.</p>
+                <CommandBlock command={'mkdir my-initiative && npx @nino-chavez-labs/blueprint-cli init --name=my-initiative --display-name="My Initiative" --repo-url=https://github.com/you/my-initiative --tagline="What this ships" --variant=greenfield --tier=1 --pattern=A --target=my-initiative'} client:visible />
+              </div>
+              <div>
+                <p class="mb-1.5 text-[13px] leading-relaxed text-contrast-500"><span class="font-medium text-foreground">Existing app</span> — run it from that repo. That’s <code class="font-mono text-[12px] text-foreground">brownfield</code>.</p>
+                <CommandBlock command={'npx @nino-chavez-labs/blueprint-cli init --name=my-app --display-name="My App" --repo-url=https://github.com/you/my-app --tagline="Existing app, new rigor" --variant=brownfield --tier=1 --pattern=A --target=.'} client:visible />
+              </div>
+            </div>
           </div>
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
@@ -203,7 +228,7 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Run the pipeline</h3>
             <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">In Claude Code, the stages are skills. Run them in order — each gate is enforced by a reviewer.</p>
-            <CommandBlock command="/blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy" prompt="" client:visible />
+            <CommandBlock command="/blueprint-research → /blueprint-prototype → /blueprint-validate → /blueprint-docs → /blueprint-deploy" prompt="" client:visible />
           </div>
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
@@ -232,7 +257,7 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
       <div class="mx-auto max-w-3xl">
         <p class="mb-2 font-mono text-[12px] uppercase tracking-wide text-brand-strong">reference</p>
         <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">The CLI</h2>
-        <p class="mb-10 text-contrast-500">Six commands, all real. <code class="font-mono text-[13px]">npx @nino-chavez-labs/blueprint-cli &lt;command&gt;</code> — zero install.</p>
+        <p class="mb-10 text-contrast-500">{COMMANDS.length} commands, all real. <code class="font-mono text-[13px]">npx @nino-chavez-labs/blueprint-cli &lt;command&gt;</code> — zero install.</p>
       </div>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {COMMANDS.map(([name, desc]) => (

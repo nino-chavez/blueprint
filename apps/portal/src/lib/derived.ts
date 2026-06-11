@@ -518,6 +518,93 @@ export function loadAdrCount(): number {
   return _adrCountCache;
 }
 
+// ---------- homepage receipts (methodology-source artifacts) ----------
+//
+// These read the self-application's repo-root artifacts directly (WAVE-LOG.md,
+// consumers.yml, the canonical reviewer dir) rather than a configured source:
+// they are the counts the front door claims, and a claim must derive from its
+// artifact so it cannot rot (the wave-59 stateful-claim rule). On a stamped
+// consumer the files are absent — every loader degrades to 0, same contract
+// as loadAdrCount.
+
+let _waveCountCache: number | null = null;
+
+/**
+ * Waves shipped — unique `- Wave N` list items in WAVE-LOG.md (the per-wave
+ * entry format wave-digest parses). Unique numbers, not lines, so a wave that
+ * ever grows a second line can't double-count.
+ */
+export function loadWaveCount(): number {
+  if (_waveCountCache != null) return _waveCountCache;
+  try {
+    const text = readFileSync(resolve(REPO_ROOT, 'WAVE-LOG.md'), 'utf8');
+    const waves = new Set<string>();
+    for (const m of text.matchAll(/^- Wave (\d+)\b/gm)) {
+      if (m[1]) waves.add(m[1]);
+    }
+    _waveCountCache = waves.size;
+  } catch {
+    _waveCountCache = 0;
+  }
+  return _waveCountCache;
+}
+
+let _consumerCountCache: number | null = null;
+
+/**
+ * Registered consumers — one `- repo:` list item per entry in consumers.yml,
+ * the same key template/tools/lib/consumers-registry.mjs parses. Comment lines
+ * start with `#` and never match.
+ */
+export function loadConsumerCount(): number {
+  if (_consumerCountCache != null) return _consumerCountCache;
+  try {
+    const text = readFileSync(resolve(REPO_ROOT, 'consumers.yml'), 'utf8');
+    _consumerCountCache = (text.match(/^\s*- repo:/gm) ?? []).length;
+  } catch {
+    _consumerCountCache = 0;
+  }
+  return _consumerCountCache;
+}
+
+let _reviewerCountCache: number | null = null;
+
+/**
+ * Executable reviewers — the `.mjs` halves of the paired .md-spec + .mjs set
+ * under the canonical reviewer dir: what `blueprint review --list` can run
+ * outside Claude Code.
+ */
+export function loadReviewerCount(): number {
+  if (_reviewerCountCache != null) return _reviewerCountCache;
+  try {
+    const dir = resolve(REPO_ROOT, 'template/.claude/agents/blueprint/reviewers');
+    _reviewerCountCache = readdirSync(dir).filter((f) => f.endsWith('.mjs')).length;
+  } catch {
+    _reviewerCountCache = 0;
+  }
+  return _reviewerCountCache;
+}
+
+let _reviewerSpecCountCache: number | null = null;
+
+/**
+ * Total reviewer specs — every `.md` spec in the canonical reviewer dir except
+ * the directory README. specs − executables = the judgment-heavy md-only set
+ * that runs in Claude Code as agents (the FAQ's agents-matrix split).
+ */
+export function loadReviewerSpecCount(): number {
+  if (_reviewerSpecCountCache != null) return _reviewerSpecCountCache;
+  try {
+    const dir = resolve(REPO_ROOT, 'template/.claude/agents/blueprint/reviewers');
+    _reviewerSpecCountCache = readdirSync(dir).filter(
+      (f) => f.endsWith('.md') && f.toLowerCase() !== 'readme.md'
+    ).length;
+  } catch {
+    _reviewerSpecCountCache = 0;
+  }
+  return _reviewerSpecCountCache;
+}
+
 // ---------- build order (sources.build_order) ----------
 
 export interface BuildOrderStep {

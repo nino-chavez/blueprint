@@ -1,0 +1,17 @@
+---
+import Layout from '@/layouts/Layout.astro';
+// Cloudflare Pages serves dist/404.html with a real 404 status automatically —
+// this page exists so missing routes don't soft-404 to the home page.
+---
+<Layout title="Not found" description="No page here.">
+  <section class="flex max-w-3xl flex-col items-start gap-4 py-24">
+    <p class="font-mono text-[12px] uppercase tracking-wide text-contrast-500">404</p>
+    <h1 class="font-heading text-3xl font-semibold">No page here.</h1>
+    <p class="text-contrast-500">The address is wrong or the page moved.</p>
+    <nav class="flex flex-wrap gap-x-5 gap-y-1 pt-2" aria-label="Recovery">
+      <a href="/" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">home</a>
+      <a href="/learn" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">learn</a>
+      <a href="/demo" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">demo</a>
+    </nav>
+  </section>
+</Layout>

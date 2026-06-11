@@ -1,0 +1,169 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { CommandBlock } from '@/components/CommandBlock';
+import { loadReviewerCount, loadReviewerSpecCount } from '@/lib/derived';
+
+const GH = 'https://github.com/nino-chavez/blueprint/blob/main';
+// Derived at build (wave-59 stateful-claim rule): the agents-matrix split
+// counts the reviewer dir instead of asserting literals that rot.
+const execCount = loadReviewerCount();
+const specCount = loadReviewerSpecCount();
+const mdOnlyCount = specCount - execCount;
+---
+<Layout
+  title="FAQ — the honest objections"
+  description="The honest objections to Blueprint — overhead, your own spec loop, production-readiness, Claude Code lock-in, real adoption — answered directly, each with the doc or command to check it."
+>
+  <header class="mb-10 max-w-3xl">
+    <p class="mb-2 font-mono text-xs uppercase tracking-wide text-brand">FAQ</p>
+    <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">The honest objections.</h1>
+    <p class="text-lg leading-relaxed text-contrast-500">
+      Every question below was actually raised — by stakeholders, eng leads, and the project's own
+      <a href={`${GH}/docs/content/validation-script.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">validation log</a>.
+      Each answer names the doc or command where you can check it.
+    </p>
+  </header>
+
+  <div class="max-w-3xl space-y-5">
+    <section id="overhead" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“Isn’t this just overhead?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Only at the depth you configure. Effort is a per-stage dial in
+        <code class="font-mono text-[13px] text-foreground">blueprint.yml</code> —
+        <code class="font-mono text-[13px] text-foreground">low</code> through
+        <code class="font-mono text-[13px] text-foreground">max</code> — so a demo runs lean and a launch runs thorough
+        (<a href={`${GH}/docs/decisions/ADR-0003-cost-effort-dial.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">ADR-0003</a>).
+        The only hard stop is dropping a stage below its default effort with no written justification.
+        What that buys: a confident, unverified claim can’t ride into the deliverable — fact-check blocks before deploy.
+      </p>
+    </section>
+
+    <section id="own-loop" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“I already have my own spec loop. Why switch?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Honestly: solo, don’t. A working personal loop beats a new one, and the field data says practitioners keep theirs
+        (<a href={`${GH}/docs/content/validation-script.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">validation-script.md</a>, assumption A6).
+        Blueprint earns its keep at the team seam: a shared definition of done, one pinned methodology version,
+        and <code class="font-mono text-[13px] text-foreground">blueprint fleet</code> flagging projects that drift.
+        If the build still feels fast and handoffs aren’t breaking, keep your kitchen — the adoption signal is the entropy wall in
+        <a href={`${GH}/docs/variant-selection.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">variant-selection.md</a>.
+      </p>
+    </section>
+
+    <section id="production" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“A solo run isn’t production-grade.”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Agreed — a stakeholder said exactly this, and it’s on the record
+        (<a href={`${GH}/docs/content/validation-script.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">validation-script.md</a>, assumption A7).
+        The reviewer fleet is agent gates: it checks the work product, not authority.
+        Role sign-offs — PM vets requirements, engineering vets spec and code — sit on top as your team’s process;
+        <a href={`${GH}/docs/governance/team-roles-and-conventions.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">team-roles-and-conventions.md</a>
+        is the operating model for that. Blueprint doesn’t replace approval; it makes what’s being approved verifiable first.
+      </p>
+    </section>
+
+    <section id="skipped-gates" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“What if the agent skips a gate?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Gates aren’t honor-system; they’re processes with exit codes.
+        <code class="font-mono text-[13px] text-foreground">blueprint review &lt;name&gt; --target=&lt;dir&gt;</code> fails CI like any other check,
+        and <code class="font-mono text-[13px] text-foreground">blueprint doctor</code> exits non-zero when its checks fail.
+        Running a stage below its default effort requires a written justification
+        (<code class="font-mono text-[13px] text-foreground">skip_justification</code> in
+        <code class="font-mono text-[13px] text-foreground">blueprint.yml</code>), and the cost-gate reviewer raises a blocking finding when it’s missing
+        (<a href={`${GH}/docs/decisions/ADR-0003-cost-effort-dial.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">ADR-0003</a>).
+      </p>
+    </section>
+
+    <section id="agents-matrix" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“Does this only work with Claude Code?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        No — most of the gates are plain Node scripts. {execCount} of the {specCount} reviewer gates ship as executable
+        <code class="font-mono text-[13px] text-foreground">.mjs</code> and run from any terminal or CI;
+        {mdOnlyCount} judgment-heavy reviews and the stage skills need Claude Code.
+        <code class="font-mono text-[13px] text-foreground">blueprint review --list</code> prints the executable set;
+        the <code class="font-mono text-[13px] text-foreground">.md</code>-only specs sit beside them in
+        <a href={`${GH}/template/.claude/agents/blueprint/reviewers`} target="_blank" rel="noreferrer" class="text-brand hover:underline">the reviewer directory</a>.
+      </p>
+      <table class="mt-4 w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-contrast-200 font-mono text-[10px] uppercase tracking-wide text-contrast-400">
+            <th class="py-2 pr-4 font-medium">Capability</th>
+            <th class="py-2 font-medium">Where it runs</th>
+          </tr>
+        </thead>
+        <tbody class="text-contrast-500">
+          <tr class="border-b border-contrast-100">
+            <td class="py-2 pr-4">{execCount} of {specCount} reviewer gates (executable <code class="font-mono text-[13px] text-foreground">.mjs</code>)</td>
+            <td class="py-2">Any terminal or CI — <code class="font-mono text-[13px] text-foreground">blueprint review &lt;name&gt;</code></td>
+          </tr>
+          <tr class="border-b border-contrast-100">
+            <td class="py-2 pr-4">{mdOnlyCount} judgment-heavy reviewer specs (<code class="font-mono text-[13px] text-foreground">.md</code> only)</td>
+            <td class="py-2">Claude Code, as agents</td>
+          </tr>
+          <tr class="border-b border-contrast-100">
+            <td class="py-2 pr-4">The CLI — <code class="font-mono text-[13px] text-foreground">init · review · cost · fleet · upgrade · doctor · hive</code></td>
+            <td class="py-2">Any terminal, Node 18+</td>
+          </tr>
+          <tr>
+            <td class="py-2 pr-4">Stage skills (<code class="font-mono text-[13px] text-foreground">/blueprint-research</code> → <code class="font-mono text-[13px] text-foreground">/blueprint-deploy</code>)</td>
+            <td class="py-2">Claude Code</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="cost-to-try" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“What does it cost to try?”</h2>
+      <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">
+        One command, nothing persistent. <code class="font-mono text-[13px] text-foreground">npx</code> runs the CLI
+        without installing it; there’s no server, no account, nothing to sign up for.
+        The scaffold it writes is MIT-licensed and lives in your repo — deleting the directory is the whole uninstall.
+        The flags brand your scaffold; swap in your own values — the command runs as printed.
+      </p>
+      <CommandBlock command={'mkdir my-initiative && npx @nino-chavez-labs/blueprint-cli init --name=my-initiative --display-name="My Initiative" --repo-url=https://github.com/you/my-initiative --tagline="What this ships" --variant=greenfield --tier=1 --pattern=A --target=my-initiative'} client:visible />
+    </section>
+
+    <section id="adoption" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“Is anyone actually using this?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Less than the polish implies. One external team engagement is in flight — a partner solutions architect running a
+        real client build on it — and the registry
+        (<a href={`${GH}/consumers.yml`} target="_blank" rel="noreferrer" class="text-brand hover:underline">consumers.yml</a>)
+        holds one independent external adopter; the rest is the author’s own projects.
+        <code class="font-mono text-[13px] text-foreground">blueprint fleet</code> prints the live
+        count, so no number here can rot. Every methodology change is public in
+        <a href={`${GH}/WAVE-LOG.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">WAVE-LOG.md</a>,
+        and the demand assumptions — including the disconfirmed ones — are written down in
+        <a href={`${GH}/docs/content/validation-script.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">validation-script.md</a>.
+      </p>
+    </section>
+
+    <section id="better-prompts" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“Why not just better prompts?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Prompts don’t leave receipts. A good prompt produces a good artifact once; nothing records why, and the next
+        session re-derives it or quietly contradicts it. Blueprint’s stages emit artifacts that cite each other —
+        research feeds decisions, decisions are recorded where the prototype can cite them, and fact-check verifies
+        claims against source before anything ships
+        (<a href={`${GH}/METHODOLOGY.md`} target="_blank" rel="noreferrer" class="text-brand hover:underline">METHODOLOGY.md</a>).
+        Six months later, “why is it built this way” has a paper trail.
+      </p>
+    </section>
+
+    <section id="updates" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“What happens when the methodology updates?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        It asks before it touches anything. <code class="font-mono text-[13px] text-foreground">blueprint upgrade</code> is
+        dry-run by default — it reads the methodology version your project pins, shows what changed, and writes only when
+        you confirm. <code class="font-mono text-[13px] text-foreground">blueprint fleet</code> reports which projects have
+        fallen behind, so drift is visible instead of silent.
+      </p>
+    </section>
+  </div>
+
+  <p class="mt-10 max-w-3xl text-[15px] leading-relaxed text-contrast-500">
+    Objections handled? <a href="/demo" class="font-medium text-brand hover:underline">Watch it run</a> on the live demo,
+    or <a href="/learn" class="font-medium text-brand hover:underline">start at Learn</a> and run it yourself.
+  </p>
+</Layout>

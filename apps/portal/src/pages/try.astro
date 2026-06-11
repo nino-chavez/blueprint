@@ -1,73 +1,80 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { LiveIframe, StatusBadge, type Status } from '@blueprint/ui';
-import { TryNav } from '@/components/TryNav';
-import { portalConfig } from '@/lib/portal-config';
 
-const { surfaces, features } = portalConfig();
-
-// Surfaces are declared in blueprint.yml's portal.surfaces and resolved to a
-// generic shape here. A freshly-stamped Tier-0 portal has no surfaces → empty
-// state. : add live-demo surfaces under portal.surfaces.
-const VALID_STATUS: Status[] = ['ready', 'partial', 'missing', 'not-applicable', 'planned'];
-const SURFACES = surfaces.map((s: any, i: number) => ({
-  id: typeof s?.id === 'string' && s.id.length > 0 ? s.id : `surface-${i}`,
-  label: typeof s?.label === 'string' ? s.label : '',
-  src: typeof s?.src === 'string' ? s.src : '',
-  note: typeof s?.note === 'string' ? s.note : '',
-  status: (VALID_STATUS.includes(s?.status) ? s.status : 'planned') as Status,
-}));
+// Bespoke "see it work" page (decisions/02-portal-bespoke-product-site.md).
+// The stamped Pattern A surface this replaced iframed THIS SAME SITE back into
+// itself and taught blueprint.yml plumbing on a first-touch page — both wrong
+// for a product site. The demo reel is the proof surface now; the live
+// instance card and /learn carry the onward path.
 ---
-<Layout title="Try" description="See it work — open the live surfaces configured for this initiative.">
-  <header class="mb-6 max-w-3xl">
+<Layout title="Try" description="See it work — watch the demo, poke the live instance, then run it yourself.">
+  <header class="mb-10 max-w-3xl">
     <p class="mb-2 font-mono text-xs uppercase tracking-wide text-success">Try</p>
     <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">
       See it work.
     </h1>
     <p class="text-lg leading-relaxed text-contrast-500">
-      Live surfaces for this initiative — deployed prototypes, demos, and reference
-      designs you can open and click through. Surfaces are declared in
-      <code class="font-mono text-[14px]">blueprint.yml</code> under
-      <code class="font-mono text-[14px]">portal.surfaces</code>.
+      Watch the pipeline run, then poke the live instance. Everything here is
+      real output — real CLI transcripts, real artifacts, no mockups.
     </p>
   </header>
 
-  <TryNav currentPath={Astro.url.pathname} />
-
-  {features.surfaces ? (
-    <section class="grid gap-8">
-      {SURFACES.map((surface) => (
-        <article aria-labelledby={`surface-${surface.id}-heading`} class="flex flex-col gap-3">
-          <header class="flex items-end justify-between gap-3">
-            <div>
-              <h2
-                id={`surface-${surface.id}-heading`}
-                class="font-heading text-xl font-semibold tracking-tight"
-              >
-                {surface.label || surface.id}
-              </h2>
-              {surface.note && (
-                <p class="mt-1 max-w-3xl text-sm text-contrast-500">{surface.note}</p>
-              )}
-            </div>
-            <StatusBadge status={surface.status} />
-          </header>
-          <LiveIframe src={surface.src} title={surface.label || surface.id} height="540px" />
-        </article>
-      ))}
-    </section>
-  ) : (
-    <section class="rounded-lg border border-contrast-200 bg-contrast-100/30 p-5">
+  <section aria-label="Watch the demo" class="grid gap-4 sm:grid-cols-2">
+    <a
+      href="/demo"
+      class="group block rounded-lg border border-contrast-200 bg-background p-6 transition-colors hover:border-brand/60"
+    >
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">watch</p>
+      <h2 class="mb-1.5 font-heading text-xl font-semibold tracking-tight text-foreground group-hover:text-brand">
+        The 35-second cut →
+      </h2>
       <p class="text-sm leading-relaxed text-contrast-500">
-        No live demo is configured for this initiative. Add entries under
-        <code class="font-mono text-[13px]">portal.surfaces</code> in
-        <code class="font-mono text-[13px]">blueprint.yml</code> — each with an
-        <code class="font-mono text-[13px]">id</code>,
-        <code class="font-mono text-[13px]">label</code>,
-        <code class="font-mono text-[13px]">src</code>, and optional
-        <code class="font-mono text-[13px]">status</code> — to embed deployed
-        surfaces here.
+        Autoplays the whole pipeline — set up a project, run the gates, ship with
+        receipts — from real transcripts.
       </p>
-    </section>
-  )}
+    </a>
+    <a
+      href="/demo?reel=deep"
+      class="group block rounded-lg border border-contrast-200 bg-background p-6 transition-colors hover:border-brand/60"
+    >
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">watch</p>
+      <h2 class="mb-1.5 font-heading text-xl font-semibold tracking-tight text-foreground group-hover:text-brand">
+        The step-through walkthrough →
+      </h2>
+      <p class="text-sm leading-relaxed text-contrast-500">
+        The same run at reading pace — step through each stage and the artifacts
+        it leaves behind.
+      </p>
+    </a>
+  </section>
+
+  <section aria-label="The live instance" class="mt-4 grid gap-4 sm:grid-cols-2">
+    <div class="rounded-lg border border-contrast-200 bg-background p-6">
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">live</p>
+      <h2 class="mb-1.5 font-heading text-xl font-semibold tracking-tight text-foreground">
+        This very site is the live instance.
+      </h2>
+      <p class="mb-4 text-sm leading-relaxed text-contrast-500">
+        Blueprint built the site you are reading — same pipeline, same gates. The
+        decisions and fact-checks behind it are public.
+      </p>
+      <div class="flex flex-wrap gap-x-5 gap-y-2 font-mono text-[12px] uppercase tracking-wide">
+        <a href="/" class="text-brand hover:underline">The homepage →</a>
+        <a href="/inspect" class="text-brand hover:underline">The receipts →</a>
+      </div>
+    </div>
+    <a
+      href="/learn/getting-started"
+      class="group block rounded-lg border border-contrast-200 bg-background p-6 transition-colors hover:border-brand/60"
+    >
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">run</p>
+      <h2 class="mb-1.5 font-heading text-xl font-semibold tracking-tight text-foreground group-hover:text-brand">
+        Run it yourself →
+      </h2>
+      <p class="text-sm leading-relaxed text-contrast-500">
+        One command scaffolds your own initiative — nothing to install, no server
+        to stand up.
+      </p>
+    </a>
+  </section>
 </Layout>

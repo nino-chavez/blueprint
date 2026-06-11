@@ -19,23 +19,25 @@ The on-ramp for running Blueprint for the first time. Five minutes to a scaffold
   npx @nino-chavez-labs/blueprint-cli <command>
   ```
 
-  The binary is `blueprint`. Current version is `0.1.0`.
+  The binary is `blueprint`. `npm view @nino-chavez-labs/blueprint-cli version` shows the latest published version — releases ship continuously, so check npm rather than this page.
 
-- **A target directory** for the new initiative — an absolute path where the portal gets stamped (e.g. `~/projects/my-project`).
+- **A target directory** for the new initiative — an absolute path where the portal gets stamped (e.g. `~/projects/my-project`). Create it first (`mkdir`) — the stamper requires the directory to exist.
 - **A browser sensor**, only when you reach Stage 0 legibility against a running prototype. The default is `browse-tool`; wire it later, not now. Skip it for scaffolding.
 
 Verify the install:
 
 ```bash
-blueprint --version    # -> 0.1.0
+blueprint --version    # prints the installed version
 blueprint --help
 ```
+
+If the installed version trails `npm view @nino-chavez-labs/blueprint-cli version`, reinstall before continuing.
 
 ## 2. The mental model
 
 Blueprint runs a **7-stage pipeline**: Legibility (0) -> Research (1) -> Design Principles (2) -> Prototype (3) -> Fact-Check (4) -> Documents (5) -> Deploy (6), with Iterate (7) after stakeholders see it. Each stage gate is an **executable reviewer** — `research-completeness-reviewer`, `doc-quality-auditor`, `prototype-smoke-runner`, and the rest — that has to PASS before the next stage unblocks. You drive the producing stages with slash-command skills: `/blueprint-research`, `/blueprint-prototype`, `/blueprint-validate`, `/blueprint-docs`, `/blueprint-deploy`, `/blueprint-triage`.
 
-Before any of that, three orthogonal choices set the shape of the work. **Variant** is what you're doing: Greenfield (build a north-star prototype), Midstream (revise a live in-flight product), or Brownfield (audit + prescribe against a mature product). **Tier** is how far you've gone: Tier 0 (pre-portal scratch, <=1 week), Tier 1 (a portal exists — the default starting point), Tier 2 (portal plus live product surfaces). **Pattern** is the portal's IA: Pattern A (platform-portal, multi-surface product with a 6-route contract and an audience switcher) or Pattern B (redesign-review-portal, current-state-vs-proposed comparison for a brownfield audit). Pick variant, tier, and pattern before you scaffold — the wrong pattern forces a rebuild.
+Before any of that, three orthogonal choices set the shape of the work. **Variant** is what you're doing: Greenfield (build a north-star prototype), Midstream (revise a live in-flight product), or Brownfield (audit + prescribe against a mature product). **Tier** is how far you've gone: Tier 0 (pre-portal scratch, <=1 week), Tier 1 (a portal exists — the default starting point), Tier 2 (portal plus live product surfaces). **Pattern** is the portal's IA: Pattern A (platform-portal, multi-surface product with a fixed route contract and an audience switcher) or Pattern B (redesign-review-portal, current-state-vs-proposed comparison for a brownfield audit). Pick variant, tier, and pattern before you scaffold — the wrong pattern forces a rebuild.
 
 ## 3. Install and scaffold your first portal
 
@@ -71,7 +73,7 @@ After the stamp runs, the output reports three things:
 - **stamped (text + substitutions applied)** — every file where the source slug was replaced with your `--name` / `--display-name` / `--repo-url`.
 - **mechanical check: PASS** — the post-stamp grep found no unexpected residual source strings. If it fails, it lists the residuals as a stamper bug, not your problem to patch.
 
-The target directory now holds a **Tier 1 Pattern A portal**: the `apps/portal/` Astro + React shell (canonical 6-route IA — overview, discover, try, build, operate, inspect, roadmap), the `packages/` workspace it consumes (`@blueprint/ui`, `@blueprint/design-tokens`), and a stamped `blueprint.yml` declaring your variant, tier, and pattern. Content is placeholder by design — Tier 1 means the front door exists, not that it's filled in.
+The target directory now holds a **Tier 1 Pattern A portal**: the `apps/portal/` Astro + React shell (canonical IA — overview, discover, try, build, operate, inspect, roadmap), the `packages/` workspace it consumes (`@blueprint/ui`, `@blueprint/design-tokens`), and a stamped `blueprint.yml` declaring your variant, tier, and pattern. Content is placeholder by design — Tier 1 means the front door exists, not that it's filled in.
 
 Sanity-check the scaffold without building or deploying anything:
 
@@ -81,6 +83,12 @@ blueprint doctor --target=~/projects/my-project
 
 `doctor` loads the config, every discovered reviewer, and runs portal conformance, then tells you what it did **not** check (full build, browser verification, deploy connectivity) so a green here is never mistaken for a deploy green.
 
-## Next: the full run
+## Where to next
 
-Scaffolding is Stage 0-to-1 plumbing. The **Tutorial** walks the whole pipeline end to end — `/blueprint-research` through each reviewer gate to `/blueprint-deploy` — on a real initiative. Start there once `blueprint doctor` reports PASS.
+Scaffolding is Stage 0-to-1 plumbing. The **[Tutorial](/learn/tutorial)** walks the whole pipeline end to end — every stage, every reviewer gate, deploy, verify — but on the *other* path: an existing-product redesign (Pattern B, the lighter review portal), which exercises every gate without scaffolding in the way. That is deliberate, not a mismatch with what you just built.
+
+Your freshly stamped full-site workspace (Pattern A) follows the same stages. Run the same skills in the same order against it — `/blueprint-research`, `/blueprint-prototype`, `/blueprint-validate`, `/blueprint-docs`, `/blueprint-deploy` — and the tutorial's stage sections map 1:1. Only the tutorial's "Scaffold the portal" step doesn't apply; `blueprint init` already did that for you.
+
+Prefer watching first? The [demo](/demo?reel=deep) shows that exact flow compressed into a step-through walkthrough.
+
+Start the Tutorial once `blueprint doctor` reports PASS.

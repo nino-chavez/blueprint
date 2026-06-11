@@ -6,12 +6,14 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/lint-copy.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "typecheck": "astro check"
   },
   "dependencies": {
     "@astrojs/react": "^4.0.0",
+    "@astrojs/sitemap": "^3.7.3",
     "@blueprint/design-tokens": "*",
     "@blueprint/gate-derive": "*",
     "@blueprint/ui": "*",

@@ -35,6 +35,18 @@ export interface Props {
 const { title, description } = Astro.props;
 const currentPath = Astro.url.pathname;
 const fullTitle = title === PROJECT_NAME ? title : `${title} — ${PROJECT_NAME}`;
+// Astro.site is set in astro.config.mjs (the Cloudflare Pages production
+// origin); unfurl crawlers need absolute URLs, so canonical + og:image
+// resolve against it rather than the request path.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const ogDescription = description ?? PROJECT_TAGLINE;
+const ogImage = new URL('/project-logo.png', Astro.site);
+// Cloudflare Web Analytics (cookieless RUM). The token is a PUBLIC client-side
+// site tag, safe to commit. Empty string = beacon omitted from the build.
+// One manual step to activate: CF dashboard → Web Analytics → Add site
+// (blueprint-platform.pages.dev) → paste the token here. The account-ops API
+// token can list but not create RUM sites, so this can't be automated yet.
+const CF_BEACON_TOKEN = '';
 const config = portalConfig();
 const repoUrl = config.repoUrl;
 const archaeologySuggestions = config.archaeology.suggestions;
@@ -48,12 +60,31 @@ const archaeologySuggestions = config.archaeology.suggestions;
     <title>{fullTitle}</title>
     <link rel="icon" type="image/svg+xml" href="/project-logo.svg" />
     {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content={PROJECT_NAME} />
+    <meta property="og:image" content={ogImage} />
+    {/* summary, not summary_large_image: the only share asset is the square
+        512x512 project-logo.png — no wide card image exists yet. */}
+    <meta name="twitter:card" content="summary" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     />
+    {CF_BEACON_TOKEN && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={JSON.stringify({ token: CF_BEACON_TOKEN })}
+      />
+    )}
   </head>
   <body class="min-h-screen bg-background text-foreground antialiased">
     <Shell.Root>
@@ -71,6 +102,8 @@ const archaeologySuggestions = config.archaeology.suggestions;
           {repoUrl && (
             <p class="font-mono text-[12px] uppercase tracking-wide text-contrast-500">
               <a href={repoUrl} target="_blank" rel="noreferrer" class="hover:text-brand">github ↗</a>
+              {' · '}
+              <a href="https://github.com/nino-chavez/blueprint/releases" target="_blank" rel="noreferrer" class="hover:text-brand">releases ↗</a>
             </p>
           )}
         </div>

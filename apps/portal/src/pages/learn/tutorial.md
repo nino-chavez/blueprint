@@ -12,6 +12,8 @@ Brownfield is the common case. Your product already ships to real users; the wor
 
 Running example throughout: **`acme-checkout`** — an existing e-commerce checkout flow that converts poorly. The team wants to redesign it and needs leadership, engineering, and reviewers all looking at the same evidence.
 
+**Coming from [Getting Started](/learn/getting-started)?** That page stamped you a Pattern A workspace — the full project site. This tutorial deliberately walks Pattern B, the lighter review portal for an existing-product redesign, because it exercises every reviewer gate without scaffolding in the way. The pipeline is the same. If you're holding a Pattern A scaffold, the stage sections below map 1:1 — run the same skills in the same order against your own workspace, and skip the "Scaffold the portal" copy step (`blueprint init` already did it).
+
 ---
 
 ## Before you start
@@ -285,7 +287,7 @@ Both PASS unblocks Stage 6.
 /blueprint-deploy
 ```
 
-**The agent does:** copies the HTML doc files to `prototype/docs-*.html`, updates the landing page, runs `cd prototype && vercel --prod`, then opens the deployed URL and verifies all doc links work, all prototype pages load, strategy panels open, current-state panels show the correct screenshots, footer navigation works, and the chat widget connects.
+**The agent does:** copies the HTML doc files to `prototype/docs-*.html`, updates the landing page, and pushes `prototype/` to your static host — the portal is plain static files, so any static host works and the methodology does not care which. Cloudflare Pages is the example this very site uses (`cd prototype && npx wrangler pages deploy .`); on Vercel the equivalent is `cd prototype && vercel --prod`. It then opens the deployed URL and verifies all doc links work, all prototype pages load, strategy panels open, current-state panels show the correct screenshots, footer navigation works, and the chat widget connects.
 
 **Artifact:** the deployed URL — the primary deliverable. Share this one link with all stakeholders.
 

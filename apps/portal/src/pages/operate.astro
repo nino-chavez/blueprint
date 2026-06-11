@@ -1,76 +1,73 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import { CommandBlock } from '@/components/CommandBlock';
 import { portalConfig } from '@/lib/portal-config';
 
 const cfg = portalConfig();
-
-interface OperateItem {
-  title: string;
-  description: string;
-  href?: string;
-  status?: string;
-}
 
 interface PlannedItem {
   title: string;
   description: string;
 }
 
-// Operational playbooks come from blueprint.yml's portal.operate block.
-// : list available runbooks under operate.items and
-// upcoming guides under operate.planned. Empty at Tier-0.
-const items: OperateItem[] = cfg.operate.items.map((i: any) => ({
-  title: String(i?.title ?? ''),
-  description: String(i?.description ?? ''),
-  href: i?.href ? String(i.href) : undefined,
-  status: i?.status ? String(i.status) : 'Available',
-}));
+// Bespoke day-2 page (decisions/02-portal-bespoke-product-site.md). The
+// config-driven operate.items list was dropped here: every configured entry
+// restated a homepage command card. The homepage owns the command reference;
+// this page owns the cadence — when you run upgrade, fleet, and doctor.
+// Planned items still come from blueprint.yml's portal.operate.planned —
+// forward-looking, no homepage overlap.
 const planned: PlannedItem[] = cfg.operate.planned.map((p: any) => ({
   title: String(p?.title ?? ''),
   description: String(p?.description ?? ''),
 }));
 ---
-<Layout title="Operate" description="Use it day-to-day. Operational playbooks and runbooks.">
+<Layout title="Operate" description="Day-2 operations — upgrade cadence, fleet drift, conformance in CI.">
   <header class="mb-10 max-w-3xl">
     <p class="mb-2 font-mono text-xs uppercase tracking-wide text-warning">Operate</p>
     <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">
-      Use it day-to-day.
+      Keep it current. Keep it honest.
     </h1>
     <p class="text-lg leading-relaxed text-contrast-500">
-      The operational layer for after the demo is over — onboarding guides, runbooks, and day-to-day playbooks. <strong class="font-medium text-foreground">Typically the thinnest lane.</strong> Authored playbooks land here as operational scenarios graduate into structured guides.
+      The day-2 layer — what you run after the first initiative ships. The
+      homepage covers what each command does; this page covers when to run them.
     </p>
   </header>
 
-  <section class="mt-10">
-    <h2 class="mb-3 font-heading text-lg font-semibold tracking-tight">What's available today</h2>
-    {items.length > 0 ? (
-      <ul class="space-y-2">
-        {items.map((item) => (
-          <li class="flex items-baseline gap-3 rounded-lg border border-contrast-200 bg-background p-4">
-            <span class="font-mono text-[10px] uppercase tracking-wide text-success-foreground">{item.status}</span>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-foreground">{item.title}</p>
-              {item.description && <p class="text-xs text-contrast-500">{item.description}</p>}
-            </div>
-            {item.href && (
-              <a href={item.href} target="_blank" rel="noreferrer" class="shrink-0 font-mono text-[11px] uppercase tracking-wide text-brand hover:underline">open ↗</a>
-            )}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <div class="rounded-lg border border-dashed border-contrast-300 bg-background p-5">
-        <p class="mb-1 font-mono text-[10px] uppercase tracking-wide text-contrast-400">Not configured</p>
-        <p class="text-sm leading-relaxed text-contrast-500">
-          No operational playbooks are configured for this initiative yet. Playbooks land here as operational scenarios graduate into structured guides — add them to <code class="font-mono text-xs">blueprint.yml</code> under <code class="font-mono text-xs">portal.operate.items</code>.
-        </p>
-      </div>
-    )}
+  <section aria-label="Day-2 operations" class="space-y-6">
+    <article class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">Upgrade on your schedule</h2>
+      <p class="mb-4 text-[15px] leading-relaxed text-contrast-500">
+        When a new methodology version ships, <code class="font-mono text-[13px] text-foreground">upgrade</code>
+        shows what changed before touching anything — dry-run by default, non-breaking by design.
+        Previewing costs nothing, so run it whenever you sit back down on a project.
+      </p>
+      <CommandBlock command="npx @nino-chavez-labs/blueprint-cli upgrade" client:visible />
+    </article>
+
+    <article class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">Watch the fleet</h2>
+      <p class="mb-4 text-[15px] leading-relaxed text-contrast-500">
+        Running Blueprint on more than one project, <code class="font-mono text-[13px] text-foreground">fleet</code>
+        is one report across all of them: which are current, which have fallen behind.
+        Check it before starting new work, not after something drifts.
+      </p>
+      <CommandBlock command="npx @nino-chavez-labs/blueprint-cli fleet" client:visible />
+    </article>
+
+    <article class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">Put doctor in CI</h2>
+      <p class="mb-4 text-[15px] leading-relaxed text-contrast-500">
+        <code class="font-mono text-[13px] text-foreground">doctor</code> loads the config, every
+        reviewer, and the portal — and says what it didn't check. Wire it into CI so drift
+        fails the build instead of surfacing in a stakeholder demo.
+      </p>
+      <CommandBlock command="npx @nino-chavez-labs/blueprint-cli doctor" client:visible />
+    </article>
   </section>
 
   {planned.length > 0 && (
-    <section class="mt-8">
-      <h2 class="mb-3 font-heading text-lg font-semibold tracking-tight">Planned playbooks</h2>
+    <section class="mt-10">
+      <h2 class="mb-3 font-heading text-lg font-semibold tracking-tight">Planned</h2>
       <div class="grid gap-3 md:grid-cols-2">
         {planned.map((p) => (
           <div class="rounded-lg border border-dashed border-contrast-300 bg-background p-4">
@@ -82,4 +79,10 @@ const planned: PlannedItem[] = cfg.operate.planned.map((p: any) => ({
       </div>
     </section>
   )}
+
+  <p class="mt-10 text-[15px] leading-relaxed text-contrast-500">
+    Haven't shipped a first initiative yet? Start at
+    <a href="/learn" class="font-medium text-brand hover:underline">Learn</a> —
+    getting started, the full tutorial, and role-routed paths.
+  </p>
 </Layout>
