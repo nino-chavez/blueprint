@@ -161,3 +161,27 @@ Combined with the phase filter (Phase 1 = 100% prototype coverage), the matrix a
 This pattern is only as good as the `_state.json` refresh cadence. In `subs-initiative`, state-derive runs on every push to main via `derive-state-on-main.yml`. The registry generator also runs on every push (via a separate workflow). Both outputs commit back to the repo so the traceability matrix at `private-demo.example/traceability` always reflects HEAD.
 
 Wire the same two workflows in your initiative at bootstrap time, not as an afterthought.
+
+### Gotcha: `[skip ci]` rederives silently starve the dashboards
+
+The rederive-and-commit workflow commits its derived outputs with **`[skip ci]`** in the message — deliberately, to avoid retriggering itself and racing parallel pushes. But `[skip ci]` suppresses **every** push-triggered workflow for that commit, including the **dashboard deploys** whose path filters include the very derived files (`_state.json`, `_board.json`) the dashboards read.
+
+The result is a silent staleness loop: the rederive *updates the committed state the dashboard reads*, but the dashboard *never rebuilds* — so it lags every release until some unrelated push to a dashboard path happens to fire its deploy. The dashboard looks authoritative while showing pre-release numbers. (Observed: a register-consuming "look under the hood" page stuck several rederives behind, showing a stale ADR count and pre-flip gate statuses.)
+
+**Fix — the rederive that *causes* the staleness explicitly re-triggers the deploys.** Add a final step to the rederive workflow, gated on "state actually changed", that calls `workflow_dispatch` on each dashboard deploy (which `[skip ci]` does *not* gate, since it's an explicit API call, not a push event):
+
+```yaml
+permissions:
+  actions: write          # to re-trigger the dashboard deploys
+# … after the [skip ci] commit + push …
+- name: Re-trigger dashboard deploys (state changed → dashboards must rebuild)
+  if: steps.diff.outputs.changed == 'true'
+  continue-on-error: true   # a deploy-trigger failure must not fail the derive
+  env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+  run: |
+    for wf in deploy-portal.yml deploy-program.yml; do
+      gh workflow run "$wf" --ref main || echo "::warning::could not trigger $wf"
+    done
+```
+
+Corollary: **give the rederive workflow a `workflow_dispatch` trigger** so it (and thus the whole derive→deploy chain) can be forced on demand — otherwise an operator who needs the dashboards current *now* has no lever but a no-op commit.
