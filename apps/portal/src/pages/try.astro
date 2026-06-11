@@ -48,9 +48,9 @@ import Layout from '@/layouts/Layout.astro';
     </a>
   </section>
 
-  <section aria-label="The live instance" class="mt-4 grid gap-4 sm:grid-cols-2">
+  <section aria-label="The live instance" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     <div class="rounded-lg border border-contrast-200 bg-background p-6">
-      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">live</p>
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">live · this site</p>
       <h2 class="mb-1.5 font-heading text-xl font-semibold tracking-tight text-foreground">
         This very site is the live instance.
       </h2>
@@ -63,6 +63,22 @@ import Layout from '@/layouts/Layout.astro';
         <a href="/inspect" class="text-brand hover:underline">The receipts →</a>
       </div>
     </div>
+    <a
+      href="https://blueprint.rallyhq.app/"
+      target="_blank"
+      rel="noopener"
+      class="group block rounded-lg border border-contrast-200 bg-background p-6 transition-colors hover:border-brand/60"
+    >
+      <p class="mb-2 font-mono text-[11px] uppercase tracking-wide text-brand-strong">live · a real product</p>
+      <h2 class="mb-1.5 font-heading text-xl font-semibold tracking-tight text-foreground group-hover:text-brand">
+        On a product that already shipped ↗
+      </h2>
+      <p class="text-sm leading-relaxed text-contrast-500">
+        Rally HQ is a working tournament platform. Blueprint wrapped it as a
+        brownfield consumer — the same gates, applied to code already in
+        production. Its portal — research, decisions, prototype — is public.
+      </p>
+    </a>
     <a
       href="/learn/getting-started"
       class="group block rounded-lg border border-contrast-200 bg-background p-6 transition-colors hover:border-brand/60"
