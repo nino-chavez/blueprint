@@ -1,5 +1,14 @@
 # Competitive positioning — Blueprint vs the spec-first field
 
+> **Historical snapshot — pre-landscape-verification state (2026-06-06).** Claims
+> below were accurate at capture. An internal re-read on 2026-06-11 found the
+> self-describing claims stale — CLI v0.1.0 → 0.3.0 live on npm, 12 → 15 executable
+> reviewers, and external adoption is no longer singular (a team engagement
+> post-dates this doc) — and a Claude-native blind spot: BMAD is named three times
+> but never analyzed, and GSD, OpenSpec, and Superpowers are absent entirely. The
+> verified June 2026 landscape lives in `03-sdd-landscape-2026-06.md`. The body
+> below is an evidence snapshot — left unrewritten.
+
 **Stage 1 deliverable (competitive analysis), produced by applying Blueprint's own
 research pipeline to itself, 2026-06-06.** Method: parallel web research on the
 field + repo-grounded capability extraction + an adversarial critique pass that

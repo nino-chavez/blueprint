@@ -1,18 +1,40 @@
-# Launch posts — Show HN, r/ClaudeAI, lobste.rs
+# Launch posts — HN, r/ClaudeAI (+ r/ClaudeCode), lobste.rs
 
-Drafts for the first public launch round, written 2026-06-11. Every claim in
-these drafts is checkable against the repo at time of writing; if you edit,
-keep the adoption honesty intact — overclaiming here poisons the one asset
-the project has (receipts). Voice: plain and technical per venue norms;
-vulnerable competence only where grounded (the disconfirmed assumptions are
-real, in `validation-script.md`).
+Drafts for the first public launch round, rewritten 2026-06-11 around the
+comparison-led angle. The reception research (4-lens, 2026-06-11) was blunt:
+methodology launches have a median of 2 points on HN (n=892 comparables;
+BMAD went 0-for-8 submissions; GitHub's own Spec Kit needed ~20 attempts for
+one 84-point hit), while ANALYSIS of the field outperforms the field
+(Fowler's SDD-tools piece: 128 points; the "Waterfall Strikes Back" critique:
+225). So the lead artifact is not Blueprint — it is the comparison page at
+`/compare`: a dated, source-cited read of how 14 spec-driven dev tools
+implement their gates, with Blueprint as one disclosed row among them.
+
+Honesty rules for every draft below (these are the asset; do not trade them):
+
+- Every competitor claim traces to a source the research actually read —
+  their repo file, README, or a cited vendor page. Nothing asserted beyond it.
+- Competitors get their best feature named generously: GSD's adversarial
+  verifier, Kiro's property-based testing, OpenSpec's visible dogfooding,
+  BMAD's breadth, Spec Kit's reach. Generosity is the credibility mechanism.
+- Blueprint's row carries its own caveats: stage skills are Claude Code only;
+  adoption is one team engagement in flight plus one independent adopter; the
+  gates verify artifacts and copy — they do not make the work good.
+- Everything is a dated snapshot ("sources read 2026-06-11", star counts
+  approximate) with a corrections-welcome line pointing at GitHub issues.
+- Wording trap, never violate: Spec Kit's `check-prerequisites.sh` IS an
+  exit-code gate — on artifact file EXISTENCE. Blueprint's claim is
+  "executable gates on artifact CONTENT and evidence", never "the only
+  executable gates."
 
 **Pre-flight (do before posting anywhere):**
 
 1. Paste the CF Web Analytics token into `Layout.astro` `CF_BEACON_TOKEN`
    and deploy — launch attention is a one-time spike; unmeasured, it's gone.
-2. Sanity-pass the live site one more time: `/`, `/demo`, `/faq`, quickstart
-   commands.
+2. Sanity-pass the live site: `/`, `/demo`, `/faq`, `/compare`, quickstart
+   commands. On `/compare` specifically: every competitor row cites its
+   source file, the snapshot date reads 2026-06-11, and the Blueprint row
+   carries its caveats.
 3. Block 3–4 hours after each post to answer comments. Fast, non-defensive
    replies are most of the outcome.
 
@@ -23,136 +45,206 @@ notice.
 
 ---
 
-## 1. Show HN
+## 1. HN (regular submission, NOT Show HN)
 
-**Title** (plain, no superlatives — HN strips/penalizes marketing):
+This is a link submission of the comparison page, not a Show HN of the
+methodology. The research is unambiguous: none of the 50+ point winners in
+the space led with "methodology", "framework", or "spec-driven" as the title
+noun, and commentary about the field outscores the field's tools.
 
-> Show HN: Blueprint – executable stage gates for AI-assisted product work
+**Title** (plain, falsifiable, no "methodology"/"framework"):
 
-**URL:** `https://blueprint.ninochavez.co`
+> I read how 14 spec-driven dev tools' gates actually work
 
-**Text field:** leave empty; post the author comment below immediately after
-submitting (first-comment convention).
+**URL:** `https://blueprint.ninochavez.co/compare`
 
-**Author comment:**
+**Author comment** (post immediately after submitting):
 
-> Author here. Blueprint started as a private rule-set after AI-assisted
-> projects kept failing the same way for me: work that looked finished and
-> didn't hold up — confident claims nobody verified, decisions nobody wrote
-> down.
+> Author here, with the disclosure first: I built a 15th tool in this
+> category — Blueprint, the last row on the page — so discount that row
+> accordingly. The page cites every competitor's source file so you can
+> check me.
 >
-> It's a methodology plus a CLI (MIT, on npm). The agent does the building —
-> Claude Code today, though 15 of the 18 reviewer gates are plain Node
-> scripts that run from any terminal or CI. The method forces artifacts at
-> each of seven stages: research with evidence paths, decision records that
-> cite the research that grounds them, a fact-check pass that traces claims
-> to source. A reviewer gate blocks each stage until it's actually done, and
-> `blueprint doctor` ends its report with what it did NOT check — which I've
-> come to think is the most important line of output in the project.
+> What I did: read the README and, where the repo is public, the actual gate
+> implementation — the shell scripts, the workflow-step source, the verifier
+> prompts — of 14 spec-driven dev tools (Spec Kit, BMAD, GSD, OpenSpec,
+> PRP, and the rest of the page's rows). For the commercial closed ones
+> (Kiro, Tessl, Intent) I used the vendor's own docs. One row — Superpowers —
+> is tabled from community data only and flagged as such on the page;
+> corrections especially welcome there. Sources read 2026-06-11; star counts
+> are approximate as of the same day.
 >
-> Two things that might be interesting even if you never use it:
+> The finding, in one sentence: almost every "gate" in this field is either a
+> human approve/reject prompt or a checklist an LLM runs against itself. The
+> exceptions, and what they actually execute:
 >
-> - The site is the product's own output, and the gates run on the site's
->   copy too. A prebuild lint fails the deploy if the homepage claims a
->   command count that contradicts the CLI's help text or shows the stage
->   chain out of order. The audit that motivated it found the homepage
->   miscounting the CLI's own commands — on a product whose pitch is
->   fact-checking. That class of rot is now a build failure.
-> - The /demo route replays real captured CLI transcripts — typed-out
->   terminal scenes, but nothing mocked. Faking terminal output in a demo of
->   a fact-checking tool felt like failing its own gate.
+> - Spec Kit's `check-prerequisites.sh` exits non-zero when stage artifacts
+>   are missing — a real exit-code gate, on file existence. Its content-level
+>   checks (`/speckit.checklist`, `/speckit.analyze`) are LLM-interpreted,
+>   and the workflow engine's "gate" step is an interactive human
+>   approve/reject that falls back to PAUSED in CI.
+> - Kiro generates property-based tests from EARS requirements — the most
+>   credible executable verification in the market, aimed at code-vs-spec.
+> - PRP embeds real validation loops — type-check, lint, tests, build —
+>   that iterate until green. Code quality, not stage artifacts.
+> - OpenSpec's `validate --strict` is a real CI-runnable CLI check of spec
+>   structure — and OpenSpec explicitly rejects blocking phase gates as a
+>   philosophy. Their argument is worth reading even if you end up on the
+>   other side. They're also the only tool I found that visibly dogfoods
+>   itself: their repo carries its own dated change archive.
+> - GSD has the best distrust-the-agent stance in the field — its verifier
+>   instructions literally say "Do NOT trust SUMMARY.md claims." The gates
+>   themselves are mostly prompt-enforced, with a few real exit-code scripts.
+> - BMAD has the broadest scope — research and briefs and PRDs through
+>   implementation — with checklist-and-handoff enforcement, all agent-run.
 >
-> Honest state: this is mostly me. One external team engagement is in
-> flight and the registry has one independent adopter. The demand
-> assumptions — including two that early field conversations already
-> disconfirmed — are written down in the repo (docs/content/validation-script.md).
+> Blueprint's row, with its caveats: 15 of its 18 stage reviewers are
+> dependency-free Node scripts with exit codes that check artifact content
+> and evidence — research files with evidence paths, decisions that cite
+> their research, site copy that doesn't contradict the CLI. The
+> orchestration skills are Claude Code only. Adoption is one external team
+> engagement in flight plus one independent adopter. And the gates verify
+> that artifacts exist and claims trace — they do not make the work good.
 >
-> The thing I'd most like beaten up: whether teams actually want a shared
-> methodology layer, or whether every senior engineer keeps their own
-> kitchen and the seam never gets crossed. The strongest objection I've
-> heard so far came from exactly that direction.
+> If I've misread your tool, file an issue
+> (https://github.com/nino-chavez/blueprint/issues) and I'll correct the
+> page — it's a dated snapshot, not scripture.
 
-**Likely objections + the honest line (don't paste; internalize):**
+**Internal notes (don't paste; internalize):**
 
-- "Yet another AI process framework" → agree it's a crowded shape; the
-  differentiator is executable gates + the self-application receipts, not
-  the stage names. Link /faq.
-- "Solo cycle isn't prod-grade" → agree; agent gates layer under human
-  sign-offs, never replace them (a stakeholder said exactly this; it's in
-  the FAQ).
-- "Why Claude Code only?" → 15/18 gates + all 7 CLI commands run anywhere;
-  the stage skills are Claude Code today. True gap, named on /faq.
+- Base rate: the modal outcome for anything in this space is single-digit
+  points and zero comments (median 2 across 892 comparables). The comparison
+  format moves the odds — analysis outperforms launches — it does not
+  guarantee anything. Do not let a 2-point result trigger a framing rewrite.
+- "You built one of them, of course yours wins" → the page is what each
+  tool's gate executes, not a ranking; concede on the spot what others do
+  better (Kiro's code-level verification is stronger than anything Blueprint
+  does at the code layer; GSD's distrust stance is the right instinct).
+- "Spec Kit has executable gates too" → yes, `check-prerequisites.sh`,
+  existence-level — the page says exactly that. The claim is content/evidence
+  gates, never "only executable gates."
+- "Token burn" → the gates are Node scripts; running them costs zero tokens.
+
+**Fallback (separate, later attempt):** the original Show HN — site URL
+`https://blueprint.ninochavez.co` plus the self-application/receipts author
+comment — remains viable weeks after this submission as its own attempt; the
+prior draft is preserved in this file's git history. Re-attempts are normal
+and cheap: Spec Kit's one 84-point hit was roughly attempt 15 of 20.
 
 ---
 
-## 2. r/ClaudeAI
+## 2. r/ClaudeAI — and r/ClaudeCode
 
-**Format:** text post, link inline. Pick the showcase/project flair at
-submit time.
+**Venue note:** the research found r/ClaudeCode is the denser scene for this
+genre (the framework threads, the fatigue threads, and the incumbent
+comparisons live there). Post to r/ClaudeAI per the original plan, and treat
+r/ClaudeCode as the second submission a few days later — not the same day.
 
-**Title:**
+**Format:** text post, comparison-post format. The launch-announcement genre
+is capped (~50–250 points ceiling) and draws reflexive sarcasm; honest
+comparisons that name incumbents are what the community itself asked for
+("every week theres a new best claude code workflow post and nobody compares
+them side by side").
 
-> I turned my product-work guardrails into a Claude Code methodology —
-> stages as skills, reviewer agents as gates (MIT)
+**Title** (names the incumbents — the credible posts all do):
+
+> Spec Kit vs BMAD vs GSD vs OpenSpec: I read what each one's gates actually
+> execute — mostly human prompts and LLM-graded checklists
 
 **Body:**
 
-> After a year of running product initiatives with Claude Code, the failure
-> mode I kept hitting wasn't capability — it was rot. Fast, convincing
-> output; claims nobody verified; decisions nobody wrote down.
+> Disclosure first: I built one of the tools in this comparison (Blueprint),
+> so discount that row accordingly. Every competitor claim below cites the
+> file it came from; full table with sources:
+> https://blueprint.ninochavez.co/compare (snapshot dated 2026-06-11).
 >
-> Blueprint is the rule-set I ended up with, packaged: seven stages
-> (research → prototype → fact-check → docs → deploy), each one a slash
-> skill (`/blueprint-research`, `/blueprint-prototype`, …), each gated by a
-> reviewer that blocks the next stage until the artifacts actually exist.
-> 15 of the 18 reviewers are plain Node scripts with exit codes, so they run
-> in CI too — your agent can't talk its way past them.
+> Token cost, since it's the first question on every one of these threads:
+> Blueprint's gates are Node scripts — they cost zero tokens to run. The
+> agent stages cost what your normal sessions cost; effort is a per-stage
+> dial, not a fixed ceremony tax.
 >
-> Scaffold is one command: `npx @nino-chavez-labs/blueprint-cli init
-> --name=my-initiative`
+> By "gates" I mean the verification steps between stages — the thing that's
+> supposed to stop the pipeline advancing on unverified work. I read the gate
+> implementations (scripts, workflow-step source, verifier prompts) of 14
+> spec-driven tools. The short version: most gates are prompts an LLM runs
+> against itself, or a human approve/reject. The compressed table:
 >
-> The 35-second demo replays real CLI transcripts (nothing mocked):
-> https://blueprint.ninochavez.co/demo — and the site itself is the
-> methodology's own output, gates on the copy included.
+> | Tool | Stars (~, 2026-06-11) | The "gate" is | It checks |
+> |---|---|---|---|
+> | Spec Kit | ~111k | exit-code script + human approve/reject + LLM checklists | file existence (script); content only via LLM/human |
+> | BMAD | ~49k | agent-run checklists and handoffs | nothing executable |
+> | GSD | ~64k | 4-type gate taxonomy, mostly prompt-enforced; a few real exit-code scripts | adversarial verifier distrusts the agent's own claims |
+> | OpenSpec | ~54k | `validate --strict` (real CLI); rejects phase gates by philosophy | spec structure/schema |
+> | Kiro | commercial | property tests generated from EARS requirements | code vs requirements |
+> | spec-workflow-mcp | ~4.2k | dashboard approval that genuinely blocks | a human decides |
+> | PRP | ~2.2k | validation loops until green | type-check/lint/tests/build |
+> | Blueprint (mine) | — | 15 of 18 reviewers are Node exit-code scripts | artifact content + evidence paths + site copy |
 >
-> Honest state: mostly me, one external team mid-engagement. I wrote down
-> the demand assumptions including the ones early conversations
-> disconfirmed.
+> Credit where it's due, because each of these does something best: GSD's
+> verifier literally says "Do NOT trust SUMMARY.md claims" — the right
+> instinct, and nobody else states it that plainly. Kiro's property-based
+> testing is the most credible executable verification anywhere in the field.
+> OpenSpec is the only tool that visibly dogfoods itself (its repo carries
+> its own dated change archive), and its anti-gate argument is worth reading.
+> BMAD is the only one with real product-scope breadth — research through
+> implementation. Spec Kit has the reach: ~111k stars, 30+ agent
+> integrations.
 >
-> What I'm actually asking this sub: how do you keep agent output honest on
-> real multi-session projects today? If you have your own loop, what would
-> it take to share it with a team — or is that seam not worth crossing?
+> Blueprint's caveats, stated plainly: the stage skills are Claude Code only
+> (the gates and CLI run anywhere). Adoption is one external team engagement
+> in flight plus one independent adopter. And the gates verify that artifacts
+> exist, claims trace to evidence, and the site copy doesn't contradict the
+> CLI — they don't make the work good.
+>
+> When NOT to use this: solo with a working loop — keep your kitchen. That's
+> what Blueprint's own FAQ says, and it matches the strongest objection I've
+> heard so far.
+>
+> If I got your tool wrong: https://github.com/nino-chavez/blueprint/issues
+> and I'll fix the page.
+>
+> Actual question for the sub: what does your verification step execute
+> today? A script with an exit code, a verifier prompt, a human look, or
+> nothing? Especially interested in what survives multi-session work.
 
 ---
 
 ## 3. lobste.rs
 
 **Mechanics:** invited accounts only. Check the "I am the author" box.
-Tags: `ai`, `practices`. Lobsters skews more skeptical of product sites than
-HN — submit the GitHub repo, not the marketing page.
+Tags: `ai`, `practices`. Submit the comparison page — lobsters rewards
+analysis over launches, and this is the analysis.
 
-**URL:** `https://github.com/nino-chavez/blueprint`
+**URL:** `https://blueprint.ninochavez.co/compare`
 
-**Title** (no "Show HN"-style prefix; plain description):
+**Title** (plain; matches the page):
 
-> Blueprint: executable stage gates and artifact receipts for AI-assisted
-> product work
+> I read how 14 spec-driven dev tools' gates actually work
 
 **First comment (author):**
 
-> Author. The short version: an agent runs a seven-stage product pipeline;
-> executable reviewers gate each stage on artifacts (research with evidence
-> paths, decisions citing their research, claims traced to source); the
-> doctor command reports what it didn't check. 15 of 18 gates are
-> dependency-free Node scripts with exit codes — CI-runnable, agent-
-> agnostic; the orchestration skills are Claude Code today.
+> Author, disclosure first: I built a 15th tool in this category —
+> Blueprint, the last row — so discount that row; every competitor cell
+> cites the file it came from so you can check me.
 >
-> The repo is its own first consumer — the product site deploys through the
-> same gates, including a prebuild lint that fails the build when site copy
-> contradicts the CLI (command counts, stage order, version literals).
-> Adoption is honestly small: one external team engagement in flight, one
-> independent adopter, assumptions-with-disconfirmations on the record in
-> docs/content/validation-script.md.
+> Method: I read the README and, where public, the actual gate source —
+> shell scripts, workflow-step code, verifier prompts — of 14 spec-driven
+> dev tools; vendor docs for the closed ones; one row (Superpowers) is
+> tabled from community data only and flagged as such. Snapshot dated
+> 2026-06-11.
+>
+> Finding: almost every "gate" in the field is a human approve/reject prompt
+> or a checklist an LLM runs against itself. The exceptions execute real
+> checks at other layers — file existence (Spec Kit's
+> `check-prerequisites.sh`), spec schema (OpenSpec's `validate --strict`),
+> code-quality loops (PRP), property tests from requirements (Kiro). What I
+> couldn't find elsewhere is executable gating on artifact content and
+> evidence — claims traced to sources, decisions citing their research.
+> That's Blueprint's row. Its caveats, stated rather than deferred: the
+> orchestration skills are Claude Code only, adoption is one external team
+> engagement in flight plus one independent adopter, and the gates verify
+> that artifacts exist and claims trace — they don't make the work good.
+> Corrections via GitHub issues welcome.
 
 ---
 
@@ -160,8 +252,17 @@ HN — submit the GitHub repo, not the marketing page.
 
 - Add each thread URL to `feedback/` as a capture file; comments are
   stakeholder feedback and triage through `/blueprint-triage` like any other
-  (HN objections are A3/A6/A7 evidence either way).
-- Watch the analytics funnel: demo views → quickstart clicks → npm
-  downloads. That's the A2 instrument this launch exists to read.
-- One re-post of a Show HN that got no traction is tolerated weeks later;
-  more than that is not.
+  (objections are A3/A6/A7 evidence either way; the Reddit closing question
+  is the A6 instrument — their verification approaches are evidence whether
+  or not they like Blueprint).
+- Watch the analytics funnel: compare views → demo views → quickstart clicks
+  → npm downloads. That's the A2 instrument this launch exists to read.
+- Expectation, set honestly: the modal HN outcome for this space is single
+  digits (median 2 points across 892 comparables). The comparison format
+  moves the odds — analysis outperforms launches in the data — it does not
+  guarantee them. A low-point result is the base rate, not a verdict on the
+  page.
+- One later re-attempt with the original Show HN angle (site URL +
+  self-application receipts comment, preserved in git history) is tolerated
+  weeks after this; Spec Kit's single hit was attempt ~15. More than one
+  re-post of the same artifact is not.

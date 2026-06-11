@@ -113,6 +113,20 @@ const mdOnlyCount = specCount - execCount;
       </table>
     </section>
 
+    <section id="vs-the-field" class="rounded-lg border border-contrast-200 bg-background p-6">
+      <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“How is this different from Spec Kit, BMAD, or GSD?”</h2>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        The pipeline shape isn’t — staged spec-driven development is a crowded, named category, and Blueprint’s
+        stages converge on the same pattern everyone else’s do. The difference is where enforcement lives:
+        the field’s gates are mostly human approve prompts or checklists the LLM grades itself against, with the
+        executable exceptions checking file existence or spec schema; Blueprint’s are Node scripts with exit codes
+        that check artifact <em>content</em> and evidence, plus a document-level fact-check stage and
+        self-application receipts (this site is the pipeline’s own output).
+        The source-level read of the field — what each tool’s gates actually do, generously — is at
+        <a href="/compare" class="text-brand hover:underline">/compare</a>.
+      </p>
+    </section>
+
     <section id="cost-to-try" class="rounded-lg border border-contrast-200 bg-background p-6">
       <h2 class="mb-2 font-heading text-lg font-semibold tracking-tight">“What does it cost to try?”</h2>
       <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">
