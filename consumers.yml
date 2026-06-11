@@ -37,9 +37,9 @@ version: 1                            # registry schema version (NOT a methodolo
 consumers:
   - repo: nino-chavez/rally-hq
     pattern: B
-    methodology_version: null         # apps/rally-hq/blueprint/blueprint.yml — no pin
+    methodology_version: "0.3.0"      # pinned 2026-06-11 via blueprint upgrade --apply (blueprint.yml now at repo ROOT)
     owner: nino-chavez
-    synced_at: "2026-06-04"
+    synced_at: "2026-06-11"
 
   - repo: nino-chavez/blog
     pattern: B
