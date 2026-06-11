@@ -911,6 +911,10 @@
         closePalette();
       }
     });
+    // Surface the palette to pages that render their own chrome (the docs
+    // viewer's sidebar search trigger) — proto-nav owns the palette, so any
+    // visible affordance routes back through here rather than rebuilding it.
+    window.openBlueprintPalette = openPalette;
   }
 
   // ─────────────── init ───────────────

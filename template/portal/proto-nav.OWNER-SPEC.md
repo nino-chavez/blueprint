@@ -35,7 +35,7 @@ It's the load-bearing piece that makes N separate HTML pages feel like one cohes
 
 - **Breadcrumb switchers.** The top-bar breadcrumb (`Prototype › <Slice> › <Page>`) is not a static label — each segment is a switcher menu. The slice segment opens a dropdown of ALL slices (from `_meta/index.json` `slices`); the page segment opens a dropdown of the current slice's pages plus the flows touching that slice (start-flow deep-links). Where-you-are and where-you-can-go are the same control.
 - **Flow stepper.** `?flow=<flow-id>` renders the stepper (prev/next + position within the flow). This is the only sequential navigation mode.
-- **Command palette.** Cmd/Ctrl+K opens a palette searching pages, slices, and docs from the manifest. Keyboard-first jump-anywhere.
+- **Command palette.** Cmd/Ctrl+K opens a palette searching pages, slices, and docs from the manifest. Keyboard-first jump-anywhere. The opener is also exposed as `window.openBlueprintPalette()` so pages that render their own chrome (the docs viewer, which has no breadcrumb to host a `⌘K` hint) can surface a visible search affordance that routes back through the single palette proto-nav owns.
 - **Slice context in the strategy drawer.** The slice's summary, production surface, citations, and flows render inside the strategy drawer — slice orientation is on-demand, not permanently on-screen.
 
 **Why (cognitive audit + operator decision, 2026-06-11):** full-bleed mockups ARE the content — the portal's core rule is that the proposed surface must read as production. The persistent rail charged a permanent viewport-width tax to serve slice-scoped wayfinding that is only occasionally needed, and compare mode (proposed | shipped side-by-side) needs the entire viewport to be honest at production widths.
