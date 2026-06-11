@@ -110,10 +110,10 @@ consumers:
     synced_at: "2026-06-06"
 
   - repo: nino-chavez/nino-chavez-photography
-    pattern: A                        # platform-portal; midstream variant, tier 2
-    methodology_version: null         # apps/photography/blueprint/blueprint.yml — no pin yet
-    owner: nino-chavez
-    synced_at: "2026-06-10"
+    pattern: A                        # PLANNED pattern (not yet scaffolded). Init never run —
+    methodology_version: null         #   no blueprint.yml on disk as of 2026-06-11 (drift was: row implied one existed).
+    owner: nino-chavez                #   Grounded plan: apps/photography .agent-os/specs/.../HANDOFF.md §"Methodology
+    synced_at: "2026-06-11"           #   migration" — variant=MIDSTREAM (decision-tree, NOT brownfield), tier 2, Pattern A.
 
   # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
   - repo: external-a/media-toolkit    # de-named (external operator, A.); real identity in consumers.local.yml
