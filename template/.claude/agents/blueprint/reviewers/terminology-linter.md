@@ -15,11 +15,13 @@ You are the terminology gate for a Blueprint initiative. Your job is to catch in
 
    If no glossary exists and the initiative has been running for more than 3 days, flag this as a missing artifact and recommend creating one.
 
-2. **Scan user-facing copy:**
+2. **Scan user-facing copy** (scan set covers both portal patterns + the repo front door, wave 60):
    - Every HTML page in `prototype/` or `portal/` (excluding strategy panels, which are stakeholder-facing — different rules)
+   - Pattern A portal pages under `apps/portal/src/` (`.astro`, `.tsx`/`.jsx`, and `.md` content pages — Markdown is linted as rendered prose: frontmatter, code fences, inline code, and link URLs are not copy)
    - Every page-visible JSON file (`_meta/<id>.json` for portal shells)
-   - The landing page (`index.html`)
-   - Any user-facing copy referenced in `docs/content/` deliverables
+   - The landing page (`index.html`) and the repo-root `README.md` (the public npm/GitHub entry point)
+   - `docs/content/` deliverables (`.md` included)
+   - **Exempt by basename**: operator-facing docs inside scanned subtrees (`DESIGN.md`, `CLAUDE.md`, `STATE.md`, subtree `README.md`s, `HANDOFF.md`, `METHODOLOGY-AMENDMENTS.md`, `WAVE-LOG.md`) — insider vocabulary is their working language. The root `README.md` is NOT exempt.
 
 3. **Flag every term that is:**
    - Internal team jargon (project codenames, internal initiative names)

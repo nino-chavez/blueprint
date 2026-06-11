@@ -7,9 +7,13 @@
  *     -> { status: 'PASS'|'BLOCKED'|'WARN', findings: [...], metadata: {...} }
  *
  * Gate rule (terminology-linter.md): scan USER-FACING copy (prototype/portal HTML,
- * page-visible JSON, the landing index.html) for terms outside the approved
- * glossary + universal anti-pattern jargon. Strategy/current-state panels are
- * stakeholder-facing — different audience, NOT linted (the spec is explicit).
+ * Pattern A portal pages under apps/portal/src — .astro/.tsx/.md — page-visible
+ * JSON, docs/content deliverables, the landing index.html, and the repo-root
+ * README.md) for terms outside the approved glossary + universal anti-pattern
+ * jargon. Strategy/current-state panels are stakeholder-facing — different
+ * audience, NOT linted (the spec is explicit). Operator-facing docs (DESIGN.md,
+ * CLAUDE.md, STATE.md, subtree READMEs) are exempt by basename: insider
+ * vocabulary is their working language (wave 60).
  *
  *   - Any VIOLATION  -> BLOCKED. The spec: "If VIOLATIONS > 0, STATUS=BLOCKED."
  *   - Missing glossary (initiative > 3 days old, inferred from git/mtime) -> a
@@ -135,9 +139,25 @@ export function jsonToText(raw) {
   return out.join(' ');
 }
 
+// Strip Markdown to visible prose. Frontmatter, fenced code blocks, inline code,
+// and link/image URLs are not user-facing copy — linting them produces false
+// positives ('schema' inside a YAML fence). Link labels are kept; remaining
+// inline HTML rides through htmlToText.
+export function mdToText(md) {
+  if (!md) return '';
+  return htmlToText(
+    md
+      .replace(/^---\n[\s\S]*?\n---\n/, ' ')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/`[^`\n]*`/g, ' ')
+      .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+  );
+}
+
 export function extractText(relPath, raw) {
   if (/\.html?$/i.test(relPath)) return htmlToText(raw);
   if (/\.json$/i.test(relPath)) return jsonToText(raw);
+  if (/\.md$/i.test(relPath)) return mdToText(raw);
   // .astro / .tsx — strip JSX/HTML tags too (same heuristic as HTML).
   if (/\.(astro|tsx|jsx)$/i.test(relPath)) return htmlToText(raw);
   return raw || '';
@@ -237,6 +257,10 @@ function firstHit(re, text) {
 const ACRONYM_ALLOW = new Set([
   'OK', 'ID', 'URL', 'FAQ', 'PDF', 'CSV', 'JSON', 'HTML', 'CSS', 'US', 'UK', 'EU',
   'AM', 'PM', 'CEO', 'CTO', 'B2B', 'B2C', 'SKU', 'USD',
+  // Universally-understood dev/product terms — added when .md scanning landed
+  // (wave 60) so prose docs don't WARN-spam. Deliberately NOT allow-listed:
+  // ADR, BRD, PRD — those are exactly the define-on-first-use class.
+  'API', 'CLI', 'SDK', 'AI', 'UI', 'UX', 'MIT', 'YAML', 'README', 'HTTP', 'HTTPS', 'NPM',
 ]);
 export function undefinedAcronyms(text) {
   const found = new Map(); // acronym -> defined?
@@ -373,14 +397,26 @@ export default async function review({ targetDir, blueprintYml }) {
   for (const r of roots) {
     if (await exists(r)) candidates.push(...(await walk(r)));
   }
-  // Landing page at root.
+  // Landing page + public README at root. The repo-root README is the public
+  // entry point (npm/GitHub) — reader-facing copy, in scope since wave 60.
   const rootIndex = path.join(targetDir, 'index.html');
   if (await exists(rootIndex)) candidates.push(rootIndex);
+  const rootReadme = path.join(targetDir, 'README.md');
+  if (await exists(rootReadme)) candidates.push(rootReadme);
+
+  // Operator-facing docs are exempt by basename: insider vocabulary is their
+  // working language. Applies inside scanned subtrees only — the ROOT README
+  // (rel === 'README.md') stays in scope.
+  const OPERATOR_DOC_BASENAMES = new Set([
+    'DESIGN.md', 'CLAUDE.md', 'STATE.md', 'README.md',
+    'HANDOFF.md', 'METHODOLOGY-AMENDMENTS.md', 'WAVE-LOG.md',
+  ]);
 
   const userFacing = candidates.filter((f) => {
     const rel = path.relative(targetDir, f);
     if (isStakeholderFacing(rel)) return false; // strategy/current-state — not linted
-    return /\.(html?|json|astro|tsx|jsx)$/i.test(f);
+    if (rel !== 'README.md' && OPERATOR_DOC_BASENAMES.has(path.basename(f))) return false;
+    return /\.(html?|json|astro|tsx|jsx|md)$/i.test(f);
   });
 
   // 3. Lint each file. De-duplicate violations per file (each term once per file).
@@ -610,6 +646,39 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   } else {
     console.log('ok: (skipped aged-glossary assertion — FS does not honor backdated birthtime)');
   }
+
+  // -- markdown extraction + scan-set extension (wave 60) -------------------
+  const mdT = mdToText(
+    '---\ntitle: schema\n---\n# Heading\n```\nendpoint here\n```\nUse `payload` inline. Real deflection here. [link label](http://url/schema-path)'
+  );
+  assert(!/\bschema\b/.test(mdT), 'mdToText strips frontmatter + link URLs');
+  assert(!/\bendpoint\b/.test(mdT), 'mdToText strips fenced code blocks');
+  assert(!/\bpayload\b/.test(mdT), 'mdToText strips inline code');
+  assert(/deflection/.test(mdT) && /link label/.test(mdT), 'mdToText keeps prose + link labels');
+
+  await fsp.mkdir(path.join(tmp, 'apps', 'portal', 'src', 'pages'), { recursive: true });
+  await fsp.writeFile(path.join(tmp, 'apps', 'portal', 'src', 'pages', 'learn.md'),
+    '# Learn\nWe deflect tickets here.\n```\nschema endpoint payload\n```\n');
+  await fsp.writeFile(path.join(tmp, 'README.md'), 'Our deflection rate is low.');
+  await fsp.writeFile(path.join(tmp, 'prototype', 'DESIGN.md'),
+    'Internal design notes: deflection schema endpoint.');
+  const mdRes = await review({ targetDir: tmp, blueprintYml: {} });
+  assert(
+    mdRes.findings.some((f) => f.location === path.join('apps', 'portal', 'src', 'pages', 'learn.md') && /deflection/.test(f.message)),
+    'lints Pattern A .md pages under apps/portal/src'
+  );
+  assert(
+    !mdRes.findings.some((f) => f.location === path.join('apps', 'portal', 'src', 'pages', 'learn.md') && /schema|endpoint|payload/.test(f.message)),
+    'code fences in .md pages are not linted as copy'
+  );
+  assert(
+    mdRes.findings.some((f) => f.location === 'README.md' && /deflection/.test(f.message)),
+    'lints the repo-root README (public entry point)'
+  );
+  assert(
+    !mdRes.findings.some((f) => f.location === path.join('prototype', 'DESIGN.md')),
+    'DESIGN.md is operator-facing — exempt by basename'
+  );
 
   // never-throws on a non-existent target dir.
   const ghost = await review({ targetDir: path.join(tmp, 'does-not-exist'), blueprintYml: {} });
