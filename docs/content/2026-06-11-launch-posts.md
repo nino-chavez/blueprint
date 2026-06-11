@@ -273,3 +273,81 @@ analysis over launches, and this is the analysis.
   self-application receipts comment, preserved in git history) is tolerated
   weeks after this; Spec Kit's single hit was attempt ~15. More than one
   re-post of the same artifact is not.
+
+---
+
+## 4. LinkedIn (the network announcement)
+
+Voice: Signal Dispatch Thought Leadership register — narrative, provisional,
+question-led. Grounding rules applied: the kitchen essay is real (published
+2025-12-21), the compliment-and-kept-his-loop moment is real (validation
+log, R.), the numbers derive from the repo. No invented interior state.
+LinkedIn mechanics: the first line must hook before the ~210-char fold; no
+emoji, no hashtag wall, no "excited to announce." Post the link in the body
+(or first comment if reach matters more than convenience that week).
+
+### Draft A — the kitchen continuation (recommended if your network tracked the essay)
+
+> Six months ago I wrote about the kitchen I'm looking for — the guild
+> model, craftspeople in their own lanes, AI handing leverage back to the
+> people who care about the work.
+>
+> This is what came out of actually cooking in it.
+>
+> Blueprint is a working method for running product initiatives with an AI
+> agent — research through deployment. The agent does the building. The
+> method forces the receipts: research with evidence paths, decisions that
+> cite that research, a fact-check stage that traces claims to source, and
+> gates between stages that are scripts with exit codes — not vibes.
+>
+> I didn't set out to build a product. It accreted across a dozen of my own
+> projects — a volleyball club platform, photography sites, my blog, real
+> client work. Every gap an agent fell into became a check; 61 gated
+> updates so far. At some point the method was the most load-bearing thing
+> I'd built, so I productized it: MIT, on npm, and the site is the method's
+> own output — every number on the homepage derives from the repo at build
+> time, and the build fails if the copy contradicts the CLI.
+>
+> Honest state: this is mostly me. One team engagement in flight, one
+> independent adopter. When I showed an early version to an engineer I
+> respect, he complimented it — and kept his own system. That's the
+> question I can't put down: do teams actually want a shared way of keeping
+> AI honest, or does everyone keep their own kitchen?
+>
+> The 35-second version: https://blueprint.ninochavez.co/demo
+
+### Draft B — the standalone (no essay dependency; tighter, problem-first)
+
+> The problem with AI-assisted building isn't speed. It's that the output
+> is fast AND convincing — confident claims nobody verified, decisions
+> nobody wrote down. It looks finished. Whether it holds up is a different
+> question.
+>
+> Blueprint is my answer, productized after a year of using it on my own
+> projects: a method where the agent does the building and the gates force
+> the receipts — research with evidence paths, decisions citing that
+> research, claims traced to source, and stage gates that are scripts with
+> exit codes. The site is the method's own output; the demo replays real
+> terminal transcripts, nothing mocked.
+>
+> It's MIT, on npm, and honestly early: one team engagement in flight, one
+> independent adopter, and the demand assumptions — including the two that
+> early conversations already disconfirmed — are written down in the repo.
+>
+> If you're shipping product work with an agent: how do you keep its output
+> honest today? That's the conversation I'm after more than the install.
+>
+> https://blueprint.ninochavez.co
+
+### Notes
+
+- Draft A is the stronger fit for the existing narrative thread (the essay
+  → the product is a clean arc, and the open question is genuinely held).
+- Draft B travels without context — better if cross-posting where the
+  essay never ran.
+- Both deliberately end on the question, not the CTA — the comments are
+  the A3/A6 conversation plan running on LinkedIn.
+- Do NOT name the commerce-platform initiatives ("real client work" is the
+  ceiling — public-repo sanitization applies to posts too).
+- Timing: LinkedIn can run independent of the HN sequencing — different
+  audience, no overlap penalty. Capture notable comments into feedback/.
