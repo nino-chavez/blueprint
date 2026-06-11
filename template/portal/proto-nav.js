@@ -80,6 +80,13 @@
   }
 
   function pageHref(id) {
+    // Manifest may declare per-id route overrides (_meta/index.json `routes`):
+    // meta-only product destinations (a documented Pattern B feature) live at
+    // production URLs, not ./pages/<id>.html — without this, every chrome
+    // surface that builds hrefs from ids (jump-to, flow nav) emits phantom
+    // links for them (rally-hq audit, 2026-06-11).
+    const route = MANIFEST?.routes?.[id];
+    if (route) return route;
     return isProtoRoot() ? `./pages/${id}.html` : `./${id}.html`;
   }
 
