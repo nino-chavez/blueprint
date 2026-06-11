@@ -104,7 +104,7 @@ export const SCENES: Scene[] = [
     reels: ['sizzle'],
     kicker: 'blueprint',
     headline: 'You have an idea.',
-    sub: "An agent can build it fast. Fast isn't the problem — proof is.",
+    sub: 'The agent builds fast. Blueprint keeps the receipts.',
   },
   {
     type: 'title',

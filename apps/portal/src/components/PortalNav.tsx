@@ -27,11 +27,13 @@ export interface PortalNavProps {
  * that's a stakeholder-dashboard feature; a product homepage gives one path.
  */
 export function PortalNav({ currentPath }: PortalNavProps) {
-  const onLearn = currentPath === '/learn' || currentPath.startsWith('/learn/');
-  const onDemo = currentPath === '/demo' || currentPath.startsWith('/demo/');
-  // Strategy stays the catch-all for the deeper portal pages (/discover,
-  // /inspect, /operate, ...) — everything that isn't home, Learn, or Demo.
-  const onStrategy = currentPath !== '/' && currentPath !== '' && !onLearn && !onDemo;
+  // Active = exact or sub-path match on the item's own route, nothing more.
+  // The old Strategy catch-all ("anything that isn't home/Learn/Demo") lit
+  // Strategy + aria-current="page" on /compare, /faq, /try, /roadmap (agency
+  // audit 2026-06-11). Routes not in the nav show no active item; the hash
+  // links never match because currentPath carries no fragment.
+  const isActive = (href: string) =>
+    !href.includes('#') && (currentPath === href || currentPath.startsWith(`${href}/`));
 
   return (
     <>
@@ -42,15 +44,7 @@ export function PortalNav({ currentPath }: PortalNavProps) {
         </NavBar.Brand>
         <NavBar.Switcher>
           {NAV.map((item) => (
-            <NavBar.Item
-              key={item.href}
-              href={item.href}
-              active={
-                (item.label === 'Learn' && onLearn) ||
-                (item.label === 'Demo' && onDemo) ||
-                (item.label === 'Strategy' && onStrategy)
-              }
-            >
+            <NavBar.Item key={item.href} href={item.href} active={isActive(item.href)}>
               {item.label}
             </NavBar.Item>
           ))}
@@ -69,13 +63,16 @@ export function PortalNav({ currentPath }: PortalNavProps) {
       {/* NavBar.Switcher is display:none below md with no hamburger behind it —
           on mobile every NAV destination must still be reachable from the
           chrome, so they render as a wrapped row under the bar (no JS, fits
-          the sparse chrome better than a disclosure menu). */}
-      <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 pb-2 md:hidden" aria-label="Primary, compact">
+          the sparse chrome better than a disclosure menu). Each link carries a
+          44px min touch target via min-h-11 — the bare text rows measured 18px
+          against the WCAG 2.5.5 / HIG minimum (agency audit 2026-06-11). */}
+      <nav className="flex flex-wrap items-center justify-center gap-x-1 pb-1 md:hidden" aria-label="Primary, compact">
         {NAV.map((item) => (
           <a
             key={item.href}
             href={item.href}
-            className="font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            className="inline-flex min-h-11 items-center px-2 font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:text-brand"
           >
             {item.label}
           </a>

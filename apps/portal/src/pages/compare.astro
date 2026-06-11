@@ -15,11 +15,24 @@ const READ_DATE = '2026-06-11';
 const fmt = (s: string) =>
   s.replace(/`([^`]+)`/g, '<code class="font-mono text-[12px] text-foreground">$1</code>');
 
+// The four gate kinds — the page's thesis. Rendered as the legend strip
+// before any data; the table's gate-type pills reuse these categories
+// (plus NONE / UNVERIFIED / tool-specific variants).
+const GATE_KINDS: Array<[string, string]> = [
+  ['human approval', 'A person clicking approve before the next stage runs.'],
+  ['LLM-run checklist', 'A checklist the LLM grades itself against.'],
+  ['exit-code on existence or schema', 'A script that fails when files are missing or malformed.'],
+  ['exit-code on content + evidence', 'A script that checks what’s in them — claims, citations, evidence.'],
+];
+
 type Row = {
   name: string;
   url: string;
   stars: string;
-  gate: string;
+  // Pill labels for the gate-type column — the smallest honest set per tool
+  // (≤2 pills; anything a pill can't carry stays in `gate` and `note`).
+  gateType: string[];
+  gate: string; // one line — the full gate detail lives in `note`
   best: string;
   scope: string;
   note: string;
@@ -30,79 +43,87 @@ const TOOLS: Row[] = [
     name: 'GitHub Spec Kit',
     url: 'https://github.com/github/spec-kit',
     stars: '~111k stars',
-    gate: 'Exit-code script on file existence; human approve prompt; LLM checklists',
+    gateType: ['EXIT-CODE: EXISTENCE', 'HUMAN APPROVAL'],
+    gate: 'Existence script; human approve prompt; LLM checklists',
     best: 'Reach — the most community-adopted SDD tool; 30+ agent integrations, GitHub’s backing',
-    scope: 'Spec → code pipeline (constitution → specify → clarify → plan → tasks → analyze → implement)',
+    scope: 'Spec → code pipeline',
     note:
-      '`scripts/bash/check-prerequisites.sh` exits non-zero when required artifacts (spec.md, plan.md, tasks.md) are missing — a real exit-code gate, on file existence. The workflow-engine gate step (`src/specify_cli/workflows/steps/gate/__init__.py`) is an interactive human approve/reject prompt that falls back to PAUSED in CI. `/speckit.checklist` and `/speckit.analyze` are LLM-interpreted markdown — “unit tests for English,” in its own docs’ framing.',
+      '`scripts/bash/check-prerequisites.sh` exits non-zero when required artifacts (spec.md, plan.md, tasks.md) are missing — a real exit-code gate, on file existence. The workflow-engine gate step (`src/specify_cli/workflows/steps/gate/__init__.py`) is an interactive human approve/reject prompt that falls back to PAUSED in CI. `/speckit.checklist` and `/speckit.analyze` are LLM-interpreted markdown — “unit tests for English,” in its own docs’ framing. The full pipeline: constitution → specify → clarify → plan → tasks → analyze → implement.',
   },
   {
     name: 'BMAD-METHOD',
     url: 'https://github.com/bmad-code-org/BMAD-METHOD',
     stars: '~49k stars',
+    gateType: ['LLM CHECKLIST'],
     gate: 'LLM-run checklists and agent handoffs',
     best: 'Breadth — the only other tool spanning research, briefs, and PRDs through implementation',
-    scope: 'Research → brief → PRD → architecture → stories → code',
+    scope: 'Research → code pipeline',
     note:
-      'v6 ships 12+ role agents (PM, Architect, Dev, UX), 34+ workflows, and web bundles for upfront research and PRD planning — the only tool in this read with product-pipeline breadth. Handoffs between agents are file-based and convention-enforced; checklists are prompts the agents run. No executable enforcement found in this read.',
+      'v6 ships 12+ role agents (PM, Architect, Dev, UX), 34+ workflows, and web bundles for upfront research and PRD planning — the only tool in this read with product-pipeline breadth. Handoffs between agents are file-based and convention-enforced; checklists are prompts the agents run. No executable enforcement found in this read. The full pipeline: research → brief → PRD → architecture → stories → code.',
   },
   {
     name: 'GSD (Get Shit Done)',
     url: 'https://github.com/gsd-build/get-shit-done',
     stars: '~64k stars',
-    gate: 'Formal gate taxonomy, mostly LLM-enforced; a few real exit-code scripts',
-    best: 'The adversarial-verifier stance — “Do NOT trust SUMMARY.md claims”; the strongest distrust-the-agent posture in the field',
-    scope: 'Claude Code; requirements → plan → execute → verify',
+    gateType: ['LLM CHECKLIST', 'EXIT-CODE: PARTIAL'],
+    gate: 'Formal gate taxonomy, mostly LLM-enforced; a few exit-code scripts',
+    best: 'The adversarial-verifier stance — the strongest distrust-the-agent posture in the field',
+    scope: 'Claude Code workflow',
     note:
-      '`get-shit-done/references/gates.md` defines a four-type gate taxonomy — pre-flight artifact checks, revision loops bounded at 3 iterations with stall detection, escalation to human, abort — with a matrix mapping phases to artifacts. `agents/gsd-verifier.md` instructs verifiers to falsify the SUMMARY.md narrative, goal-backward. Most gates run LLM-side; a few real Node exit-code scripts exist (`bin/lib/ui-safety-gate.cjs` documents exit 0/1/2). Verification is code-vs-claims, not document-vs-sources.',
+      '`get-shit-done/references/gates.md` defines a four-type gate taxonomy — pre-flight artifact checks, revision loops bounded at 3 iterations with stall detection, escalation to human, abort — with a matrix mapping phases to artifacts. `agents/gsd-verifier.md` instructs verifiers to falsify the SUMMARY.md narrative — “Do NOT trust SUMMARY.md claims” — goal-backward. Most gates run LLM-side; a few real Node exit-code scripts exist (`bin/lib/ui-safety-gate.cjs` documents exit 0/1/2). Verification is code-vs-claims, not document-vs-sources. Scope: requirements → plan → execute → verify, inside Claude Code.',
   },
   {
     name: 'OpenSpec',
     url: 'https://github.com/Fission-AI/OpenSpec',
     stars: '~54k stars',
+    gateType: ['EXIT-CODE: SCHEMA'],
     gate: 'CLI validator on spec structure; explicitly anti phase-gate',
     best: 'Visible dogfooding — its own `changes/archive/` is a receipts trail; strong artifact discipline',
-    scope: 'Change artifacts: proposal → spec deltas → tasks → archive',
+    scope: 'Change-artifact pipeline',
     note:
-      '`openspec validate --all --strict --json` is a real, CI-runnable validator — of spec structure and schema, not evidence. The README explicitly positions against rigid phase gates; `/opsx:verify` (added 2026-02) is LLM-driven implementation-vs-spec checking. Its own repo carries `openspec/changes/archive/` with dated change folders — the only visible dogfooding trail in this read, and it goes unmarketed.',
+      '`openspec validate --all --strict --json` is a real, CI-runnable validator — of spec structure and schema, not evidence. The README explicitly positions against rigid phase gates; `/opsx:verify` (added 2026-02) is LLM-driven implementation-vs-spec checking. Its own repo carries `openspec/changes/archive/` with dated change folders — the only visible dogfooding trail in this read, and it goes unmarketed. The artifact chain: proposal → spec deltas → tasks → archive.',
   },
   {
     name: 'AWS Kiro',
     url: 'https://kiro.dev',
     stars: 'commercial, GA',
-    gate: 'Property tests on code vs requirements; stage flow is IDE-guided human approval',
-    best: 'Property-based testing — EARS requirements become an executable specification that tests the generated code',
-    scope: 'Commercial IDE; requirements.md / design.md / tasks.md → code',
+    gateType: ['HUMAN APPROVAL'],
+    gate: 'Property tests code-vs-requirements; stage flow IDE-guided human approval',
+    best: 'Property-based testing — EARS requirements become an executable specification',
+    scope: 'Commercial IDE',
     note:
-      'The GA headline is property-based testing: EARS-notation requirements are translated into an executable specification, generating property tests that check the produced code against the spec (kiro.dev/docs/specs/correctness). The most credible executable-verification story in this read — and it verifies code against requirements, not stage progression; stage flow is IDE-guided with implicit human approval.',
+      'The GA headline is property-based testing: EARS-notation requirements are translated into an executable specification, generating property tests that check the produced code against the spec (kiro.dev/docs/specs/correctness). The most credible executable-verification story in this read — and it verifies code against requirements, not stage progression; stage flow is IDE-guided with implicit human approval. Spec artifacts: requirements.md / design.md / tasks.md → code.',
   },
   {
     name: 'Superpowers',
     url: 'https://github.com/obra/superpowers',
     stars: '~224k stars',
+    gateType: ['UNVERIFIED'],
     gate: 'Not read at source level this pass',
-    best: 'Distribution — on the official Claude marketplace since Jan 2026; the community’s closest thing to a default',
+    best: 'Distribution — on the official Claude marketplace since Jan 2026',
     scope: 'Claude Code skills',
     note:
-      'Not read at source level this pass — the row reflects the GitHub API star count and community reporting only (r/ClaudeCode threads track it as the de-facto default, with rising verbosity complaints). Its gate mechanism is unverified here; corrections especially welcome on this row.',
+      'Not read at source level this pass — the row reflects the GitHub API star count and community reporting only (r/ClaudeCode threads track it as the de-facto default — the community’s closest thing to one — with rising verbosity complaints). Its gate mechanism is unverified here; corrections especially welcome on this row.',
   },
   {
     name: 'PRP (PRPs-agentic-eng)',
     url: 'https://github.com/Wirasm/PRPs-agentic-eng',
     stars: '~2.2k stars',
-    gate: 'Code-quality loop until green (type-check, lint, tests, build)',
-    best: 'Executable validation embedded in the artifact — the closest philosophical neighbor in this read',
-    scope: 'Implementation slices; PRD + codebase intelligence + runbook',
+    gateType: ['CODE-QUALITY LOOP'],
+    gate: 'Loops until green — type-check, lint, tests, build',
+    best: 'Executable validation embedded in the artifact — closest philosophical neighbor here',
+    scope: 'Implementation slices',
     note:
-      '`/prp-ralph` (Geoffrey Huntley’s Ralph technique, stop-hook driven) iterates until all validation commands pass — type-check, lint, tests, build — then emits a completion promise. Genuinely executable validation; what it gates is “loop until the code is green,” not stage progression or document content. No license file at read time.',
+      '`/prp-ralph` (Geoffrey Huntley’s Ralph technique, stop-hook driven) iterates until all validation commands pass — type-check, lint, tests, build — then emits a completion promise. Genuinely executable validation; what it gates is “loop until the code is green,” not stage progression or document content. The PRP artifact bundles a PRD + codebase intelligence + a runbook. No license file at read time.',
   },
   {
     name: 'ruflo (Claude Flow) / SPARC',
     url: 'https://github.com/ruvnet/ruflo',
     stars: '~59k stars',
+    gateType: ['AGENT-JUDGED'],
     gate: 'Agent-evaluated criteria between phases, stored in memory tables',
     best: 'Orchestration scale — swarms, adaptive memory, plugins; gate results stored for traceability',
-    scope: 'Agent meta-harness; 5-phase SPARC pipeline via plugin',
+    scope: 'Agent meta-harness',
     note:
       'Renamed from claude-flow. The `ruflo-sparc` plugin runs Specification → Pseudocode → Architecture → Refinement → Completion with “quality gates between each phase” — verified in the plugin README as orchestrator-agent-evaluated criteria (e.g. “covers all ACs”) whose results land in memory tables, not standalone exit-code scripts. `ruflo verify` is supply-chain verification of the installed bytes, not methodology receipts.',
   },
@@ -110,26 +131,29 @@ const TOOLS: Row[] = [
     name: 'spec-workflow-mcp',
     url: 'https://github.com/Pimzino/spec-workflow-mcp',
     stars: '~4.2k stars',
-    gate: 'Human approval via dashboard — genuinely blocks until approved',
-    best: 'A gate that mechanically blocks — the only other tool here where “blocked until approved” is enforced, not advisory',
-    scope: 'MCP server: requirements → design → tasks, with a web dashboard',
+    gateType: ['HUMAN APPROVAL'],
+    gate: 'Dashboard approval — genuinely blocks until approved',
+    best: 'The only other tool here where “blocked until approved” is enforced',
+    scope: 'MCP server + dashboard',
     note:
-      'The MCP server genuinely blocks the workflow until approval comes through the real-time dashboard (or VSCode extension), with revision rounds and implementation logs. The block is mechanical; the check itself is a person. GPL-3.0, which also limits commercial embedding.',
+      'The MCP server genuinely blocks the workflow until approval comes through the real-time dashboard (or VSCode extension), with revision rounds and implementation logs. The block is mechanical, not advisory; the check itself is a person. The pipeline: requirements → design → tasks. GPL-3.0, which also limits commercial embedding.',
   },
   {
     name: 'Taskmaster',
     url: 'https://github.com/eyaltoledano/claude-task-master',
     stars: '~27k stars',
+    gateType: ['NONE'],
     gate: 'None — task ordering, no stage blocking',
     best: 'Task decomposition — PRD into dependency-ordered tasks, plus a dedicated research model',
-    scope: 'Task layer inside Cursor / Windsurf / similar editors',
+    scope: 'Task layer in editors',
     note:
-      'Parses a PRD into dependency-ordered tasks (`tasks.json`), with expand/next/show and tagged workstreams; a `research` command pulls fresh information through a dedicated research model (Perplexity/xAI/OpenRouter) with project context. The research is informational, not evidentiary — no claims-traced-to-source step. License NOASSERTION (MIT-with-Commons-Clause family).',
+      'Parses a PRD into dependency-ordered tasks (`tasks.json`), with expand/next/show and tagged workstreams; a `research` command pulls fresh information through a dedicated research model (Perplexity/xAI/OpenRouter) with project context. The research is informational, not evidentiary — no claims-traced-to-source step. Runs inside Cursor / Windsurf / similar editors. License NOASSERTION (MIT-with-Commons-Clause family).',
   },
   {
     name: 'Agent OS',
     url: 'https://github.com/buildermethods/agent-os',
     stars: '~4.8k stars',
+    gateType: ['NONE'],
     gate: 'None — different job',
     best: 'Standards — extracts the conventions already in your codebase and injects them contextually',
     scope: 'Context / standards injection',
@@ -140,7 +164,8 @@ const TOOLS: Row[] = [
     name: 'SuperClaude',
     url: 'https://github.com/SuperClaude-Org/SuperClaude_Framework',
     stars: '~23k stars',
-    gate: 'LLM self-scored confidence thresholds — not executable',
+    gateType: ['NONE'],
+    gate: 'LLM self-scored confidence thresholds — not executable, not a gate',
     best: 'Configuration breadth — commands, cognitive personas, modes, MCP integrations in one framework',
     scope: 'Claude Code configuration framework',
     note:
@@ -150,22 +175,24 @@ const TOOLS: Row[] = [
     name: 'Tessl',
     url: 'https://tessl.io',
     stars: 'commercial',
+    gateType: ['HUMAN APPROVAL'],
     gate: 'Human approval between spec and implementation',
-    best: 'The Spec Registry — “npm for specs,” 10k+ library specs aimed at API hallucination',
-    scope: 'Spec registry (open beta) + spec-as-source framework (closed beta)',
+    best: 'The Spec Registry — “npm for specs,” aimed at API hallucination',
+    scope: 'Spec registry + framework',
     note:
-      'Guy Podjarny (ex-Snyk), $125M from Index/Accel/GV/boldstart. The Spec Registry is in open beta; the Framework, in closed beta, targets the spec-anchored / spec-as-source end of Fowler’s ladder. Human approval sits between spec and implementation. A different bet than gated pipelines: specs as the source of truth.',
+      'Guy Podjarny (ex-Snyk), $125M from Index/Accel/GV/boldstart. The Spec Registry — 10k+ library specs — is in open beta; the Framework, in closed beta, targets the spec-anchored / spec-as-source end of Fowler’s ladder. Human approval sits between spec and implementation. A different bet than gated pipelines: specs as the source of truth.',
   },
   {
     name: 'Blueprint (this site)',
     url: 'https://github.com/nino-chavez/blueprint',
     stars: 'this repo',
-    gate: 'Exit-code Node scripts on artifact content + evidence (`blueprint review`, `doctor`); document-level fact-check stage',
+    gateType: ['EXIT-CODE: CONTENT'],
+    gate: 'Exit-code Node scripts on artifact content + evidence; fact-check stage',
     best:
-      'Self-application receipts — <a href="/demo" class="text-brand hover:underline">the demo</a> and <a href="/inspect" class="text-brand hover:underline">the methodology pages</a> are its own output. Caveats: stage skills are Claude-Code-only; adoption is one team engagement in flight plus one independent adopter; the gates verify artifacts and copy — they don’t make the work good',
-    scope: 'Product pipeline: research → prototype → fact-check → docs → deploy → iterate',
+      'Self-application receipts — <a href="/demo" class="text-brand-strong hover:underline">the demo</a> and <a href="/inspect" class="text-brand-strong hover:underline">the methodology pages</a> are its own output. Caveats in the footnote',
+    scope: 'Product pipeline',
     note:
-      'The gates are Node scripts with exit codes: `blueprint review <name> --target=<dir>` fails CI when an artifact’s content — evidence paths, citations, required sections — doesn’t hold, and `blueprint doctor` exits non-zero on failed checks. Fact-check is a pipeline stage that traces document claims to research sources before deploy. Same honesty as every other row: the executable set is 15 of 18 reviewers (`blueprint review --list`), the stage skills only run in Claude Code, and a passing gate means the artifact checks out — not that the thinking behind it was right.',
+      'The gates are Node scripts with exit codes: `blueprint review <name> --target=<dir>` fails CI when an artifact’s content — evidence paths, citations, required sections — doesn’t hold, and `blueprint doctor` exits non-zero on failed checks. Fact-check is a pipeline stage that traces document claims to research sources before deploy. The pipeline: research → prototype → fact-check → docs → deploy → iterate. Same honesty as every other row: the executable set is 15 of 18 reviewers (`blueprint review --list`), the stage skills only run in Claude Code, adoption is one team engagement in flight plus one independent adopter, and a passing gate means the artifact checks out — not that the thinking behind it was right. The gates verify artifacts and copy; they don’t make the work good.',
   },
 ];
 ---
@@ -173,117 +200,160 @@ const TOOLS: Row[] = [
   title="How the gates compare"
   description="How the spec-driven field's stage gates actually work — Spec Kit, BMAD, GSD, OpenSpec, Kiro, and more — source files read where public, vendor docs where not. Dated 2026-06-11; corrections welcome."
 >
-  <header class="mb-10 max-w-3xl">
-    <p class="mb-2 font-mono text-xs uppercase tracking-wide text-brand">the landscape</p>
-    <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">Where this sits.</h1>
-    <p class="mb-3 text-lg leading-relaxed text-contrast-500">
-      Spec-driven development is a named, crowded category: a landscape tracker counts 30+ frameworks,
-      <a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" rel="noreferrer" class="text-brand hover:underline">Martin Fowler has a series on it</a>,
-      and the community’s own comparison concludes every major workflow converges on the same staged pipeline —
-      research, plan, execute, review, ship. Blueprint’s seven stages are not the novelty.
-      What differs is what the gate between stages actually <em>is</em>: a person clicking approve,
-      a checklist the LLM grades itself against, a script that checks files exist — or a script that checks what’s in them.
-    </p>
-    <p class="text-[15px] leading-relaxed text-contrast-500">
-      This is a source-level read of that question, sources read {READ_DATE}: gate implementations from the open repos,
-      vendor docs for the commercial tools (Kiro, Tessl), and one row — Superpowers — tabled from community data only,
-      flagged as such. Star counts are approximate and point-in-time. If a row misrepresents a tool,
-      <a href={ISSUES} target="_blank" rel="noreferrer" class="text-brand hover:underline">file an issue</a> and it gets fixed.
-    </p>
-  </header>
+  <!-- ONE left edge: the whole page hangs off a single max-w-5xl rail; prose
+       columns are max-w-3xl WITHOUT mx-auto so they share that edge — the
+       idiom index.astro documents for its commands section (agency audit
+       2026-06-11: intro at x=112 vs table at x=169 read as two documents). -->
+  <div class="mx-auto max-w-5xl">
+    <header class="mb-8 max-w-3xl">
+      <p class="mb-2 font-mono text-xs uppercase tracking-wide text-brand-strong">the landscape</p>
+      <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">Where this sits.</h1>
+      <p class="text-lg leading-relaxed text-contrast-500">
+        Every major spec-driven workflow converges on the same staged pipeline —
+        what differs is what the gate between stages actually <em>is</em>.
+      </p>
+    </header>
 
-  <!-- THE TABLE --------------------------------------------------------------
-       Table idiom borrowed from faq.astro's agents-matrix. Cells stay short;
-       the per-tool footnotes below carry the source paths. -->
-  <section class="mx-auto max-w-6xl">
-    <div class="overflow-x-auto rounded-lg border border-contrast-200 bg-background p-6">
-      <table class="w-full min-w-[56rem] text-left text-sm">
-        <thead>
-          <tr class="border-b border-contrast-200 font-mono text-[10px] uppercase tracking-wide text-contrast-400">
-            <th class="py-2 pr-4 font-medium">Tool</th>
-            <th class="py-2 pr-4 font-medium">What its gate actually is</th>
-            <th class="py-2 pr-4 font-medium">What it does best</th>
-            <th class="py-2 font-medium">Scope</th>
-          </tr>
-        </thead>
-        <tbody class="align-top text-contrast-500">
-          {TOOLS.map((t) => (
-            <tr class="border-b border-contrast-100 last:border-b-0">
-              <td class="py-3 pr-4">
-                <a href={t.url} target="_blank" rel="noreferrer" class="font-medium text-foreground hover:text-brand">{t.name}</a>
-                <span class="mt-0.5 block font-mono text-[11px] text-contrast-400">{t.stars}</span>
-              </td>
-              <td class="py-3 pr-4" set:html={fmt(t.gate)} />
-              <td class="py-3 pr-4" set:html={fmt(t.best)} />
-              <td class="py-3">{t.scope}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p class="mt-3 font-mono text-[11px] leading-relaxed text-contrast-400">
-      Also in the field, read but not tabled: Spec Kitty (~1.3k stars, spec → kanban → auto-merge CLI),
-      Augment Intent (commercial “living specs” platform with a pre-PR Verifier), and “Hermes”
-      (landscape chatter; no substantive repo surfaced). Named on the community’s shortlist but not
-      read this pass: gstack (~109k stars). Sources read {READ_DATE}.
-    </p>
-  </section>
-
-  <!-- FOOTNOTES ---------------------------------------------------------------
-       The generous detail per tool, with the file that was actually read. -->
-  <section class="mx-auto mt-12 max-w-3xl">
-    <h2 class="mb-4 font-heading text-2xl font-semibold tracking-tight">Row by row, with sources.</h2>
-    <div class="space-y-5">
-      {TOOLS.map((t) => (
-        <div class="rounded-lg border border-contrast-200 bg-background p-5">
-          <h3 class="mb-1.5 font-heading text-base font-semibold tracking-tight">{t.name}</h3>
-          <p class="text-[14px] leading-relaxed text-contrast-500" set:html={fmt(t.note)} />
+    <!-- THE FOUR GATE KINDS — the page's thesis, made visible before any data
+         (agency audit 2026-06-11: the categorical key was buried at the end of
+         intro paragraph one). The table's gate-type pills reuse these labels. -->
+    <section class="mb-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      {GATE_KINDS.map(([label, gloss]) => (
+        <div class="rounded-lg border border-contrast-200 bg-background p-3">
+          <p class="mb-1 font-mono text-[10px] uppercase tracking-wide text-foreground">{label}</p>
+          <p class="text-[13px] leading-snug text-contrast-500">{gloss}</p>
         </div>
       ))}
+    </section>
+
+    <div class="mb-10 max-w-3xl">
+      <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">
+        Spec-driven development is a named, crowded category: a landscape tracker counts 30+ frameworks,
+        <a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" rel="noreferrer" class="text-brand-strong hover:underline">Martin Fowler has a series on it</a>,
+        and the convergence claim above — research, plan, execute, review, ship — is the community’s own
+        comparison’s conclusion, not this page’s. Blueprint’s seven stages are not the novelty —
+        the question this read asks is which gate kind sits between anyone’s stages.
+      </p>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        This is a source-level read of that question, sources read {READ_DATE}: gate implementations from the open repos,
+        vendor docs for the commercial tools (Kiro, Tessl), and one row — Superpowers — tabled from community data only,
+        flagged as such. Star counts are approximate and point-in-time. If a row misrepresents a tool,
+        <a href={ISSUES} target="_blank" rel="noreferrer" class="text-brand-strong hover:underline">file an issue</a> and it gets fixed.
+      </p>
     </div>
-  </section>
 
-  <!-- THE HONEST NET ---------------------------------------------------------- -->
-  <section class="mx-auto mt-12 max-w-3xl">
-    <h2 class="mb-3 font-heading text-2xl font-semibold tracking-tight">What nobody else does (as of this read).</h2>
-    <p class="mb-4 text-[15px] leading-relaxed text-contrast-500">
-      Fowler’s criticism of the field is that LLM-interpreted checklists create
-      “a false sense of control” — there is “no 100% guarantee that they will be respected.”
-      Across the source-read tools above (Superpowers excluded — its row is community data, not a source read),
-      three things remained unclaimed in combination on {READ_DATE}:
-    </p>
-    <ol class="mb-6 list-decimal space-y-3 pl-5 text-[15px] leading-relaxed text-contrast-500">
-      <li>
-        <strong class="font-medium text-foreground">Exit-code gates on artifact content and evidence.</strong>
-        Spec Kit’s <code class="font-mono text-[12px] text-foreground">check-prerequisites.sh</code> is a real exit-code gate — on file existence.
-        PRP’s loops are real — on code quality. The unclaimed slot is scripts that fail on what’s
-        <em>in</em> the artifacts: missing evidence paths, uncited claims, stale counts.
-        “Only executable gates” would be false; “executable gates on content, not just existence” is what this read supports.
-      </li>
-      <li>
-        <strong class="font-medium text-foreground">A document-level fact-check stage.</strong>
-        Kiro verifies code against EARS requirements; GSD’s verifier falsifies the agent’s own summary against the codebase.
-        Both are code-level — and good. Nobody in this read traces <em>document</em> claims back to research sources before shipping.
-      </li>
-      <li>
-        <strong class="font-medium text-foreground">Self-application receipts as a feature.</strong>
-        OpenSpec’s archive directory is a genuine dogfooding trail — the closest thing found — and it goes unmarketed.
-        This site is Blueprint’s own pipeline output, gates included.
-      </li>
-    </ol>
-    <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">What several do better than Blueprint.</h3>
-    <p class="text-[15px] leading-relaxed text-contrast-500">
-      Kiro’s property tests verify the code itself — Blueprint’s gates stop at artifacts and copy.
-      GSD’s adversarial-verifier stance is a stronger distrust posture than Blueprint’s reviewers hold.
-      And community, everywhere: every tool above has more users than Blueprint — GSD reached ~64k stars
-      in about five months; Blueprint’s adoption is one team engagement in flight and one independent adopter.
-    </p>
-  </section>
+    <!-- THE TABLE --------------------------------------------------------------
+         Table idiom borrowed from faq.astro's agents-matrix. Cells stay one
+         line; the per-tool footnotes below are the single home for gate detail
+         and source paths (agency audit 2026-06-11: 86% of cells were multi-line
+         prose, no row rhythm). The Blueprint row gets a quiet landing — brand
+         left border + tint, not a highlight box. -->
+    <section>
+      <div class="overflow-x-auto rounded-lg border border-contrast-200 bg-background p-6">
+        <table class="w-full min-w-[56rem] text-left text-sm">
+          <thead>
+            <tr class="border-b border-contrast-200 font-mono text-[10px] uppercase tracking-wide text-contrast-400">
+              <th class="py-2 pr-4 font-medium">Tool</th>
+              <th class="py-2 pr-4 font-medium">Gate type</th>
+              <th class="py-2 pr-4 font-medium">What its gate actually is</th>
+              <th class="py-2 pr-4 font-medium">What it does best</th>
+              <th class="py-2 font-medium">Scope</th>
+            </tr>
+          </thead>
+          <tbody class="align-top text-contrast-500">
+            {TOOLS.map((t) => {
+              const payoff = t.name.startsWith('Blueprint');
+              return (
+                <tr
+                  class={`border-b border-contrast-100 last:border-b-0 ${
+                    payoff ? 'border-l-2 border-l-brand bg-contrast-100/40' : 'even:bg-contrast-100/20'
+                  }`}
+                >
+                  <td class={`py-3 pr-4 ${payoff ? 'pl-3' : ''}`}>
+                    <a href={t.url} target="_blank" rel="noreferrer" class="font-medium text-foreground hover:text-brand">{t.name}</a>
+                    <span class="mt-0.5 block font-mono text-[11px] text-contrast-400">{t.stars}</span>
+                  </td>
+                  <td class="py-3 pr-4">
+                    <div class="flex flex-col items-start gap-1">
+                      {t.gateType.map((g) => (
+                        <span class="whitespace-nowrap rounded border border-contrast-200 bg-contrast-100/60 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-contrast-500">{g}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td class="py-3 pr-4" set:html={fmt(t.gate)} />
+                  <td class="py-3 pr-4" set:html={fmt(t.best)} />
+                  <td class="py-3 whitespace-nowrap">{t.scope}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 max-w-3xl font-mono text-[11px] leading-relaxed text-contrast-400">
+        Also in the field, read but not tabled: Spec Kitty (~1.3k stars, spec → kanban → auto-merge CLI),
+        Augment Intent (commercial “living specs” platform with a pre-PR Verifier), and “Hermes”
+        (landscape chatter; no substantive repo surfaced). Named on the community’s shortlist but not
+        read this pass: gstack (~109k stars). Sources read {READ_DATE}.
+      </p>
+    </section>
 
-  <p class="mx-auto mt-10 max-w-3xl text-[15px] leading-relaxed text-contrast-500">
-    See the gates run on <a href="/demo" class="font-medium text-brand hover:underline">the demo</a>,
-    read <a href="/faq" class="font-medium text-brand hover:underline">the honest objections</a>,
-    or check the research behind this page:
-    <a href={`${GH}/research/03-sdd-landscape-2026-06.md`} target="_blank" rel="noreferrer" class="font-medium text-brand hover:underline">research/03-sdd-landscape-2026-06.md</a> on GitHub.
-  </p>
+    <!-- FOOTNOTES ---------------------------------------------------------------
+         The single home for per-tool gate detail, with the file that was
+         actually read. Everything the one-line cells dropped lives here. -->
+    <section class="mt-12 max-w-3xl">
+      <h2 class="mb-4 font-heading text-2xl font-semibold tracking-tight">Row by row, with sources.</h2>
+      <div class="space-y-5">
+        {TOOLS.map((t) => (
+          <div class="rounded-lg border border-contrast-200 bg-background p-5">
+            <h3 class="mb-1.5 font-heading text-base font-semibold tracking-tight">{t.name}</h3>
+            <p class="text-[14px] leading-relaxed text-contrast-500" set:html={fmt(t.note)} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- THE HONEST NET ---------------------------------------------------------- -->
+    <section class="mt-12 max-w-3xl">
+      <h2 class="mb-3 font-heading text-2xl font-semibold tracking-tight">What nobody else does (as of this read).</h2>
+      <p class="mb-4 text-[15px] leading-relaxed text-contrast-500">
+        Fowler’s criticism of the field is that LLM-interpreted checklists create
+        “a false sense of control” — there is “no 100% guarantee that they will be respected.”
+        Across the source-read tools above (Superpowers excluded — its row is community data, not a source read),
+        three things remained unclaimed in combination on {READ_DATE}:
+      </p>
+      <ol class="mb-6 list-decimal space-y-3 pl-5 text-[15px] leading-relaxed text-contrast-500">
+        <li>
+          <strong class="font-medium text-foreground">Exit-code gates on artifact content and evidence.</strong>
+          Spec Kit’s <code class="font-mono text-[12px] text-foreground">check-prerequisites.sh</code> is a real exit-code gate — on file existence.
+          PRP’s loops are real — on code quality. The unclaimed slot is scripts that fail on what’s
+          <em>in</em> the artifacts: missing evidence paths, uncited claims, stale counts.
+          “Only executable gates” would be false; “executable gates on content, not just existence” is what this read supports.
+        </li>
+        <li>
+          <strong class="font-medium text-foreground">A document-level fact-check stage.</strong>
+          Kiro verifies code against EARS requirements; GSD’s verifier falsifies the agent’s own summary against the codebase.
+          Both are code-level — and good. Nobody in this read traces <em>document</em> claims back to research sources before shipping.
+        </li>
+        <li>
+          <strong class="font-medium text-foreground">Self-application receipts as a feature.</strong>
+          OpenSpec’s archive directory is a genuine dogfooding trail — the closest thing found — and it goes unmarketed.
+          This site is Blueprint’s own pipeline output, gates included.
+        </li>
+      </ol>
+      <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">What several do better than Blueprint.</h3>
+      <p class="text-[15px] leading-relaxed text-contrast-500">
+        Kiro’s property tests verify the code itself — Blueprint’s gates stop at artifacts and copy.
+        GSD’s adversarial-verifier stance is a stronger distrust posture than Blueprint’s reviewers hold.
+        And community, everywhere: every tool above has more users than Blueprint — GSD reached ~64k stars
+        in about five months; Blueprint’s adoption is one team engagement in flight and one independent adopter.
+      </p>
+    </section>
+
+    <p class="mt-10 max-w-3xl text-[15px] leading-relaxed text-contrast-500">
+      See the gates run on <a href="/demo" class="font-medium text-brand-strong hover:underline">the demo</a>,
+      read <a href="/faq" class="font-medium text-brand-strong hover:underline">the honest objections</a>,
+      or check the research behind this page:
+      <a href={`${GH}/research/03-sdd-landscape-2026-06.md`} target="_blank" rel="noreferrer" class="font-medium text-brand-strong hover:underline">research/03-sdd-landscape-2026-06.md</a> on GitHub.
+    </p>
+  </div>
 </Layout>

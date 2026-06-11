@@ -68,7 +68,10 @@ const DEEPER = [
       <CommandBlock command={INSTALL} client:visible />
     </div>
     <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[12px] uppercase tracking-wide">
-      <a href="#quickstart" class="rounded-md bg-brand px-4 py-2 text-background no-underline transition-opacity hover:opacity-90">Quickstart ↓</a>
+      {/* bg-brand-strong, not bg-brand: white-on-brand measures 4.42:1 — under
+          AA for this 12px label (agency audit 2026-06-11, same pair as the
+          small-link rule). */}
+      <a href="#quickstart" class="rounded-md bg-brand-strong px-4 py-2 text-background no-underline transition-opacity hover:opacity-90">Quickstart ↓</a>
       <a href="/demo" class="text-contrast-500 hover:text-brand">Watch the demo →</a>
       <a href="#in-30-seconds" class="text-contrast-500 hover:text-brand">What is this? ↓</a>
       <a href={NPM_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">npm ↗</a>
@@ -122,7 +125,7 @@ const DEEPER = [
          front-door surface — the first buyer-persona reader had to ask for it. -->
     <p class="mx-auto mt-8 text-center font-mono text-[12px] tracking-wide text-contrast-500">
       <span class="uppercase">the thinking behind it</span> —
-      <a href="https://ninochavez.co/blog/the-kitchen-i-am-looking-for" target="_blank" rel="noreferrer" class="text-brand hover:opacity-80">The kitchen I'm looking for ↗</a>
+      <a href="https://ninochavez.co/blog/the-kitchen-i-am-looking-for" target="_blank" rel="noreferrer" class="text-brand-strong hover:opacity-80">The kitchen I'm looking for ↗</a>
     </p>
   </section>
 
@@ -136,6 +139,29 @@ const DEEPER = [
         <strong class="font-medium text-foreground">prototype and documents are built simultaneously</strong> —
         the prototype tests the decision, the docs capture the rationale.
       </p>
+    </div>
+    <!-- Flow spine, desktop only: the cards enumerate the stages but never
+         draw the flow or the gates — the page's thesis (agency audit
+         2026-06-11). Nodes are the stage numbers; the diamond between each
+         pair is the reviewer gate. The row is aria-hidden because the
+         ordered list below carries the same stages for assistive tech;
+         on mobile the grid stays the only rendering. -->
+    <div class="mx-auto mb-8 hidden max-w-5xl sm:block">
+      <div class="flex items-center" aria-hidden="true">
+        {STAGES.map((_, i) => (
+          <Fragment>
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-contrast-200 bg-background font-mono text-[12px] font-medium text-brand-strong">{String(i + 1).padStart(2, '0')}</span>
+            {i < STAGES.length - 1 && (
+              <span class="flex min-w-0 flex-1 items-center">
+                <span class="h-px flex-1 bg-contrast-200"></span>
+                <span class="h-1.5 w-1.5 shrink-0 rotate-45 bg-brand"></span>
+                <span class="h-px flex-1 bg-contrast-200"></span>
+              </span>
+            )}
+          </Fragment>
+        ))}
+      </div>
+      <p class="mt-3 text-center text-sm text-contrast-500">A reviewer gate sits between every stage — work doesn’t advance until it passes.</p>
     </div>
     <!-- A real grid, left-aligned: the 7th card lands in column 1 of its row.
          Audit evidence: a centered flex-wrap bottom row floats OFF the column
@@ -174,7 +200,7 @@ const DEEPER = [
         <div><span class="font-heading text-2xl font-semibold text-foreground">{consumerCount}</span><span class="ml-1.5 text-sm text-contrast-500">projects running Blueprint</span></div>
         <div><span class="font-heading text-2xl font-semibold text-foreground">{COMMANDS.length}</span><span class="ml-1.5 text-sm text-contrast-500">CLI commands</span></div>
         <div><span class="font-heading text-2xl font-semibold text-foreground">1</span><span class="ml-1.5 text-sm text-contrast-500">config → whole portal</span></div>
-        <a href="/discover" class="font-mono text-[12px] uppercase tracking-wide text-brand hover:underline">Open the portal →</a>
+        <a href="/discover" class="font-mono text-[12px] uppercase tracking-wide text-brand-strong hover:underline">Open the portal →</a>
       </div>
     </div>
   </section>
@@ -186,17 +212,21 @@ const DEEPER = [
       <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">Up and running in five steps.</h2>
       <p class="mb-10 text-contrast-500">Five steps. The choices you make are written out below — every command runs as printed.</p>
 
+      <!-- min-w-0 on every step-content div: a grid child defaults to
+           min-width:auto and refuses to shrink below CommandBlock's nowrap
+           command line, which silently disables its overflow-x-auto and drags
+           the page 629px wide at 390px (WCAG 1.4.10 — agency audit 2026-06-11). -->
       <ol class="space-y-8">
         <li class="grid grid-cols-[2rem_1fr] gap-4">
           <span class="font-heading text-lg font-semibold text-brand">1</span>
-          <div>
+          <div class="min-w-0">
             <h3 class="mb-1 font-heading text-lg font-semibold tracking-tight">Prerequisites</h3>
-            <p class="text-[15px] leading-relaxed text-contrast-500">Node 18+ and <a href="https://claude.com/claude-code" target="_blank" rel="noreferrer" class="text-brand hover:underline">Claude Code</a>. That’s it — there’s no server to stand up and nothing to host.</p>
+            <p class="text-[15px] leading-relaxed text-contrast-500">Node 18+ and <a href="https://claude.com/claude-code" target="_blank" rel="noreferrer" class="text-brand-strong hover:underline">Claude Code</a>. That’s it — there’s no server to stand up and nothing to host.</p>
           </div>
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
           <span class="font-heading text-lg font-semibold text-brand">2</span>
-          <div>
+          <div class="min-w-0">
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Scaffold your initiative</h3>
             <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Generates a portal you own, validated against your config. <code class="font-mono text-[13px] text-foreground">--name</code> is the only required flag — everything else defaults and is echoed back. Two starting points:</p>
             <!-- Both commands verified to run as printed (wave 61: the stamper
@@ -217,7 +247,7 @@ const DEEPER = [
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
           <span class="font-heading text-lg font-semibold text-brand">3</span>
-          <div>
+          <div class="min-w-0">
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Configure</h3>
             <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Set the three things that matter in <code class="font-mono text-[13px]">blueprint.yml</code> — the rest has sane defaults.</p>
             <pre class="overflow-x-auto rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground"><code>variant: brownfield   <span class="text-contrast-500"># greenfield | midstream | brownfield</span>
@@ -227,7 +257,7 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
           <span class="font-heading text-lg font-semibold text-brand">4</span>
-          <div>
+          <div class="min-w-0">
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Run the pipeline</h3>
             <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">In Claude Code, the stages are skills. Run them in order — each gate is enforced by a reviewer.</p>
             <CommandBlock command="/blueprint-research → /blueprint-prototype → /blueprint-validate → /blueprint-docs → /blueprint-deploy" prompt="" client:visible />
@@ -235,7 +265,7 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">
           <span class="font-heading text-lg font-semibold text-brand">5</span>
-          <div>
+          <div class="min-w-0">
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Ship &amp; check</h3>
             <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Push and your portal deploys. Verify conformance — <code class="font-mono text-[13px] text-foreground">doctor</code> is honest about what it didn’t check.</p>
             <CommandBlock command="npx @nino-chavez-labs/blueprint-cli doctor" client:visible />
@@ -244,8 +274,8 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
       </ol>
       <p class="mt-8 text-[15px] leading-relaxed text-contrast-500">
         Want the whole thing — stage by stage, every reviewer gate, on a real initiative? →
-        <a href="/learn/tutorial" class="font-medium text-brand hover:underline">Run your first initiative</a>,
-        or start at <a href="/learn" class="font-medium text-brand hover:underline">Learn</a>.
+        <a href="/learn/tutorial" class="font-medium text-brand-strong hover:underline">Run your first initiative</a>,
+        or start at <a href="/learn" class="font-medium text-brand-strong hover:underline">Learn</a>.
       </p>
     </div>
   </section>
@@ -264,7 +294,7 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {COMMANDS.map(([name, desc]) => (
           <div class="rounded-lg border border-contrast-200 bg-background p-5">
-            <h3 class="mb-1.5 font-mono text-sm font-semibold text-brand">blueprint {name}</h3>
+            <h3 class="mb-1.5 font-mono text-sm font-semibold text-brand-strong">blueprint {name}</h3>
             <p class="text-[15px] leading-relaxed text-contrast-500" set:html={desc.replace(/`([^`]+)`/g, '<code class="font-mono text-[13px] text-foreground">$1</code>')} />
           </div>
         ))}
