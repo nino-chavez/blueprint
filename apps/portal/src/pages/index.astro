@@ -308,13 +308,16 @@ portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B
       <p class="mb-2 font-mono text-[12px] uppercase tracking-wide text-brand-strong">ecosystem</p>
       <h2 class="mb-2 font-heading text-3xl font-semibold tracking-tight">Stay current. Feed back upstream.</h2>
       <p class="mb-10 text-contrast-500">Updates flow down without breaking you; your fixes and gaps flow back up.</p>
+      {/* min-w-0 on both grid children: same min-width:auto trap as the
+          quickstart steps — the nowrap CommandBlock otherwise widens the card
+          past the mobile viewport (residual 152px overflow, live-measured). */}
       <div class="grid gap-6 md:grid-cols-2">
-        <div class="rounded-lg border border-contrast-200 bg-background p-6">
+        <div class="min-w-0 rounded-lg border border-contrast-200 bg-background p-6">
           <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Pull updates</h3>
           <p class="mb-4 text-[15px] leading-relaxed text-contrast-500"><code class="font-mono text-[13px] text-foreground">blueprint upgrade</code> reads the methodology version your project is pinned to, shows what changed, and updates it — non-breaking, dry-run by default. <code class="font-mono text-[13px] text-foreground">blueprint fleet</code> shows which of your initiatives have fallen behind.</p>
           <CommandBlock command="npx @nino-chavez-labs/blueprint-cli upgrade" client:visible />
         </div>
-        <div class="rounded-lg border border-contrast-200 bg-background p-6">
+        <div class="min-w-0 rounded-lg border border-contrast-200 bg-background p-6">
           <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Report &amp; request upstream</h3>
           <p class="mb-4 text-[15px] leading-relaxed text-contrast-500">Hit a gap, a bug, or a feature need? File an amendment or RFC. Triage routes it automatically — substantial change → RFC first, bug-fix → straight PR.</p>
           <a href={`${REPO_URL}/blob/main/CONTRIBUTING.md`} target="_blank" rel="noreferrer" class="inline-block rounded-md border border-contrast-200 px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-contrast-500 transition-colors hover:border-brand/60 hover:text-brand">How to contribute →</a>
