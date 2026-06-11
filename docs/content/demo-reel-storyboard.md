@@ -33,6 +33,13 @@ video drifts.
   after the sizzle *without parsing monospace*? Captions carry the story in
   plain language; terminal scenes are spectacle (the stamp burst, the green
   capstone), not required reading. Receipts beat is prose cards, not CLI.
+  **Jargon rule:** the CLI on screen may say `pattern=A` / `variant` / `tier`
+  — the fixture is verbatim — but the CAPTION must translate every such term
+  the first time it appears (pattern = full project site vs lighter
+  redesign review; variant = new idea vs existing app; tier = deliverable
+  depth). Sizzle captions carry no config keys at all. A term neither
+  translated nor self-evident is a defect (2026-06-10 operator finding:
+  "pattern-a … even I don't know what that maps to").
 - **R. — incumbent personal loop ("hard part is team alignment"):** does the
   walkthrough show the team seam, not just a better kitchen? The fleet beat
   is framed as "every project on one pinned methodology — alignment checked,

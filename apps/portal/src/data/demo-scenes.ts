@@ -115,12 +115,21 @@ export const SCENES: Scene[] = [
   },
 
   // ── day zero: stamp ────────────────────────────────────────────────────
+  // One scene, two captions: the sizzle stays jargon-free; the deep cut
+  // translates each flag the viewer just watched being typed.
   {
     type: 'terminal',
-    reels: ['sizzle', 'deep'],
+    reels: ['sizzle'],
     fixture: 'init',
-    caption: 'One command stamps the workspace: research, decisions, prototype, portal. An existing app is the same command with variant: brownfield.',
+    caption: 'One command sets up the whole workspace: research, decisions, prototype, and a shareable project site. Works for a new idea or an existing app.',
     holdMs: 2600,
+  },
+  {
+    type: 'terminal',
+    reels: ['deep'],
+    fixture: 'init',
+    caption: 'Day zero — one command sets up the workspace. The flags are the three choices: new idea or existing app (variant), how deep the deliverables go (tier), full project site or lighter redesign review (pattern).',
+    holdMs: 3400,
   },
 
   // ── stage 0: the config IS the contract ────────────────────────────────
@@ -152,7 +161,7 @@ export const SCENES: Scene[] = [
     type: 'terminal',
     reels: ['deep'],
     fixture: 'review-research-fresh',
-    caption: "Try to skip ahead and the gate names exactly what's missing. 'Done' is defined per stage, per variant.",
+    caption: "Try to skip ahead and the gate names exactly what's missing — 'done' is defined for every stage.",
     holdMs: 4200,
   },
 
@@ -187,7 +196,7 @@ export const SCENES: Scene[] = [
     type: 'terminal',
     reels: ['deep'],
     fixture: 'review-stateful-claims',
-    caption: "Fact-check is a stage, not a hope. These are agent gates — your team's sign-offs (PM, Eng) layer on top of them, not under.",
+    caption: "Fact-check is a stage, not a hope: claims are checked against the source. These are automated checks — your team's sign-offs (PM, Eng) sit on top.",
     holdMs: 3000,
   },
 
@@ -196,7 +205,7 @@ export const SCENES: Scene[] = [
     type: 'terminal',
     reels: ['deep'],
     fixture: 'doctor-fresh',
-    caption: 'The ship gate, before the work: a scaffold full of placeholders FAILS. You cannot share a portal of stubs.',
+    caption: 'The ship gate, before the work: a workspace full of placeholder pages FAILS. You cannot share a site of stubs.',
     holdMs: 3600,
   },
   {
@@ -219,7 +228,7 @@ export const SCENES: Scene[] = [
     type: 'terminal',
     reels: ['deep'],
     fixture: 'fleet',
-    caption: 'The team seam: every project pinned to one methodology version. Alignment is checked, not hoped.',
+    caption: "One report across every project running Blueprint: who's current, who's fallen behind. Team alignment is checked, not hoped.",
     holdMs: 3600,
   },
 

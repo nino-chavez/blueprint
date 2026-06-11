@@ -27,13 +27,19 @@ const scratch = mkdtempSync(join(tmpdir(), 'bp-demo-'));
 const target = join(scratch, 'field-guide');
 mkdirSync(target);
 
-// Display command = what a consumer types (npx form); argv = how we run it
-// here (direct node, same dispatcher). Same surface, no PATH dependence.
+// Display command = the real argv rendered in the npx form (derived, not
+// hand-written: a hand-trimmed display drifts into showing a command that
+// would FAIL if a viewer typed it — the init stamper requires every flag).
 const NPX = 'npx @nino-chavez-labs/blueprint-cli';
+function displayFor(argv) {
+  return [NPX, ...argv.slice(1)]
+    .map((a) => redact(a))
+    .map((a) => (/[ ]/.test(a) ? a.replace(/^(--[^=]+=)(.*)$/, '$1"$2"') : a))
+    .join(' ');
+}
 const SCENARIOS = [
   {
     id: 'init',
-    display: `${NPX} init --pattern=A --variant=greenfield --tier=1 --name=field-guide --target=field-guide`,
     argv: [
       cli, 'init',
       '--name=field-guide', '--display-name=Field Guide',
@@ -104,7 +110,7 @@ for (const s of SCENARIOS) {
   const durationMs = Date.now() - t0;
   const out = `${res.stdout ?? ''}${res.stderr ?? ''}`.replace(/\n$/, '');
   fixtures[s.id] = {
-    command: s.display,
+    command: s.display ?? displayFor(s.argv),
     exitCode: res.status ?? -1,
     durationMs,
     lines: out.split('\n').map(redact),
