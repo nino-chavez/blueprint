@@ -675,6 +675,67 @@ p { color: var(--text-secondary); }
   border-radius: var(--radius-sm);
 }
 
+/* ─────────────── mock frame (canvas rule, 2026-06-11) ───────────────
+   The canvas belongs to the portal; the theme belongs to the mock.
+   proto-nav.js reads meta.mock_frame ("desktop" | "phone" | "none",
+   default desktop) and frames each view section so themed mocks —
+   including fully dark product surfaces — read as windows onto the
+   product instead of restyling the portal canvas. The frame bar is
+   portal-owned and stays light regardless of the mock's theme. Split
+   mode's panel rules above carry higher specificity and override the
+   container styles (border, margin, overflow, padding) by design. */
+.mock-frame-desktop, .mock-frame-phone {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+  /* clip, not hidden: clip rounds the corners without creating a scroll
+     container, so position:sticky inside the mock keeps working against
+     the viewport (mock-frame wave, 2026-06-11). */
+  overflow: clip;
+  margin: var(--space-6) auto;
+}
+.mock-frame-desktop {
+  border-radius: var(--radius-lg);
+  max-width: 1200px;
+  width: calc(100% - 2 * var(--space-4));
+}
+.mock-frame-phone {
+  max-width: 420px;
+  border: 10px solid hsl(220 15% 12%);
+  border-radius: 36px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+  /* centers the bezel inside its grid column in split mode (margin
+     auto-centering is zeroed by the split panel rules). */
+  justify-self: center;
+}
+.mock-frame-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 14px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--card-border);
+}
+.mock-frame-bar .frame-dots {
+  display: inline-flex;
+  gap: 5px;
+  flex: none;
+}
+.mock-frame-bar .frame-dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--card-border);
+}
+.mock-frame-bar .frame-route {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ─────────────── tournament-page specifics ─────────────── */
 
 .tournament-hero {

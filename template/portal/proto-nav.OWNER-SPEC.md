@@ -6,7 +6,7 @@ couples_with:
   - prototype/_meta/index.json
   - prototype/_meta/*.json
   - prototype/_meta/slices/*.json
-  - prototype/shared.css (CSS selectors .proto-top-bar, .strategy-panel, .current-state-panel, .proto-flow-breadcrumb, .compare-toggle)
+  - prototype/shared.css (CSS selectors .proto-top-bar, .strategy-panel, .current-state-panel, .proto-flow-breadcrumb, .compare-toggle, .mock-frame-desktop/.mock-frame-phone/.mock-frame-bar)
   - prototype/CONVENTIONS.md (page HTML contract)
 convention_version: 1
 ---
@@ -25,6 +25,7 @@ convention_version: 1
 6. Renders the left "Shipped state" drawer from the current page's `currentState` field.
 7. Renders the proposed/split/shipped comparison toggle when the page has both `.proposed-view` and `.shipped-view` sections.
 8. Renders the flow stepper when `?flow=<flow-id>` is in the URL.
+9. Frames each view section per the canvas rule (`meta.mock_frame`, see "Mock frame" below).
 
 It's the load-bearing piece that makes N separate HTML pages feel like one cohesive prototype studio.
 
@@ -43,6 +44,16 @@ It's the load-bearing piece that makes N separate HTML pages feel like one cohes
 
 - **Slice rail** (`.proto-slice-sidebar` — fixed-left 240px, visible ≥1080px). Its pages-in-slice list and start-flow buttons moved into the breadcrumb's page switcher; its slice summary moved into the strategy drawer's slice-context block.
 - **Footer "Jump to" select** (`.proto-footer-nav` — the v1 footer holdover that survived v2 as a hidden affordance). Superseded by the breadcrumb page switcher + the command palette.
+
+## Mock frame (canvas rule, 2026-06-11)
+
+**The canvas belongs to the portal; the theme belongs to the mock.** `buildMockFrames()` reads `meta.mock_frame` — `"desktop"` (default), `"phone"`, or `"none"` — and frames each `.proposed-view` / `.shipped-view`:
+
+- **desktop** — adds `.mock-frame-desktop` to the view and injects a `.mock-frame-bar` (three window dots + the production route from `currentState.route` / `surface`) as its first child. The view reads as a browser window onto the product.
+- **phone** — adds `.mock-frame-phone` (≤420px bezel, centered). No bar.
+- **none** — no frame. For document-style pages (comparisons, study content) that are read on the canvas rather than mocked as product surfaces, and for pages with bespoke in-view device presentations the single frame can't wrap (e.g., a two-variant phone rail).
+
+**Why:** before this, themed mocks restyled the page body (`body { background: var(--arena-900) }` on a dark scoring surface), so the portal canvas flipped light/dark page to page and reviewers read the inconsistency as sloppiness rather than per-surface theming intent. The frame makes the boundary explicit: the portal canvas stays light everywhere; whatever theme the product surface ships with lives inside the frame. This is the one sanctioned chrome touch of the page body — the frame wraps the product UI, never alters it. Split mode's panel rules in `shared.css` deliberately out-specify the frame container styles; the frame bar rides inside the panel. The frame clip is `overflow: clip` (not `hidden`) so `position: sticky` inside mocks keeps working against the viewport.
 
 ## Why this shape
 

@@ -1,6 +1,6 @@
 # Blueprint Portal Conventions
 
-**Version 4 (2026-06-11).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
+**Version 5 (2026-06-11).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
 
 ---
 
@@ -9,6 +9,26 @@
 **The product UI must be visually indistinguishable from what would actually ship. Anything that exists only because this is a prototype lives in the harness chrome, never in the page body.**
 
 Reviewers should be able to look at any page and answer "yes, this is what we'd ship" without mentally subtracting prototype scaffolding. The harness chrome — top bar (brand + breadcrumb switchers), proposed/compare/shipped toggle, flow stepper, command palette, strategy/shipped drawers, annotation FAB, AI chat FAB — are all fixed-position overlays. None live inside `.proposed-view` or `.shipped-view`.
+
+---
+
+## The Canvas Rule
+
+**The canvas belongs to the portal; the theme belongs to the mock.**
+
+The portal canvas — the page background the chrome renders on — is portal-owned and stays light on every page. A product surface keeps whatever theme it ships with (including fully dark, like a courtside scoring UI), but that theme lives *inside* the mock view, never on the page body. Before this rule, dark-themed mocks restyled `<body>` and the portal flipped light/dark page to page — reviewers read the inconsistency as sloppiness rather than per-surface theming intent.
+
+The mechanical form: `proto-nav.js` frames each `.proposed-view` / `.shipped-view` per the page's `mock_frame` meta field —
+
+| `mock_frame` | Rendering | Use for |
+|---|---|---|
+| `"desktop"` (default) | Browser-window frame: light portal-owned bar (three dots + the production route from `currentState.route` / `surface`) above the mock, card border + radius + shadow around it | Full-page web surfaces — landing, dashboards, marketing pages |
+| `"phone"` | Centered ≤420px phone bezel | Handheld product surfaces — one-handed courtside tools |
+| `"none"` | No frame | Document-style pages read on the canvas (comparisons, study content), or pages with bespoke in-view device presentations a single frame can't wrap (e.g., a two-variant phone rail) |
+
+The frame is the one sanctioned chrome touch of the page body: it wraps the product UI, it never alters it. The frame bar stays light regardless of the mock's theme — it's portal chrome, not product UI. In split (compare) mode the panel rules deliberately override the frame container styles; the frame bar rides inside each panel.
+
+What this forbids: page-level `body { background: ... }` or `body { color: ... }` theming. Theme the mock's own root element inside the view instead (e.g., `.proposed-view { background: var(--arena-900); }` scoped in the page's `<style>` if the whole proposed surface is dark).
 
 ---
 
@@ -70,6 +90,7 @@ Listed in `_meta/index.json` under the top-level `slices` array.
   "phase": "MVP|Phase 1|Phase 2|Phase 3",
   "route": "/pages/<page-id>.html",
   "summary": "One-sentence description used on the studio catalog card.",
+  "mock_frame": "desktop|phone|none",
   "strategy": {
     "decision": "What design choice does this page make?",
     "why": "Which finding/rule does it implement? Inline markdown allowed.",
@@ -87,6 +108,8 @@ Listed in `_meta/index.json` under the top-level `slices` array.
 ```
 
 The `slice` field links the page to a slice (which feeds the breadcrumb switchers and the slice-context block in the strategy drawer). Pages declare only `window.PROTO_PAGE = { id: '<page-id>' };` in the HTML — everything else loads from the JSON.
+
+`mock_frame` is optional and defaults to `"desktop"` — see "The Canvas Rule" above for the three values and when to use each.
 
 ### The `destination` field (required)
 
@@ -263,6 +286,7 @@ Flows declared in `flows_touching_this_slice` on a slice get listed in the bread
 | Direct edits to `shared.css` in a consumer repo | Canonical chrome. `portal-chrome-canonical-reviewer` will fail the gate. Re-stamp via `stamp.mjs --mode=restamp-chrome --pattern=B`; put overrides in `project-tokens.css`. |
 | `curl`-ing a peer consumer's deployed CSS to "restore canonical" | The deployed sibling is not canonical — it has the peer's project drift baked in. Re-stamp from `$BLUEPRINT_HOME/template/portal/shared.css` instead. |
 | "This is a mock" framing inside `.proposed-view` | Product UI must look like production. Put framing in the strategy panel via per-page JSON. |
+| Page-level `body { background: ... }` theming | The canvas belongs to the portal (see "The Canvas Rule"). Theme the mock's root element inside the view; declare `mock_frame` instead of hand-rolling bezels or window chrome. |
 | Page-level `@media (prefers-color-scheme: dark)` blocks | Theme handling belongs in tokens. |
 | Full PROTO_PAGE data inline | Whole point of `_meta/*.json` is centralization. |
 | Hard-coded path arrays in nav code | `proto-nav.js` derives nav from `_meta/index.json`. Don't reinvent. |
@@ -323,6 +347,8 @@ The `wrangler.toml` at `portal/` root is required so wrangler detects `functions
 ---
 
 ## Versioning
+
+**v5 (2026-06-11)** — the canvas rule + mock frame primitive. New optional page-meta field `mock_frame` (`desktop` default | `phone` | `none`); `proto-nav.js` frames each `.proposed-view` / `.shipped-view` (browser-window bar with route for desktop surfaces, ≤420px bezel for handheld ones) so per-surface themes — including fully dark mocks — live inside a portal-owned frame instead of restyling the page body. New anti-pattern: page-level `body { background: ... }` theming. Additive for existing consumers: the default `desktop` frame applies on next chrome sync; pages that should not be framed declare `"mock_frame": "none"`.
 
 **v4 (2026-06-11)** — navigation consolidation: retired the persistent slice rail (`.proto-slice-sidebar`) and the footer "Jump to" select (`.proto-footer-nav`, the v1 holdover that survived v2 as a hidden affordance). Breadcrumb segments became manifest-driven switcher menus (slice segment → all slices; page segment → current slice's pages + flow entries); added the Cmd/Ctrl+K command palette over pages / slices / docs; slice context moved into the strategy drawer; the flow stepper (`?flow=`) is the only sequential mode. Rationale: full-bleed mockups are the content — the rail spent permanent viewport width on slice-scoped wayfinding needed only occasionally, and compare mode needs the whole viewport (cognitive audit + operator decision, 2026-06-11).
 

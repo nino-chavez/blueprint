@@ -22,7 +22,10 @@
  * Surface contract (from CONVENTIONS.md): everything this script renders is
  * harness chrome — it never modifies the prototype page's product UI. The
  * panels, comparison toggle, footer nav, and flow breadcrumb all live in
- * fixed-position layers above the page body.
+ * fixed-position layers above the page body. The one sanctioned touch of the
+ * page body is the mock frame (canvas rule, 2026-06-11): view sections get a
+ * portal-owned frame class + window bar so the mock's theme stays inside the
+ * frame — the frame wraps the product UI, it never alters it.
  */
 (function () {
   let MANIFEST = null;
@@ -653,6 +656,36 @@
     document.body.appendChild(panel);
   }
 
+  // ─────────────── mock frame (canvas rule, 2026-06-11) ───────────────
+  //
+  // The canvas belongs to the portal; the theme belongs to the mock. Each
+  // view section renders inside a portal-owned frame — a browser window
+  // for desktop surfaces, a phone bezel for handheld ones — so themed
+  // mocks (including fully dark product surfaces) read as windows onto
+  // the product instead of restyling the portal canvas around them.
+  // Pages switch shape or opt out via meta.mock_frame:
+  // "desktop" (default) | "phone" | "none". Split mode's panel rules in
+  // shared.css carry higher specificity and override the frame container
+  // styles by design — the frame bar simply rides inside the panel.
+
+  function buildMockFrames(meta) {
+    const mode = meta?.mock_frame || 'desktop';
+    if (mode === 'none') return;
+    const views = document.querySelectorAll('.proposed-view, .shipped-view');
+    if (!views.length) return;
+    const route = meta?.currentState?.route || meta?.surface || '';
+    views.forEach(view => {
+      view.classList.add(mode === 'phone' ? 'mock-frame-phone' : 'mock-frame-desktop');
+      if (mode === 'desktop') {
+        const bar = el('div', { class: 'mock-frame-bar', 'aria-hidden': 'true' },
+          el('span', { class: 'frame-dots' }, el('span'), el('span'), el('span')),
+          route ? el('span', { class: 'frame-route' }, route) : null
+        );
+        view.insertBefore(bar, view.firstChild);
+      }
+    });
+  }
+
   // ─────────────── side-by-side comparison toggle ───────────────
 
   function buildCompareToggle() {
@@ -927,7 +960,13 @@
     }
 
     const pageId = window.PROTO_PAGE?.id || 'index';
-    CURRENT_META = MANIFEST._cache?.[pageId] || null;
+    // Manifest-listed pages come from the prefetch cache. Pages with a meta
+    // file but no manifest listing (retired/unlinked surfaces kept reachable)
+    // fall back to a direct fetch so mock_frame + panels still work — but
+    // never for 'index'/'docs', whose ids would resolve to the manifest
+    // itself or a 404 (mock-frame wave, 2026-06-11).
+    CURRENT_META = MANIFEST._cache?.[pageId]
+      || (pageId !== 'index' && pageId !== 'docs' ? await loadPageMeta(pageId) : null);
 
     // Expose to window for the chat widget and other consumers
     if (CURRENT_META) {
@@ -962,6 +1001,7 @@
     buildFooterNav();
     buildStrategyPanel(CURRENT_META);
     buildCurrentStatePanel(CURRENT_META);
+    buildMockFrames(CURRENT_META);
     buildCompareToggle();
     buildFooter();
   }
