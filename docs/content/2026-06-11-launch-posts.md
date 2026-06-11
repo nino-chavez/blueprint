@@ -283,7 +283,7 @@ analysis over launches, and this is the analysis.
 
 ## 4. LinkedIn (the network announcement)
 
-Voice: Signal Dispatch Thought Leadership register — narrative, provisional,
+Voice (v2, poe-checked 2026-06-11: added causal connectives — the check flagged zero 'because' in 2.1k chars; swept non-Nino vocabulary: 'accreted', 'load-bearing', 'not vibes'): Signal Dispatch Thought Leadership register — narrative, provisional,
 question-led. Grounding rules applied: the kitchen essay is real (published
 2025-12-21), the compliment-and-kept-his-loop moment is real (validation
 log, R.), the numbers derive from the repo. No invented interior state.
@@ -302,16 +302,19 @@ emoji, no hashtag wall, no "excited to announce." Post the link in the body
 > Blueprint is a working method for running product initiatives with an AI
 > agent — research through deployment. The agent does the building. The
 > method forces the receipts: research with evidence paths, decisions that
-> cite that research, a fact-check stage that traces claims to source, and
-> gates between stages that are scripts with exit codes — not vibes.
+> cite that research, a fact-check stage that traces claims to source. The
+> gates between stages are scripts with exit codes, because a checklist the
+> agent grades itself against is not a gate.
 >
-> I didn't set out to build a product. It accreted across a dozen of my own
-> projects — a volleyball club platform, photography sites, my blog, real
-> client work. Every gap an agent fell into became a check; 61 gated
-> updates so far. At some point the method was the most load-bearing thing
-> I'd built, so I productized it: MIT, on npm, and the site is the method's
-> own output — every number on the homepage derives from the repo at build
-> time, and the build fails if the copy contradicts the CLI.
+> I didn't set out to build a product. The same scaffolding kept showing up
+> across a dozen of my own projects — a volleyball club platform,
+> photography sites, my blog, real client work — and every gap an agent
+> fell into became a check. 61 gated updates later, the method was the
+> thing every project leaned on. So I productized it: MIT, on npm. The site
+> is the method's own output — every number on the homepage derives from
+> the repo at build time, and the build fails if the copy contradicts the
+> CLI, because a fact-checking tool that ships stale claims about itself
+> has no business existing.
 >
 > Honest state: this is mostly me. One team engagement in flight, one
 > independent adopter. When I showed an early version to an engineer I
@@ -328,16 +331,17 @@ emoji, no hashtag wall, no "excited to announce." Post the link in the body
 > nobody wrote down. It looks finished. Whether it holds up is a different
 > question.
 >
-> Blueprint is my answer, productized after a year of using it on my own
-> projects: a method where the agent does the building and the gates force
-> the receipts — research with evidence paths, decisions citing that
-> research, claims traced to source, and stage gates that are scripts with
-> exit codes. The site is the method's own output; the demo replays real
-> terminal transcripts, nothing mocked.
+> Blueprint is my answer after a year of running it on my own projects: the
+> agent does the building, and the method forces the receipts — research
+> with evidence paths, decisions citing that research, claims traced to
+> source. The stage gates are scripts with exit codes, because the agent
+> can't be the one grading its own work. The site is the method's own
+> output; the demo replays real terminal transcripts, nothing mocked.
 >
 > It's MIT, on npm, and honestly early: one team engagement in flight, one
-> independent adopter, and the demand assumptions — including the two that
-> early conversations already disconfirmed — are written down in the repo.
+> independent adopter. The demand assumptions — including the two that
+> early conversations already disconfirmed — are written down in the repo,
+> because a method built on verified claims doesn't get to hide its own.
 >
 > If you're shipping product work with an agent: how do you keep its output
 > honest today? That's the conversation I'm after more than the install.
