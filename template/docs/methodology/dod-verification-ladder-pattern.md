@@ -1,6 +1,6 @@
 # Definition-of-Done Verification Ladder
 
-**Status: mechanical half ratified (wave 62).** Wave 52 shipped the spec side; instance 1 — the `blueprint-example` consumer — built the mechanical implementation, ratified the four delegated design decisions, and ran the ladder at scale across a real backlog. This doc now carries both halves: the principle + five gates (wave 52) and the resolved mechanical realization + verification discipline (wave 62). The check-primitive *code* lift into `template/tools/` is the sequenced follow-up (see § The mechanical half → Engine lift).
+**Status: mechanical half ratified (wave 62).** Wave 52 shipped the spec side; instance 1 — the `blueprint-example` consumer — built the mechanical implementation, ratified the four delegated design decisions, and ran the ladder at scale across a real backlog. This doc now carries both halves: the principle + five gates (wave 52) and the resolved mechanical realization + verification discipline (wave 62). The check-primitive *code* — `scenario_passes` + the normalizer — shipped into `template/tools/` in **wave 63** (see § The mechanical half → Engine lift).
 
 ## The principle: a presence oracle is not a function oracle
 
@@ -87,9 +87,9 @@ When per-AC scenario authoring is parallelized across agents, the orchestrator h
 
 Every G4-authoring brief pins the *required behavior per AC* (never "implement X"); the 11 guards verbatim; the harness template to mirror; the `acs:` join contract; "INVOKE the handler + assert the state change, with a control"; "grep to prove any claimed gap"; computed-not-literal test secrets; append-only catalog edits; never commit derived state. Model split: an execution agent for authoring-from-pinned-spec; the orchestrator holds all judgment — classification, verification, escalation.
 
-### Engine lift (sequenced follow-up)
+### Engine lift (shipped — wave 63)
 
-This wave promotes the *methodology*. The check-primitive *code* — a `scenario_passes` check in `template/tools/state-derive/checks/`, the `behavior-gate` catalog category + AC-keyed cap helper, and the net-new normalizer tool — is the next wave, lifted with the template's self-test bar (every tool/reviewer ships a self-test). It implements against this now-complete spec; no commit archaeology required. Instance 1's working artifacts are the reference implementation.
+The check-primitive *code* now ships in the template: **`scenario_passes`** (`template/tools/state-derive/checks/scenario.ts`) wired into `runCheck`, the `unknown`→MANUAL_REVIEW fail-safe folded into `aggregateStatus` (backward-compatible — presence checks never set `unknown`, so static derivations are unchanged), the `ScenarioRun`/`ScenarioResults` contract + the `scenario_passes` `Check` variant in `types.ts`, and the **net-new normalizer** `template/tools/scenario-results/` (Jest/Vitest + Playwright reporter parsers → the artifact). Each ships a self-test per the template bar (`scenario.test.ts` 7 cases incl. the monotone + staleness guards; `scenario-results/index.test.ts` 7 cases). A consumer authoring G4 caps: add `behavior-gate` capabilities each deriving one `{ type: 'scenario_passes', ac }` check, run the suites → normalizer → `_scenario-results.json` in the derive-on-main job, and the register flips per the fail-safe contract.
 
 ## Upstreaming contract
 

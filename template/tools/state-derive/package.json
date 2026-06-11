@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Derives current implementation state from the codebase. Single source of truth for shipped-vs-spec audits. Replaces prose-claim findings with mechanically-derived evidence.",
   "scripts": {
-    "derive": "tsx index.ts"
+    "derive": "tsx index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=20.0.0"
