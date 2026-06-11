@@ -8,8 +8,16 @@
  *
  * Everything else (title, group, strategy, currentState) comes from the JSON.
  *
- * Flow mode: append ?flow=<flow-id> to any prototype URL. The footer nav shows
- * "step N of M" + prev/next buttons threading the flow's pages in order.
+ * Flow mode: append ?flow=<flow-id> to any prototype URL. The flow bar shows
+ * clickable step dots + prev/next buttons threading the flow's pages in order.
+ *
+ * Wayfinding (nav paradigm wave, 2026-06-11): the breadcrumb slice/page
+ * segments are manifest-driven dropdown switchers, and Cmd/Ctrl+K opens a
+ * command palette over pages + slices + docs. The persistent slice rail
+ * (.proto-slice-sidebar) is retired — full-bleed mockups are the content;
+ * the rail cost ~210px permanently for slice-scoped wayfinding (cognitive
+ * audit + operator decision 2026-06-11). Slice context now lives in the
+ * strategy drawer.
  *
  * Surface contract (from CONVENTIONS.md): everything this script renders is
  * harness chrome — it never modifies the prototype page's product UI. The
@@ -90,6 +98,15 @@
     return isProtoRoot() ? `./pages/${id}.html` : `./${id}.html`;
   }
 
+  // Cross-surface jump targets (breadcrumb menus, palette): the routes-map
+  // override wins via pageHref; otherwise prefer the page meta's absolute
+  // route because pageHref's relative fallback only resolves between sibling
+  // prototype pages, not from docs/front-door (nav paradigm wave, 2026-06-11).
+  function jumpHref(id) {
+    if (MANIFEST?.routes?.[id]) return pageHref(id);
+    return MANIFEST?._cache?.[id]?.route || pageHref(id);
+  }
+
   // ─────────────── flow mode ───────────────
 
   function getFlowFromUrl() {
@@ -107,7 +124,23 @@
       el('div', { class: 'flow-meta' },
         el('span', { class: 'flow-label' }, 'Flow:'),
         el('span', { class: 'flow-name' }, flow.label),
-        el('span', { class: 'flow-step' }, `Step ${idx + 1} of ${total}`)
+        // Step dots are in-flow navigation, not just a counter — each dot is
+        // the page at that position (nav paradigm wave, 2026-06-11).
+        el('span', {
+          class: 'flow-step-dots',
+          role: 'navigation',
+          'aria-label': `Step ${idx + 1} of ${total}`
+        }, flow.pages.map((pid, i) => {
+          const title = MANIFEST?._titleCache?.[pid] || pid;
+          return i === idx
+            ? el('span', { class: 'flow-step-dot is-current', 'aria-current': 'step', title })
+            : el('a', {
+                class: 'flow-step-dot',
+                href: `${pageHref(pid)}?flow=${flow.id}`,
+                title,
+                'aria-label': `Step ${i + 1} of ${total}: ${title}`
+              });
+        }))
       ),
       el('div', { class: 'flow-actions' },
         prev ? el('a', {
@@ -129,47 +162,11 @@
 
   // ─────────────── footer nav (auto-built from manifest) ───────────────
 
-  function buildFooterNav(currentId) {
-    const select = el('select', {
-      onchange: (e) => {
-        const id = e.target.value;
-        window.location.href = id === 'index' ? (isProtoRoot() ? './index.html' : '../index.html') : pageHref(id);
-      }
-    });
-
-    // Index option
-    const indexOpt = el('option', { value: 'index' }, 'Portal index');
-    if (currentId === 'index') indexOpt.selected = true;
-    select.appendChild(indexOpt);
-
-    // Group by manifest groups
-    const groupLookup = Object.fromEntries((MANIFEST.groups || []).map(g => [g.id, g.label]));
-    const byGroup = {};
-    (MANIFEST.pages || []).forEach(id => {
-      const meta = MANIFEST._cache?.[id];
-      const groupId = meta?.group || 'other';
-      (byGroup[groupId] = byGroup[groupId] || []).push({ id, title: meta?.title || id });
-    });
-
-    Object.entries(byGroup).forEach(([groupId, items]) => {
-      const og = el('optgroup', { label: groupLookup[groupId] || groupId });
-      items.forEach(p => {
-        const opt = el('option', { value: p.id }, p.title);
-        if (p.id === currentId) opt.selected = true;
-        og.appendChild(opt);
-      });
-      select.appendChild(og);
-    });
-
-    // Footer nav is now a hidden affordance — top brand bar + slice header
-    // + slice sidebar make it redundant. Keep the dropdown wired but render
-    // it via the top brand bar's overflow menu (mobile + jump-to-page only).
-    // The Shipped/Strategy drawer toggle buttons live in the slice header.
+  function buildFooterNav() {
+    // The 'Jump to' select is retired — the breadcrumb switchers + command
+    // palette subsume it (nav paradigm wave, 2026-06-11). The drawer toggle
+    // buttons stay: the hidden footer keeps them reachable in the DOM.
     const nav = el('div', { class: 'proto-footer-nav' },
-      el('div', { class: 'nav-pages' },
-        el('span', { class: 'tiny muted', style: 'margin-right: 8px' }, 'Jump to:'),
-        select
-      ),
       el('div', { class: 'nav-actions' },
         el('button', { id: 'toggle-current-state', onclick: () => togglePanel('current-state') }, '◀ Shipped'),
         el('button', { id: 'toggle-strategy', onclick: () => togglePanel('strategy') }, 'Strategy ▶')
@@ -301,6 +298,117 @@
     });
   }
 
+  // ─────────────── breadcrumb switchers (nav paradigm wave, 2026-06-11) ───────────────
+  //
+  // The slice + page breadcrumb segments are dropdown buttons, manifest-driven.
+  // Prototype surfaces only — the front door / docs top bar is unchanged.
+
+  function renderSliceMenu(currentSliceId) {
+    const rows = (MANIFEST.slices || [])
+      .map(id => MANIFEST._sliceCache?.[id])
+      .filter(Boolean)
+      .map(s => {
+        const current = s.id === currentSliceId;
+        const href = s.pages?.[0] ? jumpHref(s.pages[0]) : '/prototype/';
+        return `
+          <a role="menuitem" class="crumb-menu-item${current ? ' is-current' : ''}"
+             href="${href}"${current ? ' aria-current="true"' : ''}>
+            <span class="item-label">${escapeHtml(s.label)}</span>
+            ${s.summary ? `<span class="item-summary">${s.summary}</span>` : ''}
+          </a>`;
+      }).join('');
+    return `<div class="crumb-menu" role="menu" aria-label="All slices">${rows}</div>`;
+  }
+
+  function renderPageMenu(slice, currentPageId) {
+    const pageRows = (slice.pages || [])
+      .map(id => MANIFEST._cache?.[id])
+      .filter(Boolean)
+      .map(p => {
+        const current = p.id === currentPageId;
+        return `
+          <a role="menuitem" class="crumb-menu-item${current ? ' is-current' : ''}"
+             href="${jumpHref(p.id)}"${current ? ' aria-current="page"' : ''}>
+            <span class="item-label">${escapeHtml(p.title)}</span>
+          </a>`;
+      }).join('');
+    const flows = (MANIFEST.flows || []).filter(f =>
+      (slice.flows_touching_this_slice || []).includes(f.id) ||
+      (f.pages || []).some(pid => (slice.pages || []).includes(pid))
+    );
+    const flowRows = flows.map(f => `
+      <a role="menuitem" class="crumb-menu-item crumb-menu-flow"
+         href="${jumpHref((f.pages || [])[0])}?flow=${f.id}">
+        <span class="item-label">Walk: ${escapeHtml(f.label)}</span>
+      </a>`).join('');
+    return `<div class="crumb-menu" role="menu" aria-label="Pages in this slice">
+      ${pageRows}
+      ${flowRows ? `<div class="crumb-menu-divider" role="separator"></div>${flowRows}` : ''}
+    </div>`;
+  }
+
+  function renderCrumbSwitch(labelClass, label, menuHtml, titleAttr) {
+    return `<span class="crumb-switch-wrap">
+      <button type="button" class="crumb-switch ${labelClass}"
+              aria-haspopup="menu" aria-expanded="false"${titleAttr || ''}>
+        ${escapeHtml(label)}<span class="crumb-chevron" aria-hidden="true">▾</span>
+      </button>
+      ${menuHtml}
+    </span>`;
+  }
+
+  function wireCrumbSwitchers(bar) {
+    const wraps = Array.from(bar.querySelectorAll('.crumb-switch-wrap'));
+    if (!wraps.length) return;
+    const closeAll = () => wraps.forEach(w => {
+      w.querySelector('.crumb-menu')?.classList.remove('open');
+      w.querySelector('.crumb-switch')?.setAttribute('aria-expanded', 'false');
+    });
+    wraps.forEach(wrap => {
+      const btn = wrap.querySelector('.crumb-switch');
+      const menu = wrap.querySelector('.crumb-menu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wasOpen = menu.classList.contains('open');
+        closeAll(); // only one switcher open at a time
+        if (!wasOpen) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          // position:fixed + JS placement: consumers own arbitrary top-bar CSS
+          // (rally-hq's crumb container carries overflow:hidden for ellipsis),
+          // so an absolutely-positioned menu can be clipped invisible. Fixed
+          // positioning escapes every ancestor clip (nav paradigm wave,
+          // 2026-06-11 verify finding).
+          const r = btn.getBoundingClientRect();
+          const w = Math.min(360, window.innerWidth - 16);
+          menu.style.top = `${Math.round(r.bottom + 4)}px`;
+          menu.style.left = `${Math.round(Math.max(8, Math.min(r.left, window.innerWidth - w - 8)))}px`;
+        }
+      });
+      wrap.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        if (!menu.classList.contains('open')) return;
+        e.preventDefault();
+        const items = Array.from(menu.querySelectorAll('[role="menuitem"]'));
+        const idx = items.indexOf(document.activeElement);
+        const next = e.key === 'ArrowDown'
+          ? items[Math.min(idx + 1, items.length - 1)]
+          : items[Math.max(idx - 1, 0)];
+        next?.focus();
+      });
+    });
+    document.addEventListener('click', (e) => {
+      if (wraps.some(w => w.contains(e.target))) return;
+      closeAll();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAll();
+    });
+    window.addEventListener('scroll', closeAll, { passive: true });
+    window.addEventListener('resize', closeAll);
+  }
+
   function buildTopBar(slice, currentPageMeta) {
     // If the canonical portal-shell is already on the page, don't render
     // our own top bar — the meta-pages now consume _portal-shell.js as the
@@ -324,7 +432,10 @@
     const fullName = MANIFEST?.name || 'Project';
     const productName = fullName.replace(/\s*Blueprint\s*$/i, '').trim() || fullName;
 
-    // Breadcrumb only renders inside Prototype (slice + page context)
+    // Breadcrumb only renders inside Prototype (slice + page context).
+    // Slice + page segments are dropdown switchers (nav paradigm wave,
+    // 2026-06-11) — the slice menu lists all slices, the page menu lists the
+    // current slice's pages + its flows as Walk entries.
     const crumbParts = [];
     if (isPrototype) {
       crumbParts.push(`<a href="/prototype/">Prototype</a>`);
@@ -332,11 +443,11 @@
         const surfaceAttr = slice.production_surface
           ? ` title="${escapeHtml(slice.production_surface)}"` : '';
         crumbParts.push(`<span class="sep">/</span>`);
-        crumbParts.push(`<span class="slice-label"${surfaceAttr}>${escapeHtml(slice.label)}</span>`);
+        crumbParts.push(renderCrumbSwitch('slice-label', slice.label, renderSliceMenu(slice.id), surfaceAttr));
       }
       if (currentPageMeta && slice) {
         crumbParts.push(`<span class="sep">/</span>`);
-        crumbParts.push(`<span class="page-label">${escapeHtml(currentPageMeta.title)}</span>`);
+        crumbParts.push(renderCrumbSwitch('page-label', currentPageMeta.title, renderPageMenu(slice, currentPageMeta.id)));
       }
     }
 
@@ -366,6 +477,7 @@
         <div class="top-bar-actions">
           ${chipHtml}
           ${currentPageMeta?.chrome && currentPageMeta.chrome !== 'specialized' ? `<button class="chrome-toggle" type="button" title="Show this page with the real product navbar it ships with"><span class="toggle-dot"></span>real product navbar</button>` : ''}
+          ${isPrototype ? `<button type="button" class="palette-hint" title="Jump anywhere" aria-label="Jump anywhere (Cmd/Ctrl+K)">⌘K</button>` : ''}
           <nav class="top-bar-nav" aria-label="Primary">
             ${navHtml}
           </nav>
@@ -373,6 +485,9 @@
       </div>
     `;
     document.body.insertBefore(bar, document.body.firstChild);
+
+    wireCrumbSwitchers(bar);
+    bar.querySelector('.palette-hint')?.addEventListener('click', () => openPalette());
 
     if (citationRows.length) {
       const overlayWrap = document.createElement('div');
@@ -476,6 +591,13 @@
       el('button', { class: 'panel-close', onclick: (e) => { e.stopPropagation(); closePanel('strategy'); } }, '×'),
       el('h3', {}, 'Strategy'),
       el('p', { class: 'tiny muted mt-4' }, `Page: ${meta.title}`),
+      // Slice context replaces the retired slice rail — the slice's framing
+      // reads here, in the drawer reviewers already open for rationale,
+      // instead of costing a permanent rail (nav paradigm wave, 2026-06-11).
+      ...(CURRENT_SLICE ? [el('div', { class: 'panel-slice-context' },
+        el('span', { class: 'slice-context-label' }, CURRENT_SLICE.label),
+        el('p', { class: 'slice-context-summary', html: CURRENT_SLICE.summary || '' })
+      )] : []),
       ...(systemsParts.length ? [el('div', { class: 'panel-section panel-systems', html: systemsParts.join('') })] : []),
       el('div', { class: 'panel-section' },
         el('h4', {}, 'The decision'),
@@ -641,99 +763,121 @@
     }
   }
 
-  // Custom inline SVG — a "sequence" mark for flow rows. Two small nodes
-  // connected by a hairline. Drawn directly (not Heroicons / Lucide).
-  const FLOW_ICON_SVG = `
-    <svg class="row-icon" viewBox="0 0 14 14" width="11" height="11" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3">
-      <rect x="0.7" y="2.7" width="4" height="4" rx="0.6"/>
-      <path d="M 4.7 4.7 L 8 4.7 Q 9.3 4.7 9.3 6 L 9.3 7.3"/>
-      <rect x="7.3" y="7.3" width="4" height="4" rx="0.6"/>
-    </svg>`;
+  // ─────────────── slice rail: REMOVED (nav paradigm wave, 2026-06-11) ───────────────
+  //
+  // The persistent left rail (.proto-slice-sidebar) is gone: full-bleed
+  // mockups are the content; the rail cost ~210px permanently for
+  // slice-scoped wayfinding (cognitive audit + operator decision 2026-06-11).
+  // Its jobs moved into the breadcrumb switchers, the strategy drawer's
+  // slice-context block, and the command palette below.
 
-  function buildSliceSidebar(slice) {
-    const sidebar = document.createElement('aside');
-    sidebar.className = 'proto-slice-sidebar';
+  // ─────────────── command palette (Cmd/Ctrl+K) ───────────────
+  //
+  // Built entirely from the already-loaded manifest — no extra fetches, no
+  // dependencies, no product-specific strings (nav paradigm wave, 2026-06-11).
 
-    const pages = (slice.pages || [])
-      .map(id => MANIFEST._cache?.[id])
-      .filter(Boolean);
+  let PALETTE = null;
 
-    const flowsTouching = (MANIFEST.flows || []).filter(f =>
-      (slice.flows_touching_this_slice || []).includes(f.id) ||
-      (f.pages || []).some(p => (slice.pages || []).includes(p))
-    );
+  function paletteItems() {
+    const items = [];
+    (MANIFEST.pages || []).forEach(id => {
+      const m = MANIFEST._cache?.[id];
+      if (!m) return;
+      const sliceLabel = MANIFEST._sliceCache?.[m.slice]?.label;
+      items.push({ label: m.title, hint: sliceLabel || 'page', href: jumpHref(id) });
+    });
+    (MANIFEST.slices || []).forEach(id => {
+      const s = MANIFEST._sliceCache?.[id];
+      if (!s) return;
+      items.push({ label: s.label, hint: 'slice', href: s.pages?.[0] ? jumpHref(s.pages[0]) : '/prototype/' });
+    });
+    ((MANIFEST.docs?.tiers) || []).forEach(tier => {
+      (tier.docs || []).forEach(d => {
+        items.push({ label: d.title, hint: 'doc', href: `/docs/?doc=${d.id}` });
+      });
+    });
+    return items;
+  }
 
-    // Singleton-slice affordance: when this slice only has one page,
-    // surface a short list of other slices so the sidebar isn't a stub.
-    const isSingleton = (slice.pages?.length || 0) <= 1;
-    const currentSliceId = slice.id;
-    const otherSlices = isSingleton
-      ? (MANIFEST.slices || [])
-          .filter(id => id !== currentSliceId)
-          .map(id => MANIFEST._sliceCache?.[id])
-          .filter(Boolean)
-          .map(s => {
-            const firstPageMeta = MANIFEST._cache?.[(s.pages || [])[0]];
-            return {
-              id: s.id,
-              label: s.label,
-              href: firstPageMeta?.route || (s.pages?.[0] ? pageHref(s.pages[0]) : '/prototype/'),
-            };
-          })
-      : [];
+  function buildPalette() {
+    if (PALETTE) return PALETTE;
+    const items = paletteItems();
+    let active = 0;
 
-    sidebar.innerHTML = `
-      <div class="slice-sidebar-section">
-        <h4>${escapeHtml(slice.label)}</h4>
-        <p class="slice-sidebar-summary">${slice.summary || ''}</p>
-      </div>
-      <div class="slice-sidebar-section">
-        <h5>pages</h5>
-        <ul class="slice-sidebar-list">
-          ${pages.map(p => `
-            <li>
-              <a href="${p.route}" class="${p.id === window.PROTO_PAGE?.id ? 'active' : ''}">
-                <span class="page-title">${escapeHtml(p.title)}</span>
-                ${p.phase ? `<span class="page-phase">${escapeHtml(p.phase.toLowerCase())}</span>` : ''}
-              </a>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-      ${flowsTouching.length ? `
-        <div class="slice-sidebar-section">
-          <h5>flows</h5>
-          <ul class="slice-sidebar-list slice-sidebar-flows">
-            ${flowsTouching.map(f => `
-              <li>
-                <a href="${pageHref((f.pages || [])[0])}?flow=${f.id}">
-                  ${FLOW_ICON_SVG}
-                  <span class="page-title flow-title">${escapeHtml(f.label)}</span>
-                  <span class="flow-pages">${(f.pages || []).length}p</span>
-                </a>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      ` : ''}
-      ${otherSlices.length ? `
-        <div class="slice-sidebar-section slice-sidebar-other">
-          <h5>other slices</h5>
-          <ul class="slice-sidebar-list">
-            ${otherSlices.map(s => `
-              <li>
-                <a href="${s.href}">
-                  <span class="page-title">${escapeHtml(s.label)}</span>
-                </a>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      ` : ''}
-    `;
-    document.body.appendChild(sidebar);
+    const list = el('div', { class: 'cmd-palette-list', role: 'listbox' });
+    const input = el('input', {
+      class: 'cmd-palette-input', type: 'text',
+      placeholder: 'Jump to a page, slice, or doc…',
+      'aria-label': 'Jump to a page, slice, or doc'
+    });
+    const box = el('div', { class: 'cmd-palette', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Jump anywhere' }, input, list);
+    const overlay = el('div', { class: 'cmd-palette-overlay' }, box);
 
-    document.body.classList.add('proto-has-sidebar');
+    function renderList(filter) {
+      const q = (filter || '').trim().toLowerCase();
+      const visible = q ? items.filter(i => `${i.label} ${i.hint}`.toLowerCase().includes(q)) : items;
+      active = 0;
+      list.innerHTML = visible.length
+        ? visible.map((i, n) => `
+          <a class="cmd-palette-item${n === 0 ? ' is-active' : ''}" role="option" href="${i.href}">
+            <span class="item-label">${escapeHtml(i.label)}</span>
+            <span class="item-hint">${escapeHtml(i.hint)}</span>
+          </a>`).join('')
+        : '<div class="cmd-palette-empty">No matches</div>';
+    }
+
+    function setActive(n) {
+      const nodes = list.querySelectorAll('.cmd-palette-item');
+      if (!nodes.length) return;
+      active = Math.max(0, Math.min(n, nodes.length - 1));
+      nodes.forEach((node, i) => node.classList.toggle('is-active', i === active));
+      nodes[active].scrollIntoView({ block: 'nearest' });
+    }
+
+    input.addEventListener('input', () => renderList(input.value));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+      else if (e.key === 'Enter') {
+        const target = list.querySelectorAll('.cmd-palette-item')[active];
+        if (target) window.location.href = target.getAttribute('href');
+      }
+    });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closePalette(); });
+    list.addEventListener('mousemove', (e) => {
+      const item = e.target.closest('.cmd-palette-item');
+      if (!item) return;
+      const nodes = Array.from(list.querySelectorAll('.cmd-palette-item'));
+      setActive(nodes.indexOf(item));
+    });
+
+    document.body.appendChild(overlay);
+    PALETTE = { overlay, input, renderList };
+    return PALETTE;
+  }
+
+  function openPalette() {
+    const p = buildPalette();
+    p.input.value = '';
+    p.renderList('');
+    p.overlay.classList.add('open');
+    p.input.focus();
+  }
+
+  function closePalette() {
+    PALETTE?.overlay.classList.remove('open');
+  }
+
+  function wirePaletteShortcut() {
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (PALETTE?.overlay.classList.contains('open')) closePalette();
+        else openPalette();
+      } else if (e.key === 'Escape') {
+        closePalette();
+      }
+    });
   }
 
   // ─────────────── init ───────────────
@@ -771,7 +915,7 @@
       );
     }
 
-    // Prefetch slice meta so the sidebar's "other slices" group has labels
+    // Prefetch slice meta so the slice switcher + palette have labels
     if (MANIFEST.slices?.length) {
       MANIFEST._sliceCache = {};
       await Promise.all(
@@ -813,11 +957,9 @@
     // Unified top bar — brand + breadcrumb + actions in one 56px region.
     buildTopBar(CURRENT_SLICE, CURRENT_META);
 
-    if (CURRENT_SLICE) {
-      buildSliceSidebar(CURRENT_SLICE);
-    }
+    wirePaletteShortcut();
 
-    buildFooterNav(pageId);
+    buildFooterNav();
     buildStrategyPanel(CURRENT_META);
     buildCurrentStatePanel(CURRENT_META);
     buildCompareToggle();

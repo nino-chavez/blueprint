@@ -12,10 +12,11 @@
 //
 // Manifest-driven corpus (wave 5 — 2026-05-25): the doc list is read from
 // _meta/index.json docs.tiers[].docs[] at request time, not hardcoded here.
-// Prior version shipped a Rally HQ DOCS array (research-synthesis, cx-strategy,
-// etc.) that every consumer inherited verbatim — the chat function would 404
-// on every doc and silently render zero context, producing hallucinated
-// answers. Caught in the blog consumer session 2026-05-25; encoded here.
+// Prior version shipped the source project's hardcoded DOCS array
+// (research-synthesis, cx-strategy, etc.) that every consumer inherited
+// verbatim — the chat function would 404 on every doc and silently render
+// zero context, producing hallucinated answers. Caught in the blog consumer
+// session 2026-05-25; encoded here.
 //
 // Docs are copied into _docs/ at deploy time (see scripts/prep-deploy.sh)
 // so the function can fetch them via the ASSETS binding from /_docs/*.md.
@@ -116,13 +117,17 @@ export async function onRequestPost(context) {
     (page ? `\n\nUser is currently viewing the "${pageTitle || page}" prototype page (id: ${page}).` : '');
 
   // Derive OpenRouter attribution headers from the request URL + the
-  // manifest's project name. Prior version hardcoded
-  // 'https://blueprint.rallyhq.app' and 'Rally HQ Blueprint' — a stamp leak
-  // that propagated to every Pattern B consumer that copied this file
-  // verbatim (case: docs/case-studies/case-study-v3-portal-css-gap.md "docs viewer Rally HQ
-  // leak"). Now project-agnostic.
+  // manifest's project name. Prior version hardcoded the source project's
+  // deploy URL and display name — a stamp leak that propagated to every
+  // Pattern B consumer that copied this file verbatim (incident:
+  // docs/case-studies/case-study-v3-portal-css-gap.md § "Follow-up — docs
+  // viewer"). Now project-agnostic: referer from the request origin, X-Title
+  // from _meta/index.json `name`. The static fallbacks below are the
+  // template's neutral source identity ("Blueprint Example" is in the
+  // stamper's substitution table — see template/tools/blueprint-init/
+  // stamp.mjs — so Pattern A stamps bake the consumer's display name in).
   let httpReferer = 'https://blueprint.example.com';
-  let xTitle = 'Blueprint';
+  let xTitle = 'Blueprint Example';
   try {
     const reqUrl = new URL(request.url);
     httpReferer = `${reqUrl.protocol}//${reqUrl.host}`;

@@ -1,6 +1,6 @@
 ---
 tool: functions/api/chat.js
-last_attested: 2026-05-23
+last_attested: 2026-06-11
 max_unattested_days: 60
 couples_with:
   - prototype/chat-widget.js (frontend caller)
@@ -42,7 +42,7 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 - HTTP 502 with `{ error, detail }` for upstream Anthropic/OpenRouter errors.
 
 **Side effects:**
-- Calls `https://openrouter.ai/api/v1/chat/completions` with `Authorization: Bearer ${OPENROUTER_API_KEY}`, `HTTP-Referer: https://blueprint.rallyhq.app`, `X-Title: Rally HQ Blueprint`.
+- Calls `https://openrouter.ai/api/v1/chat/completions` with `Authorization: Bearer ${OPENROUTER_API_KEY}`. Attribution headers are derived at runtime: `HTTP-Referer` from the request origin, `X-Title` from `_meta/index.json` `name` (neutral template fallbacks when unavailable).
 - Caches the assembled system context in module-scope `SYSTEM_CONTEXT` variable (per Worker instance — survives across requests on the same warm instance).
 
 ## Model + cost
@@ -60,12 +60,12 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 2. **Asset fetch returns 404** — if `prep-deploy.sh` wasn't run before `wrangler pages deploy`, the `_docs/*.md` files won't exist. Function silently produces a partial system context. Symptom: chat answers say "I don't have information on X" for topics that ARE in the source docs. Fix: always run `prep-deploy.sh` before deploy.
 3. **Rate limit from OpenRouter** — at high concurrency. We've never hit it but the function returns the upstream 429 with detail message intact.
 4. **Wrong working directory at cold start** — earlier version used `process.cwd()` for fs reads (Node-style). Failed on Workers. Fixed by switching to `env.ASSETS.fetch()` which is the Workers-native way to access deploy assets.
-5. **CORS** — function returns `Content-Type: application/json` but no explicit CORS headers. Works because it's called from the same origin (blueprint.rallyhq.app). Would need CORS headers if called cross-origin.
+5. **CORS** — function returns `Content-Type: application/json` but no explicit CORS headers. Works because it's called from the portal's own origin. Would need CORS headers if called cross-origin.
 
 ## Coupling
 
 - **Coupled with `chat-widget.js`** — the widget POSTs to `/api/chat` with a specific body shape. Schema changes must update both files.
-- **Coupled with `prep-deploy.sh`** — the script copies blueprint docs into `_docs/` with specific filenames (`research-synthesis.md`, `cx-strategy.md`, etc.). The `DOCS` constant in this file references those exact filenames. Renaming a doc requires updating both.
+- **Coupled with `prep-deploy.sh`** — the script copies blueprint docs into `_docs/` using the filenames declared in `_meta/index.json` `docs.tiers[].docs[]`. The function reads the same manifest entries at request time (wave 5 — no hardcoded doc list). Renaming a doc means updating the manifest; both surfaces follow.
 - **Coupled with `_headers`** — the `/_docs/*` rule sets `Content-Type: text/markdown` which the function's `await res.text()` works with regardless. But if the rule is removed, browsers might choke on direct doc URLs.
 - **Coupled with `wrangler.toml`** — must have `compatibility_flags = ["nodejs_compat"]` and the function file must be at `functions/api/chat.js` (Pages Functions convention).
 
@@ -84,9 +84,8 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 
 **Add a new doc to the chat context:**
 
-1. Add the source doc path → output filename mapping to `scripts/prep-deploy.sh`.
-2. Add the `[slug, '/_docs/<filename>.md']` pair to the `DOCS` array in `chat.js`.
-3. Run `./scripts/prep-deploy.sh` and redeploy.
+1. Add the `{ id, title, source? }` entry to `_meta/index.json` `docs.tiers[].docs[]` (see CONVENTIONS.md § "Docs viewer manifest"). The chat function reads the same manifest — no `chat.js` edit.
+2. Run `./scripts/prep-deploy.sh` and redeploy.
 
 **Switch model (e.g., to Sonnet for harder questions):**
 
@@ -95,7 +94,7 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 
 **Debug a wrong answer:**
 
-1. Check that the relevant doc IS in `_docs/` on the deployed site: `curl https://blueprint.rallyhq.app/_docs/<slug>.md`.
+1. Check that the relevant doc IS in `_docs/` on the deployed site: `curl https://<your-portal-domain>/_docs/<slug>.md`.
 2. If not, run `prep-deploy.sh` and redeploy.
 3. If the doc IS there, the model's response is grounded in what it sees — review the doc to fix the source.
 

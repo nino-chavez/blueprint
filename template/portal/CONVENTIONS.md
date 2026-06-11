@@ -1,6 +1,6 @@
 # Blueprint Portal Conventions
 
-**Version 2 (2026-05-23).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
+**Version 4 (2026-06-11).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
 
 ---
 
@@ -8,7 +8,7 @@
 
 **The product UI must be visually indistinguishable from what would actually ship. Anything that exists only because this is a prototype lives in the harness chrome, never in the page body.**
 
-Reviewers should be able to look at any page and answer "yes, this is what we'd ship" without mentally subtracting prototype scaffolding. The harness chrome — top brand bar, slice header, slice sidebar, proposed/compare/shipped toggle, flow breadcrumb, annotation FAB, AI chat FAB — are all fixed-position overlays. None live inside `.proposed-view` or `.shipped-view`.
+Reviewers should be able to look at any page and answer "yes, this is what we'd ship" without mentally subtracting prototype scaffolding. The harness chrome — top bar (brand + breadcrumb switchers), proposed/compare/shipped toggle, flow stepper, command palette, strategy/shipped drawers, annotation FAB, AI chat FAB — are all fixed-position overlays. None live inside `.proposed-view` or `.shipped-view`.
 
 ---
 
@@ -16,12 +16,12 @@ Reviewers should be able to look at any page and answer "yes, this is what we'd 
 
 Every prototype page (not the front door / studio catalog) renders with this chrome:
 
-1. **Top brand bar** (36px, dark) — fixed at top. Always-visible portal nav (Front door / Prototype / Docs). Cross-page identity.
-2. **Slice header bar** (44px, light) — fixed at top: 36px. Per-slice breadcrumb (`Prototype › <Slice> › <Page>`), production-surface code reference, compact `PROPOSED / COMPARE / SHIPPED` pill, finding/principle trace badges.
-3. **Page's own header** — whatever the page renders inside `.proposed-view`. Production-indistinguishable.
-4. **Page body** — the proposed surface.
-5. **Slice sidebar** (240px, light) — fixed at left, visible ≥1080px. Pages-in-slice list with active highlight + flows-through-slice with start-flow buttons.
-6. **Drawer triggers** — Strategy and Shipped drawers open from buttons in the slice header.
+1. **Top bar** (single fixed bar, dark) — brand mark, global portal nav (Front door / Prototype / Docs), and the manifest-driven breadcrumb (`Prototype › <Slice> › <Page>`). The breadcrumb segments are **switcher menus**, not static labels: the slice segment opens a dropdown of all slices; the page segment opens a dropdown of the current slice's pages plus the flows touching it (start-flow deep-links). Also hosts the compact `PROPOSED / COMPARE / SHIPPED` pill and the citation chip.
+2. **Page's own header** — whatever the page renders inside `.proposed-view`. Production-indistinguishable.
+3. **Page body** — the proposed surface, full-bleed. No persistent rail competes with it for viewport width.
+4. **Flow stepper** — the sequential mode (prev/next + position), rendered only when `?flow=<flow-id>` is in the URL.
+5. **Drawer triggers** — Strategy and Shipped drawers open from buttons in the top bar. The strategy drawer carries the slice context (summary, production surface, citations, flows).
+6. **Command palette** — Cmd/Ctrl+K, searches pages / slices / docs from the manifest.
 7. **AI chat FAB** — bottom-right, always available.
 8. **Annotation FAB** — bottom-left, opt-in (`localStorage.setItem('blueprint-anno-enabled','true')`).
 
@@ -86,7 +86,7 @@ Listed in `_meta/index.json` under the top-level `slices` array.
 }
 ```
 
-The `slice` field links the page to a slice (which renders the per-slice sidebar). Pages declare only `window.PROTO_PAGE = { id: '<page-id>' };` in the HTML — everything else loads from the JSON.
+The `slice` field links the page to a slice (which feeds the breadcrumb switchers and the slice-context block in the strategy drawer). Pages declare only `window.PROTO_PAGE = { id: '<page-id>' };` in the HTML — everything else loads from the JSON.
 
 ### The `destination` field (required)
 
@@ -231,7 +231,7 @@ Why this split exists: on 2026-05-25 a Blueprint consumer (website-nc-v3) trunca
 
 ## Comparison toggle
 
-Pages with a meaningful "different from shipped" story include both `.proposed-view` and `.shipped-view` sections inside `<body data-compare-root data-view="proposed">`. `proto-nav.js` auto-injects the toggle into the slice header. Pages with no shipped equivalent can omit `.shipped-view` and the toggle won't render.
+Pages with a meaningful "different from shipped" story include both `.proposed-view` and `.shipped-view` sections inside `<body data-compare-root data-view="proposed">`. `proto-nav.js` auto-injects the toggle into the top bar. Pages with no shipped equivalent can omit `.shipped-view` and the toggle won't render. Compare mode gets the full viewport — one reason the persistent slice rail was retired (see Versioning, v4).
 
 ---
 
@@ -248,9 +248,9 @@ Multi-page journeys live in `_meta/index.json` under `flows`:
 }
 ```
 
-Append `?flow=<flow-id>` to any prototype URL and `proto-nav.js` renders a top-of-page breadcrumb with prev/next page links.
+Append `?flow=<flow-id>` to any prototype URL and `proto-nav.js` renders the flow stepper (prev/next page links + position) — the portal's sequential navigation mode.
 
-Flows declared in `flows_touching_this_slice` on a slice get listed in that slice's sidebar with "Start flow →" deep-links to the flow's first page.
+Flows declared in `flows_touching_this_slice` on a slice get listed in the breadcrumb's page-switcher menu and in the strategy drawer's slice context, with "Start flow →" deep-links to the flow's first page.
 
 ---
 
@@ -270,7 +270,7 @@ Flows declared in `flows_touching_this_slice` on a slice get listed in that slic
 | Heavy JS deps (React, Vue) | Portal is plain HTML / CSS / vanilla JS. Adding a framework requires explicit conversation. |
 | Real customer data anywhere | Synthetic personas only. No real PII even in placeholders. |
 | Direct edits to `_docs/` | `_docs/` is auto-copied by `scripts/prep-deploy.sh`. Edit canonical source. |
-| Editing page chrome (footer nav, slice header) per-page | All harness chrome is built by proto-nav.js. Pages don't render it directly. |
+| Editing page chrome (top bar, drawers, palette) per-page | All harness chrome is built by proto-nav.js. Pages don't render it directly. |
 
 ---
 
@@ -323,6 +323,8 @@ The `wrangler.toml` at `portal/` root is required so wrangler detects `functions
 ---
 
 ## Versioning
+
+**v4 (2026-06-11)** — navigation consolidation: retired the persistent slice rail (`.proto-slice-sidebar`) and the footer "Jump to" select (`.proto-footer-nav`, the v1 holdover that survived v2 as a hidden affordance). Breadcrumb segments became manifest-driven switcher menus (slice segment → all slices; page segment → current slice's pages + flow entries); added the Cmd/Ctrl+K command palette over pages / slices / docs; slice context moved into the strategy drawer; the flow stepper (`?flow=`) is the only sequential mode. Rationale: full-bleed mockups are the content — the rail spent permanent viewport width on slice-scoped wayfinding needed only occasionally, and compare mode needs the whole viewport (cognitive audit + operator decision, 2026-06-11).
 
 **v3 (2026-06-03)** — added the required per-page `destination` field (`product | blueprint`). Aligns the page schema with `docs/case-studies/prototype-vs-production-traceability-sweep.md`, which already keys on the field to decide which metas get the 4-link walk. Existing consumers add `destination` to each `_meta/<page-id>.json` in the same PR that pulls this convention bump; `portal-pattern-b-conformance-reviewer` BLOCKs on missing or invalid values.
 

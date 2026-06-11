@@ -36,7 +36,7 @@ portal/
 ├── wrangler.toml               ← Pages project config (REPLACE PROJECT_SLUG)
 ├── index.html                  ← portal entry (auto-renders cards from manifest)
 ├── shared.css                  ← tokens + layout primitives + components
-├── proto-nav.js                ← footer nav + drawers + comparison toggle + flow mode
+├── proto-nav.js                ← top bar + breadcrumb switchers + palette + drawers + comparison toggle + flow stepper
 ├── proto-annotate.js           ← annotation overlay (opt-in stakeholder notes)
 ├── chat-widget.js              ← chat FAB + window (calls functions/api/chat.js)
 ├── CONVENTIONS.md              ← MUST READ before adding a page
