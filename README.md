@@ -2,7 +2,7 @@
 
 **Run a product initiative end-to-end, agent-assisted** — research feeds the strategy documents (business- and product-requirements class — BRD/PRD), the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel); an AI agent runs the pipeline and ships one portal that serves leadership, engineering, and everyone.
 
-[![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint-platform.pages.dev)
+[![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint.ninochavez.co)
 
 ```bash
 npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
@@ -34,7 +34,7 @@ A note on the name: originally carried an employer-prefixed name (extracted from
 
 The five-minute path (formerly `START-HERE.md`):
 
-- **See it running first**: [blueprint-platform.pages.dev](https://blueprint-platform.pages.dev) is Blueprint applied to *itself* — the same shape of portal it generates for any initiative, so it doubles as "here's what the output looks like." Worth clicking: **discover** (what it is), **roadmap** (the build, end-to-end), **inspect** (the ADRs + research behind every choice).
+- **See it running first**: [blueprint.ninochavez.co](https://blueprint.ninochavez.co) is Blueprint applied to *itself* — the same shape of portal it generates for any initiative, so it doubles as "here's what the output looks like." Worth clicking: **discover** (what it is), **roadmap** (the build, end-to-end), **inspect** (the ADRs + research behind every choice).
 - **Blueprint vs Hive — two parts, on purpose**: Blueprint (this repo) is the planning/prototyping methodology + toolchain; **Hive** lets several agents — or several people's agents — work the same initiative in parallel without colliding (separate repo, separately maintained; the pattern: [`docs/patterns/hive-coordination-pattern.md`](docs/patterns/hive-coordination-pattern.md)). Blueprint *plans*; Hive *coordinates*. Companions, integrated, not merged.
 - **Try it**: the [Quickstart](#quickstart) above — nothing to install to explore; the CLI is live on npm.
 - **Go deeper**: [`decisions/00-charter.md`](decisions/00-charter.md) (the why + the six tracks), [`decisions/01-prescription.md`](decisions/01-prescription.md) (what shipped, the build order).

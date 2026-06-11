@@ -29,7 +29,7 @@ notice.
 
 > Show HN: Blueprint – executable stage gates for AI-assisted product work
 
-**URL:** `https://blueprint-platform.pages.dev`
+**URL:** `https://blueprint.ninochavez.co`
 
 **Text field:** leave empty; post the author comment below immediately after
 submitting (first-comment convention).
@@ -112,7 +112,7 @@ submit time.
 > --name=my-initiative`
 >
 > The 35-second demo replays real CLI transcripts (nothing mocked):
-> https://blueprint-platform.pages.dev/demo — and the site itself is the
+> https://blueprint.ninochavez.co/demo — and the site itself is the
 > methodology's own output, gates on the copy included.
 >
 > Honest state: mostly me, one external team mid-engagement. I wrote down

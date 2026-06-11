@@ -184,13 +184,13 @@ portal:
   surfaces:
     - id: reference-portal
       label: "The reference portal — this site"
-      src: "https://blueprint-platform.pages.dev/"
+      src: "https://blueprint.ninochavez.co/"
       note: "This portal is itself a live Pattern A Blueprint portal, generated from its blueprint.yml — exactly what a new initiative's portal looks like. Stamp your own: npx @nino-chavez-labs/blueprint-cli init --pattern=A"
       status: ready
       title: "Reference portal (Pattern A)"
       description: "A live Blueprint Pattern A portal — this very site, generated from blueprint.yml. The canonical example of an initiative's deliverables harness."
-      href: "https://blueprint-platform.pages.dev/"
-      meta: "blueprint-platform.pages.dev"
+      href: "https://blueprint.ninochavez.co/"
+      meta: "blueprint.ninochavez.co"
   # Operate — day-to-day playbooks. The command is the actionable bit (in the
   # description); href only where the target is public (npm), so no dead links
   # while the methodology repo stays private.

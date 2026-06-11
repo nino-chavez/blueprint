@@ -19,7 +19,7 @@ Last full review: 2026-06-10 (wave 56); first set-level pass 2026-06-11 (wave 58
 
 The universal on-ramp. In order:
 
-1. **The live portal** — [blueprint-platform.pages.dev](https://blueprint-platform.pages.dev): what Blueprint is and what it produces, in the product's own front door. The only surface that answers "should we use this?" in under 5 minutes.
+1. **The live portal** — [blueprint.ninochavez.co](https://blueprint.ninochavez.co): what Blueprint is and what it produces, in the product's own front door. The only surface that answers "should we use this?" in under 5 minutes.
 2. **[`README.md`](../README.md)** — the team-evaluation path (§ "Evaluating Blueprint for your team?", folded from the former START-HERE), quickstart, command table, design principles.
 3. **[`docs/variant-selection.md`](variant-selection.md)** — greenfield / midstream / brownfield decision tree, with the stage pipeline shape per variant. "Which variant are we?" gates every downstream decision; pick wrong and the retrofit costs a restart.
 
@@ -191,7 +191,7 @@ As work progresses:
 
 ## Live reference implementations
 
-- **Pattern A (platform portal):** [`apps/portal/README.md`](../apps/portal/README.md) → live at `blueprint-platform.pages.dev`.
+- **Pattern A (platform portal):** [`apps/portal/README.md`](../apps/portal/README.md) → live at `blueprint.ninochavez.co`.
 - **Pattern B (brownfield review portal):** `apps/rally-hq/blueprint/`, `apps/website-nc-v3/blueprint/` (at rest, reference impls).
 
 ## Self-application working artifacts

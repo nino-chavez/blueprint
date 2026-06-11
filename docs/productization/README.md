@@ -73,7 +73,7 @@ standalone `wip/blueprint-platform` in wave 45, commit `7bf554f`; the old repo
 is archived). The self-application lives at the repo root: `blueprint.yml`,
 `research/`, `decisions/`, and `apps/portal/`. The portal deploys from
 `apps/portal/` via `.github/workflows/deploy-portal.yml` to
-**blueprint-platform.pages.dev**. The `decisions/` and `research/` here are the
+**blueprint.ninochavez.co**. The `decisions/` and `research/` here are the
 originals the productization ADRs were promoted from.
 
 ## What remains (operator-gated, not new build steps)

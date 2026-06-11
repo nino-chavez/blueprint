@@ -10,7 +10,7 @@
 - **Folded (wave 45):** `blueprint-platform` is no longer a separate repo — it is this repo's in-repo self-application. Root `blueprint.yml`, `research/`, `decisions/`, `apps/portal/`, `packages/`, `tools/archaeology/`. Source≠consumer is a **DIRECTORY boundary** (`template/` is the clean stampable substrate), not a repo boundary. See `CLAUDE.md`.
 - **CLI published:** `@nino-chavez-labs/blueprint-cli` on npm (MIT, public repo; `npm view` for the live version). All commands real: `init / review / cost / fleet / upgrade / doctor / hive`. Six dependency-free libs under `template/tools/lib/` + the hive `bootstrap.mjs`, each with a `--self-test`.
 - **Build order 0–13 complete** across tracks A–E. `main-protection` ruleset bound + active.
-- **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint-platform.pages.dev` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
+- **Portal:** bespoke product site at `apps/portal/` → deploys to `blueprint.ninochavez.co` via `.github/workflows/deploy-portal.yml`. `portal_pattern: bespoke` with a divergence ADR (`decisions/02-portal-bespoke-product-site.md`); `doctor` is green.
 - **Latest wave:** read the LAST entry of `WAVE-LOG.md` (the single source of wave state — `tail -3 WAVE-LOG.md` or the wave-digest tool). Recent arc: enforcement wiring (55), public-repo sanitization + reader-path manifest (56), Mom Test promotions + ground-truth-scope gap (57), START-HERE fold + claim-ownership (58), stateful-claim lint (59).
 
 ## In flight / next

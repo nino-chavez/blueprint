@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   // Canonical origin — Cloudflare Pages production URL. Required for
   // sitemap generation and the canonical/OG URLs in Layout.astro.
-  site: 'https://blueprint-platform.pages.dev',
+  site: 'https://blueprint.ninochavez.co',
   integrations: [react(), sitemap()],
   vite: {
     ssr: {
