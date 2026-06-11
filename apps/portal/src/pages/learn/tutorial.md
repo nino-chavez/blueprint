@@ -383,3 +383,5 @@ Dry-run by default (terraform-plan style): it classifies your pin (current / beh
 ```
 
 It guides you through the canonical entry shape, applies the four-bucket classification taxonomy, and appends to your initiative's `METHODOLOGY-AMENDMENTS.md` in newest-first order. Use it when you notice a gap your initiative had to work around, add a hook/reviewer/doc the methodology doesn't supply, or skip a stage with justification.
+
+This path is exercised, not aspirational: the [DoD verification-ladder pattern](https://github.com/nino-chavez/blueprint/blob/main/template/docs/methodology/dod-verification-ladder-pattern.md) shipped its spec with the mechanics deliberately deferred — a consumer initiative built them, ran them at scale, and promoted the proven half back into the template (wave 62 in the [wave log](https://github.com/nino-chavez/blueprint/blob/main/WAVE-LOG.md)).

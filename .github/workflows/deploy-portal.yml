@@ -25,6 +25,11 @@ on:
       - 'apps/portal/**'
       - 'packages/**'
       - 'blueprint.yml'          # the portal reads this at build time (hero, excerpts, sources)
+      - 'WAVE-LOG.md'            # proof-strip wave count derives from it at build time —
+                                 # methodology-only waves must refresh the stat (wave 62 left it one behind)
+      - 'consumers.yml'          # same class: the projects-running-Blueprint count
+      - 'docs/decisions/**'      # same class: the ADR count
+      - 'template/.claude/agents/blueprint/reviewers/**'  # same class: the reviewer counts (home + FAQ)
       - '.github/workflows/deploy-portal.yml'
   workflow_dispatch:
 

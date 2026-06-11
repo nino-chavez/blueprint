@@ -124,6 +124,13 @@ noun, and commentary about the field outscores the field's tools.
   existence-level — the page says exactly that. The claim is content/evidence
   gates, never "only executable gates."
 - "Token burn" → the gates are Node scripts; running them costs zero tokens.
+- "Is the amendments/contribution story real?" → cite wave 62 (2026-06-11):
+  the DoD verification-ladder spec deferred its mechanics; a consumer
+  initiative built them, ran them at scale, and promoted the proven half
+  upstream (template/docs/methodology/dod-verification-ladder-pattern.md).
+  HONESTY GUARD: that initiative is author-operated — say "a consumer
+  initiative promoted its workaround upstream," never "an external
+  contributor." External amendments are still zero (validation-script A5).
 
 **Fallback (separate, later attempt):** the original Show HN — site URL
 `https://blueprint.ninochavez.co` plus the self-application/receipts author
