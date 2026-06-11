@@ -30,6 +30,7 @@ Rules that make the ladder honest:
 - **Derive-on-main, never hand-commit.** The register refreshes via CI on every push to the main/dev branch (the `derive-state-on-main` pattern in `docs/patterns/traceability-state-join-pattern.md` § Operationalizing). Derived outputs are automation-owned; a gate blocks hand commits.
 - **Gate-honest language everywhere the register is rendered.** Surfaces consuming `_state.json` label COMPLIANT as *present* (G3), never *shipped/implemented/done*. "Done" is reserved for G4/G5.
 - **The register surfaces the coverage gap; it does not assume coverage.** Per-AC scenario authoring is usually the bulk of the work. A DoD register whose G4 column is mostly empty is functioning correctly — it is the work queue.
+- **`G4`-green ≠ fully tested.** G4 is satisfied by *at least one* passing behavioral scenario — it is NOT "the full test pyramid is present." A 100%-green G4 register can sit on a hollow pyramid (every AC covered by one thin scenario, zero E2E/BDD/unit depth). Reading "G4 verified" as "fully tested" is the same authority-bleed this ladder kills (presence read as function), recursed one gate up. Two companion controls in `test-discipline-pattern.md` address it: the **preventive** build-stage contract (the test is a gated co-deliverable of the code, sourced from the spec) and the **detective** per-AC × per-test-type coverage matrix.
 
 ## The four design decisions — resolved by instance 1 (wave 62)
 
