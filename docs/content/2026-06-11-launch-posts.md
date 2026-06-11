@@ -128,6 +128,11 @@ noun, and commentary about the field outscores the field's tools.
   the DoD verification-ladder spec deferred its mechanics; a consumer
   initiative built them, ran them at scale, and promoted the proven half
   upstream (template/docs/methodology/dod-verification-ladder-pattern.md).
+  The engine code followed same-day as wave 63: `scenario_passes` in
+  template/tools/state-derive + the scenario-results normalizer, 14
+  self-test cases — an opt-in behavioral check whose fail-safe never reads
+  COMPLIANT on missing/stale evidence. (Precision: it's a consumer-harness
+  state-derive check, NOT one of the 15 reviewers.)
   HONESTY GUARD: that initiative is author-operated — say "a consumer
   initiative promoted its workaround upstream," never "an external
   contributor." External amendments are still zero (validation-script A5).
