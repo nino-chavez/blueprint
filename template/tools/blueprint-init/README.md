@@ -19,6 +19,16 @@ The stamper has two modes, dispatched by `--mode=<mode>` (default `stamp`).
 
 ## Usage — initial stamp (Pattern A)
 
+Minimal form — `--name` is the only required flag (wave 61); everything else
+derives a default, every applied default is printed in the stamp header, and
+the target directory is created when missing:
+
+```bash
+node template/tools/blueprint-init/stamp.mjs --name=my-project
+```
+
+Explicit form (any flag overrides its default):
+
 ```bash
 node template/tools/blueprint-init/stamp.mjs \
   --mode=stamp \
@@ -68,19 +78,22 @@ Not yet implemented. The Pattern A canonical chrome surface spans `template/pack
 
 ## Flags reference
 
-| Flag | Required for `--mode=stamp` | Required for `--mode=restamp-chrome` | What it sets |
+| Flag | `--mode=stamp` | Required for `--mode=restamp-chrome` | What it sets |
 |---|---|---|---|
 | `--mode` | no (defaults to `stamp`) | yes (`restamp-chrome`) | Mode dispatch. See table above. |
-| `--pattern` | yes | yes | `A` \| `B`. Pattern A scaffolds `apps/portal/` + `packages/`. Pattern B targets the static-HTML `portal/`. |
-| `--target` | yes | yes | Initiative root directory. Must exist. |
-| `--name` | yes | — | Project slug. Substitutes `blueprint-example`. |
-| `--display-name` | yes | — | Human-facing brand string. |
-| `--repo-url` | yes | — | Full GitHub URL. |
-| `--tagline` | yes | — | Footer tagline. |
-| `--variant` | yes | — | `greenfield` \| `midstream` \| `brownfield`. |
-| `--tier` | yes | — | `0` \| `1` \| `2`. Validated against Variant × Tier matrix. |
+| `--pattern` | default `A` | yes | `A` \| `B`. Pattern A scaffolds `apps/portal/` + `packages/`. Pattern B targets the static-HTML `portal/`. |
+| `--target` | default `./<name>`; created when missing | yes (must exist) | Initiative root directory. |
+| `--name` | **required** | — | Project slug. Substitutes `blueprint-example`. |
+| `--display-name` | default: title-cased `--name` | — | Human-facing brand string. |
+| `--repo-url` | default: `https://github.com/your-org/<name>` placeholder | — | Full GitHub URL. |
+| `--tagline` | default: `"<Display Name> — a Blueprint initiative"` | — | Footer tagline. |
+| `--variant` | default `greenfield` | — | `greenfield` \| `midstream` \| `brownfield`. |
+| `--tier` | default `1` | — | `0` \| `1` \| `2`. Validated against Variant × Tier matrix. |
 | `--logo` | no | — | Path to PNG for `public/project-logo.png`. |
 | `--dry-run` | no | no | Print what would be written, don't write. |
+
+Every default the stamp applies is echoed on a `defaulted:` line in the run
+header, so a scaffold never carries a value the operator didn't see.
 
 ## What the stamper writes (Pattern A)
 

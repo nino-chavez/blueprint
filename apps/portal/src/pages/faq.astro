@@ -119,9 +119,10 @@ const mdOnlyCount = specCount - execCount;
         One command, nothing persistent. <code class="font-mono text-[13px] text-foreground">npx</code> runs the CLI
         without installing it; there’s no server, no account, nothing to sign up for.
         The scaffold it writes is MIT-licensed and lives in your repo — deleting the directory is the whole uninstall.
-        The flags brand your scaffold; swap in your own values — the command runs as printed.
+        <code class="font-mono text-[13px] text-foreground">--name</code> is the only required flag; every default the stamp
+        applies is echoed back, and any flag overrides it. The command runs as printed.
       </p>
-      <CommandBlock command={'mkdir my-initiative && npx @nino-chavez-labs/blueprint-cli init --name=my-initiative --display-name="My Initiative" --repo-url=https://github.com/you/my-initiative --tagline="What this ships" --variant=greenfield --tier=1 --pattern=A --target=my-initiative'} client:visible />
+      <CommandBlock command="npx @nino-chavez-labs/blueprint-cli init --name=my-initiative" client:visible />
     </section>
 
     <section id="adoption" class="rounded-lg border border-contrast-200 bg-background p-6">

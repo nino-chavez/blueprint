@@ -8,7 +8,7 @@ const waveCount = loadWaveCount();
 const consumerCount = loadConsumerCount();
 const reviewerCount = loadReviewerCount();
 
-const INSTALL = 'npx @nino-chavez-labs/blueprint-cli init';
+const INSTALL = 'npx @nino-chavez-labs/blueprint-cli init --name=my-initiative';
 const NPM_URL = 'https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli';
 const REPO_URL = 'https://github.com/nino-chavez/blueprint';
 
@@ -197,18 +197,19 @@ const DEEPER = [
           <span class="font-heading text-lg font-semibold text-brand">2</span>
           <div>
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Scaffold your initiative</h3>
-            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Generates a portal you own, validated against your config. Two starting points — the name/url/tagline flags brand your scaffold; swap in your own values:</p>
-            <!-- Full flag set on purpose: the stamper requires every flag, so a
-                 trimmed "friendly" command errors when pasted (adversarial-audit
-                 finding, 2026-06-10). Both commands verified to run as printed. -->
+            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Generates a portal you own, validated against your config. <code class="font-mono text-[13px] text-foreground">--name</code> is the only required flag — everything else defaults and is echoed back. Two starting points:</p>
+            <!-- Both commands verified to run as printed (wave 61: the stamper
+                 derives defaults for every flag but --name and creates the
+                 target dir — the 2026-06-10 audit's unrunnable-command fix,
+                 solved in the product instead of with longer copy). -->
             <div class="space-y-3">
               <div>
-                <p class="mb-1.5 text-[13px] leading-relaxed text-contrast-500"><span class="font-medium text-foreground">New idea</span> — nothing exists yet. That’s all <code class="font-mono text-[12px] text-foreground">greenfield</code> means.</p>
-                <CommandBlock command={'mkdir my-initiative && npx @nino-chavez-labs/blueprint-cli init --name=my-initiative --display-name="My Initiative" --repo-url=https://github.com/you/my-initiative --tagline="What this ships" --variant=greenfield --tier=1 --pattern=A --target=my-initiative'} client:visible />
+                <p class="mb-1.5 text-[13px] leading-relaxed text-contrast-500"><span class="font-medium text-foreground">New idea</span> — nothing exists yet. That’s all <code class="font-mono text-[12px] text-foreground">greenfield</code> (the default) means.</p>
+                <CommandBlock command="npx @nino-chavez-labs/blueprint-cli init --name=my-initiative" client:visible />
               </div>
               <div>
                 <p class="mb-1.5 text-[13px] leading-relaxed text-contrast-500"><span class="font-medium text-foreground">Existing app</span> — run it from that repo. That’s <code class="font-mono text-[12px] text-foreground">brownfield</code>.</p>
-                <CommandBlock command={'npx @nino-chavez-labs/blueprint-cli init --name=my-app --display-name="My App" --repo-url=https://github.com/you/my-app --tagline="Existing app, new rigor" --variant=brownfield --tier=1 --pattern=A --target=.'} client:visible />
+                <CommandBlock command="npx @nino-chavez-labs/blueprint-cli init --name=my-app --variant=brownfield --target=." client:visible />
               </div>
             </div>
           </div>

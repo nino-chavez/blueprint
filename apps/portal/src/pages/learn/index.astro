@@ -8,7 +8,7 @@ const ROLES = [
   {
     role: 'Operator',
     here: 'You run an initiative end to end and make the stage-gate calls.',
-    action: { label: 'Scaffold a portal', cmd: 'npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative' },
+    action: { label: 'Scaffold a portal', cmd: 'npx @nino-chavez-labs/blueprint-cli init --name=my-initiative' },
     reads: [
       ['METHODOLOGY.md', 'how the pipeline thinks', `${GH}/METHODOLOGY.md`],
       ['variant-selection.md', 'which pipeline you run', `${GH}/docs/variant-selection.md`],

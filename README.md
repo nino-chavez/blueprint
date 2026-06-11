@@ -5,15 +5,16 @@
 [![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint-platform.pages.dev)
 
 ```bash
-npx @nino-chavez-labs/blueprint-cli init
+npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 ```
 
 ## Quickstart
 
 ```bash
-# 1. Scaffold a new initiative + its portal (your variant/tier/pattern choices are
-#    validated at scaffold time — defined in docs/variant-selection.md + docs/portal-and-tier-ladder.md)
-npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
+# 1. Scaffold a new initiative + its portal. --name is the only required flag;
+#    variant/tier/pattern default (greenfield/1/A) and are validated at scaffold time
+#    (docs/variant-selection.md + docs/portal-and-tier-ladder.md). Defaults are echoed back.
+npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 
 # 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield), tier (0–2),
 #    and portal_pattern (A|B). Then run the pipeline in Claude Code:
@@ -106,8 +107,8 @@ methodology home is resolved automatically (`$BLUEPRINT_HOME` → a consumer's
 paths), so an `npm install` user gets a working CLI with zero config.
 
 ```bash
-# scaffold a new initiative's portal (Pattern A platform-portal or B redesign-review)
-npx @nino-chavez-labs/blueprint-cli init --pattern=A --target=my-initiative
+# scaffold a new initiative's portal (--name is the only required flag; defaults echoed)
+npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 
 blueprint review <name> [--target=<dir>] [--json]   # run an executable reviewer (ADR-0002);
 blueprint review --list                              #   discovers canonical + org reviewers (ADR-0006)

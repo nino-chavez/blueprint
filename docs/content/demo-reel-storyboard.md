@@ -87,7 +87,7 @@ Job-ordered: each beat is (what you do) → (what landed) → (what the gate sai
 | 5 | artifact `research/00-recon-synthesis.md` | what landed: method + findings + evidence paths (6 agents, ~612k tokens) |
 | 6 | terminal `review-research-fresh` | skip ahead → the gate names what's missing; done is defined |
 | 7 | artifact `decisions/01-prescription.md` | decisions cite their research (`grounded_by`) and what they authorize (`informs`) |
-| 8 | prompt `/blueprint-prototype` `/blueprint-docs` | prototype tests the decision, docs capture the rationale |
+| 8 | prompt `/blueprint-prototype` `/blueprint-validate` `/blueprint-docs` | prototype tests the decision, fact-check gates it, docs capture the rationale (canonical stage order: validate before docs) |
 | 9 | terminal `review-stateful-claims` | fact-check is a stage; agent gates layer under team sign-offs |
 | 10 | terminal `doctor-fresh` | ship gate BEFORE the work: placeholders FAIL |
 | 11 | terminal `doctor-self` | ship gate AFTER: honest green — this site deploys from it |

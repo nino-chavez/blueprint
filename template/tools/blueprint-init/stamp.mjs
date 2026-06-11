@@ -810,18 +810,41 @@ async function main() {
   }
   if (mode !== "stamp") fail(`unknown --mode=${mode} (valid: stamp, restamp-chrome, audit-chrome)`);
 
-  const required = ["name", "display-name", "repo-url", "tagline", "variant", "tier", "pattern", "target"];
-  const missing = required.filter((k) => !args[k]);
-  if (missing.length) fail(`missing required flags: ${missing.join(", ")}`);
+  // --name is the only required flag (wave 61): every other flag derives a
+  // sensible default so the published one-liner runs as printed. The audit
+  // that forced this: every init command on the product site errored when
+  // pasted, because the stamper demanded all 8 flags — category convention
+  // (create-astro, create-next-app) is scaffold-with-defaults. Explicit flags
+  // always win; every applied default is printed (nothing silent).
+  if (!args["name"]) {
+    fail(
+      `--name is required.\n` +
+      `  minimal:  node stamp.mjs --name=my-initiative\n` +
+      `  defaults: display-name (title-cased name), tagline, repo-url placeholder,\n` +
+      `            --variant=greenfield --tier=1 --pattern=A --target=./<name> (created if missing)`
+    );
+  }
 
   const name = args["name"];
-  const displayName = args["display-name"];
-  const repoUrl = args["repo-url"].replace(/\/$/, "");
-  const tagline = args["tagline"];
-  const variant = args["variant"];
-  const tier = String(args["tier"]);
-  const pattern = args["pattern"].toUpperCase();
-  const target = path.resolve(args["target"].replace(/^~/, process.env.HOME || ""));
+  const titleCased = name
+    .split(/[-_ ]+/)
+    .filter(Boolean)
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join(" ");
+  const defaulted = [];
+  const withDefault = (flag, value) => {
+    if (args[flag]) return args[flag];
+    defaulted.push(`${flag}=${JSON.stringify(value)}`);
+    return value;
+  };
+
+  const displayName = withDefault("display-name", titleCased);
+  const repoUrl = withDefault("repo-url", `https://github.com/your-org/${name}`).replace(/\/$/, "");
+  const tagline = withDefault("tagline", `${displayName} — a Blueprint initiative`);
+  const variant = withDefault("variant", "greenfield");
+  const tier = String(withDefault("tier", "1"));
+  const pattern = withDefault("pattern", "A").toUpperCase();
+  const target = path.resolve(withDefault("target", `./${name}`).replace(/^~/, process.env.HOME || ""));
   const dryRun = args["dry-run"] === "true";
   const logoSrc = args["logo"] || null;
   const theme = (args["theme"] || "slate").toLowerCase();
@@ -841,16 +864,20 @@ async function main() {
   if (pattern !== "A" && pattern !== "B") fail(`pattern must be A or B; got ${pattern}`);
   if (pattern === "B") fail(`pattern B initial stamp not yet implemented. For chrome refresh on an existing Pattern B portal, run with --mode=restamp-chrome --pattern=B --target=<path>. See README §"Pattern B stamper".`);
 
+  // Create a missing target (category convention: scaffolders create their
+  // directory). Refuse only when the path exists and isn't a directory.
   const targetStat = await fs.stat(target).catch(() => null);
-  if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
+  if (targetStat && !targetStat.isDirectory()) fail(`--target exists and is not a directory: ${target}`);
+  if (!targetStat && !dryRun) await fs.mkdir(target, { recursive: true });
 
   const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
   const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
 
-  console.log(`blueprint-init: stamping Pattern A scaffold into ${target}`);
+  console.log(`blueprint-init: stamping Pattern A scaffold into ${target}${targetStat ? "" : " (created)"}`);
   console.log(`  variant=${variant} tier=${tier} (${VARIANT_TIER_MATRIX[variant][tier]})`);
   console.log(`  name=${name} display-name="${displayName}"`);
   console.log(`  repo-url=${repoUrl}`);
+  if (defaulted.length) console.log(`  defaulted: ${defaulted.join("  ")}`);
   console.log(`  dry-run=${dryRun}`);
 
   await copyTree({

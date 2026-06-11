@@ -128,7 +128,7 @@ export const SCENES: Scene[] = [
     type: 'terminal',
     reels: ['deep'],
     fixture: 'init',
-    caption: 'Day zero — one command sets up the workspace. The flags are the three choices: new idea or existing app (variant), how deep the deliverables go (tier), full project site or lighter redesign review (pattern).',
+    caption: 'Day zero — one required flag, and every default is echoed back. The choices you can override: new idea or existing app (variant), how deep the deliverables go (tier), full project site or lighter redesign review (pattern).',
     holdMs: 3400,
   },
 
@@ -189,8 +189,8 @@ export const SCENES: Scene[] = [
   {
     type: 'prompt',
     reels: ['deep'],
-    commands: ['/blueprint-prototype', '/blueprint-docs'],
-    caption: 'Prototype and documents build together — the prototype tests the decision, the docs capture the rationale.',
+    commands: ['/blueprint-prototype', '/blueprint-validate', '/blueprint-docs'],
+    caption: 'The prototype tests the decision, fact-check gates it, the docs capture the rationale — validate sits between build and write-up.',
   },
   {
     type: 'terminal',
@@ -238,7 +238,7 @@ export const SCENES: Scene[] = [
     reels: ['sizzle', 'deep'],
     headline: 'Ship work that holds up.',
     sub: 'This site is Blueprint output — its receipts are public.',
-    command: 'npx @nino-chavez-labs/blueprint-cli init',
+    command: 'npx @nino-chavez-labs/blueprint-cli init --name=my-initiative',
   },
 ];
 

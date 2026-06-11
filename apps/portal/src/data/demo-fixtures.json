@@ -1,16 +1,17 @@
 {
-  "capturedAt": "2026-06-10T23:58:22.222Z",
+  "capturedAt": "2026-06-11T01:03:19.124Z",
   "pathsRedacted": true,
   "fixtures": {
     "init": {
-      "command": "npx @nino-chavez-labs/blueprint-cli init --name=field-guide --display-name=\"Field Guide\" --repo-url=https://github.com/acme/field-guide --tagline=\"A field guide initiative\" --variant=greenfield --tier=1 --pattern=A --target=~/work/field-guide",
+      "command": "npx @nino-chavez-labs/blueprint-cli init --name=field-guide --target=~/work/field-guide",
       "exitCode": 0,
-      "durationMs": 101,
+      "durationMs": 95,
       "lines": [
         "blueprint-init: stamping Pattern A scaffold into ~/work/field-guide",
         "  variant=greenfield tier=1 (default)",
         "  name=field-guide display-name=\"Field Guide\"",
-        "  repo-url=https://github.com/acme/field-guide",
+        "  repo-url=https://github.com/your-org/field-guide",
+        "  defaulted: display-name=\"Field Guide\"  repo-url=\"https://github.com/your-org/field-guide\"  tagline=\"Field Guide — a Blueprint initiative\"  variant=\"greenfield\"  tier=\"1\"  pattern=\"A\"",
         "  dry-run=false",
         "",
         "— blueprint-init report —",
@@ -165,7 +166,7 @@
     "review-list": {
       "command": "blueprint review --list",
       "exitCode": 0,
-      "durationMs": 34,
+      "durationMs": 33,
       "lines": [
         "blueprint review — 15 reviewer(s) discovered  (target: ~/work/field-guide)",
         "",
@@ -190,7 +191,7 @@
     "review-conformance-fresh": {
       "command": "blueprint review portal-pattern-a-conformance-reviewer",
       "exitCode": 1,
-      "durationMs": 39,
+      "durationMs": 40,
       "lines": [
         "✗ BLOCKED — portal-pattern-a-conformance-reviewer  (7/7 routes, ui=8 tokens=1, banners=12)",
         "",
@@ -203,7 +204,7 @@
     "review-research-fresh": {
       "command": "blueprint review research-completeness-reviewer",
       "exitCode": 1,
-      "durationMs": 34,
+      "durationMs": 37,
       "lines": [
         "✗ BLOCKED — research-completeness-reviewer  (variant=greenfield type=consumer-app; legs 0/4 populated; personas 0/0 with JTBD; MISSING research/current-state,research/competitive,research/personas,research/funnel)",
         "",
@@ -236,7 +237,7 @@
     "review-stateful-claims": {
       "command": "blueprint review stateful-claim-lint-reviewer",
       "exitCode": 0,
-      "durationMs": 85,
+      "durationMs": 160,
       "lines": [
         "✓ PASS — stateful-claim-lint-reviewer  (docs=45, claims-checked=3, mismatches=0, skipped=[])",
         "  no findings."
@@ -245,7 +246,7 @@
     "doctor-self": {
       "command": "blueprint doctor",
       "exitCode": 0,
-      "durationMs": 103,
+      "durationMs": 110,
       "lines": [
         "blueprint doctor — ~/dev/blueprint",
         "",
@@ -268,7 +269,7 @@
     "doctor-fresh": {
       "command": "blueprint doctor",
       "exitCode": 1,
-      "durationMs": 48,
+      "durationMs": 51,
       "lines": [
         "blueprint doctor — ~/work/field-guide",
         "",
@@ -292,7 +293,7 @@
     "cost": {
       "command": "blueprint cost",
       "exitCode": 1,
-      "durationMs": 27,
+      "durationMs": 28,
       "lines": [
         "blueprint cost — ~/dev/blueprint",
         "",
@@ -314,10 +315,10 @@
     "fleet": {
       "command": "blueprint fleet",
       "exitCode": 0,
-      "durationMs": 46,
+      "durationMs": 51,
       "lines": [
         "blueprint fleet — methodology @ ~/dev/blueprint",
-        "current: 0.2.0  (HEAD 3a8879f, latest tag v0.2.0)",
+        "current: 0.2.0  (HEAD 959be8a, latest tag v0.2.0)",
         "",
         "  repo                                pattern  pin        class          distance      owner",
         "  nino-chavez/rally-hq                B       —          unpinned       —             nino-chavez",
@@ -341,10 +342,10 @@
     "upgrade-fresh": {
       "command": "blueprint upgrade",
       "exitCode": 0,
-      "durationMs": 48,
+      "durationMs": 47,
       "lines": [
         "blueprint upgrade — ~/work/field-guide",
-        "pinned: (unpinned)   methodology current: 0.2.0 (HEAD 3a8879f)",
+        "pinned: (unpinned)   methodology current: 0.2.0 (HEAD 959be8a)",
         "verdict: unpinned — no methodology_version pin (informational)",
         "delta: (nothing to narrate — already current or no released versions in range)",
         "proposed: bump methodology_version (none) -> 0.2.0 in blueprint.yml   [--apply to write]",

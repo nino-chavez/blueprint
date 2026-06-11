@@ -130,7 +130,16 @@ Edit `blueprint.yml` for: variant, execution depth, voice modes, prototype setti
 
 ## Scaffolding a new initiative (Pattern A)
 
-Do not copy `template/apps/portal/` by hand. Use the stamper:
+Do not copy `template/apps/portal/` by hand. Use the stamper — `--name` is the
+only required flag (defaults: title-cased display name, placeholder repo URL +
+tagline, `--variant=greenfield --tier=1 --pattern=A --target=./<name>`, target
+created when missing; every applied default is echoed in the run header):
+
+```bash
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs --name=<project-slug>
+```
+
+Explicit form (any flag overrides its default):
 
 ```bash
 node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \

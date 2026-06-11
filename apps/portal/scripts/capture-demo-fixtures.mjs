@@ -39,14 +39,12 @@ function displayFor(argv) {
 }
 const SCENARIOS = [
   {
+    // Minimal form on purpose (wave 61): --name is the only required flag, and
+    // the stamper's "defaulted:" echo line is itself a beat — the tool showing
+    // its work. --target stays explicit only because the capture sandbox lives
+    // in a temp dir.
     id: 'init',
-    argv: [
-      cli, 'init',
-      '--name=field-guide', '--display-name=Field Guide',
-      '--repo-url=https://github.com/acme/field-guide',
-      '--tagline=A field guide initiative',
-      '--variant=greenfield', '--tier=1', '--pattern=A', `--target=${target}`,
-    ],
+    argv: [cli, 'init', '--name=field-guide', `--target=${target}`],
   },
   {
     id: 'review-list',

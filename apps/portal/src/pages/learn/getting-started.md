@@ -21,7 +21,7 @@ The on-ramp for running Blueprint for the first time. Five minutes to a scaffold
 
   The binary is `blueprint`. `npm view @nino-chavez-labs/blueprint-cli version` shows the latest published version — releases ship continuously, so check npm rather than this page.
 
-- **A target directory** for the new initiative — an absolute path where the portal gets stamped (e.g. `~/projects/my-project`). Create it first (`mkdir`) — the stamper requires the directory to exist.
+- **A target directory** for the new initiative — where the portal gets stamped (e.g. `~/projects/my-project`). Defaults to `./<name>` and is created when missing.
 - **A browser sensor**, only when you reach Stage 0 legibility against a running prototype. The default is `browse-tool`; wire it later, not now. Skip it for scaffolding.
 
 Verify the install:
@@ -43,7 +43,13 @@ Before any of that, three orthogonal choices set the shape of the work. **Varian
 
 `blueprint init` scaffolds a Pattern A portal at Tier 1. Under the hood it *stamps*: copies the template, substitutes your name/repo/tagline for a fixed token set, writes `blueprint.yml`, and finishes with a post-stamp grep — a search proving no strings from the template's source project leaked into your copy.
 
-The CLI dispatcher passes all flags straight through to the stamper:
+`--name` is the only required flag — every other flag derives a default, and every applied default is echoed back on a `defaulted:` line so nothing is silent:
+
+```bash
+blueprint init --name=my-project
+```
+
+The explicit form, when you want to set everything yourself (any flag overrides its default):
 
 ```bash
 blueprint init \
@@ -59,11 +65,12 @@ blueprint init \
 
 Flag notes:
 
-- `--name` is the project slug (used in package metadata, footer brand, file substitutions).
-- `--variant` is `greenfield`, `midstream`, or `brownfield`.
-- `--tier` is `0`, `1`, or `2`. Tier 1 is the default starting point for a serious initiative.
+- `--name` is the project slug (used in package metadata, footer brand, file substitutions). Required.
+- `--display-name`, `--tagline`, `--repo-url` default to a title-cased name, a generic tagline, and a placeholder URL — replace the placeholder before sharing the portal.
+- `--variant` is `greenfield` (default), `midstream`, or `brownfield`.
+- `--tier` is `0`, `1`, or `2`. Tier 1 is the default — the starting point for a serious initiative.
 - `--pattern=A` is the supported initial stamp today. **Pattern B has no initial-stamp path yet** — the stamper supports Pattern B only through `--mode=restamp-chrome`, which refreshes the shared shell files (the "chrome") of an existing portal, not a fresh scaffold. Pattern B initiatives copy `template/portal/` from the methodology repo instead.
-- `--target` is the absolute path to the new initiative root.
+- `--target` is the path to the new initiative root. Defaults to `./<name>`; created when missing.
 
 ## 4. What you just got
 
