@@ -1,6 +1,6 @@
 # Blueprint Portal Conventions
 
-**Version 5 (2026-06-11).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
+**Version 6 (2026-06-12).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
 
 ---
 
@@ -222,6 +222,63 @@ When your strategic artifacts live in the canonical doc-discipline directories (
 Full rationale: methodology repo `docs/decisions/0003-portal-docs-manifest-driven-sync.md`.
 
 **Why data-driven, not hardcoded**: prior versions of the docs viewer shipped with 13 doc slugs baked into the HTML, the TITLES map, and the STRATEGIC_DOCS Set. Consumer projects copied the template and shipped a docs viewer full of project-specific vocabulary from whichever flagship project the template was extracted from. The data-driven shape means the canonical template ships with zero project-specific defaults — every consumer gets a working viewer by editing one manifest. Full incident: `docs/case-studies/case-study-v3-portal-css-gap.md` § "Follow-up — docs viewer".
+
+---
+
+## Strategic-doc authoring: hero metadata + callouts
+
+Docs in a `designed: true` tier get the viewer's designed treatment: a lifted **hero block** (title + metadata) and **structured callouts** built from in-prose conventions. The treatment is mechanical — it reacts to how you author the markdown. These are the two conventions it keys off, and the discipline each requires.
+
+### Hero metadata block
+
+A strategic doc may open — immediately under the `# H1`, before the first `---` — with one metadata line per field:
+
+```markdown
+# Project — CX Strategy
+
+**Date:** 2026-05-23
+**Status:** Working hypothesis · partial-shipped
+**Inputs:** `research/synthesis.md`, `DESIGN-PRINCIPLES.md`, 17 prototype pages
+```
+
+The viewer lifts this block next to the title. Recognized openers (the first line must start with one of these `**Label:**`): `Date`, `Status`, `Inputs`, `Method`, `Source`. Every `**Label:**` segment in that paragraph is rendered, not only the recognized opener.
+
+**Field-length discipline — the load-bearing rule.** The renderer routes each value by length:
+
+| Value | Renders as | Hold to |
+|---|---|---|
+| ≤ ~52 chars (a date, a one-phrase status) | a **pill** — a scannable token | a phrase, not a sentence |
+| > ~52 chars (Method, an Inputs list, provenance) | a **definition row** — label + wrapping block | a clause or a short list |
+
+**Never put narrative prose in `Status`.** `Status` is a state token — `Working hypothesis`, `Partial-shipped`, `Canonical`, `Draft for review`. If you need to explain *how* the status came to be (a reconciliation pass, a caveat, an open question), that is body content: put a one-phrase token in `Status` and move the explanation to a blockquote note directly under the metadata block. A paragraph in a `Status` field is the canonical hero-metadata overflow defect — before the length-aware renderer, it stretched a pill full-width and wrapped a paragraph inside a 999px-radius blob. The renderer now degrades it to a row, but a paragraph is still the wrong content for a status field.
+
+### Callout vocabulary
+
+A paragraph whose **first** token is a bold recognized label becomes a structured callout (a labeled, color-accented block) instead of inline-bold prose:
+
+```markdown
+**Decision:** Lead with the operational pain, not the brand metaphor.
+
+**Why:** Organizers describe the failure mode in operational terms, not brand terms.
+```
+
+Recognized labels and their accent kind (extend the `CALLOUT_LABELS` map in the viewer to add project-specific vocabulary — it is the one place the chrome is meant to grow per consumer):
+
+| Kind | Labels |
+|---|---|
+| decision | `Decision`, `Strategic decision`, `Sales motion` |
+| why | `Why`, `Job-to-be-done` |
+| evidence | `Evidence`, `Prototype evidence`, `Surface served` |
+| audience | `Audience served`, `Persona` |
+| status | `Status`, `Outcome`, `Volume` |
+| action | `Action` |
+| falsification / method / source | `Falsification signal`, `Method`, `Source` |
+
+The label must be the paragraph's first child and end with a colon. A label that appears mid-sentence stays inline.
+
+### TOC-friendly headings
+
+The "On this page" rail is built from `h2`/`h3` text and is narrow (≈200px). Lead a heading with the human concept; push route slugs, file paths, and qualifiers into the body. `### Public tournament — the primary destination` with the route on the first body line beats `### Public tournament (\`/t/[slug]/*\`) — the primary destination`, which wraps to three lines in the rail. (The rail clamps to two lines as a backstop, but a clamped heading is a truncated heading.)
 
 ---
 
