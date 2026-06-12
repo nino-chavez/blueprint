@@ -936,6 +936,64 @@ body:has(.proto-flow-breadcrumb) .proto-top-bar { top: 44px; }
   display: flex; align-items: center; gap: var(--space-3);
 }
 
+/* ── Cited-spec-evidence chip + overlay (proto-nav.js) ──────────────────────
+ * A scholarly margin annotation: the top-bar chip lists short citation IDs
+ * (F4·R6) behind a 2px brand rule; clicking opens an overlay (JS-positioned
+ * below the chip via top/right) listing each citation's title with a colored
+ * margin rule — gold = finding, accent = rule. Without these the overlay,
+ * appended to <body>, flowed unstyled to the page bottom. */
+.citation-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px 4px 8px;
+  border: 1px solid var(--card-border);
+  border-left: 2px solid var(--brand-500);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.citation-chip:hover { color: var(--text-primary); border-color: var(--brand-300); border-left-color: var(--brand-500); }
+.citation-codes { display: inline-flex; align-items: center; gap: 5px; }
+.citation-sep, .citation-overflow { color: var(--text-muted); }
+.citation-chevron { font-size: 8px; color: var(--text-muted); }
+
+.citation-overlay {
+  position: fixed;            /* top/right are set by proto-nav.js wireCitationChip */
+  display: none;
+  z-index: 60;
+  min-width: 280px; max-width: 380px;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+.citation-overlay.open { display: block; }
+.citation-overlay-heading {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3);
+  font: 600 10px/1 var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding-bottom: var(--space-2); margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--card-border);
+}
+.citation-overlay-heading .source-path { text-transform: none; letter-spacing: 0; color: var(--brand-500); }
+.citation-row {
+  display: grid;
+  grid-template-columns: 2px 1fr;
+  column-gap: var(--space-3); row-gap: 2px;
+  padding: var(--space-2) 0;
+}
+.citation-row + .citation-row { border-top: 1px solid var(--card-border); }
+.citation-row .rule { grid-row: 1 / 3; align-self: stretch; border-radius: 1px; background: var(--accent-500); }
+.citation-row.is-finding .rule { background: var(--brand-500); }
+.citation-row .short { font: 700 11px/1.3 var(--font-mono); color: var(--text-primary); }
+.citation-row .title { font-size: var(--text-sm); line-height: 1.4; color: var(--text-secondary); }
+.citation-row.unknown .title { color: var(--text-muted); font-style: italic; }
+
 .proto-top-bar .top-bar-nav {
   display: flex; align-items: center; gap: var(--space-4);
 }
