@@ -323,6 +323,42 @@
     .doc-hero-chip-status { background: color-mix(in srgb, var(--brand-500) 8%, var(--surface-1)); border-color: color-mix(in srgb, var(--brand-500) 25%, var(--card-border)); }
     .doc-hero-chip-status .chip-label { color: var(--brand-700); }
 
+    /* Hero metadata rows — for values too long to be a scannable pill.
+       A pill (line-height:1, 999px radius, centered) was only ever meant
+       to hold a token like a date. Feed it a paragraph-length Status or a
+       multi-path Inputs list and it stretches full-width and wraps inside
+       a rounded blob with crushed line-height — the hero-metadata overflow
+       defect. buildHeroChips() routes any value over ~52 chars here instead:
+       a label + a block value that wraps like prose. */
+    .doc-hero-rows {
+      display: grid;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+    .doc-hero-chips + .doc-hero-rows { margin-top: var(--space-3); }
+    .doc-hero-row {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr);
+      gap: var(--space-3);
+      align-items: baseline;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .doc-hero-row .row-label {
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .doc-hero-row .row-value { color: var(--text-secondary); }
+    .doc-hero-row .row-value code { font-size: 0.9em; }
+    .doc-hero-row-status .row-label { color: var(--brand-700); }
+    @media (max-width: 600px) {
+      .doc-hero-row { grid-template-columns: 1fr; gap: 2px; }
+    }
+
     /* Callouts — designed pattern for "Decision: X" / "Why: X" / "Evidence: X"
        inline conventions that appear repeatedly in strategic docs. Each one
        gets a structured component instead of being inline-bold prose. */
@@ -453,7 +489,10 @@
       margin-bottom: var(--space-3);
     }
     .doc-toc a {
-      display: block;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
       padding: 4px 0 4px 12px;
       margin-left: -1px;
       color: var(--text-muted);
@@ -792,7 +831,8 @@
           const wrapNode = document.createElement('span');
           currentValueNodes.forEach((n) => wrapNode.appendChild(n.cloneNode(true)));
           const valueHtml = wrapNode.innerHTML.trim().replace(/^[,;\s.]+|[,;\s.]+$/g, '');
-          if (valueHtml) segments.push({ label: currentLabel, valueHtml });
+          const valueText = (wrapNode.textContent || '').trim();
+          if (valueHtml) segments.push({ label: currentLabel, valueHtml, valueText });
         }
       };
       [...metaPara.childNodes].forEach((child) => {
@@ -806,15 +846,42 @@
       });
       flush();
       if (!segments.length) return null;
-      const wrap = document.createElement('div');
-      wrap.className = 'doc-hero-chips';
-      segments.forEach((s) => {
-        const chip = document.createElement('div');
-        chip.className = `doc-hero-chip doc-hero-chip-${s.label.toLowerCase().replace(/\s+/g, '-')}`;
-        chip.innerHTML = `<span class="chip-label">${s.label}</span><span class="chip-value">${s.valueHtml}</span>`;
-        wrap.appendChild(chip);
-      });
-      return wrap;
+
+      // Length-aware split. A pill is a token affordance — it only reads
+      // right for short values (a date, a one-phrase status). Values longer
+      // than this stay as a label + wrapping block value (definition row),
+      // which is what a Method, an Inputs list, or a prose Status actually
+      // is. Routing by length is what stops the overflow: the renderer no
+      // longer asks one pill shape to hold both a date and a paragraph.
+      const SHORT = 52;
+      const chips = segments.filter((s) => s.valueText.length <= SHORT);
+      const rows = segments.filter((s) => s.valueText.length > SHORT);
+      const kind = (label) => label.toLowerCase().replace(/\s+/g, '-');
+
+      const frag = document.createDocumentFragment();
+      if (chips.length) {
+        const wrap = document.createElement('div');
+        wrap.className = 'doc-hero-chips';
+        chips.forEach((s) => {
+          const chip = document.createElement('div');
+          chip.className = `doc-hero-chip doc-hero-chip-${kind(s.label)}`;
+          chip.innerHTML = `<span class="chip-label">${escapeHtml(s.label)}</span><span class="chip-value">${s.valueHtml}</span>`;
+          wrap.appendChild(chip);
+        });
+        frag.appendChild(wrap);
+      }
+      if (rows.length) {
+        const dl = document.createElement('div');
+        dl.className = 'doc-hero-rows';
+        rows.forEach((s) => {
+          const row = document.createElement('div');
+          row.className = `doc-hero-row doc-hero-row-${kind(s.label)}`;
+          row.innerHTML = `<span class="row-label">${escapeHtml(s.label)}</span><span class="row-value">${s.valueHtml}</span>`;
+          dl.appendChild(row);
+        });
+        frag.appendChild(dl);
+      }
+      return frag;
     }
 
     // ─────────────── on-this-page ToC + scroll-spy ───────────────
