@@ -10,6 +10,7 @@ const PROJECT_NAME = 'Blueprint';
 // excerpts at /discover (labelled "Docs" before — that lied about the content).
 const NAV = [
   { href: '/learn', label: 'Learn' },
+  { href: '/try', label: 'Try' },
   { href: '/demo', label: 'Demo' },
   { href: '/#commands', label: 'Commands' },
   { href: '/#contribute', label: 'Contribute' },
@@ -29,7 +30,7 @@ export interface PortalNavProps {
 export function PortalNav({ currentPath }: PortalNavProps) {
   // Active = exact or sub-path match on the item's own route, nothing more.
   // The old Strategy catch-all ("anything that isn't home/Learn/Demo") lit
-  // Strategy + aria-current="page" on /compare, /faq, /try, /roadmap (agency
+  // Strategy + aria-current="page" on /compare, /faq, /roadmap (agency
   // audit 2026-06-11). Routes not in the nav show no active item; the hash
   // links never match because currentPath carries no fragment.
   const isActive = (href: string) =>
