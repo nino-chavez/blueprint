@@ -4,6 +4,44 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-11 — Blueprint↔Hive gaps from the partner working session: DoD-gate wiring, decision-graph surface, audit-trail edges
+
+**Three new candidates (all instance 1); two meeting asks resolve to already-shipped capability.** Source: the first co-development working session with the partner SA (T.) — `feedback/2026-06-11-partner-working-session.md`. The meeting's own next-step assigned this analysis ("identify gaps between Blueprint and Hive regarding archaeology and definition-of-done"). The discipline holds: mechanical realization is second-instance-gated, **except** where the partner's live engagement can serve as the instance-1 calibration test (the same exception the ground-truth-scope fix took with the second-attempt experiment).
+
+### First, what is NOT a gap (named so the methodology doesn't re-derive shipped work)
+
+- **"Embed process invariants / definition of done"** → the DoD verification ladder, shipped waves 52/62/63 (`template/tools/state-derive` `scenario_passes` check + `template/tools/scenario-results` normalizer + the UNKNOWN→MANUAL_REVIEW fail-safe). The meeting's field anecdote — a teammate marking an incident addressed by *citing docs that don't match reality* — is the exact present-but-broken / claimed-done-via-presence class the ladder exists to kill. The capability exists; the gap is that it doesn't reach the team layer (see candidate B).
+- **"Massive coordinated updates, the Google-monorepo shape"** → `blueprint fleet` + consumer-sync (`--mode=audit-chrome` / `restamp-chrome`) is that primitive at fleet scale; 12 consumers coordinate through it today.
+- That the partner re-derived both is itself a minor signal: **shipped DoD/fleet capability isn't visible to active consumers.** Partially addressed already (the wave-63 primitive was surfaced on the portal `/compare` this week); logged, not filed — the onboarding-visibility gap waits for a second instance.
+
+### Candidate A — decision/dependency graph surface (bucket: doc + tool)
+
+**Observed:** T. and the author want a node-based graph (heatmap-like) to navigate decision/dependency context, explicitly *instead of* a rigid dashboard. Framed in the meeting as needing a graph database (or Supabase + Claude MCP) as the backing store.
+
+**Reality check — the edges already exist; only the surface is missing:** archaeology events carry typed `refs[]` join keys (`{type: commit|doc, id}`); ADR frontmatter carries `supersedes`/`extends`/`informs`; the portal config already has a `dep_graph: null` placeholder waiting (`template/apps/portal/src/lib/portal-config.ts`). The gap is (1) a build-time pass that emits a nodes/edges JSON from those sources and (2) a force-graph portal island that renders it.
+
+**Candidate fix:** a small emitter under `template/tools/` walking archaeology `refs[]` + decision frontmatter + wave-log references into `dep-graph.json`; a portal island that fills the existing `dep_graph` slot. **Push back on the graph-DB instinct:** D1 `refs[]` is already the edge store — adopting Neo4j / Supabase-graph before any multi-hop traversal-query need exists is over-engineering (same call as deferring hive identity-hardening until a second team showed up). Render the edges first; reach for a graph DB only when a traversal pattern actually demands it. Mechanical realization second-instance-gated (a second consumer wanting the surface); the emitter is cheap enough to prototype against the self-application now.
+
+### Candidate B — Hive ↔ DoD-gate wiring (bucket: hook + schema) — the core Blueprint/Hive gap, highest priority
+
+**Observed:** Blueprint has a DoD verdict (`state-derive` → `_state.json`: COMPLIANT / NON_COMPLIANT / MANUAL_REVIEW); hive has task completion (mark done, release locks). **They are disconnected** — a team member can mark a hive task done while `state-derive` says NON_COMPLIANT, and hive will not catch it. The meeting's field pain (a teammate declaring an issue resolved by citation, no clear DoD on the engagement, the partner forced to backfill BA/PM/SA roles) is this disconnect in the wild: "done" in the coordination layer is a self-reported flag, not an inherited verdict.
+
+**Candidate fix:** the coordinator's completion path reads the `_state.json` verdict for the task's AC/feature and refuses (or at minimum annotates with `dod_verdict`) a "done" that the ladder hasn't cleared — so team-layer "done" inherits the ladder's fail-safe instead of being self-asserted. **This is the answer to the meeting's assigned Blueprint↔Hive gap question, and the highest-priority candidate** — smallest blast radius, and it has a live consumer (the partner's engagement) to calibrate against, so it does NOT wait for a synthetic second instance. Generalizes the field complaint into a mechanism.
+
+**Reference impl landed 2026-06-11 — atelier ADR-061 (`atelier dod`).** Building it sharpened the placement: the gate does NOT live in the live completion *transition* when the coordinator is a deployed service. atelier's `update` is a pure Postgres write path and the deployed endpoint has no repo checkout, so `_state.json` (a build artifact stamped with `as_of_commit`) is not on disk at request time — reading it there is impossible. The gate belongs where the artifact lives and where the *real* completion is decided: the **CI / merge layer** that owns `review → merged` (the git merge), mirroring how atelier already ships its `find_similar` check (ADR-006). So the contract is "the coordinator reads the DoD verdict at the layer that owns completion," not "the live transition does an inline disk read." The fail-safe is load-bearing and confirmed in the wild on first run: atelier's `_state.json` was stale (last `state-derive` run predated HEAD), so the gate read MANUAL_REVIEW despite every capability showing pass — a stale green correctly cannot read done. Per-AC scoping (`atelier dod --trace-id`, joining a contribution's `BRD:Epic-N` trace_ids to the capabilities whose `reference` cites them) and the `--strict` CI gate landed the same day; remaining follow-ups (coordinator-response surfacing, verdict persistence + the `dod_verdict` schema field, and a structured `covers` field to replace the prose-reference join) are recorded in ADR-061.
+
+### Candidate C — audit-trail edges: finish the skeletal ingesters + bidirectional decision refs (bucket: schema + tool)
+
+**Observed:** T. wants an audit trail with *clear connection points between decision nodes* to recover the "why." Archaeology's `/derive` with `[E:event_id]` citations IS that trail — but `git.py` and `hive.py` ingesters are skeletal (only sessions + docs are full), so the decision→commit→outcome links are missing; and ADR citations are one-way prose (research→decision, no backlinks, no structured `research_refs[]` field on the frontmatter).
+
+**Candidate fix:** finish the `git.py` + `hive.py` ingesters (commit metadata + hive proposal/synthesis events into the event log), and add a structured backlink field (`research_refs[]` / reciprocal `informed_by[]`) to ADR frontmatter so citations are machine-traversable both directions. **This is what gives candidate A real, bidirectional edges and makes candidate B's verdict auditable** — the three converge: C is the edges, A is the surface, B is the team-facing gate. The meeting's two assigned gap-areas (archaeology = the "why" = C; definition-of-done = B) are two faces of one wave. Mechanical realization second-instance-gated; the ingester skeletons already exist, so the lift is completion, not greenfield.
+
+**Sequencing:** B first (smallest, live-consumer-calibrated, answers the assigned question), then C (edges), then A (surface) — A is the least urgent because it renders nothing until C supplies traversable edges.
+
+**References:** `feedback/2026-06-11-partner-working-session.md`; `tools/archaeology/` (ingesters: `sessions.py`/`adr.py` full, `git.py`/`hive.py` skeletal); `template/tools/state-derive`, `template/tools/scenario-results` (waves 62/63); `template/apps/portal/src/lib/portal-config.ts` (`dep_graph` placeholder); `decisions/00-charter.md` frontmatter (`supersedes`/`extends`/`informs`); `docs/content/validation-script.md` (A3 Log row).
+
+---
+
 ## 2026-06-11 — Ground-truth scope: fact-check verifies green against the wrong codebase; plus two second-instance promotions fired
 
 **One new candidate (instance 1); two prior candidates PROMOTED (wave 57).**

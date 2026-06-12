@@ -71,9 +71,15 @@ consumers:
     owner: nino-chavez
     synced_at: "2026-06-06"
 
-  - repo: nino-chavez/atelier-dashboard
-    pattern: null                     # wip/atelier-dashboard-blueprint — pattern not declared
-    methodology_version: null
+  - repo: nino-chavez/atelier              # wip/atelier — the coordination-substrate APP + interop
+    pattern: bespoke                       #   protocol (the "hive becomes atelier" line). Stamped
+    methodology_version: null              #   2026-06-11: midstream / tier 2 / bespoke (ADR-001
+    owner: nino-chavez                     #   justifies the bespoke portal); state-derive synced to
+    synced_at: "2026-06-11"                #   wave 63. Reference impl of the coordinator↔DoD contract.
+
+  - repo: nino-chavez/atelier-dashboard    # wip/atelier-dashboard-blueprint — the dashboard north-star
+    pattern: null                          #   DESIGN initiative (Blueprint applied to design atelier's
+    methodology_version: null              #   dashboard), NOT the atelier app above. Pattern undeclared.
     owner: nino-chavez
     synced_at: "2026-06-06"
 
