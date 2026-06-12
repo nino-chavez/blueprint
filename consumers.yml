@@ -116,10 +116,10 @@ consumers:
     synced_at: "2026-06-06"
 
   - repo: nino-chavez/nino-chavez-photography
-    pattern: A                        # PLANNED pattern (not yet scaffolded). Init never run —
-    methodology_version: null         #   no blueprint.yml on disk as of 2026-06-11 (drift was: row implied one existed).
-    owner: nino-chavez                #   Grounded plan: apps/photography .agent-os/specs/.../HANDOFF.md §"Methodology
-    synced_at: "2026-06-11"           #   migration" — variant=MIDSTREAM (decision-tree, NOT brownfield), tier 2, Pattern A.
+    pattern: B                        # scaffolded 2026-06-11: midstream, tier 2, copy-stamped Pattern B
+    methodology_version: "0.3.0"      #   (init --pattern=B unimplemented). blueprint/blueprint.yml pins 0.3.0.
+    owner: nino-chavez                #   Portal live at nino-chavez-photography-blueprint.pages.dev; surfaced on /try.
+    synced_at: "2026-06-12"           #   Earlier "Pattern A / PLANNED" was the pre-scaffold drift, now corrected.
 
   # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
   - repo: external-a/media-toolkit    # de-named (external operator, A.); real identity in consumers.local.yml
