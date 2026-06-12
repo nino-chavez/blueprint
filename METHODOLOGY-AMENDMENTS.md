@@ -4,6 +4,46 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-12 — Candidates A + C realized in the flagship consumer; candidate A's second instance fired independently (atlas)
+
+**Trigger**: Same-day convergence from two directions — the partner SA (T.) independently built `atlas-v0` (markdown workspace → typed graph → d3 viewer, with a STRATEGY question asking to merge the Blueprint/Hive node taxonomy into his schema), while the flagship consumer (bc-subscriptions) shipped the full mechanical realization of the [[2026-06-11]] candidates.
+
+**Scope**: Status update on [[2026-06-11]] candidates A/B/C + the promotion-relevant contract
+
+**Bucket**: methodology (status + convergence contract); template realization stays second-CONSUMER-gated
+
+**Status**: Active
+
+**Candidate A (decision/dependency-graph surface) — second instance FIRED.** Instance 1 was the partner session ask; instance 2 is T. independently *building* the surface (atlas-v0: zero-dep extractor + viewer, 3 layouts, 2-hop focus, scoped bundles with memory-as-traversal-leaf isolation). The realization shipped in bc-subscriptions the same day: a `/graph` projection endpoint over the archaeology events+refs store (lenses: receipts/decision/delivery/build/verify/requirements; `target_prefix` rooting) + the vendored atlas viewer. **The convergence contract is `ATLAS_DATA`** (`{nodes:[{id:"type:slug",type,label,…}], edges:[{source,target,type,provenance}]}`): two extractors (his walks markdown workspaces; ours projects the event store), one viewer. Taxonomy mapping (union-not-squash; `issue` deliberately ≠ `jira`) recorded standalone at `wip/bc-subscriptions/docs/methodology/atlas-taxonomy-convergence.md`. The graph-DB pushback held in practice: typed refs + a projection query answered the ripple-effect need; the reasonable remainder of T.'s "graph DB + MCP + Cypher" wish is an MCP tool over `/graph`+`/timeline`, no Cypher. Blueprint-side, the self-application portal carries a smaller ADR-frontmatter-only graph (`tools/dep-graph-derive` + portal island, commit 4af5ff9) built before the unified-store shape landed — keep as the Pattern-A portal-only fallback for consumers WITHOUT a substrate; the bc-subs shape is canonical for consumers WITH one. Template promotion of either still waits for a second *consumer* asking, but the contract decision is made and recorded now.
+
+**Candidate C (audit-trail edges / skeletal ingesters) — COMPLETE in the flagship consumer.** `git.py`, `hive.py`, `github.py` all live (plus two the candidate didn't name: `brd.py` requirements and `state.py` verification verdicts). The receipt chain closes end-to-end: requirement (BRD US) ↔ decision (ADR) ↔ build (commit) ↔ coordination (proposal/synthesis) ↔ issue/PR ↔ capability/DoD verdict `as_of` a measured commit. Two transferable learnings for the methodology: (1) **coverage = reference discipline** — the graph is exactly as connected as commit messages/frontmatter/metadata cite each other; islands in the graph are a *writing* gap, not a tooling gap; (2) the verification axis ("is it done") was the silently-missing half of the provenance graph everywhere — intent/design/build get traced by default, verdicts don't; any consumer standing up an archaeology substrate should wire the state-derive/DoD stream from day one.
+
+**Candidate B (hive ↔ DoD gate) — unchanged.** atelier ADR-061 remains the reference impl. bc-subs now has the verdict *events* in its store (state.py), which is the auditability half — but no coordinator-layer completion gate yet; B stays gated on that wiring.
+
+**References:** `wip/bc-subscriptions` dev commits `b3624621..05aece91` (worker prep / brd / state / github / atlas convergence) + main commits `14054e35..1e03d1fb` (git/hive ingesters, /graph endpoint); `~/Downloads/atlas-v0` (T.'s extractor + viewer + README); `wip/bc-subscriptions/docs/methodology/atlas-taxonomy-convergence.md`; this repo commit 4af5ff9; relates to [[2026-06-11]] (all three candidates) and the consumer-identification entry below (same day).
+
+---
+
+## 2026-06-12 — Consumer-identification has no mechanical public-tree signal; the flagship consumer reads as a non-consumer
+
+**Trigger**: An agent attributing decision-graph work to the right repo concluded bc-subscriptions was *not* a Blueprint consumer — when it is the first and flagship one (de-named `subs-initiative`, the only full `.hive/` consumer, 116k LOC shipped).
+
+**Scope**: Candidate for methodology promotion (instance 1)
+
+**Bucket**: methodology + tool (consumer-discovery convention; `blueprint fleet` discovery path)
+
+**Status**: Active
+
+**Observed:** Asked "where was this work done — is bc-subscriptions a Blueprint consumer?", an agent ran three checks and got three false negatives: (1) `ls blueprint.yml` → absent (bc-subs has no `blueprint.yml` anywhere — it consumes the methodology via `METHODOLOGY.md` + `.hive/`, the pre-portal Pattern-A shape); (2) name grep of `consumers.yml` for "bc-sub"/"subscription" → empty, because the registry entry is **deliberately de-named** (`private/subs-initiative`, real identity only in gitignored `consumers.local.yml`); (3) `methodology_version: null` in the registry, so no pinned-version marker. The agent weighted two absent modern-shape markers over four *present* consumer markers (`.hive/`, `METHODOLOGY.md`, `research/`, `docs/decisions/`) that were visible in the first directory listing — a hasty negative inference. **But the inference was enabled by a real gap:** there is no mechanical, public-tree signal that identifies a Pattern-A-via-`.hive` consumer. Every reliable identifier is either absent by design (no `blueprint.yml`), masked for public-repo hygiene (de-named registry), or behind a gitignored file (`consumers.local.yml`). "Is repo X a consumer?" has no answer a `blueprint fleet`-style command — or an agent — can compute from committed files alone.
+
+**This is the same class as candidate A/C from the [[2026-06-11]] partner-session entry** (linkage that is real but not surfaced anywhere queryable): the consumer↔methodology edge exists, but lives only in gitignored config and prose, so it is invisible to mechanical traversal. The audit-trail/dependency-graph work is meant to *answer* "how does X connect to Y"; this is that question one level up — "is X even in the graph?" — failing for the same reason (the edge isn't committed in a machine-readable form).
+
+**Candidate fix:** define a canonical consumer-identification signal that lives in committed, non-secret files. Two shapes, cheapest first: (a) a `METHODOLOGY.md` frontmatter marker (`blueprint_consumer: true` + `pattern: A|B`) that a fleet/discovery pass greps without needing `consumers.yml` at all; or (b) a committed marker file (`.blueprint-consumer` with pattern + methodology_version, secrets-free) so de-naming the public `consumers.yml` entry never costs discoverability. The reliable signal *today* is `.hive/` + `METHODOLOGY.md` presence — codify that as the documented fallback for discovery until a marker lands. Mechanical realization (the fleet-discovery check + the marker convention) second-instance-gated; the convention note (`.hive/` + `METHODOLOGY.md` = consumer signal, NOT `blueprint.yml` presence) is cheap to land now in the consumer-identification docs.
+
+**References:** `consumers.yml` (the de-named `subs-initiative` entry, lines ~92–96); `wip/bc-subscriptions/` (`.hive/`, `METHODOLOGY.md`, no `blueprint.yml`); this session's mis-attribution; relates to [[2026-06-11]] candidates A/C (surface-the-real-but-invisible-edge class).
+
+---
+
 ## 2026-06-11 — Blueprint↔Hive gaps from the partner working session: DoD-gate wiring, decision-graph surface, audit-trail edges
 
 **Three new candidates (all instance 1); two meeting asks resolve to already-shipped capability.** Source: the first co-development working session with the partner SA (T.) — `feedback/2026-06-11-partner-working-session.md`. The meeting's own next-step assigned this analysis ("identify gaps between Blueprint and Hive regarding archaeology and definition-of-done"). The discipline holds: mechanical realization is second-instance-gated, **except** where the partner's live engagement can serve as the instance-1 calibration test (the same exception the ground-truth-scope fix took with the second-attempt experiment).
