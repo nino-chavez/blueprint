@@ -1,0 +1,51 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { DepGraphView } from '@/components/DepGraphView';
+import { loadDependencyGraph } from '@/lib/derived';
+import { portalConfig } from '@/lib/portal-config';
+
+const cfg = portalConfig();
+const enabled = cfg.features.depGraph;
+
+const graph = enabled ? loadDependencyGraph() : null;
+const nodeCount = graph?.nodes.length ?? 0;
+const edgeCount = graph?.edges.length ?? 0;
+const danglingCount = graph?.nodes.filter((n) => n.kind === 'planned').length ?? 0;
+const generatedAt = graph?.generatedAt ?? '';
+---
+<Layout title="Decision graph" description="The why-chain between decisions — ADRs and what they supersede, extend, and inform.">
+  <header class="mb-10 max-w-3xl">
+    <p class="mb-2 font-mono text-xs uppercase tracking-wide text-brand">Decision graph</p>
+    <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">
+      How the decisions connect.
+    </h1>
+    <p class="text-lg leading-relaxed text-contrast-500">
+      The dependency graph between decisions{nodeCount > 0
+        ? ` — ${nodeCount} nodes, ${edgeCount} edges${danglingCount > 0 ? `, ${danglingCount} still planned` : ''}`
+        : ''}. Derived from ADR frontmatter: what each decision supersedes, extends,
+      is grounded by, and informs. The edges that already existed — now a surface.
+    </p>
+  </header>
+
+  {enabled ? (
+    <DepGraphView graph={graph!} repoUrl={cfg.repoUrl} client:only="react" />
+  ) : (
+    <div class="rounded-lg border border-contrast-200 bg-contrast-100/30 p-6">
+      <p class="font-mono text-[11px] uppercase tracking-wide text-contrast-400 mb-2">
+        Not configured for this initiative
+      </p>
+      <p class="text-sm leading-relaxed text-contrast-500">
+        The decision graph populates once a dependency-graph source is connected.
+        Run <code class="font-mono text-xs">node tools/dep-graph-derive/derive.mjs</code> and
+        point <code class="font-mono text-xs">portal.sources.dep_graph</code> in
+        <code class="font-mono text-xs">blueprint.yml</code> at the emitted JSON, then rebuild.
+      </p>
+    </div>
+  )}
+
+  {enabled && generatedAt && (
+    <footer class="mt-12 font-mono text-[10px] uppercase tracking-wide text-contrast-400">
+      derived @ {generatedAt.slice(0, 10)} · from decisions/*.md frontmatter
+    </footer>
+  )}
+</Layout>

@@ -14,6 +14,7 @@ const NAV = [
   { href: '/#commands', label: 'Commands' },
   { href: '/#contribute', label: 'Contribute' },
   { href: '/discover', label: 'Strategy' },
+  { href: '/graph', label: 'Graph' },
 ] as const;
 
 const NPM_URL = 'https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli';

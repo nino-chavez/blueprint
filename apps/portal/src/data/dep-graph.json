@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-06-12",
+  "source": "decisions/*.md — frontmatter edges + prose ADR-NNNN citations",
+  "node_count": 11,
+  "edge_count": 12,
+  "nodes": [
+    {
+      "id": "00-charter",
+      "label": "Charter — Blueprint as a team-adoptable platform",
+      "kind": "adr",
+      "stage": 0,
+      "status": "draft",
+      "canonical": true,
+      "path": "decisions/00-charter.md"
+    },
+    {
+      "id": "01-prescription",
+      "label": "Prescription — Blueprint platform v1 (methodology-native)",
+      "kind": "adr",
+      "stage": 2,
+      "status": "draft",
+      "canonical": true,
+      "path": "decisions/01-prescription.md"
+    },
+    {
+      "id": "02-portal-bespoke-product-site",
+      "label": "02 — Portal divergence: bespoke product site (neither Pattern A nor B)",
+      "kind": "adr",
+      "stage": null,
+      "status": null,
+      "canonical": false,
+      "path": "decisions/02-portal-bespoke-product-site.md"
+    },
+    {
+      "id": "03-portal-type-naming",
+      "label": "Decision 03 — Portal Type naming (Initiative Portal / Review Portal)",
+      "kind": "adr",
+      "stage": null,
+      "status": null,
+      "canonical": true,
+      "path": "decisions/03-portal-type-naming.md"
+    },
+    {
+      "id": "ext:01-prescription",
+      "label": "01-prescription.md",
+      "kind": "external",
+      "stage": null,
+      "status": null
+    },
+    {
+      "id": "Stage 1 research (extends blueprint-redesign 9-g",
+      "label": "Stage 1 research (extends blueprint-redesign 9-gap inventory)",
+      "kind": "external",
+      "stage": null,
+      "status": null
+    },
+    {
+      "id": "ADR-0004",
+      "label": "ADR-0004 native access + governance",
+      "kind": "planned",
+      "stage": null,
+      "status": null
+    },
+    {
+      "id": "ADR-0005",
+      "label": "ADR-0005 bidirectional non-breaking update protocol",
+      "kind": "planned",
+      "stage": null,
+      "status": null
+    },
+    {
+      "id": "ADR-0006",
+      "label": "ADR-0006 native extensibility (org-authored reviewers)",
+      "kind": "planned",
+      "stage": null,
+      "status": null
+    },
+    {
+      "id": "ADR-0007",
+      "label": "ADR-0007 versioning + distribution toolchain",
+      "kind": "planned",
+      "stage": null,
+      "status": null
+    },
+    {
+      "id": "01-canonical-research.md (Stage 1 canonical-pattern research)",
+      "label": "01-canonical-research.md (Stage 1 canonical-pattern research)",
+      "kind": "research",
+      "stage": null,
+      "status": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "00-charter",
+      "target": "ext:01-prescription",
+      "kind": "extends"
+    },
+    {
+      "source": "00-charter",
+      "target": "01-prescription",
+      "kind": "informs"
+    },
+    {
+      "source": "00-charter",
+      "target": "Stage 1 research (extends blueprint-redesign 9-g",
+      "kind": "informs"
+    },
+    {
+      "source": "01-prescription",
+      "target": "ext:01-prescription",
+      "kind": "extends"
+    },
+    {
+      "source": "01-prescription",
+      "target": "03-portal-type-naming",
+      "kind": "informs"
+    },
+    {
+      "source": "01-prescription",
+      "target": "ADR-0004",
+      "kind": "informs"
+    },
+    {
+      "source": "01-prescription",
+      "target": "ADR-0005",
+      "kind": "informs"
+    },
+    {
+      "source": "01-prescription",
+      "target": "ADR-0006",
+      "kind": "informs"
+    },
+    {
+      "source": "01-prescription",
+      "target": "ADR-0007",
+      "kind": "informs"
+    },
+    {
+      "source": "01-prescription",
+      "target": "01-canonical-research.md (Stage 1 canonical-pattern research)",
+      "kind": "grounded_by"
+    },
+    {
+      "source": "00-charter",
+      "target": "02-portal-bespoke-product-site",
+      "kind": "cites"
+    },
+    {
+      "source": "01-prescription",
+      "target": "02-portal-bespoke-product-site",
+      "kind": "cites"
+    }
+  ]
+}

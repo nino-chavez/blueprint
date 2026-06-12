@@ -686,6 +686,104 @@ export function loadBuildOrder(): BuildOrderSummary {
   return _buildOrderCache;
 }
 
+// ---------- dependency graph (sources.dep_graph) ----------
+
+export type DepNodeKind = 'adr' | 'planned' | 'research' | 'external';
+
+export interface DepNode {
+  id: string;
+  label: string;
+  kind: DepNodeKind;
+  stage: number | null;
+  status: string | null;
+  canonical?: boolean;
+  /** Repo-relative path to the decision file, when this node is a local ADR. */
+  path?: string;
+}
+
+export interface DepEdge {
+  source: string;
+  target: string;
+  kind: string;
+}
+
+export interface DependencyGraphSummary {
+  generatedAt: string;
+  source: string;
+  nodes: DepNode[];
+  edges: DepEdge[];
+}
+
+interface RawDepGraphFile {
+  generated_at?: string;
+  source?: string;
+  nodes?: Array<{
+    id?: string;
+    label?: string;
+    kind?: string;
+    stage?: number | null;
+    status?: string | null;
+    canonical?: boolean;
+    path?: string;
+  }>;
+  edges?: Array<{ source?: string; target?: string; kind?: string }>;
+}
+
+const EMPTY_DEP_GRAPH: DependencyGraphSummary = {
+  generatedAt: '',
+  source: '',
+  nodes: [],
+  edges: [],
+};
+
+const DEP_NODE_KINDS: DepNodeKind[] = ['adr', 'planned', 'research', 'external'];
+
+let _depGraphCache: DependencyGraphSummary | null = null;
+
+/**
+ * Read the decision dependency graph from sources.dep_graph (emitted by
+ * tools/dep-graph-derive from ADR frontmatter). Returns the typed empty
+ * summary when unconfigured (Tier 0) or missing — never throws. Edges whose
+ * endpoints aren't in the node set are dropped so the island never references
+ * a missing node.
+ */
+export function loadDependencyGraph(): DependencyGraphSummary {
+  if (_depGraphCache) return _depGraphCache;
+  const raw = readSource<RawDepGraphFile>('dep_graph');
+  if (!raw) {
+    _depGraphCache = EMPTY_DEP_GRAPH;
+    return _depGraphCache;
+  }
+  const nodes: DepNode[] = Array.isArray(raw.nodes)
+    ? raw.nodes
+        .filter((n) => n.id)
+        .map((n) => ({
+          id: n.id!,
+          label: n.label ?? n.id!,
+          kind: DEP_NODE_KINDS.includes(n.kind as DepNodeKind)
+            ? (n.kind as DepNodeKind)
+            : 'external',
+          stage: typeof n.stage === 'number' ? n.stage : null,
+          status: n.status ?? null,
+          canonical: n.canonical === true,
+          path: n.path,
+        }))
+    : [];
+  const ids = new Set(nodes.map((n) => n.id));
+  const edges: DepEdge[] = Array.isArray(raw.edges)
+    ? raw.edges
+        .filter((e) => e.source && e.target && ids.has(e.source) && ids.has(e.target))
+        .map((e) => ({ source: e.source!, target: e.target!, kind: e.kind ?? 'ref' }))
+    : [];
+  _depGraphCache = {
+    generatedAt: raw.generated_at ?? '',
+    source: raw.source ?? '',
+    nodes,
+    edges,
+  };
+  return _depGraphCache;
+}
+
 /**
  * Pretty category label — strip prefixes, title-case, keep familiar terms.
  */
