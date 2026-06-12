@@ -67,8 +67,8 @@ tier: 2
 # bespoke-with-ADR escape, the divergence is recorded in decisions/02-portal-
 # bespoke-product-site.md; `blueprint doctor` accepts a bespoke portal IFF that ADR
 # is present (wave 48 automated this — the 2nd bespoke instance, the wave-46 trigger).
-# The generic Pattern A reference stays clean in template/apps/portal for consumers.
-portal_pattern: bespoke
+# The generic Initiative Portal reference stays clean in template/apps/portal for consumers.
+portal_type: bespoke
 
 execution:
   depth: thorough
@@ -228,7 +228,7 @@ portal:
     epic_footprints: null
     attestations: null
     proposals: null
-    dep_graph: null
+    dep_graph: apps/portal/src/data/dep-graph.json
 
 # ──────────────────────────────────────────────────────────────────
 # Archaeology substrate (LIVE) — event-sourced provenance over the

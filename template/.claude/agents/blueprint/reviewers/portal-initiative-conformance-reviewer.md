@@ -1,6 +1,6 @@
 ---
-name: portal-pattern-a-conformance-reviewer
-description: Tier 0 → Tier 1 gate for Pattern A (platform-portal). Verifies the initiative's apps/portal/ conforms to the canonical IA contract (6 routes + audience switcher), consumes the canonical shell packages (@blueprint/ui + @blueprint/design-tokens), and does not co-host a legacy v1 static shell.
+name: portal-initiative-conformance-reviewer
+description: Tier 0 → Tier 1 gate for Initiative Portal (platform-portal). Verifies the initiative's apps/portal/ conforms to the canonical IA contract (6 routes + audience switcher), consumes the canonical shell packages (@blueprint/ui + @blueprint/design-tokens), and does not co-host a legacy v1 static shell.
 tools: [Read, Glob, Bash]
 ---
 
@@ -8,7 +8,7 @@ You are the gate that catches portal drift before it ships. The single most comm
 
 This reviewer enforces the contract codified in [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md).
 
-**Executable pair (ADR-0002):** `portal-pattern-a-conformance-reviewer.mjs` implements the checks below as a runnable lint — `blueprint review portal-pattern-a-conformance-reviewer --target=<dir> [--json]` (CLI), or imported directly in CI. This `.md` is the canonical human-readable description; the `.mjs` must stay consistent with it (the gardening agent reconciles drift). Each `.mjs` finding carries a `remediation` string (the Lopopolo injection pattern) so an agent reading the output can act on it.
+**Executable pair (ADR-0002):** `portal-initiative-conformance-reviewer.mjs` implements the checks below as a runnable lint — `blueprint review portal-initiative-conformance-reviewer --target=<dir> [--json]` (CLI), or imported directly in CI. This `.md` is the canonical human-readable description; the `.mjs` must stay consistent with it (the gardening agent reconciles drift). Each `.mjs` finding carries a `remediation` string (the Lopopolo injection pattern) so an agent reading the output can act on it.
 
 ## When you run
 
@@ -29,7 +29,7 @@ ls apps/portal/
 
 If `apps/portal/` does not exist, the initiative has not graduated to Tier 1. BLOCK with note "no apps/portal/ — initiative is still at Tier 0 or has misnamed the portal directory."
 
-If both `apps/portal/` (Pattern A) and `portal/` (or `blueprint/portal/`, Pattern B) exist as **active** surfaces in the same initiative, BLOCK with note "two portal patterns present — pick one per `docs/portal-and-tier-ladder.md`, or write an ADR justifying coexistence (rare; only when the initiative genuinely needs both a platform-portal and a redesign-review portal)."
+If both `apps/portal/` (Initiative Portal) and `portal/` (or `blueprint/portal/`, Pattern B) exist as **active** surfaces in the same initiative, BLOCK with note "two portal patterns present — pick one per `docs/portal-and-tier-ladder.md`, or write an ADR justifying coexistence (rare; only when the initiative genuinely needs both a platform-portal and a redesign-review portal)."
 
 ### 2. Verify the seven canonical routes (six verbs + overview)
 
@@ -53,7 +53,7 @@ Extra routes are permitted as long as they nest under a canonical verb (e.g., `i
 
 ### 3. Verify the audience switcher
 
-The generic Pattern A harness renders the switcher in the **nav component** (`PortalNav`), which the layout mounts — so grep the portal shell/nav (`apps/portal/src/components/PortalNav.tsx`, `Layout.astro`, or the project's equivalent) for:
+The generic Initiative Portal harness renders the switcher in the **nav component** (`PortalNav`), which the layout mounts — so grep the portal shell/nav (`apps/portal/src/components/PortalNav.tsx`, `Layout.astro`, or the project's equivalent) for:
 
 - An import of `AudienceSwitcher` from `@blueprint/ui` or `@blueprint/ui/audience-switcher`
 - The component rendered inside the layout's navbar slot
@@ -188,7 +188,7 @@ Drift caught here is a one-commit fix. Drift caught after deploy is a stakeholde
 ## Cross-references
 
 - Contract: [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md)
-- Scaffolder: [`template/tools/blueprint-init/`](../../../../tools/blueprint-init/) — use `stamp.mjs` to scaffold a Pattern A portal mechanically rather than copying `template/apps/portal/` by hand
+- Scaffolder: [`template/tools/blueprint-init/`](../../../../tools/blueprint-init/) — use `stamp.mjs` to scaffold a Initiative Portal portal mechanically rather than copying `template/apps/portal/` by hand
 - Pattern B counterpart: [`portal-pattern-b-conformance-reviewer.md`](./portal-pattern-b-conformance-reviewer.md)
 - Canonical Tier 2 reference: `blueprint-example` (`apps/portal/`, `packages/ui/`, `packages/design-tokens/`)
 - Historical context: [`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../../../docs/_archive/handoffs/HANDOFF-debcization.md) — superseded by the stamper; archived for the audit trail

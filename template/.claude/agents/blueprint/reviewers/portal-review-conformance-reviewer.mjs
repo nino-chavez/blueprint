@@ -1,13 +1,13 @@
 /**
- * portal-pattern-b-conformance-reviewer.mjs — executable pair for the paired
- * .md spec. Implements the ADR-0002 reviewer contract so the Pattern B portal
+ * portal-review-conformance-reviewer.mjs — executable pair for the paired
+ * .md spec. Implements the ADR-0002 reviewer contract so the Review Portal portal
  * conformance gate runs outside Claude Code (CLI / CI / any node).
  *
  *   export default async function review({ targetDir, blueprintYml, methodologyHome })
  *     -> { status: 'PASS'|'BLOCKED'|'WARN', findings: [...], metadata: {...} }
  *
- * Gate rule (Tier 0 -> Tier 1 graduation gate for Pattern B). The most common
- * Pattern B failure mode is *drawer hollowing*: an initiative copy-stamps the
+ * Gate rule (Tier 0 -> Tier 1 graduation gate for Review Portal). The most common
+ * Review Portal failure mode is *drawer hollowing*: an initiative copy-stamps the
  * static portal but ships pages whose `_meta/<page-id>.json` `strategy.*` /
  * `currentState.*` fields are empty. The portal looks complete (chrome intact,
  * nav works, toggle clicks) but its load-bearing review primitives are silently
@@ -34,7 +34,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-const NAME = 'portal-pattern-b-conformance-reviewer';
+const NAME = 'portal-review-conformance-reviewer';
 
 // The 8 required shell files (relative to the portal dir). `pages/` and
 // `_meta/index.json` are directory/file presence; the rest are top-level files.
@@ -132,7 +132,7 @@ export default async function review({ targetDir, blueprintYml }) {
   // Tier gate — Tier 0 has no portal contract (mirrors Pattern A reviewer).
   const tier = blueprintYml && (blueprintYml.tier ?? blueprintYml.Tier);
   if (tier === 0 || tier === '0') {
-    return result('PASS', [], 'tier 0 — no Pattern B portal contract', startedAt);
+    return result('PASS', [], 'tier 0 — no Review Portal portal contract', startedAt);
   }
 
   // ── Check 1: Locate the portal (canonical path + drift fallbacks). ──────────
@@ -148,7 +148,7 @@ export default async function review({ targetDir, blueprintYml }) {
     findings.push({
       severity: 'BLOCK',
       location: 'portal/',
-      message: 'Portal at non-canonical path portal/ — Pattern B canonical is blueprint/portal/.',
+      message: 'Portal at non-canonical path portal/ — Review Portal canonical is blueprint/portal/.',
       remediation: 'Rename portal/ to blueprint/portal/ per docs/portal-and-tier-ladder.md, or set the path in blueprint.yml.',
       reference: 'docs/portal-and-tier-ladder.md',
     });
@@ -174,7 +174,7 @@ export default async function review({ targetDir, blueprintYml }) {
       severity: 'BLOCK',
       location: 'blueprint/portal/',
       message: 'No blueprint/portal/ (and no path-drifted portal at portal/ or blueprint/prototype/) — initiative is still at Tier 0.',
-      remediation: 'Graduate to Tier 1 by copying template/portal/ to blueprint/portal/ and populating it, or run the Pattern B copy + this reviewer to catch drift.',
+      remediation: 'Graduate to Tier 1 by copying template/portal/ to blueprint/portal/ and populating it, or run the Review Portal copy + this reviewer to catch drift.',
       reference: 'docs/portal-and-tier-ladder.md#pattern-b',
     });
     return finalize(findings, 'no portal/', startedAt);
@@ -191,8 +191,8 @@ export default async function review({ targetDir, blueprintYml }) {
       findings.push({
         severity: 'BLOCK',
         location: `${rel(portalDir)}/${f}`,
-        message: `Missing required Pattern B shell file: ${f}.`,
-        remediation: `Copy ${f} from template/portal/. Missing shell files mean the portal cannot honor the Pattern B contract (chrome, chat, nav, or metadata is absent).`,
+        message: `Missing required Review Portal shell file: ${f}.`,
+        remediation: `Copy ${f} from template/portal/. Missing shell files mean the portal cannot honor the Review Portal contract (chrome, chat, nav, or metadata is absent).`,
         reference: 'docs/portal-and-tier-ladder.md#pattern-b',
       });
     }
@@ -327,7 +327,7 @@ export default async function review({ targetDir, blueprintYml }) {
         location: rel(mf),
         message: `Hollow drawer: _meta/${id}.json has an empty strategy and/or currentState — the page's review primitives expose no rationale or current-state comparison.`,
         remediation: 'Populate strategy.{decision,why,...} and currentState.{summary,...}. Empty drawers pass the file-exists check but silently disable the portal review surface.',
-        reference: 'docs/portal-and-tier-ladder.md § Pattern B — the drawer contract',
+        reference: 'docs/portal-and-tier-ladder.md § Review Portal — the drawer contract',
       });
     }
   }
@@ -339,7 +339,7 @@ export default async function review({ targetDir, blueprintYml }) {
       location: `${rel(metaDir)}/`,
       message: `${emptyDrawers}/${drawersChecked} page metas (${Math.round((emptyDrawers / drawersChecked) * 100)}%) have hollow drawers — over the 25% threshold.`,
       remediation: 'Populate strategy + currentState in the empty _meta/<page-id>.json files before sharing with stakeholders. A hollow portal answers "why this design?" with "(empty)".',
-      reference: 'docs/portal-and-tier-ladder.md § Pattern B — the drawer contract',
+      reference: 'docs/portal-and-tier-ladder.md § Review Portal — the drawer contract',
     });
   }
 
@@ -430,7 +430,7 @@ export default async function review({ targetDir, blueprintYml }) {
       location: `${rel(portalDir)}/proto-nav.js`,
       message: 'proto-nav.js missing or unreadable — cannot verify the comparison (proposed / split / shipped) toggle.',
       remediation: 'Copy proto-nav.js from template/portal/. It implements the view-mode controller (the comparison primitive).',
-      reference: 'docs/portal-and-tier-ladder.md § Pattern B comparison toggle',
+      reference: 'docs/portal-and-tier-ladder.md § Review Portal comparison toggle',
     });
   } else {
     const matches = (protoNav.match(VIEW_MARKER_RE) || []).length;
@@ -442,8 +442,8 @@ export default async function review({ targetDir, blueprintYml }) {
         severity: 'BLOCK',
         location: `${rel(portalDir)}/proto-nav.js`,
         message: `Comparison toggle ${comparisonToggle}: only ${matches} view-mode marker(s) (data-view/proposed/split/shipped) in proto-nav.js — expected ≥3 (controller + the three view-mode buttons).`,
-        remediation: 'Wire the view-mode controller in proto-nav.js: toggle data-view on the compare-root between proposed, split/compare, and shipped. Pattern B requires all three view modes.',
-        reference: 'docs/portal-and-tier-ladder.md § Pattern B comparison toggle',
+        remediation: 'Wire the view-mode controller in proto-nav.js: toggle data-view on the compare-root between proposed, split/compare, and shipped. Review Portal requires all three view modes.',
+        reference: 'docs/portal-and-tier-ladder.md § Review Portal comparison toggle',
       });
     }
   }
@@ -468,7 +468,7 @@ export default async function review({ targetDir, blueprintYml }) {
         location: `${rel(portalDir)}/functions/api/chat.js`,
         message: 'Chat FAB + endpoint present but no corpus source detected (no Vectorize/R2 binding, no env.ASSETS / manifest-docs loader).',
         remediation: 'Wire a corpus: a Vectorize index binding, an R2 binding, or the canonical env.ASSETS manifest-docs loader. Land as a follow-up; not a block.',
-        reference: 'docs/portal-and-tier-ladder.md § Pattern B chat',
+        reference: 'docs/portal-and-tier-ladder.md § Review Portal chat',
       });
     }
   } else {
@@ -476,9 +476,9 @@ export default async function review({ targetDir, blueprintYml }) {
     findings.push({
       severity: 'WARN',
       location: `${rel(portalDir)}/`,
-      message: `Chat ${!fabPresent ? 'FAB (chat-widget.js)' : ''}${!fabPresent && !endpointPresent ? ' and ' : ''}${!endpointPresent ? 'endpoint (functions/api/chat.js)' : ''} not detected — chat is part of the Pattern B canonical but smaller initiatives sometimes ship without it.`,
+      message: `Chat ${!fabPresent ? 'FAB (chat-widget.js)' : ''}${!fabPresent && !endpointPresent ? ' and ' : ''}${!endpointPresent ? 'endpoint (functions/api/chat.js)' : ''} not detected — chat is part of the Review Portal canonical but smaller initiatives sometimes ship without it.`,
       remediation: 'Copy chat-widget.js + functions/api/chat.js from template/portal/ if chat is in scope, or record the omission as a follow-up issue.',
-      reference: 'docs/portal-and-tier-ladder.md § Pattern B chat',
+      reference: 'docs/portal-and-tier-ladder.md § Review Portal chat',
     });
   }
 
@@ -554,8 +554,8 @@ export default async function review({ targetDir, blueprintYml }) {
       severity: 'BLOCK',
       location: bannered.slice(0, 5).join(', ') + (bannered.length > 5 ? ` (+${bannered.length - 5} more)` : ''),
       message: `${bannerCount} file(s) still carry a ${BANNER} marker — placeholder/example content not yet populated or deleted.`,
-      remediation: `Populate each marked surface from this initiative's deliverables, or delete the file if the page is unused. A shareable Pattern B portal has zero ${BANNER} markers.`,
-      reference: 'portal-pattern-b-conformance-reviewer.md § 11',
+      remediation: `Populate each marked surface from this initiative's deliverables, or delete the file if the page is unused. A shareable Review Portal portal has zero ${BANNER} markers.`,
+      reference: 'portal-review-conformance-reviewer.md § 11',
     });
   }
 
@@ -567,7 +567,7 @@ export default async function review({ targetDir, blueprintYml }) {
 }
 
 // ── Self-test ────────────────────────────────────────────────────────────────
-// `node portal-pattern-b-conformance-reviewer.mjs` builds inline fixtures on disk,
+// `node portal-review-conformance-reviewer.mjs` builds inline fixtures on disk,
 // runs the reviewer against each, and asserts the expected verdict. Exits non-zero
 // on any failure (matches the lib self-test pattern).
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -586,7 +586,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await fs.writeFile(fp, content, 'utf8');
   };
 
-  // A fully-conformant minimal Pattern B portal builder.
+  // A fully-conformant minimal Review Portal portal builder.
   async function buildGood(root, { variantPair = false, hollow = false, badDest = false } = {}) {
     const P = 'blueprint/portal';
     await w(root, `${P}/index.html`, '<!doctype html><html></html>');
@@ -739,5 +739,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     assert(r.findings.some((f) => /did not parse as JSON/.test(f.message)), 'malformed JSON degrades to a WARN finding');
   }
 
-  console.log('portal-pattern-b-conformance-reviewer self-test: all assertions passed');
+  console.log('portal-review-conformance-reviewer self-test: all assertions passed');
 }

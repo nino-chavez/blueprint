@@ -255,10 +255,10 @@ voices:
 prototype:
   design_system: existing           # existing | bigdesign | custom
   portal_dir: ""                    # optional; relative path from initiative root to the
-                                    # Pattern B portal directory. Default fallback candidates:
+                                    # Review Portal directory. Default fallback candidates:
                                     # `portal/`, `blueprint/portal/`. Declare here for any
                                     # other location (e.g., rally-hq uses `blueprint/prototype/`
-                                    # because the portal predates the canonical Pattern B
+                                    # because the portal predates the canonical Review Portal
                                     # contract). The stamper resolves in priority order:
                                     # --portal-dir CLI flag, this field, then fallback candidates.
                                     # Added 2026-05-27 wave 14 per rally-hq amendment 2026-05-26 gap 1.

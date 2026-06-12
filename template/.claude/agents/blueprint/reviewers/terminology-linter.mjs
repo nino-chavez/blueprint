@@ -231,6 +231,14 @@ const ENGINEERING_JARGON = [
   { term: 'endpoint', suggest: "plain-language term (e.g. 'API URL' / 'service address') — gated: allowed for dev-tool products" },
 ];
 
+// Deprecated methodology-internal labels (wave 72). "Pattern A" and "Pattern B"
+// are methodology jargon; their user-facing names are "Initiative Portal" and
+// "Review Portal". Flag these if they surface in user-facing copy.
+const DEPRECATED_PORTAL_LABELS = [
+  { re: /\bPattern\s+A\b/, term: 'Pattern A', suggest: "use 'Initiative Portal' (wave 72 rename)" },
+  { re: /\bPattern\s+B\b/, term: 'Pattern B', suggest: "use 'Review Portal' (wave 72 rename)" },
+];
+
 // Brand anti-pattern: 'deflect'/'deflection' in support copy.
 const DEFLECTION_RULE = {
   re: /\bdeflect(?:ion|ions|ed|ing|s)?\b/i,
@@ -475,7 +483,22 @@ export default async function review({ targetDir, blueprintYml }) {
       }
     }
 
-    // 3c. B2B Edition canonical-vocabulary rules.
+    // 3c. Deprecated methodology portal labels (wave 72).
+    for (const d of DEPRECATED_PORTAL_LABELS) {
+      if (firstHit(d.re, text) && !seenTerms.has(d.term)) {
+        seenTerms.add(d.term);
+        violations += 1;
+        findings.push({
+          severity: 'BLOCK',
+          location: rel,
+          message: `Deprecated methodology term '${d.term}' in user-facing copy.`,
+          remediation: d.suggest,
+          reference: 'terminology-linter.md#deprecated-portal-labels',
+        });
+      }
+    }
+
+    // 3d. B2B Edition canonical-vocabulary rules.
     if (b2bEnabled) {
       for (const b of B2B_RULES) {
         if (firstHit(b.re, text) && !seenTerms.has(b.term)) {

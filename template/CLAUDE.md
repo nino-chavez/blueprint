@@ -108,13 +108,13 @@ Variant-aware gates that block premature stage completion. Full roster + behavio
 | Stage 1 → 2 | `research-completeness-reviewer` |
 | Stage 2 → 3 (greenfield) | `design-principles-reviewer` |
 | Stage 2 → 3 (midstream / brownfield) | `prescription-evidence-reviewer` |
-| Stage 3 completion (Pattern A) + any `apps/portal/` commit | `portal-pattern-a-conformance-reviewer` |
-| Stage 3 completion (Pattern B) + any `portal/` or `blueprint/portal/` commit | `portal-pattern-b-conformance-reviewer` + `portal-chrome-canonical-reviewer` |
+| Stage 3 completion (Initiative Portal) + any `apps/portal/` commit | `portal-initiative-conformance-reviewer` |
+| Stage 3 completion (Review Portal) + any `portal/` or `blueprint/portal/` commit | `portal-review-conformance-reviewer` + `portal-chrome-canonical-reviewer` |
 | Stage 4 convergence | `fact-check-loop-reviewer` (orchestrator) |
 | Stage 5 → 6 | `doc-quality-auditor` + `terminology-linter` (parallel) |
 | Stage 6 ship | `prototype-smoke-runner` |
 
-Run exactly one of the two portal-conformance reviewers per initiative — pick by pattern (A or B) per `docs/portal-and-tier-ladder.md`. If the initiative's archetype fits neither pattern (e.g. an operator-facing process console), run neither conformance reviewer — but a divergence ADR is mandatory; its absence is the violation (see `docs/portal-and-tier-ladder.md` § "When neither pattern fits the archetype").
+Run exactly one of the two portal-conformance reviewers per initiative — pick by portal type (`initiative` or `review`) per `docs/portal-and-tier-ladder.md`. If the initiative's archetype fits neither type (e.g. an operator-facing process console), run neither conformance reviewer — but a divergence ADR is mandatory; its absence is the violation (see `docs/portal-and-tier-ladder.md` § "When neither portal type fits the archetype").
 
 ## Document voice
 
@@ -128,12 +128,12 @@ Visual rules + architectural invariants: `prototype/DESIGN.md`. Both are checked
 
 Edit `blueprint.yml` for: variant, execution depth, voice modes, prototype settings, research scope, document package, optional-capability flags.
 
-## Scaffolding a new initiative (Pattern A)
+## Scaffolding a new initiative (Initiative Portal)
 
 Do not copy `template/apps/portal/` by hand. Use the stamper — `--name` is the
 only required flag (defaults: title-cased display name, placeholder repo URL +
-tagline, `--variant=greenfield --tier=1 --pattern=A --target=./<name>`, target
-created when missing; every applied default is echoed in the run header):
+tagline, `--variant=greenfield --tier=1 --portal-type=initiative --target=./<name>`,
+target created when missing; every applied default is echoed in the run header):
 
 ```bash
 node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs --name=<project-slug>
@@ -149,11 +149,11 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --tagline="<one-line tagline>" \
   --variant=greenfield|midstream|brownfield \
   --tier=0|1|2 \
-  --pattern=A \
+  --portal-type=initiative|review|bespoke \
   --target=<absolute path to initiative root>
 ```
 
-The stamper substitutes the source-project reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + pattern, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. Pattern B has no stamper yet — copy `template/portal/` and rely on `portal-pattern-b-conformance-reviewer` to catch drift at Stage 3.
+The stamper substitutes the source-project reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + portal_type, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. Review Portal has no initial stamper yet — copy `template/portal/` and rely on `portal-review-conformance-reviewer` to catch drift at Stage 3.
 
 ## Session prompts
 

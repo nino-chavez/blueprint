@@ -1,6 +1,6 @@
 /**
- * portal-pattern-a-conformance-reviewer.mjs — executable pair for the paired
- * .md spec. Implements the ADR-0002 reviewer contract so the Pattern A portal
+ * portal-initiative-conformance-reviewer.mjs — executable pair for the paired
+ * .md spec. Implements the ADR-0002 reviewer contract so the Initiative Portal portal
  * conformance gate runs outside Claude Code (CLI / CI / any node).
  *
  *   export default async function review({ targetDir, blueprintYml, methodologyHome })
@@ -13,7 +13,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-const NAME = 'portal-pattern-a-conformance-reviewer';
+const NAME = 'portal-initiative-conformance-reviewer';
 const CANONICAL_ROUTES = ['index', 'discover', 'try', 'build', 'operate', 'inspect', 'roadmap'];
 // Non-canonical top-level routes that are nonetheless allowed (a strategy/ lane
 // is a documented optional surface; strategy.astro top-level is its index).
@@ -65,7 +65,7 @@ export default async function review({ targetDir, blueprintYml }) {
   // Tier gate — Tier 0 has no portal contract.
   const tier = blueprintYml && (blueprintYml.tier ?? blueprintYml.Tier);
   if (tier === 0 || tier === '0') {
-    return result('PASS', [], 'tier 0 — no Pattern A portal contract', startedAt);
+    return result('PASS', [], 'tier 0 — no Initiative Portal portal contract', startedAt);
   }
 
   // 1. Locate the portal.
@@ -75,7 +75,7 @@ export default async function review({ targetDir, blueprintYml }) {
       location: 'apps/portal/',
       message: 'No apps/portal/ directory — initiative is still Tier 0 or misnamed the portal dir.',
       remediation:
-        'Scaffold it: `blueprint init --pattern=A` (or `npx @nino-chavez-labs/blueprint-cli init --pattern=A`). If the portal lives elsewhere, fix portal_pattern/paths in blueprint.yml.',
+        'Scaffold it: `blueprint init --pattern=A` (or `npx @nino-chavez-labs/blueprint-cli init --pattern=A`). If the portal lives elsewhere, fix portal_type/paths in blueprint.yml.',
       reference: 'docs/portal-and-tier-ladder.md#pattern-a-platform-portal',
     });
     return finalize(findings, 'no apps/portal/', startedAt);
@@ -223,7 +223,7 @@ export default async function review({ targetDir, blueprintYml }) {
       message: `${bannered.length} file(s) still carry a REPLACE_FOR_PROJECT marker — placeholder/example content not yet populated or deleted.`,
       remediation:
         'Before sharing with stakeholders: populate each marked surface from this initiative\'s deliverables, or delete the file if the route is unused (the IA permits a strategy/ with only index.astro; the substrate sub-pages under inspect/ may be deleted when no Hive/state substrate is wired). A shareable portal has zero REPLACE_FOR_PROJECT markers.',
-      reference: 'portal-pattern-a-conformance-reviewer.md#7-no-replace_for_project-banner',
+      reference: 'portal-initiative-conformance-reviewer.md#7-no-replace_for_project-banner',
     });
   }
 
@@ -242,7 +242,7 @@ export default async function review({ targetDir, blueprintYml }) {
       location: inlineStyleHits.slice(0, 4).join(', '),
       message: `I-5: inline style attributes in route file(s) — styles should come from Tailwind / @blueprint/design-tokens, not inline blocks.`,
       remediation: 'Replace inline style="..." with Tailwind classes (the @blueprint/design-tokens preset) or co-located component CSS.',
-      reference: 'portal-pattern-a-conformance-reviewer.md#8-legacy-invariants',
+      reference: 'portal-initiative-conformance-reviewer.md#8-legacy-invariants',
     });
   }
 

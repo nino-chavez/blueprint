@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * blueprint-init/stamp.mjs — mechanically-checkable Pattern A portal scaffolder.
+ * blueprint-init/stamp.mjs — mechanically-checkable Initiative Portal scaffolder.
  *
  * Replaces the 2026-05-25 "copy template/apps/portal/ and remember to de-bc-ize"
  * pattern that left blueprint-example strings embedded in 6+ files. The stamper
@@ -27,10 +27,10 @@ const VARIANT_TIER_MATRIX = {
   brownfield: { 0: "doc-only-audit", 1: "default", 2: "audit-ships-product" },
 };
 
-// ── Pattern B canonical chrome manifest ──────────────────────────────────────
+// ── Review Portal canonical chrome manifest ───────────────────────────────────
 // Files in template/portal/ that are CANONICAL CHROME — methodology-owned,
-// consumer-uneditable. `--mode=restamp-chrome --pattern=B` overwrites these
-// files in the consumer's portal from template canonical; anything not in
+// consumer-uneditable. `--mode=restamp-chrome --portal-type=review` overwrites
+// these files in the consumer's portal from template canonical; anything not in
 // this list (project-tokens.css, _meta/*, pages/*, index.html, etc.) is left
 // untouched.
 //
@@ -51,7 +51,7 @@ const VARIANT_TIER_MATRIX = {
 // theme picker that reads ?theme= query param + localStorage and applies one
 // of the 4 canonical themes (slate / coral / forest / minimal) declared in
 // shared.css [data-theme] blocks. Initiative-side switcher promoted to chrome
-// so every Pattern B portal gets the preview-switcher for free.
+// so every Review Portal gets the preview-switcher for free.
 const PATTERN_B_CHROME_FILES = [
   "shared.css",
   "_portal-shell.js",
@@ -64,7 +64,7 @@ const PATTERN_B_CHROME_FILES = [
   "docs/index.html",
 ];
 
-// Candidate locations a Pattern B consumer might place its portal. Resolve in
+// Candidate locations a Review Portal consumer might place its portal. Resolve in
 // order; first existing directory wins. Reflects the path-drift observed
 // across rally-hq (blueprint/portal/) and the canonical (portal/) shapes.
 //
@@ -73,7 +73,7 @@ const PATTERN_B_CHROME_FILES = [
 // first-time stamps and for consumers that haven't declared portal_dir. Source:
 // rally-hq amendment 2026-05-26 (gap 1) — rally-hq's portal at blueprint/prototype/
 // was outside this candidate list because the directory predates the canonical
-// Pattern B contract.
+// Review Portal contract.
 const PATTERN_B_PORTAL_CANDIDATES = [
   "portal",
   "blueprint/portal",
@@ -135,7 +135,7 @@ const BANNER_LINES = {
     "<!--",
     "  REPLACE_FOR_PROJECT — this surface carries example/placeholder content from the",
     "  Blueprint reference template. Populate it from your initiative's deliverables (or",
-    "  delete it) before sharing with stakeholders. The portal-pattern-a-conformance-",
+    "  delete it) before sharing with stakeholders. The portal-initiative-conformance-",
     "  reviewer treats this banner as a block — resolve before sharing.",
     "-->",
     "",
@@ -316,7 +316,7 @@ async function writeWorkspaceRoot({ target, name, dryRun, log }) {
   log.stamped.push("package.json (workspace root)");
 }
 
-async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline, repoUrl, dryRun, log }) {
+async function writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log }) {
   const dst = path.join(target, "blueprint.yml");
   const existing = await readMaybe(dst);
   if (existing) {
@@ -342,11 +342,14 @@ async function writeBlueprintYml({ target, name, variant, tier, pattern, tagline
     "# Variant × Tier matrix codified in that doc; do not deviate without an ADR.",
     `tier: ${tier}`,
     "",
-    "# Portal pattern (A = platform-portal, B = redesign-review-portal)",
-    `portal_pattern: ${pattern}`,
+    "# Portal type — which portal harness this initiative uses",
+    "# initiative = Initiative Portal (Astro + @blueprint/ui, multi-audience platform front-door)",
+    "# review     = Review Portal (static HTML + drawers, brownfield audit/redesign)",
+    "# bespoke    = custom portal with mandatory divergence ADR in decisions/",
+    `portal_type: ${portalType}`,
     "",
     "# ──────────────────────────────────────────────────────────────────",
-    "# Portal harness config (Pattern A). Read by apps/portal/src/lib/portal-config.ts.",
+    "# Portal harness config (Initiative Portal). Read by apps/portal/src/lib/portal-config.ts.",
     "# Tier-0 default: ZERO data sources wired. The portal builds green and shows the",
     "# decisions catalog + strategy excerpts; every optional substrate section hides.",
     "# Wire a source = set its path to a repo-relative file that exists, then rebuild.",
@@ -510,7 +513,7 @@ async function resolvePatternBPortalDir(target, { portalDirOverride } = {}) {
 
 function failPortalDirNotFound(target) {
   fail(
-    `--mode=restamp-chrome --pattern=B: no portal directory found under ${target}. ` +
+    `--mode=restamp-chrome --portal-type=review: no portal directory found under ${target}. ` +
     `Resolver tried in order: --portal-dir CLI flag, blueprint.yml prototype.portal_dir, fallback candidates [${PATTERN_B_PORTAL_CANDIDATES.join(", ")}]. ` +
     `If your portal lives elsewhere, declare prototype.portal_dir in blueprint.yml (recommended) or pass --portal-dir=<relpath> on the CLI.`
   );
@@ -619,13 +622,13 @@ async function restampChromePatternB({ target, dryRun, acceptOverwrite, portalDi
   const acceptedSet = new Set((acceptOverwrite || "").split(",").map((s) => s.trim()).filter(Boolean));
   const blockedDiverged = diverged.filter((c) => !acceptedSet.has(c.rel) && !acceptedSet.has("ALL"));
   if (blockedDiverged.length && !dryRun) {
-    console.error(`\nerror: --mode=restamp-chrome --pattern=B refusing to overwrite diverged chrome.`);
+    console.error(`\nerror: --mode=restamp-chrome --portal-type=review refusing to overwrite diverged chrome.`);
     console.error(`The following files diverge from canonical (the chrome you'd be replacing):`);
     for (const c of blockedDiverged) {
       console.error(`  - ${c.rel} (consumer=${c.dstLines} lines, canonical=${c.srcLines} lines, Δ=${c.delta >= 0 ? "+" : ""}${c.delta})`);
     }
     console.error(``);
-    console.error(`Run --mode=audit-chrome --pattern=B --target=${target} first to classify each divergence (lag / customization / rot).`);
+    console.error(`Run --mode=audit-chrome --portal-type=review --target=${target} first to classify each divergence (lag / customization / rot).`);
     console.error(`To force overwrite anyway, re-run with --accept-overwrite=<file1>,<file2>,... or --accept-overwrite=ALL.`);
     console.error(`This gate exists because canonical-baseline assumption can silently overwrite a consumer's design system.`);
     process.exit(3);
@@ -751,7 +754,7 @@ async function auditChromePatternB({ target, portalDirOverride }) {
     console.log(``);
     if (lagFiles.length) {
       console.log(`  Restamp safely (LAG-classified, can pass --accept-overwrite without losing work):`);
-      console.log(`    --mode=restamp-chrome --pattern=B --target=${target} --accept-overwrite=${lagFiles.join(",")}`);
+      console.log(`    --mode=restamp-chrome --portal-type=review --target=${target} --accept-overwrite=${lagFiles.join(",")}`);
       console.log(``);
     }
     if (customFiles.length) {
@@ -765,32 +768,44 @@ async function auditChromePatternB({ target, portalDirOverride }) {
 }
 
 async function modeRestampChrome(args) {
-  const pattern = (args["pattern"] || "").toUpperCase();
+  // Accept --portal-type (canonical) or deprecated --pattern=A/B
+  let portalType = args["portal-type"] ? args["portal-type"].toLowerCase() : null;
+  if (!portalType && args["pattern"]) {
+    const legacyMap = { a: "initiative", b: "review" };
+    portalType = legacyMap[args["pattern"].toLowerCase()] || null;
+    if (portalType) console.warn(`  WARN: --pattern=${args["pattern"]} is deprecated. Use --portal-type=${portalType} (wave 72).`);
+  }
   const target = args["target"] ? path.resolve(args["target"].replace(/^~/, process.env.HOME || "")) : null;
   const dryRun = args["dry-run"] === "true";
   const acceptOverwrite = args["accept-overwrite"] || null;
   const portalDirOverride = args["portal-dir"] || null;
   if (!target) fail(`--mode=restamp-chrome: --target is required`);
-  if (pattern !== "A" && pattern !== "B") fail(`--mode=restamp-chrome: --pattern must be A or B; got "${args["pattern"]}"`);
+  if (portalType !== "initiative" && portalType !== "review") fail(`--mode=restamp-chrome: --portal-type must be initiative or review; got "${portalType || args["portal-type"] || args["pattern"] || "(none)"}"`);
   const targetStat = await fs.stat(target).catch(() => null);
   if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
 
   const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
-  if (pattern === "B") {
+  if (portalType === "review") {
     await restampChromePatternB({ target, dryRun, acceptOverwrite, portalDirOverride, log });
   } else {
-    fail(`--mode=restamp-chrome --pattern=A not yet implemented. The Pattern A canonical chrome surface (packages/ui, packages/design-tokens, src/styles) needs an audit before a manifest can be declared. See README §"Restamping Pattern A chrome".`);
+    fail(`--mode=restamp-chrome --portal-type=initiative not yet implemented. The Initiative Portal canonical chrome surface (packages/ui, packages/design-tokens, src/styles) needs an audit before a manifest can be declared. See README §"Restamping Initiative Portal chrome".`);
   }
   printReport(log);
 }
 
 // Wave 14 (2026-05-27): audit-chrome mode handler. Read-only; no writes.
 async function modeAuditChrome(args) {
-  const pattern = (args["pattern"] || "").toUpperCase();
+  // Accept --portal-type (canonical) or deprecated --pattern=B
+  let portalType = args["portal-type"] ? args["portal-type"].toLowerCase() : null;
+  if (!portalType && args["pattern"]) {
+    const legacyMap = { a: "initiative", b: "review" };
+    portalType = legacyMap[args["pattern"].toLowerCase()] || null;
+    if (portalType) console.warn(`  WARN: --pattern=${args["pattern"]} is deprecated. Use --portal-type=${portalType} (wave 72).`);
+  }
   const target = args["target"] ? path.resolve(args["target"].replace(/^~/, process.env.HOME || "")) : null;
   const portalDirOverride = args["portal-dir"] || null;
   if (!target) fail(`--mode=audit-chrome: --target is required`);
-  if (pattern !== "B") fail(`--mode=audit-chrome: --pattern=B is required (Pattern A audit not yet implemented)`);
+  if (portalType !== "review") fail(`--mode=audit-chrome: --portal-type=review is required (Initiative Portal audit not yet implemented)`);
   const targetStat = await fs.stat(target).catch(() => null);
   if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
   await auditChromePatternB({ target, portalDirOverride });
@@ -821,7 +836,7 @@ async function main() {
       `--name is required.\n` +
       `  minimal:  node stamp.mjs --name=my-initiative\n` +
       `  defaults: display-name (title-cased name), tagline, repo-url placeholder,\n` +
-      `            --variant=greenfield --tier=1 --pattern=A --target=./<name> (created if missing)`
+      `            --variant=greenfield --tier=1 --portal-type=initiative --target=./<name> (created if missing)`
     );
   }
 
@@ -843,7 +858,20 @@ async function main() {
   const tagline = withDefault("tagline", `${displayName} — a Blueprint initiative`);
   const variant = withDefault("variant", "greenfield");
   const tier = String(withDefault("tier", "1"));
-  const pattern = withDefault("pattern", "A").toUpperCase();
+  // Accept --portal-type (canonical) or deprecated --pattern=A/B (backward compat, warns).
+  let portalType;
+  if (args["portal-type"]) {
+    portalType = args["portal-type"].toLowerCase();
+  } else if (args["pattern"]) {
+    const legacyMap = { a: "initiative", b: "review" };
+    const mapped = legacyMap[args["pattern"].toLowerCase()];
+    if (!mapped) fail(`--pattern must be A or B (deprecated alias); use --portal-type=initiative|review instead`);
+    portalType = mapped;
+    console.warn(`  WARN: --pattern=${args["pattern"]} is deprecated. Use --portal-type=${mapped} (wave 72).`);
+  } else {
+    portalType = "initiative";
+    defaulted.push(`portal-type="initiative"`);
+  }
   const target = path.resolve(withDefault("target", `./${name}`).replace(/^~/, process.env.HOME || ""));
   const dryRun = args["dry-run"] === "true";
   const logoSrc = args["logo"] || null;
@@ -861,8 +889,10 @@ async function main() {
       `See docs/portal-and-tier-ladder.md.`
     );
   }
-  if (pattern !== "A" && pattern !== "B") fail(`pattern must be A or B; got ${pattern}`);
-  if (pattern === "B") fail(`pattern B initial stamp not yet implemented. For chrome refresh on an existing Pattern B portal, run with --mode=restamp-chrome --pattern=B --target=<path>. See README §"Pattern B stamper".`);
+  if (portalType !== "initiative" && portalType !== "review" && portalType !== "bespoke") {
+    fail(`--portal-type must be initiative, review, or bespoke; got ${portalType}`);
+  }
+  if (portalType === "review") fail(`portal-type=review initial stamp not yet implemented. For chrome refresh on an existing Review Portal, run with --mode=restamp-chrome --portal-type=review --target=<path>. See README §"Review Portal stamper".`);
 
   // Create a missing target (category convention: scaffolders create their
   // directory). Refuse only when the path exists and isn't a directory.
@@ -873,7 +903,7 @@ async function main() {
   const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
   const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
 
-  console.log(`blueprint-init: stamping Pattern A scaffold into ${target}${targetStat ? "" : " (created)"}`);
+  console.log(`blueprint-init: stamping Initiative Portal scaffold into ${target}${targetStat ? "" : " (created)"}`);
   console.log(`  variant=${variant} tier=${tier} (${VARIANT_TIER_MATRIX[variant][tier]})`);
   console.log(`  name=${name} display-name="${displayName}"`);
   console.log(`  repo-url=${repoUrl}`);
@@ -897,7 +927,7 @@ async function main() {
   await writeWorkspaceRoot({ target, name, dryRun, log });
   await renameLogo(target, dryRun, log);
   if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
-  await writeBlueprintYml({ target, name, variant, tier, pattern, tagline, repoUrl, dryRun, log });
+  await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
 
   if (!dryRun) await mechanicalCheck({ target, name, log });
   printReport(log);

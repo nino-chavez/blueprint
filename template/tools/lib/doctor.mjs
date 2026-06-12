@@ -17,10 +17,10 @@ import { pathToFileURL } from 'node:url';
 const libUrl = (home, name) => pathToFileURL(join(home, 'template', 'tools', 'lib', name)).href;
 
 /**
- * A bespoke portal (portal_pattern: bespoke — fits neither Pattern A nor B,
- * wave 46) gates on the PRESENCE of a divergence ADR; its absence is the
- * violation. Find one by filename convention in the consumer's decisions dirs.
- * Returns the basename, or null.
+ * A bespoke portal (portal_type: bespoke — fits neither Initiative Portal nor
+ * Review Portal, wave 46) gates on the PRESENCE of a divergence ADR; its
+ * absence is the violation. Find one by filename convention in the consumer's
+ * decisions dirs. Returns the basename, or null.
  */
 function findDivergenceAdr(targetDir) {
   const rx = /(portal.*(bespoke|divergen)|(bespoke|divergen).*portal)/i;
@@ -69,8 +69,18 @@ export async function runDoctor({ home, targetDir }) {
       const text = readFileSync(ymlPath, 'utf8');
       const m = /^\s*tier:\s*([0-9]+)/m.exec(text);
       tier = m ? Number(m[1]) : null;
-      const pm = /^\s*portal_pattern:\s*(\w+)/m.exec(text);
-      portalPattern = pm ? pm[1].toLowerCase() : null;
+      // Read portal_type (canonical, wave 72) with portal_pattern as deprecated fallback.
+      const ptNew = /^\s*portal_type:\s*(\w+)/m.exec(text);
+      const ptLegacy = /^\s*portal_pattern:\s*(\w+)/m.exec(text);
+      if (ptNew) {
+        portalPattern = ptNew[1].toLowerCase();
+      } else if (ptLegacy) {
+        portalPattern = ptLegacy[1].toLowerCase();
+        // Map legacy A/B values to new names for internal use
+        if (portalPattern === 'a') portalPattern = 'initiative';
+        else if (portalPattern === 'b') portalPattern = 'review';
+        add('blueprint-yml', 'warn', 'blueprint.yml uses deprecated `portal_pattern:` field — rename to `portal_type:` with values initiative|review|bespoke (wave 72)', 'run: sed -i \'\' \'s/portal_pattern:/portal_type:/; s/portal_type: A/portal_type: initiative/; s/portal_type: B/portal_type: review/\' blueprint.yml');
+      }
       if (tier == null) add('blueprint-yml', 'warn', 'blueprint.yml present but no `tier:` declared');
       else add('blueprint-yml', 'pass', `tier ${tier}`);
     } catch (e) {
@@ -127,29 +137,29 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
-  // 6. portal-conformance. A Pattern A portal RUNS its reviewer (runtime
+  // 6. portal-conformance. An Initiative Portal RUNS its reviewer (runtime
   //    verification, not a files-exist check). A portal that declares
-  //    `portal_pattern: bespoke` fits neither A nor B (wave 46) — so NEITHER
-  //    conformance reviewer runs; the gate instead is the PRESENCE of a
-  //    divergence ADR (its absence is the violation). Automated here on the
-  //    2nd bespoke instance (the methodology's own product-site portal), per
-  //    the wave-46 "automate on the 2nd instance" trigger.
+  //    `portal_type: bespoke` fits neither Initiative Portal nor Review Portal
+  //    (wave 46) — so NEITHER conformance reviewer runs; the gate instead is
+  //    the PRESENCE of a divergence ADR (its absence is the violation).
+  //    Automated here on the 2nd bespoke instance (the methodology's own
+  //    product-site portal), per the wave-46 "automate on the 2nd instance" trigger.
   if (existsSync(join(targetDir, 'apps', 'portal'))) {
     if (portalPattern === 'bespoke') {
       const adr = findDivergenceAdr(targetDir);
       if (adr) {
-        add('portal-conformance', 'pass', `bespoke portal — divergence recorded in ${adr}; Pattern A/B conformance not applicable`);
+        add('portal-conformance', 'pass', `bespoke portal — divergence recorded in ${adr}; Initiative/Review Portal conformance not applicable`);
       } else {
-        add('portal-conformance', 'fail', 'portal_pattern: bespoke but no divergence ADR found in decisions/', "record the divergence — write decisions/NNNN-portal-bespoke-*.md per docs/portal-and-tier-ladder.md (a bespoke portal's gate is the ADR's presence; its absence is the violation)");
+        add('portal-conformance', 'fail', 'portal_type: bespoke but no divergence ADR found in decisions/', "record the divergence — write decisions/NNNN-portal-bespoke-*.md per docs/portal-and-tier-ladder.md (a bespoke portal's gate is the ADR's presence; its absence is the violation)");
       }
     } else {
       try {
-        const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'portal-pattern-a-conformance-reviewer.mjs');
+        const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'portal-initiative-conformance-reviewer.mjs');
         if (existsSync(reviewerPath)) {
           const fn = (await import(pathToFileURL(reviewerPath).href)).default;
           const res = await fn({ targetDir, blueprintYml: { tier }, methodologyHome: home });
           const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
-          add('portal-conformance', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''} (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? 'run `blueprint review portal-pattern-a-conformance-reviewer --target=<dir>` for details' : undefined);
+          add('portal-conformance', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''} (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? 'run `blueprint review portal-initiative-conformance-reviewer --target=<dir>` for details' : undefined);
         } else {
           add('portal-conformance', 'skip', 'conformance reviewer not present in this methodology home');
         }
