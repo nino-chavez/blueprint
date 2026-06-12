@@ -1,6 +1,6 @@
 # Blueprint Portal Conventions
 
-**Version 5 (2026-06-11).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
+**Version 6 (2026-06-12).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
 
 ---
 
