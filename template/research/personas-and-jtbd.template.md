@@ -11,7 +11,8 @@
 For each persona the input assets actually name or imply:
 
 ```
-### <Persona name or role>
+### <Persona name or role> (`<slug>`)
+- **Slug:** <short-kebab id used in every serves: tag, e.g. `revops`, `partner-ops`>
 - **Source:** <which input asset names/implies this persona — file + section>
 - **Who:** <role, where they sit, what they own>
 - **Jobs:**
@@ -21,7 +22,7 @@ For each persona the input assets actually name or imply:
     - **Decision dependency:** <which decision/recommendation this job is waiting on, if any>
 ```
 
-Job slug convention (used by `persona-fit-reviewer` for traceability): `<persona-slug>/JOB-<n>`.
+Job-id convention (the `persona-fit-reviewer` resolves `serves:` against these): `<slug>/JOB-<n>`. Put the slug in the heading backticks AND the `Slug:` field so resolution is unambiguous.
 
 ---
 
@@ -29,7 +30,8 @@ Job slug convention (used by `persona-fit-reviewer` for traceability): `<persona
 
 <!-- One block per persona, grounded in research/sources/. Delete this comment. -->
 
-### <Persona name>
+### <Persona name> (`<slug>`)
+- **Slug:** <slug>
 - **Source:**
 - **Who:**
 - **Jobs:**

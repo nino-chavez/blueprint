@@ -341,7 +341,9 @@ export default async function review({ targetDir, blueprintYml }) {
 
   const req = VARIANT_REQUIREMENTS[variant];
 
-  if (hasStage1RequiresOverride(ymlText)) {
+  // The research stamper writes a stages.*.requires block by default, so flagging it
+  // there is self-generated noise; only note a genuine tuning on the other variants.
+  if (variant !== 'research' && hasStage1RequiresOverride(ymlText)) {
     findings.push({
       severity: 'INFO',
       location: 'blueprint.yml stages.stage_1.requires',
