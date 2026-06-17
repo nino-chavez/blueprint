@@ -379,8 +379,11 @@ export default async function review({ targetDir }) {
   }
 
   const variant = extractVariant(blueprintText);
-  if (variant === 'greenfield') {
-    return result('PASS', [], 'greenfield — out of scope for this variant (design-principles-reviewer gates instead)', startedAt);
+  if (variant === 'greenfield' || variant === 'research') {
+    const why = variant === 'greenfield'
+      ? 'greenfield — design-principles-reviewer gates instead'
+      : 'research — prescription gate is midstream/brownfield only';
+    return result('PASS', [], `${why} (out of scope for this variant)`, startedAt);
   }
   if (variant !== 'midstream' && variant !== 'brownfield') {
     // Unknown / unset variant: don't silently pass, but don't BLOCK on a config

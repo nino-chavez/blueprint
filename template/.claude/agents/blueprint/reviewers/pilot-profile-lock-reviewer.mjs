@@ -255,6 +255,11 @@ export default async function review({ targetDir }) {
   if (!existsSync(path.join(targetDir, 'blueprint.yml'))) {
     return result('PASS', [], 'no blueprint.yml — not a Blueprint initiative', startedAt);
   }
+  // Research variant locks personas/JTBD (research/personas-and-jtbd.md), not a pilot_profile.
+  const _pplYml = (() => { try { return readFileSync(path.join(targetDir, 'blueprint.yml'), 'utf8'); } catch { return ''; } })();
+  if (/^variant:\s*research\b/m.test(_pplYml)) {
+    return result('PASS', [], 'research — out of scope (research locks personas/JTBD, not a pilot_profile)', startedAt);
+  }
 
   const { present, fields } = readPilotProfile(targetDir);
 

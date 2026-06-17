@@ -60,6 +60,8 @@ function yamlScalar(t, k) {
 
 const ymlText = await fs.readFile(path.join(targetDir, 'blueprint.yml'), 'utf8').catch(() => null);
 const variant = yamlScalar(ymlText, 'variant') || 'greenfield';
+// Parsed scalars reviewers expect from the harness (some key their scope on tier/variant).
+const blueprintYml = { variant, tier: yamlScalar(ymlText, 'tier') };
 
 const mjsFiles = await listFiles(reviewersDir, '.mjs');
 const mdFiles = await listFiles(reviewersDir, '.md');
@@ -90,7 +92,7 @@ for (const f of toRun) {
   }
   if (typeof mod.default !== 'function') continue;
   try {
-    const r = (await mod.default({ targetDir })) || {};
+    const r = (await mod.default({ targetDir, blueprintYml })) || {};
     const status = r.status || 'PASS';
     results.push({ name, status, findings: r.findings || [] });
     if (RANK[status] > RANK[worst]) worst = status;

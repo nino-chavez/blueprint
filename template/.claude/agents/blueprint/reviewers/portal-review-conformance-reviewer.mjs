@@ -129,6 +129,12 @@ export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Research variant: Review Portal is a brownfield-audit surface; portal optional for research — skip.
+  const _prYml = await fs.readFile(path.join(targetDir, 'blueprint.yml'), 'utf8').catch(() => '');
+  if (/^variant:\s*research\b/m.test(_prYml)) {
+    return result('PASS', [], 'research — out of scope (Review Portal is brownfield; portal optional for research)', startedAt);
+  }
+
   // Tier gate — Tier 0 has no portal contract (mirrors Pattern A reviewer).
   const tier = blueprintYml && (blueprintYml.tier ?? blueprintYml.Tier);
   if (tier === 0 || tier === '0') {
