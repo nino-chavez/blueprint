@@ -957,6 +957,17 @@ async function main() {
     log,
   });
 
+  // Reviewer infra the stamped .claude reviewers import via ../../../../tools/lib/*
+  // (cost-dial, registry, doctor). Without this a reviewer with a module-level
+  // tools/lib import ERRORs when run from the initiative (Phase-3 fix).
+  await copyTree({
+    src: path.join(BLUEPRINT_ROOT, "template/tools/lib"),
+    dst: path.join(target, "tools/lib"),
+    subs,
+    dryRun,
+    log,
+  });
+
   if (variant === "research") {
     // Research variant: deliverable is a decision memo, not a portal. Scaffold the
     // research pipeline; skip the portal (opt-in later as optional provenance per

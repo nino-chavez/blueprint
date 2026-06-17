@@ -261,6 +261,9 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // 1. SCOPE GATE.
   const shell = await findShellDir(targetDir);
+  if (variant === 'research') {
+    return result('PASS', [], 'research — out of scope for this variant (no prototype to smoke-test)', startedAt);
+  }
   if (variant === 'brownfield') {
     // Brownfield runs only if there's a substantive prototype/portal artifact.
     let substantive = false;

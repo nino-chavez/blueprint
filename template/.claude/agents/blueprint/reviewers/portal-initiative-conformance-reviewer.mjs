@@ -57,6 +57,11 @@ function finalize(findings, targetSummary, startedAt) {
 export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
+  // Research variant: the portal is optional provenance, not the deliverable — skip.
+  const _piYml = await fs.readFile(path.join(targetDir, 'blueprint.yml'), 'utf8').catch(() => '');
+  if (/^variant:\s*research\b/m.test(_piYml)) {
+    return result('PASS', [], 'research — out of scope (portal is optional provenance for research)', startedAt);
+  }
   const portalDir = path.join(targetDir, 'apps', 'portal');
   const srcDir = path.join(portalDir, 'src');
   const pagesDir = path.join(srcDir, 'pages');

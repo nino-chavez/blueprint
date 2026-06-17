@@ -171,7 +171,7 @@ export default async function review({ targetDir, blueprintYml }) {
     const ymlText = await read(path.join(targetDir, 'blueprint.yml'));
     variant = variantFromYmlText(ymlText);
   }
-  if (variant === 'midstream' || variant === 'brownfield') {
+  if (variant === 'midstream' || variant === 'brownfield' || variant === 'research') {
     return result('PASS', [], `out of scope for this variant (${variant})`, startedAt);
   }
   const variantNote = variant === 'greenfield' ? 'greenfield' : 'no variant key — proceeding as greenfield';
