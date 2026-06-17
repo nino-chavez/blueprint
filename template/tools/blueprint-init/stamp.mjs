@@ -25,6 +25,7 @@ const VARIANT_TIER_MATRIX = {
   greenfield: { 0: "exploration-only", 1: "default", 2: "if-product-day-one" },
   midstream:  { 0: "blocked", 1: "portal-only", 2: "default" },
   brownfield: { 0: "doc-only-audit", 1: "default", 2: "audit-ships-product" },
+  research:   { 0: "default", 1: "portal-optional-provenance", 2: "blocked" },
 };
 
 // ── Review Portal canonical chrome manifest ───────────────────────────────────
@@ -910,20 +911,38 @@ async function main() {
   if (defaulted.length) console.log(`  defaulted: ${defaulted.join("  ")}`);
   console.log(`  dry-run=${dryRun}`);
 
+  // Imposition layer — installed into EVERY stamped initiative so the SessionStart
+  // hook + reviewer agents are present (fixes the install gap; see
+  // METHODOLOGY-AMENDMENTS 2026-06-16). settings.json is project-level.
   await copyTree({
-    src: path.join(BLUEPRINT_ROOT, "template/apps/portal"),
-    dst: path.join(target, "apps/portal"),
+    src: path.join(BLUEPRINT_ROOT, "template/.claude"),
+    dst: path.join(target, ".claude"),
     subs,
     dryRun,
     log,
   });
-  await copyTree({
-    src: path.join(BLUEPRINT_ROOT, "template/packages"),
-    dst: path.join(target, "packages"),
-    subs,
-    dryRun,
-    log,
-  });
+
+  if (variant === "research") {
+    // Research variant: deliverable is a decision memo, not a portal. Scaffold the
+    // research pipeline; skip the portal (opt-in later as optional provenance per
+    // docs/variant-selection.md § Research).
+    await scaffoldResearch({ target, dryRun, log });
+  } else {
+    await copyTree({
+      src: path.join(BLUEPRINT_ROOT, "template/apps/portal"),
+      dst: path.join(target, "apps/portal"),
+      subs,
+      dryRun,
+      log,
+    });
+    await copyTree({
+      src: path.join(BLUEPRINT_ROOT, "template/packages"),
+      dst: path.join(target, "packages"),
+      subs,
+      dryRun,
+      log,
+    });
+  }
   await writeWorkspaceRoot({ target, name, dryRun, log });
   await renameLogo(target, dryRun, log);
   if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
@@ -933,6 +952,45 @@ async function main() {
   printReport(log);
 
   if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
+}
+
+// Research-variant scaffolding: the decision-memo pipeline structure + templates.
+// Function declaration (hoisted) so main() above can call it.
+async function scaffoldResearch({ target, dryRun, log }) {
+  const dirs = [
+    "research/sources",
+    "research/problem-space",
+    "research/competitive",
+    "research/prior-art",
+    "decisions",
+    "docs",
+  ];
+  for (const d of dirs) {
+    if (!dryRun) await fs.mkdir(path.join(target, d), { recursive: true });
+    log.copied.push(`${d}/ (dir)`);
+  }
+  const files = [
+    ["template/research/personas-and-jtbd.template.md", "research/personas-and-jtbd.md"],
+    ["template/research/decision-memo.template.md", "docs/decision-memo.md"],
+  ];
+  for (const [src, dst] of files) {
+    if (!dryRun) await fs.copyFile(path.join(BLUEPRINT_ROOT, src), path.join(target, dst));
+    log.copied.push(dst);
+  }
+  const sourcesStub = [
+    "# Source assets — provenance catalog",
+    "",
+    "Stage 0 (research variant). One row per input asset (brief, deck, dataset, dashboard).",
+    "Confidential binaries are not committed — catalog them here with provenance and link out.",
+    "This is the source-of-record every downstream claim must resolve to.",
+    "",
+    "| Asset | Author | Date | Type | Where it lives | Verification status |",
+    "|---|---|---|---|---|---|",
+    "| | | | | | |",
+    "",
+  ].join("\n");
+  if (!dryRun) await fs.writeFile(path.join(target, "research/sources/README.md"), sourcesStub, "utf8");
+  log.copied.push("research/sources/README.md");
 }
 
 main().catch((e) => { console.error(e); process.exit(2); });
