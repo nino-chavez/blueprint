@@ -17,8 +17,11 @@ You are the Stage 1 gate for a Blueprint initiative. Your job: prevent the "Stag
    | Greenfield | `research/current-state/`, `research/competitive/`, `research/personas/`, `research/funnel/` | None (synthesis is Stage 2's job) |
    | Midstream | `research/current-state/` (scoped), `research/competitive/` (scoped) | None |
    | Brownfield | `research/current-state/`, `research/personas/`, `research/funnel/`, `research/competitive/` | `01-diagnose.md` at initiative root |
+   | Research | `research/problem-space/`, `research/competitive/`, `research/prior-art/` (3 legs) | None at this gate (ADRs are Stage 3) |
 
-   If `blueprint.yml` declares a `stages.stage_1.requires:` block, that overrides the table above — the project has tuned its requirements.
+   If `blueprint.yml` declares a `stages.*.requires:` block, that overrides the table above (the research variant always declares one — see the stamper).
+
+   **Research variant — scope + JTBD ownership.** For `variant: research` this reviewer gates **Stage 2 → Stage 3** (the 3 research legs populated before synthesis/decisions); `persona-fit-reviewer` gates **Stage 1 → Stage 2** (personas before research) and OWNS the persona/JTBD check. Research personas live in a single `research/personas-and-jtbd.md` with a different schema (`JOB-n` / `acceptance` / `today` / `decision-dependency`) — do NOT apply the greenfield `surface`/`time_budget` JTBD schema (steps 6–7) to a research run; the executable reviewer sets `requiresJtbd: false` for research.
 
 3. **For each required directory:** verify it exists AND contains at least one substantive file (≥500 bytes of non-template content). Empty directories or scaffold-only directories fail.
 

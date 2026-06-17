@@ -132,6 +132,8 @@ Stage 7: Iterate
 
 The repo is the **reasoning/provenance layer** (correct, git-native, keep it). The **deliverable** is the memo — a rendered artifact for humans who don't live in git. Conflating the two (treating the portal as the deliverable) is the canonical research-variant mistake.
 
+**Fact-check for research is internal reconciliation, not just external citation-checking.** Inputs are often confidential binaries (not URL-resolvable) and there is no running app to verify current-state claims against, so the standard `fact-check-loop-reviewer` fan-out (citation-checker + current-state-claim-verifier) only half-applies. The highest-value Stage-4 check is **cross-asset reconciliation** — does source A's figure match source B's? does the recommended "live" signal match what FinOps actually pays on? — plus an independent re-pull of any *external* claim the inputs cite (never trust an input's own citation appendix). Two source hazards to handle explicitly: (a) **un-openable / operator-relayed assets** — record `verification: relayed` in `research/sources/` and cross-check the relayed figures against another asset; (b) **partly-illustrative primary sources** (e.g. a prototype dashboard mixing real and placeholder rows) — cite the asset only for its real rows, and use placeholder rows to describe risk *shape*, never as fact. (Both hazards surfaced in the mrr-automation dogfood.)
+
 ## Required sub-deliverables per stage
 
 Reviewer agents (next section) enforce these. Empty directories next to a stage marked "complete" should trigger a reviewer block, not pass.

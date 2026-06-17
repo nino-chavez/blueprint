@@ -62,6 +62,16 @@ const VARIANT_REQUIREMENTS = {
     artifacts: ['01-diagnose.md'],
     requiresJtbd: true,
   },
+  research: {
+    // Research variant: this reviewer gates Stage 2 → 3 (the 3 research legs populated
+    // before synthesis/decisions). Persona/JTBD is owned by persona-fit-reviewer, which
+    // reads the research schema (JOB-n / acceptance / today / decision-dependency in the
+    // single research/personas-and-jtbd.md); the greenfield surface/time_budget JTBD
+    // check does NOT apply here and would mis-fire.
+    dirs: ['research/problem-space', 'research/competitive', 'research/prior-art'],
+    artifacts: [],
+    requiresJtbd: false,
+  },
 };
 
 // Five architect-challenge dimensions (.md spec step 8 / architect-challenge-pattern.md).

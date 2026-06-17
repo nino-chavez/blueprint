@@ -80,6 +80,8 @@ Before any other stage runs, the agent must be able to drive the running app —
 
 Stage 0 is mandatory for midstream and brownfield variants (the product already exists; every audit claim grounds in a captured surface). For greenfield, Stage 0 wiring often defers to Stage 3 — there's nothing to drive until the prototype shell is up.
 
+**Research variant exception.** For `variant: research` there is no app to drive. Stage 0 is reinterpreted as **Inputs Intake** — catalog every input asset (briefs, decks, datasets, dashboards) with provenance into `research/sources/`. The browser sensor described in the rest of this section does not apply. See `docs/variant-selection.md` § Research — strategy pipeline.
+
 ### Default sensor: `browse-tool`
 
 `browse-tool` (`~/Workspace/dev/tools/browse-tool`) is the default. Token economics: Chrome DevTools MCP costs ~18k tokens of always-loaded schema; browse-tool's README costs a few hundred tokens loaded on-demand. The four primitives the harness actually needs — `browse-start` / `browse-nav` / `browse-eval` / `browse-screenshot` — cover the entire stakeholder-prototype validation surface.
