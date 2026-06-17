@@ -57,9 +57,9 @@ When you hit an agent failure that isn't covered by an existing reviewer / invar
 
 ## Variant Selection
 
-Blueprint serves three project lifecycles — **greenfield** / **midstream** / **brownfield** — each with its own stage sequence and reviewer gates. The pipeline described in the rest of this document is the **greenfield variant**; midstream and brownfield diverge per the canonical taxonomy at [docs/variant-selection.md](docs/variant-selection.md).
+Blueprint serves four project lifecycles — **greenfield** / **midstream** / **brownfield** / **research** — each with its own stage sequence and reviewer gates. The pipeline described in the rest of this document is the **greenfield variant**; midstream, brownfield, and research diverge per the canonical taxonomy at [docs/variant-selection.md](docs/variant-selection.md). The **research variant** — strategy/decision work driven by input assets (briefs, decks, datasets), whose deliverable is a decision memo and whose portal is optional provenance — was added from the mrr-automation dogfood (see `docs/variant-selection.md` § Research and `METHODOLOGY-AMENDMENTS.md`). It makes persona/JTBD grounding a mandatory Stage-1 gate (greenfield defers it) and adds `persona-fit-reviewer` as the structural defense against producing artifacts no input-derived persona can use.
 
-Declare at `blueprint.yml`: `variant: greenfield | midstream | brownfield`. Default is `greenfield`. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
+Declare at `blueprint.yml`: `variant: greenfield | midstream | brownfield | research`. Default is `greenfield`. Pick the variant before Stage 0 runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
 
 ## The Pipeline (greenfield variant)
 
@@ -79,6 +79,8 @@ Capability stages (the `S-` prefix denotes substrate / sidecar) are independent 
 Before any other stage runs, the agent must be able to drive the running app — boot the prototype, navigate it, run JS against it, screenshot it. This is wired once per initiative and reused at every downstream stage that validates against the live UI.
 
 Stage 0 is mandatory for midstream and brownfield variants (the product already exists; every audit claim grounds in a captured surface). For greenfield, Stage 0 wiring often defers to Stage 3 — there's nothing to drive until the prototype shell is up.
+
+**Research variant exception.** For `variant: research` there is no app to drive. Stage 0 is reinterpreted as **Inputs Intake** — catalog every input asset (briefs, decks, datasets, dashboards) with provenance into `research/sources/`. The browser sensor described in the rest of this section does not apply. See `docs/variant-selection.md` § Research — strategy pipeline.
 
 ### Default sensor: `browse-tool`
 

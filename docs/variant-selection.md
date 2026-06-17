@@ -2,13 +2,14 @@
 
 **Canonical reference for picking the right blueprint variant at project init.**
 
-Blueprint serves three distinct project lifecycles. Each has its own stage sequence, deliverables, and reviewer-agent gates. Pick the variant *before* the first stage runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
+Blueprint serves four distinct project lifecycles. Each has its own stage sequence, deliverables, and reviewer-agent gates. Pick the variant *before* the first stage runs — the wrong variant produces retrofit feel that cannot be un-retrofitted without restarting.
 
-| Variant | When the product is… | Center of gravity | Canonical artifact set |
+| Variant | When the work is… | Center of gravity | Canonical artifact set |
 |---|---|---|---|
-| **Greenfield (build)** | New. No production surfaces. North-star-driven. | Prototype as the central deliverable. | Research → Design Principles → Prototype → Docs |
-| **Midstream (hybrid)** | Active, mid-development. Prototype revises in-flight work. | Targeted diagnose + revision prototype. | Targeted Diagnose → Prescription → Prototype-as-Patch → Docs |
-| **Brownfield (audit)** | Mature, live, under-audited. Prototype optional. | Diagnose + prescription as the deliverables. | Diagnose → Prescription → Design Brief → (optional Prototype) |
+| **Greenfield (build)** | A new product. No production surfaces. North-star-driven. | Prototype as the central deliverable. | Research → Design Principles → Prototype → Docs |
+| **Midstream (hybrid)** | An active, mid-development product. Prototype revises in-flight work. | Targeted diagnose + revision prototype. | Targeted Diagnose → Prescription → Prototype-as-Patch → Docs |
+| **Brownfield (audit)** | A mature, live, under-audited product. Prototype optional. | Diagnose + prescription as the deliverables. | Diagnose → Prescription → Design Brief → (optional Prototype) |
+| **Research (strategy)** | Not a product at all — a decision/strategy question driven by input assets (briefs, decks, datasets). | Decision memo + grounded evidence. Portal optional (provenance only). | Inputs Intake → Personas/JTBD → Research → Synthesis/Decisions → Decision Memo |
 
 If no variant is selected, the methodology defaults to greenfield — which is wrong for two of three lifecycles. Selection happens at `blueprint.yml` init, before Stage 0 runs.
 
@@ -17,6 +18,11 @@ If no variant is selected, the methodology defaults to greenfield — which is w
 Run this at project init. Answer in order; first "yes" wins.
 
 ```
+0. Is the deliverable a decision or strategy recommendation — not a product or prototype?
+   (Work starts from input assets — briefs, decks, datasets — and ends in a memo someone acts on.)
+   └─ Yes → Research
+   └─ No  → continue
+
 1. Is the product already live in production with real users?
    └─ No  → Greenfield
    └─ Yes → continue
@@ -105,6 +111,29 @@ Stage 7: Deploy + Iterate    → share-link is the brief if no prototype; the pr
 
 The numbered file convention (`01-` / `02-` / `03-`) is canonical for brownfield. It signals stage ordering at the filesystem level — a reader opening the directory sees diagnose before prescription before brief, with no guessing.
 
+### Research — strategy pipeline
+
+There is no product to build, prototype, or audit. The work starts from **input assets** (briefs, decks, datasets, dashboards) and ends in a **decision memo** someone acts on. The two failure modes this pipeline exists to prevent — both observed in the mrr-automation dogfood (`METHODOLOGY-AMENDMENTS.md` 2026-06-16) — are (a) synthesizing before grounding in *who the work is for*, and (b) producing product-shaped scaffolding (a portal, frontmatter ceremony, "axioms") that no stakeholder can use. The persona/JTBD gate fixes (a); the decision-memo-as-deliverable + `persona-fit-reviewer` fix (b).
+
+```
+Stage 0: Inputs Intake       → research/sources/ — provenance catalog of every input asset
+                               (author, date, type, where it lives, verification status)
+Stage 1: Personas & JTBD     → research/personas-and-jtbd.md — input-grounded personas + jobs
+                               (MANDATORY GATE; persona-fit-reviewer blocks downstream work without it)
+Stage 2: Research            → research/{problem-space,competitive,prior-art}/ — primary-source-grounded
+Stage 3: Synthesis & Decisions → decisions/ ADRs, each with serves: tracing to a persona job
+Stage 4: Fact-Check          → primary-source reconciliation + verification (the highest-value gate
+                               for a strategy call — claims verified against authoritative sources, not self-attested)
+Stage 5: Decision Memo       → docs/decision-memo.md (the deliverable) + evidence appendix;
+                               optional companion deck via Forge Signal (Executive Advisory)
+Stage 6: Deliver             → share the memo (+ deck) where the audience is; portal optional, provenance-only
+Stage 7: Iterate
+```
+
+The repo is the **reasoning/provenance layer** (correct, git-native, keep it). The **deliverable** is the memo — a rendered artifact for humans who don't live in git. Conflating the two (treating the portal as the deliverable) is the canonical research-variant mistake.
+
+**Fact-check for research is internal reconciliation, not just external citation-checking.** Inputs are often confidential binaries (not URL-resolvable) and there is no running app to verify current-state claims against, so the standard `fact-check-loop-reviewer` fan-out (citation-checker + current-state-claim-verifier) only half-applies. The highest-value Stage-4 check is **cross-asset reconciliation** — does source A's figure match source B's? does the recommended "live" signal match what FinOps actually pays on? — plus an independent re-pull of any *external* claim the inputs cite (never trust an input's own citation appendix). Two source hazards to handle explicitly: (a) **un-openable / operator-relayed assets** — record `verification: relayed` in `research/sources/` and cross-check the relayed figures against another asset; (b) **partly-illustrative primary sources** (e.g. a prototype dashboard mixing real and placeholder rows) — cite the asset only for its real rows, and use placeholder rows to describe risk *shape*, never as fact. (Both hazards surfaced in the mrr-automation dogfood.)
+
 ## Required sub-deliverables per stage
 
 Reviewer agents (next section) enforce these. Empty directories next to a stage marked "complete" should trigger a reviewer block, not pass.
@@ -114,6 +143,11 @@ Reviewer agents (next section) enforce these. Empty directories next to a stage 
 | 1 Research | Greenfield | `current-state/`, `competitive/`, `personas/`, `funnel/` — all four populated |
 | 1 Diagnose | Midstream | `current-state/` (scoped to prototype area), `competitive/` (scoped) — two populated |
 | 1 Diagnose | Brownfield | `current-state/`, `personas/`, `funnel/`, `competitive/` + `01-diagnose.md` synthesizing them — all five populated |
+| 0 Inputs Intake | Research | `research/sources/` — provenance catalog of every input asset (author, date, type, verification status) |
+| 1 Personas/JTBD | Research | `research/personas-and-jtbd.md` — input-grounded personas + jobs with observable acceptance (MANDATORY gate) |
+| 2 Research | Research | `research/{problem-space,competitive,prior-art}/` — primary-source-grounded; ≥3 legs |
+| 3 Synthesis | Research | `decisions/` ADRs, each with a `serves:` field tracing to a persona job |
+| 5 Decision Memo | Research | `docs/decision-memo.md` — the deliverable; portal optional (provenance only) |
 | 2 Design Principles | Greenfield | `prototype/DESIGN.md` with five visual rules + testing baseline + architectural invariants |
 | 2 Prescription | Midstream | `prescription.yml` naming preserved patterns + revised patterns + evidence cite per item |
 | 2 Prescription | Brownfield | `02-prescription.yml` with impact-ordered changes + evidence cite per item |
@@ -140,6 +174,8 @@ Reviewer agents enforce stage-completion gates. The single source of truth is `t
 
 The `fact-check-loop-reviewer` is the orchestrator that fans out to `citation-checker` and `current-state-claim-verifier` (and any future fact-check sub-agents) and decides convergence. Naming convention: the *-reviewer suffix denotes a gate agent; the *-checker and *-verifier suffixes denote leaf sub-agents the orchestrator fans out to.
 
+**Research variant reviewers.** Research swaps the prototype/portal gates for `persona-fit-reviewer` (Stage 1 → 2 gate, plus every decision/memo/portal surface must trace to a persona job or be cut as vanity), keeps `research-completeness-reviewer` (3 legs: problem-space, competitive, prior-art), `fact-check-loop-reviewer` (primary-source verification — the highest-value gate for a strategy call), and `doc-quality-auditor` (the decision memo). The portal-conformance reviewers do NOT run — the portal is optional provenance, not the deliverable. Unlike greenfield (where JTBD-trace is deferred per ADR-0004), research makes persona-job traceability mandatory from Stage 1.
+
 ## Open-question resolutions (carried forward from v2 patch Increment 2)
 
 1. **Reviewer agent location** → **shared** at `template/.claude/agents/`. Per-initiative override only for threshold tuning, never for behavior. Reason: variant-aware reviewer behavior is the multiplier across every future initiative; behavior drift across initiatives defeats the gate.
@@ -157,8 +193,8 @@ project:
   name: "..."
   ...
 
-# One of: greenfield | midstream | brownfield
-variant: brownfield
+# One of: greenfield | midstream | brownfield | research
+variant: research
 
 stages:
   # Variant-specific stage gating. The reviewer agents read this block to know
