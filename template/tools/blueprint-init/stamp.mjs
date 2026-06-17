@@ -999,6 +999,7 @@ async function scaffoldResearch({ target, dryRun, log }) {
     "research/prior-art",
     "decisions",
     "docs",
+    "tools",
   ];
   for (const d of dirs) {
     if (!dryRun) await fs.mkdir(path.join(target, d), { recursive: true });
@@ -1008,6 +1009,7 @@ async function scaffoldResearch({ target, dryRun, log }) {
     ["template/research/personas-and-jtbd.template.md", "research/personas-and-jtbd.md"],
     ["template/research/decision-memo.template.md", "docs/decision-memo.md"],
     ["template/research/decision-record.template.md", "decisions/_TEMPLATE.md"],
+    ["template/tools/run-reviewers.mjs", "tools/run-reviewers.mjs"],
   ];
   for (const [src, dst] of files) {
     if (!dryRun) await fs.copyFile(path.join(BLUEPRINT_ROOT, src), path.join(target, dst));
