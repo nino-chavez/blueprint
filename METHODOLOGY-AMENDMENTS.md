@@ -95,6 +95,32 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 **References**:
 - ChapterZero session 2026-06-25; `prototype/_site/` (memo + walkthrough + functions), `docs/content/session-log.md`
 
+---
+
+## 2026-06-17 — Dogfooding the research variant on a strong-input initiative: Blueprint's value is error-filtering, not strategy generation; research initiatives usually need NO portal
+
+**Trigger**: End-to-end dogfood of the new `research` variant (PRs #22-24) on the mrr-automation / partner-NRR initiative — an A/B/B′ run on the same 8-document input set + a relayed dashboard — followed by an honest reckoning of what the produced decision memo actually *unlocks* versus its inputs.
+
+**Scope**: Methodology-level expectation-setting + research-variant scoping guidance. Promotion-ready as doc guidance; the portal-default change is a code candidate (below).
+
+**Bucket**: methodology (value model + research-variant scoping + anti-vanity discipline)
+
+**Status**: Active
+
+**Finding 1 — On a strong-input research initiative, Blueprint's contribution is *trustworthiness*, not novelty.** The B′ memo's strategic content ≈ the strongest single input (the Implementation Quality deck): measurement-first, decoupled from the incentive redesign, build-attribution-capture-now, advisory-before-binding, outcome tier gates, pay-on-verified-live. Every recommendation traced back to an input; the pipeline *re-derived* the inputs' own conclusions. What it genuinely added was narrow and verification-shaped: (a) caught errors *in the inputs* a human skim would propagate — an inverted BRD KPI (deflection vs GRR/NRR), an unverified "entitlement service already exists" claim, and a direct contradiction between two inputs (composite scorecard vs explicit no-composite); (b) one fact the FY26-dated inputs *couldn't* contain — a June-2026 re-pull showing the cited benchmark (Salesforce) is moving *away* from the multi-metric / many-tier model the inputs hold up to emulate. **Expectation to set with operators:** Blueprint makes a synthesis trustworthy; it does not make it novel. Sell the verification, not the strategy.
+
+**Finding 2 — Production ≠ progress; run the vanity gate at every step.** Run A (greenfield default) over-produced: a portal, frontmatter, "axioms," a corpus, a deck — most of it ceremony for this initiative type. The discipline that fixed it generalizes the persona-fit-reviewer's intent into a standing principle: at each artifact, ask *"which named persona's named job does this serve, and what does it unlock versus the raw inputs?"* — and cut what can't answer. This is the single most reusable habit from the arc: refusing to mistake artifacts for value.
+
+**Finding 3 — Research initiatives usually need NO portal; deliver to the team's existing surface.** The gated Cloudflare portal we built and deployed was a surface the consuming team would never visit — the inputs *originated* in a shared Claude Project + Google Drive, which is where the team already collaborates. The right research deliverable is the decision memo (+ optional deck) delivered *into that surface*, not a bespoke portal. The research variant should default to no portal and treat "stand up a portal" as the exception requiring justification. (Generalizable negative result: a portal nobody on the consuming team uses is pure overhead — and it actively misled us into "deploy" work that produced nothing the team can use.)
+
+**Finding 4 — Name the goal: initiative-output vs methodology-hardening.** Most of this arc's *value* accrued to Blueprint (a new variant, a fixed install gap, hardened reviewers, a variant-aware runner), not to the initiative (a memo worth ≈ one new fact + one surfaced contradiction over its inputs, at high overhead). That trade is fine *when hardening the methodology against a real input is the stated goal* — and poor if the operator believes they are buying strategy. Make the goal explicit up front; the effort/value math is inverted between the two.
+
+**Promotion candidates (for `template/`):** (1) research-variant default of **no portal** + a variant-selection note that a portal is the exception, not the default; (2) a **"value pre-check"** step in the research kickoff — *if the inputs are already a strong synthesis, scope the run to verification + decision-packaging, not full re-derivation plus a portal*; (3) fold the per-artifact vanity question (Finding 2) into the persona-fit-reviewer's operator-facing prose.
+
+**References:** mrr-automation dogfood (this repo PRs #22-24, research variant); preserved evidence package `nino-chavez/partner-nrr-strategy-v2` (run B′); promoted deliverable `wip/mrr-automation/docs/content/decision-memo.md`; relates to the [[2026-06-12]] de-named-consumer entries (same consumer family). Honest-reckoning source: this session's "what does the memo unlock" / "what did we prove" exchange.
+
+---
+
 ## 2026-06-12 — Candidates A + C realized in the flagship consumer; candidate A's second instance fired independently (atlas)
 
 **Trigger**: Same-day convergence from two directions — the partner SA (T.) independently built `atlas-v0` (markdown workspace → typed graph → d3 viewer, with a STRATEGY question asking to merge the Blueprint/Hive node taxonomy into his schema), while the flagship consumer (bc-subscriptions) shipped the full mechanical realization of the [[2026-06-11]] candidates.
