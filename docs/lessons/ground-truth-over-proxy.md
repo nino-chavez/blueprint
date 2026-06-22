@@ -4,7 +4,7 @@ canonical: true
 
 # Ground-Truth-Over-Proxy — Lessons From a Gate-Ladder Build Wave
 
-**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path. Lesson 7 is already part-mechanized on the source initiative (`terminal_gate` in the catalog + the derived coverage matrix; the AC-completeness lint is the pending rung).
+**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path. Lesson 7 is now fully mechanized on the source initiative: `terminal_gate` in the catalog, the derived 5-way `dod_bucket` (built/built-untested/terminal-elsewhere/unbuilt/blocked) in the coverage matrix, AND an AC-completeness lint gate (every AC must carry a ladder cap).
 
 **Last updated**: 2026-06-22 (added Lesson 7 — terminal-gate classification — from the epic-status/traceability work; bc-subs ADR-0073 + `[Spec]` #1680)
 
