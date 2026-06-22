@@ -4,9 +4,9 @@ canonical: true
 
 # Ground-Truth-Over-Proxy — Lessons From a Gate-Ladder Build Wave
 
-**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–6 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path.
+**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path. Lesson 7 is already part-mechanized on the source initiative (`terminal_gate` in the catalog + the derived coverage matrix; the AC-completeness lint is the pending rung).
 
-**Last updated**: 2026-06-16
+**Last updated**: 2026-06-22 (added Lesson 7 — terminal-gate classification — from the epic-status/traceability work; bc-subs ADR-0073 + `[Spec]` #1680)
 
 **Source evidence** (re-verified against commits/lines before capture):
 - `subs-initiative` US-23.4 (commit `824dc003`) — the timestamp-format window bug + retry-sweep state omission. Fix lines: `apps/api/src/services/alert-threshold-evaluator.ts:38,47,57` (`datetime(col) >= datetime(?)`), `apps/api/src/db.ts:2884` (`status IN ('pending','failed')`).
@@ -15,6 +15,7 @@ canonical: true
 - Hive `#1658` — a SQLite `CHECK` on a table with incoming FKs is unchangeable in D1 (rebuild needs `PRAGMA foreign_keys=OFF`, which D1 blocks). Hive `#1083` — the resulting rule: no `CHECK` on application enums; validate in TS.
 - `apps/api/test/scenarios/_helpers/fixtures.ts:28` — the shared seed helper's `INSERT OR IGNORE` under a `UNIQUE(store_hash, bc_customer_id)` constraint (the silent-collapse fixture seam).
 - Deferred-surface tracking: proposals `#1661`–`#1666` (`[Spec-Reconciliation]`) — the gap between "demonstrable G4 path shipped" and "full AC" tracked as explicit debt, never buried.
+- **(Lesson 7)** `subs-initiative` ADR-0073 + `[Spec]` #1680 — `Capability.terminal_gate` (`tools/state-derive/types.ts`) + `terminal_elsewhere`/`below_terminal_gate` in `tools/coverage-matrix-derive`; classified 10 built-but-G5-terminal ACs (US-8.2/8.3/8.4/8.5/8.6, 13.5, 17.4, 22.2, 25.2, 27.4) that had been read as below-gate gaps.
 
 **Related patterns**:
 - [docs/patterns/traceability-state-join-pattern.md](../patterns/traceability-state-join-pattern.md) — the state-join this lessons set generalizes from (derived state, not asserted state)
@@ -28,11 +29,11 @@ canonical: true
 
 A build wave is the methodology under load: many features, generated designs, a single gate deciding "done." The wave was clean — every feature reached a passing behavioral test — but the designs were wrong in patterned ways the whole time, and the bugs that surfaced clustered in one place: wherever a **representation of the system** stood in for the **system** and the two had drifted apart.
 
-These six lessons are that cluster, extracted and abstracted off the stack. They are not stack-specific tips; the subs-initiative instances are grounding, not subject.
+These seven lessons are that cluster, extracted and abstracted off the stack. They are not stack-specific tips; the subs-initiative instances are grounding, not subject. (Lesson 7 was added 2026-06-22 from a later epic-status / traceability session on the same initiative — the same spine, surfaced during a status review rather than a build.)
 
 ## The spine
 
-One law, six faces:
+One law, seven faces:
 
 > **A representation of the system is not the system, and it drifts by default. The work is to keep collapsing the distance to the real thing.**
 
@@ -40,7 +41,7 @@ One law, six faces:
 
 ---
 
-## The six lessons
+## The seven lessons
 
 ### 1. "Done" is demonstrated, not claimed — and every proxy for it drifts
 
@@ -93,6 +94,14 @@ One law, six faces:
 
 **Generalization.** Treat a generated plan as a draft from a competent stranger to the codebase. Keep a checklist of known-stale claim types and check them mechanically. When the generator keeps re-proposing a banned pattern, read the ban before overriding it — it is a scar, not a preference.
 
+### 7. "Below the top gate" is three states — classify the terminal gate or you re-ground it by hand
+
+**Principle.** In a tiered verification ladder, "hasn't reached the top gate" silently merges three different states: *not built*, *built-but-not-yet-verified*, and *built-but-structurally-unable-to-reach the top gate*. If the ladder doesn't record each item's **terminal** gate, every status review re-derives that split by hand — and "incomplete" quietly counts items that are already complete at their ceiling.
+
+**Grounding.** A bc-subs epic-status review had to hand-classify ~10 ACs that were *built* but whose terminal gate is live/e2e, not the backend scenario gate (frontend render/CSS, the headless SDK, an observability dashboard, a platform-extension panel) — the backend-only scenario harness can never reach them, so they read identically to genuinely-unbuilt ACs. ADR-0073 added a first-class `terminal_gate` (`'G4' | 'G5' | 'attestation'`) to the capability catalog and surfaced `terminal_elsewhere` vs `below_terminal_gate` (the honest work queue) in the derived coverage matrix — mirroring how `blocked_external` was already first-class (L7 is the same move as the blocked-vs-unbuilt distinction, one axis over). The per-audit hand-grounding disappeared.
+
+**Generalization.** Any multi-rung ladder where some items can't reach the top rung needs the terminal rung as **first-class, derived data** — not inferred per-audit. The work queue is "below *terminal* gate," never "below *top* gate." Like a blocked-external marker, an unreachable-top-gate is a property of the item, recorded at the source — so "incomplete" never silently includes "complete-at-its-ceiling," and nobody re-derives the split by reading code.
+
 ---
 
 ## How to apply — the pre-build checklist
@@ -104,6 +113,7 @@ Distilled to what a builder does *before* and *as* they build:
 3. **For every boundary the feature crosses — formats, states, identities — write the test that crosses it.** Not the happy path (L4).
 4. **For any destructive change, source from live state and run every consumer of what you touch.** Check for one-way doors first (L5).
 5. **Run the generated design against the known-drift checklist before trusting a line of it.** Verify "no regression" differentially, not absolutely (L6).
+6. **Record each item's terminal gate at the source; make the work queue "below *terminal* gate," not "below *top* gate."** If some items structurally can't reach the top rung, that ceiling is first-class data — or every status review re-grounds it by hand (L7).
 
 ## Promotion criteria
 
