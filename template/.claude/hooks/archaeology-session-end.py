@@ -74,37 +74,32 @@ def main() -> int:
         "ARCHAEOLOGY_PROJECT_ID": PROJECT_MARKER,
     }
 
+    # Detach the ingest: session transcripts run to tens/hundreds of MB, and
+    # reading + chunking + uploading them synchronously here blocks /clear and
+    # /exit for up to TIMEOUT_S. The docstring's contract is "never block a
+    # session-end; backfill is idempotent and recoverable" — so fire-and-forget.
+    # start_new_session=True puts the child in its own process group so it
+    # survives the CLI exiting on /exit. Output goes to a log for diagnostics.
+    log_dir = Path.home() / ".config" / "archaeology"
     try:
-        result = subprocess.run(
+        log_dir.mkdir(parents=True, exist_ok=True)
+        logf = open(log_dir / "session-ingest.log", "a")
+        subprocess.Popen(
             ["python3", str(INGESTER_PATH), "tail", "--jsonl", transcript_path],
             env=env,
-            capture_output=True,
-            text=True,
-            timeout=TIMEOUT_S,
+            stdout=logf,
+            stderr=logf,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True,
         )
-    except subprocess.TimeoutExpired:
-        print(f"[archaeology] SessionEnd: ingest timed out after {TIMEOUT_S}s")
-        return 0
     except Exception as e:
-        print(f"[archaeology] SessionEnd: ingest crashed: {e}")
+        print(f"[archaeology] SessionEnd: failed to spawn ingest: {e}")
         return 0
 
-    if result.returncode != 0:
-        tail = (result.stderr or "")[-300:]
-        print(f"[archaeology] SessionEnd: ingest rc={result.returncode}: {tail}")
-        return 0
-
-    try:
-        stats = json.loads(result.stdout)
-        print(
-            f"[archaeology] session {Path(transcript_path).stem[:8]} → "
-            f"inserted={stats.get('inserted', 0)} "
-            f"skipped={stats.get('skipped', 0)} "
-            f"errors={stats.get('errors', 0)}"
-        )
-    except (json.JSONDecodeError, ValueError):
-        print(f"[archaeology] session ingested (raw output: {result.stdout[:200]})")
-
+    print(
+        f"[archaeology] session {Path(transcript_path).stem[:8]} → "
+        f"ingest backgrounded (log: {log_dir / 'session-ingest.log'})"
+    )
     return 0
 
 
