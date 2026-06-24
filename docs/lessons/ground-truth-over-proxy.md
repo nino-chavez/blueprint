@@ -4,9 +4,9 @@ canonical: true
 
 # Ground-Truth-Over-Proxy — Lessons From a Gate-Ladder Build Wave
 
-**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path. Lesson 7 is now fully mechanized on the source initiative: `terminal_gate` in the catalog, the derived 5-way `dod_bucket` (built/built-untested/terminal-elsewhere/unbuilt/blocked) in the coverage matrix, AND two catalog-gate lints — `ac-completeness-lint` (every AC carries a ladder cap) and `scenario-gate-lint` (every apps/api-scenario'd AC carries a G4 gate cap, so a passing scenario can't read below-G4).
+**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–8 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path. Lesson 7 is now fully mechanized on the source initiative: `terminal_gate` in the catalog, the derived 5-way `dod_bucket` (built/built-untested/terminal-elsewhere/unbuilt/blocked) in the coverage matrix, AND two catalog-gate lints — `ac-completeness-lint` (every AC carries a ladder cap) and `scenario-gate-lint` (every apps/api-scenario'd AC carries a G4 gate cap, so a passing scenario can't read below-G4).
 
-**Last updated**: 2026-06-22 (added Lesson 7 — terminal-gate classification — from the epic-status/traceability work; bc-subs ADR-0073 + `[Spec]` #1680)
+**Last updated**: 2026-06-24 (Lesson 8 added — load-testing surface from subs-initiative June 2026 perf work; Lesson 7 mechanized 2026-06-22)
 
 **Source evidence** (re-verified against commits/lines before capture):
 - `subs-initiative` US-23.4 (commit `824dc003`) — the timestamp-format window bug + retry-sweep state omission. Fix lines: `apps/api/src/services/alert-threshold-evaluator.ts:38,47,57` (`datetime(col) >= datetime(?)`), `apps/api/src/db.ts:2884` (`status IN ('pending','failed')`).
@@ -16,11 +16,13 @@ canonical: true
 - `apps/api/test/scenarios/_helpers/fixtures.ts:28` — the shared seed helper's `INSERT OR IGNORE` under a `UNIQUE(store_hash, bc_customer_id)` constraint (the silent-collapse fixture seam).
 - Deferred-surface tracking: proposals `#1661`–`#1666` (`[Spec-Reconciliation]`) — the gap between "demonstrable G4 path shipped" and "full AC" tracked as explicit debt, never buried.
 - **(Lesson 7)** `subs-initiative` ADR-0073 + `[Spec]` #1680 — `Capability.terminal_gate` (`tools/state-derive/types.ts`) + `terminal_elsewhere`/`below_terminal_gate` in `tools/coverage-matrix-derive`; classified 10 built-but-G5-terminal ACs (US-8.2/8.3/8.4/8.5/8.6, 13.5, 17.4, 22.2, 25.2, 27.4) that had been read as below-gate gaps.
+- **(Lesson 8)** `subs-initiative` load-test wave (commit `cfe3ae71`, 2026-06-24): three bugs invisible to all prior tests, found only by running real traffic: (a) thundering herd — BC Payments 429 retry timestamps landing at the same second (`apps/api/src/cron/charge-retry-sweep.ts`, fixed by applying `applyJitter` to the reschedule timestamp); (b) unique index blocking second portal customer per store (`apps/api/migrations/schema/0039_customers_portal_bc_id_index.sql`, fixed by converting to a partial index `WHERE bc_customer_id > 0`); (c) rate-limiter binding throwing in local dev (`apps/api/src/routes/portal/auth/request-link.ts:41–47`, fixed by wrapping in try/catch). All three passed unit tests, all three passed behavioral scenarios, none appeared in static analysis.
 
 **Related patterns**:
 - [docs/patterns/traceability-state-join-pattern.md](../patterns/traceability-state-join-pattern.md) — the state-join this lessons set generalizes from (derived state, not asserted state)
 - [docs/patterns/invariants-registry-pattern.md](../patterns/invariants-registry-pattern.md) — where Lessons 4–5 become mechanical invariants
 - [docs/patterns/inventory-as-evidence-pattern.md](../patterns/inventory-as-evidence-pattern.md) — evidence-over-assertion, the same spine at the inventory layer
+- [docs/patterns/api-load-testing-pattern.md](../patterns/api-load-testing-pattern.md) — the six-tier framework that operationalizes Lesson 8
 - [docs/case-studies/case-study-subs-skipped-stages-2-4.md](../case-studies/case-study-subs-skipped-stages-2-4.md) — the same initiative's earlier negative precedent (what skipping fact-check costs)
 
 ---
@@ -29,11 +31,11 @@ canonical: true
 
 A build wave is the methodology under load: many features, generated designs, a single gate deciding "done." The wave was clean — every feature reached a passing behavioral test — but the designs were wrong in patterned ways the whole time, and the bugs that surfaced clustered in one place: wherever a **representation of the system** stood in for the **system** and the two had drifted apart.
 
-These seven lessons are that cluster, extracted and abstracted off the stack. They are not stack-specific tips; the subs-initiative instances are grounding, not subject. (Lesson 7 was added 2026-06-22 from a later epic-status / traceability session on the same initiative — the same spine, surfaced during a status review rather than a build.)
+These eight lessons are that cluster, extracted and abstracted off the stack. They are not stack-specific tips; the subs-initiative instances are grounding, not subject. (Lesson 7 was added 2026-06-22 from a later epic-status / traceability session on the same initiative — the same spine, surfaced during a status review rather than a build. Lesson 8 was added 2026-06-24 from the subs-initiative load-test wave.)
 
 ## The spine
 
-One law, seven faces:
+One law, eight faces:
 
 > **A representation of the system is not the system, and it drifts by default. The work is to keep collapsing the distance to the real thing.**
 
@@ -41,7 +43,7 @@ One law, seven faces:
 
 ---
 
-## The seven lessons
+## The eight lessons
 
 ### 1. "Done" is demonstrated, not claimed — and every proxy for it drifts
 
@@ -102,6 +104,22 @@ One law, seven faces:
 
 **Generalization.** Any multi-rung ladder where some items can't reach the top rung needs the terminal rung as **first-class, derived data** — not inferred per-audit. The work queue is "below *terminal* gate," never "below *top* gate." Like a blocked-external marker, an unreachable-top-gate is a property of the item, recorded at the source — so "incomplete" never silently includes "complete-at-its-ceiling," and nobody re-derives the split by reading code.
 
+### 8. Smoke tests are ground; unit tests are proxy — run traffic before you ship
+
+**Principle.** Unit tests and behavioral scenarios verify that the code does what the test author expected. They cannot verify what happens when real traffic hits real infrastructure in real combinations. A smoke run — actual HTTP requests against the real handler stack — is a different category of evidence, not a redundant one.
+
+**Grounding.** Three bugs shipped through a complete test suite (unit tests green, behavioral scenarios green, static analysis clean) and surfaced only when a 30-second load test ran real traffic:
+
+1. **Thundering herd.** When BC Payments rate-limits the billing scheduler (429), all retried charges were rescheduled to `now + 2 hours` with no jitter. At the next cron tick, they all fired simultaneously, hit the same rate limit, and rescheduled again. The cycle was permanent. The test suite had no scenario that ran the retry path *and* measured the timestamp distribution of rescheduled charges. The load test did, implicitly — it exercised the retry path under realistic timing and the pattern became visible in the scheduler's D1 writes.
+
+2. **Unique index blocking the second portal customer.** A full unique index on `(store_hash, bc_customer_id)` only allows one portal-only customer per store, because all portal customers share `bc_customer_id = 0` as a sentinel. The first magic-link request for a store succeeded; the second for a different email returned 500. The behavioral scenario had one customer per store. The load test rotated synthetic emails — the second one hit the constraint.
+
+3. **Rate-limiter binding throwing in local dev.** The rate-limiter binding exists as an object in local dev (truthy) but has no Miniflare simulation — calling `.limit()` throws immediately. The handler called `.limit()` without a try/catch. Unit tests mocked the binding. Behavioral scenarios ran against the real local dev stack but with a single-VU fixture that never triggered the rate-limited path twice in sequence. The load test hit it on the first call.
+
+None were subtle. All were invisible to the tests that existed. The shared structure: each test exercised a sub-path; the bug lived at the intersection of state + load + sequence that no individual test modeled.
+
+**Generalization.** Add a smoke-mode load run to CI at the same tier as behavioral tests, not later. Thirty seconds of real traffic against the dev stack is enough to surface the class of bugs that live at the intersection of state, sequence, and realistic inputs — the class that unit and scenario tests structurally cannot reach. The smoke run is ground truth; everything before it is proxy.
+
 ---
 
 ## How to apply — the pre-build checklist
@@ -114,7 +132,8 @@ Distilled to what a builder does *before* and *as* they build:
 4. **For any destructive change, source from live state and run every consumer of what you touch.** Check for one-way doors first (L5).
 5. **Run the generated design against the known-drift checklist before trusting a line of it.** Verify "no regression" differentially, not absolutely (L6).
 6. **Record each item's terminal gate at the source; make the work queue "below *terminal* gate," not "below *top* gate."** If some items structurally can't reach the top rung, that ceiling is first-class data — or every status review re-grounds it by hand (L7).
+7. **Run a 30-second smoke load test against the dev stack before calling the feature done.** If the handler has never seen real traffic, it hasn't been tested (L8).
 
 ## Promotion criteria
 
-Promote a lesson to a `docs/patterns/` pattern (or to a reviewer gate / `invariants-registry` entry) when a **second initiative independently reproduces it**. L1 is already mechanized (`state-derive`); L4 and L5 are the strongest mechanization candidates (a seam-coverage linter; a destructive-migration "source-from-current + run-consumers" gate). Until then these stay lessons: load-bearing on one initiative's commits, not yet cross-consumer law.
+Promote a lesson to a `docs/patterns/` pattern (or to a reviewer gate / `invariants-registry` entry) when a **second initiative independently reproduces it**. L1 is already mechanized (`state-derive`); L4 and L5 are the strongest mechanization candidates (a seam-coverage linter; a destructive-migration "source-from-current + run-consumers" gate). L7 is mechanized on the source initiative (`terminal_gate` in catalog + `dod_bucket` + two catalog-gate lints). L8 is operationalized in [docs/patterns/api-load-testing-pattern.md](../patterns/api-load-testing-pattern.md) — a second initiative reproducing at least one of its three bug classes would promote it from single-initiative lesson to cross-consumer gate. Until then these stay lessons: load-bearing on one initiative's commits, not yet cross-consumer law.
