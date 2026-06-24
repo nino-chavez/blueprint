@@ -4,9 +4,9 @@ canonical: true
 
 # Ground-Truth-Over-Proxy — Lessons From a Gate-Ladder Build Wave
 
-**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–6 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path.
+**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path.
 
-**Last updated**: 2026-06-16
+**Last updated**: 2026-06-24 (Lesson 7 added — load-testing surface from subs-initiative June 2026 perf work)
 
 **Source evidence** (re-verified against commits/lines before capture):
 - `subs-initiative` US-23.4 (commit `824dc003`) — the timestamp-format window bug + retry-sweep state omission. Fix lines: `apps/api/src/services/alert-threshold-evaluator.ts:38,47,57` (`datetime(col) >= datetime(?)`), `apps/api/src/db.ts:2884` (`status IN ('pending','failed')`).
@@ -15,11 +15,13 @@ canonical: true
 - Hive `#1658` — a SQLite `CHECK` on a table with incoming FKs is unchangeable in D1 (rebuild needs `PRAGMA foreign_keys=OFF`, which D1 blocks). Hive `#1083` — the resulting rule: no `CHECK` on application enums; validate in TS.
 - `apps/api/test/scenarios/_helpers/fixtures.ts:28` — the shared seed helper's `INSERT OR IGNORE` under a `UNIQUE(store_hash, bc_customer_id)` constraint (the silent-collapse fixture seam).
 - Deferred-surface tracking: proposals `#1661`–`#1666` (`[Spec-Reconciliation]`) — the gap between "demonstrable G4 path shipped" and "full AC" tracked as explicit debt, never buried.
+- **Lesson 7 evidence** — `subs-initiative` load-test wave (commit `cfe3ae71`, 2026-06-24): three bugs invisible to all prior tests, found only by running real traffic: (a) thundering herd — BC Payments 429 retry timestamps landing at the same second (`apps/api/src/cron/charge-retry-sweep.ts`, fixed by applying `applyJitter` to the reschedule timestamp); (b) unique index blocking second portal customer per store (`apps/api/migrations/schema/0039_customers_portal_bc_id_index.sql`, fixed by converting to a partial index `WHERE bc_customer_id > 0`); (c) rate-limiter binding throwing in local dev (`apps/api/src/routes/portal/auth/request-link.ts:41–47`, fixed by wrapping in try/catch). All three passed unit tests, all three passed behavioral scenarios, none appeared in static analysis.
 
 **Related patterns**:
 - [docs/patterns/traceability-state-join-pattern.md](../patterns/traceability-state-join-pattern.md) — the state-join this lessons set generalizes from (derived state, not asserted state)
 - [docs/patterns/invariants-registry-pattern.md](../patterns/invariants-registry-pattern.md) — where Lessons 4–5 become mechanical invariants
 - [docs/patterns/inventory-as-evidence-pattern.md](../patterns/inventory-as-evidence-pattern.md) — evidence-over-assertion, the same spine at the inventory layer
+- [docs/patterns/api-load-testing-pattern.md](../patterns/api-load-testing-pattern.md) — the six-tier framework that operationalizes Lesson 7
 - [docs/case-studies/case-study-subs-skipped-stages-2-4.md](../case-studies/case-study-subs-skipped-stages-2-4.md) — the same initiative's earlier negative precedent (what skipping fact-check costs)
 
 ---
@@ -93,6 +95,22 @@ One law, six faces:
 
 **Generalization.** Treat a generated plan as a draft from a competent stranger to the codebase. Keep a checklist of known-stale claim types and check them mechanically. When the generator keeps re-proposing a banned pattern, read the ban before overriding it — it is a scar, not a preference.
 
+### 7. Smoke tests are ground; unit tests are proxy — run traffic before you ship
+
+**Principle.** Unit tests and behavioral scenarios verify that the code does what the test author expected. They cannot verify what happens when real traffic hits real infrastructure in real combinations. A smoke run — actual HTTP requests against the real handler stack — is a different category of evidence, not a redundant one.
+
+**Grounding.** Three bugs shipped through a complete test suite (unit tests green, behavioral scenarios green, static analysis clean) and surfaced only when a 30-second load test ran real traffic:
+
+1. **Thundering herd.** When BC Payments rate-limits the billing scheduler (429), all retried charges were rescheduled to `now + 2 hours` with no jitter. At the next cron tick, they all fired simultaneously, hit the same rate limit, and rescheduled again. The cycle was permanent. The test suite had no scenario that ran the retry path *and* measured the timestamp distribution of rescheduled charges. The load test did, implicitly — it exercised the retry path under realistic timing and the pattern became visible in the scheduler's D1 writes.
+
+2. **Unique index blocking the second portal customer.** A full unique index on `(store_hash, bc_customer_id)` only allows one portal-only customer per store, because all portal customers share `bc_customer_id = 0` as a sentinel. The first magic-link request for a store succeeded; the second for a different email returned 500. The behavioral scenario had one customer per store. The load test rotated synthetic emails — the second one hit the constraint.
+
+3. **Rate-limiter binding throwing in local dev.** The rate-limiter binding exists as an object in local dev (truthy) but has no Miniflare simulation — calling `.limit()` throws immediately. The handler called `.limit()` without a try/catch. Unit tests mocked the binding. Behavioral scenarios ran against the real local dev stack but with a single-VU fixture that never triggered the rate-limited path twice in sequence. The load test hit it on the first call.
+
+None were subtle. All were invisible to the tests that existed. The shared structure: each test exercised a sub-path; the bug lived at the intersection of state + load + sequence that no individual test modeled.
+
+**Generalization.** Add a smoke-mode load run to CI at the same tier as behavioral tests, not later. Thirty seconds of real traffic against the dev stack is enough to surface the class of bugs that live at the intersection of state, sequence, and realistic inputs — the class that unit and scenario tests structurally cannot reach. The smoke run is ground truth; everything before it is proxy.
+
 ---
 
 ## How to apply — the pre-build checklist
@@ -104,7 +122,8 @@ Distilled to what a builder does *before* and *as* they build:
 3. **For every boundary the feature crosses — formats, states, identities — write the test that crosses it.** Not the happy path (L4).
 4. **For any destructive change, source from live state and run every consumer of what you touch.** Check for one-way doors first (L5).
 5. **Run the generated design against the known-drift checklist before trusting a line of it.** Verify "no regression" differentially, not absolutely (L6).
+6. **Run a 30-second smoke load test against the dev stack before calling the feature done.** If the handler has never seen real traffic, it hasn't been tested (L7).
 
 ## Promotion criteria
 
-Promote a lesson to a `docs/patterns/` pattern (or to a reviewer gate / `invariants-registry` entry) when a **second initiative independently reproduces it**. L1 is already mechanized (`state-derive`); L4 and L5 are the strongest mechanization candidates (a seam-coverage linter; a destructive-migration "source-from-current + run-consumers" gate). Until then these stay lessons: load-bearing on one initiative's commits, not yet cross-consumer law.
+Promote a lesson to a `docs/patterns/` pattern (or to a reviewer gate / `invariants-registry` entry) when a **second initiative independently reproduces it**. L1 is already mechanized (`state-derive`); L4 and L5 are the strongest mechanization candidates (a seam-coverage linter; a destructive-migration "source-from-current + run-consumers" gate). L7 is operationalized in [docs/patterns/api-load-testing-pattern.md](../patterns/api-load-testing-pattern.md) — a second initiative reproducing at least one of its three bug classes would promote it from single-initiative lesson to cross-consumer gate. Until then these stay lessons: load-bearing on one initiative's commits, not yet cross-consumer law.
