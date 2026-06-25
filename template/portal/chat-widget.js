@@ -114,6 +114,15 @@
       text-align: center;
       max-width: 100%;
     }
+    /* rendered-markdown elements inside bot bubbles (wave 2026-06-25) */
+    .chat-msg.bot p { margin: 0 0 8px; }
+    .chat-msg.bot p:last-child { margin-bottom: 0; }
+    .chat-msg.bot ul, .chat-msg.bot ol { margin: 6px 0; padding-left: 19px; }
+    .chat-msg.bot li { margin: 3px 0; }
+    .chat-msg.bot strong { font-weight: 700; }
+    .chat-msg.bot em { font-style: italic; }
+    .chat-msg.bot code { background: hsl(220,18%,94%); border-radius: 4px; padding: 1px 5px; font-size: 12px; font-family: ui-monospace, monospace; }
+    .chat-msg.bot a { color: hsl(174,80%,32%); word-break: break-word; }
     .chat-input {
       padding: 12px;
       border-top: 1px solid hsl(220, 18%, 90%);
@@ -172,11 +181,46 @@
     "What's deferred to Phase 3?"
   ];
 
+  // ── minimal, SAFE markdown → HTML (escape first, then inline + blocks) ──
+  // Replaces the prior `innerHTML = text.replace(/\n/g,'<br>')` which both left
+  // markdown raw (**bold**, lists shown literally) AND injected model output
+  // unescaped (XSS). Bot messages render markdown; user/system stay plain text.
+  function escMd(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+  function inlineMd(s) {
+    return escMd(s)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+      .replace(/(^|[^a-zA-Z0-9])_([^_\n]+)_(?![a-zA-Z0-9])/g, '$1<em>$2</em>')
+      .replace(/(https?:\/\/[^\s)<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+  function renderMd(text) {
+    const lines = String(text).replace(/\r/g, '').split('\n');
+    let html = '', list = null, para = [];
+    const flushPara = () => { if (para.length) { html += '<p>' + para.join('<br>') + '</p>'; para = []; } };
+    const flushList = () => { if (list) { html += '</' + list + '>'; list = null; } };
+    for (const raw of lines) {
+      const line = raw.replace(/\s+$/, '');
+      const ul = line.match(/^\s*[-•*]\s+(.+)$/);
+      const ol = line.match(/^\s*\d+[.)]\s+(.+)$/);
+      if (ul || ol) {
+        flushPara();
+        const tag = ol ? 'ol' : 'ul';
+        if (list !== tag) { flushList(); html += '<' + tag + '>'; list = tag; }
+        html += '<li>' + inlineMd((ul || ol)[1]) + '</li>';
+      } else if (line.trim() === '') { flushPara(); /* keep list open across blank lines */ }
+      else { flushList(); para.push(inlineMd(line)); }
+    }
+    flushPara(); flushList();
+    return html || '<p></p>';
+  }
+
   // ─────────────── render ───────────────
   function renderMessage(role, text) {
     const cls = role === 'user' ? 'user' : role === 'system' ? 'system' : 'bot';
     const msg = el('div', { class: `chat-msg ${cls}` });
-    msg.innerHTML = text.replace(/\n/g, '<br>');
+    if (cls === 'bot') msg.innerHTML = renderMd(text);   // escaped + markdown-rendered
+    else msg.textContent = text;                          // user/system: plain, XSS-safe
     messagesEl.appendChild(msg);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }

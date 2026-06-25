@@ -152,7 +152,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         model: 'anthropic/claude-haiku-4.5',
-        max_tokens: 800,
+        max_tokens: 2048,
         messages: [
           { role: 'system', content: system },
           ...messages.map(m => ({ role: m.role, content: m.content }))
@@ -169,7 +169,15 @@ export async function onRequestPost(context) {
     }
 
     const data = await openrouterRes.json();
-    const reply = data.choices?.[0]?.message?.content || '(no response)';
+    const choice = data.choices?.[0] || {};
+    let reply = choice.message?.content || '(no response)';
+    // If the model ran to the token limit, trim to the last complete sentence so
+    // the user never sees a mid-word cut, and offer to expand (wave 2026-06-25).
+    if (choice.finish_reason === 'length') {
+      const m = reply.match(/[\s\S]*[.!?"”)](?=\s|$)/);
+      if (m && m[0].length > 40) reply = m[0];
+      reply = reply.trimEnd() + '\n\n_(Trimmed for length — ask me to focus on any one point and I\'ll go deeper.)_';
+    }
     return new Response(JSON.stringify({ reply }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

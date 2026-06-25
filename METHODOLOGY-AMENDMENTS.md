@@ -4,6 +4,25 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-25 — Canonical stakeholder chat: raw-markdown + unescaped innerHTML + mid-word truncation
+
+**Trigger**: ChapterZero's deployed chat (the canonical OpenRouter-over-docs pattern) rendered answers with literal `**asterisks**` and `1.` list markers, and cut off mid-word ("…labeled unpr") on longer answers. Root cause sits in the canonical template: `chat-widget.js renderMessage` did `innerHTML = text.replace(/\n/g,'<br>')` (markdown unrendered AND model output injected unescaped — an XSS hole), and `chat.js` had `max_tokens: 800` with no `finish_reason` handling.
+
+**Scope**: Candidate for methodology promotion → **promoted** (canonical template fixed in this commit)
+
+**Bucket**: template (`template/portal/chat-widget.js` + `template/portal/functions/api/chat.js`)
+
+**Status**: Promoted
+
+Three fixes applied to the canonical Pattern-B chat:
+1. **Markdown rendering, escape-first** — `renderMessage` now escapes HTML, then renders a minimal markdown subset (bold / italic / `code` / bullet + ordered lists / paragraphs / auto-linked URLs) for bot bubbles; user/system messages use `textContent`. Closes both the raw-markdown display bug and the unescaped-innerHTML XSS risk.
+2. **No mid-word truncation** — `chat.js` raises `max_tokens` 800→2048 and, on `finish_reason: 'length'`, trims the reply to the last complete sentence + "_(Trimmed for length — ask me to focus…)_". The user never sees a mid-word cut regardless of model verbosity (haiku ignores word-count caps on "list everything" prompts; the server-side trim is the real guarantee).
+3. CSS for the rendered elements (`.chat-msg.bot p/ul/ol/li/strong/code/a`).
+
+**References**:
+- ChapterZero session 2026-06-25; consumer `prototype/_site/chat-widget.js` + `functions/api/chat.js` (deployed live)
+- Canonical fix (this commit): `template/portal/chat-widget.js`, `template/portal/functions/api/chat.js`
+
 ## 2026-06-25 — Greenfield is the wrong default for decision/strategy work; init has no variant-fit check (2nd instance)
 
 **Trigger**: ChapterZero (a "is this investable?" read of an investor deck — no product, no code) was stamped `variant: greenfield` and inherited the full build pipeline + Initiative Portal; the mis-fit only surfaced at Stage 5, when the research/strategy variant was pulled. Second instance of the same trap — the research variant itself was born from the mrr-automation dogfood hitting it.
