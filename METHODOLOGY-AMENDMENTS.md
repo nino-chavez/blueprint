@@ -4,6 +4,78 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-25 — Greenfield is the wrong default for decision/strategy work; init has no variant-fit check (2nd instance)
+
+**Trigger**: ChapterZero (a "is this investable?" read of an investor deck — no product, no code) was stamped `variant: greenfield` and inherited the full build pipeline + Initiative Portal; the mis-fit only surfaced at Stage 5, when the research/strategy variant was pulled. Second instance of the same trap — the research variant itself was born from the mrr-automation dogfood hitting it.
+
+**Scope**: Candidate for methodology promotion (2nd instance — promotion bar met)
+
+**Bucket**: methodology (doc) + template (stamp warning — deferred)
+
+**Status**: Active
+
+`init` defaults `variant: greenfield` and nothing checks fit. When the input is a brief/deck/dataset with no codebase, the correct variant is `research` (portal-optional, provenance-only, deliverable = decision memo) — but the operator gets the product-build pipeline by default, then builds "product-shaped scaffolding no stakeholder can use" (the exact failure the research variant names). ChapterZero ran research → prototype → docs → validate → deploy before the variant was corrected; most of the portal scaffold was throwaway.
+
+Fix applied: `docs/variant-selection.md` now leads with a pre-stamp variant-fit check (no product/code + input is a brief/deck → research, not greenfield). Deferred follow-up (template bucket): `stamp.mjs` should echo a louder hint when greenfield is defaulted with no `--codebase`/`--screenshots` signal — "if this is a decision driven by a brief, re-run --variant=research."
+
+**References**:
+- ChapterZero session 2026-06-25 (consumer initiative); variant re-classified greenfield→research mid-pipeline
+- mrr-automation dogfood (1st instance — birthed the research variant)
+
+## 2026-06-25 — Cloudflare Pages Functions silently no-op without a root wrangler.toml; clean-URL rewrites loop .html gate pages
+
+**Trigger**: Deploying the ChapterZero gated portal (passphrase gate + grounded chat as Pages Functions) via `wrangler pages deploy <dir>` uploaded `functions/*.js` as inert static files — no compile, no routing. The gate didn't gate (`/` served 200), `/_kb.md` was public, POST `/api/*` returned 405. Separately, the `/login.html` gate page hit `ERR_TOO_MANY_REDIRECTS`.
+
+**Scope**: Candidate for methodology promotion (any Pattern-B / gated Pages consumer hits both)
+
+**Bucket**: methodology (`docs/patterns/cloudflare-deployment-pattern.md`)
+
+**Status**: Active
+
+Two gotchas, both now documented in `cloudflare-deployment-pattern.md`:
+1. **Functions only compile when a `wrangler.toml` (`pages_build_output_dir = "."`, `compatibility_flags = ["nodejs_compat"]`) sits at the deploy root AND wrangler runs from that directory.** Without it, `functions/` uploads as static assets and every Function route 405s. The deploy output is the tell: "✨ Compiled Worker successfully / Uploading Functions bundle" = good; bare "Uploaded N files" = functions ignored.
+2. **Pages "clean URLs" 308-redirect `/x.html` → `/x`.** A gate middleware that allows `/login.html` and redirects unauth users to `/login.html` loops forever. Fix: allow BOTH `/login` and `/login.html` in the allowlist, and redirect unauth → `/login`.
+
+**References**:
+- ChapterZero session 2026-06-25; `prototype/_site/wrangler.toml` + `functions/_middleware.js`
+
+## 2026-06-25 — Stage-4 validate has no primary-source gate for agent-synthesized figures, nor a cross-doc number reconciliation
+
+**Trigger**: ChapterZero's Stage-4 fact-check caught a fabricated competitive claim ("OpenAI has no API reseller program" — false, and self-contradicting the doc's own 300K-partner citation) and a critical internal inconsistency (the $2,800 piloted ARPU vs the $10K vision ARPU — a 3.6× leap with no bridge). Neither was caught upstream.
+
+**Scope**: Candidate for methodology promotion (every agent-accelerated research pass is exposed)
+
+**Bucket**: reviewer (two new checks; implementation deferred)
+
+**Status**: Active
+
+Two regression seams the validate diagnose-loop surfaced:
+1. **Research-stage primary-source gate** — any claim that is a specific dollar figure / headcount / named program must be verified against the vendor's CURRENT primary page (not a secondary aggregator or training-era assumption) and carry a capture-date. The ChapterZero errors were all "specific numbers that arrived polished" from one search.
+2. **Docs-stage cross-doc number reconciliation** — load-bearing figures (ARPU, margin %, supplier rationale, pricing) must agree across strategy/feasibility/research before the package ships, or carry an explicit "differs because…" note. The $2.8K↔$10K gap spanned two docs with no check comparing them.
+
+Filed as reviewer-bucket candidates; full reviewer agents deferred (this entry is the promotion signal).
+
+**References**:
+- ChapterZero session 2026-06-25; `validation/2026-06-25-validate.md` Phase 5–6
+
+## 2026-06-25 — Research-variant deliverable: the deployed page can BE the decision memo (proof embedded, research as evidence, gated, grounded chat)
+
+**Trigger**: For a non-technical recipient (the founder), "send a repo link" is non-viable, and "portal optional, provenance-only" left the research unused on the deployed surface. The shape that worked: the deployed page IS the decision memo — argument → embedded interactive proof → research-as-evidence → honest economics → recommendation — passphrase-gated, with a chat grounded in a compiled corpus.
+
+**Scope**: Candidate for methodology promotion (research-variant deliverable pattern)
+
+**Bucket**: methodology (`docs/variant-selection.md` research section)
+
+**Status**: Active
+
+Additions worth promoting into the research-variant playbook (noted in `variant-selection.md`):
+- **Deployed decision-memo shape**: one scroll page = the memo, with the (optional) prototype embedded as the "proof" section and the validated research inline as the "evidence" section. Consolidates PDF + demo + repo into one forwardable link — faithful to "the deliverable is the memo," rendered for humans who don't live in git.
+- **Ground the stakeholder chat in a session-log, not just final docs**: a `docs/content/session-log.md` capturing the session's decisions/reasoning, compiled into the chat corpus alongside the docs, lets the chat answer "why did you conclude X?" — not just "what does the doc say."
+- **Passphrase-gate + grounded-chat reuse**: the canonical Blueprint chat (OpenRouter + corpus) plus a Pages-Functions passphrase gate makes a private, shareable, self-explaining deliverable.
+
+**References**:
+- ChapterZero session 2026-06-25; `prototype/_site/` (memo + walkthrough + functions), `docs/content/session-log.md`
+
 ## 2026-06-12 — Candidates A + C realized in the flagship consumer; candidate A's second instance fired independently (atlas)
 
 **Trigger**: Same-day convergence from two directions — the partner SA (T.) independently built `atlas-v0` (markdown workspace → typed graph → d3 viewer, with a STRATEGY question asking to merge the Blueprint/Hive node taxonomy into his schema), while the flagship consumer (bc-subscriptions) shipped the full mechanical realization of the [[2026-06-11]] candidates.

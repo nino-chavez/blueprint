@@ -127,6 +127,46 @@ ENVIRONMENT = "production"
 
 ---
 
+## Pages Functions — two gotchas that fail silently
+
+Both surfaced deploying a gated Pages portal (passphrase middleware + grounded chat) for ChapterZero, 2026-06-25.
+
+### 1. Functions only compile with a `wrangler.toml` at the deploy root
+
+`wrangler pages deploy <dir>` with no config **uploads `functions/*.js` as inert static files** — they never compile, middleware never runs, and every Function route returns `405`. The gate doesn't gate; private assets serve publicly. To actually compile Functions:
+
+- A `wrangler.toml` must sit **at the deploy root** with `pages_build_output_dir = "."` and `compatibility_flags = ["nodejs_compat"]`, and
+- you must run wrangler **from that directory** (so it reads the config):
+
+```toml
+# <deploy-root>/wrangler.toml
+name = "<project>"
+compatibility_date = "2026-03-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "."
+```
+```bash
+( cd <deploy-root> && wrangler pages deploy --project-name=<project> --branch=main --commit-dirty=true )
+```
+
+**The deploy output is the tell:** `✨ Compiled Worker successfully` + `Uploading Functions bundle` = Functions live. A bare `Uploaded N files` with no "Compiled Worker" line = Functions ignored; the site is static-only. Always check.
+
+### 2. "Clean URLs" 308-redirect `/x.html` → `/x` — which loops a `.html` gate page
+
+Pages serves `/login` from `login.html` and **308-redirects `/login.html` → `/login`**. A gate middleware that allowlists only `/login.html` and redirects unauthenticated users to `/login.html` loops forever (`ERR_TOO_MANY_REDIRECTS`): Pages → `/login` → middleware (not allowlisted) → `/login.html` → Pages → `/login` …
+
+Fix: allowlist **both** `/login` and `/login.html` (plus `/api/login`, `/favicon.ico`) and redirect unauthenticated traffic to the **clean** form `/login`:
+
+```js
+const ALLOW = new Set(['/login', '/login.html', '/api/login', '/favicon.ico']);
+// …unauthenticated:
+return Response.redirect(url.origin + '/login', 302);
+```
+
+Note: `env.ASSETS.fetch()` from a Function **bypasses `_middleware`**, so a gated private asset (e.g. a `/_kb.md` chat corpus) stays unreachable by direct browser request while remaining readable by the Function that needs it.
+
+---
+
 ## Path-Scoped GitHub Actions
 
 The pattern: one workflow per app, triggered only when paths under that app change.
