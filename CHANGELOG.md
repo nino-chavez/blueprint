@@ -8,6 +8,30 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+## 0.4.0
+
+Waves 62–74 rollup. Wave-level detail in [WAVE-LOG.md](./WAVE-LOG.md). **All changes are backward-compatible** — every new schema field is optional and defaults to prior behavior; the two structural items ship opt-in and default off.
+
+### Added
+
+- **Agent output discipline** (wave 73): research/dispatch agents return the synthesized conclusion + citations, never the corpus they read.
+- **Research-discipline patterns** (wave 74): three-pass research (architectural-principles re-test), peer-vs-modifier test, back-door-native anti-pattern — wired as `design-principles-reviewer` Stage 2→3 gates.
+- **Citation correctness**: `cited-url-lint` substrate tool + `citation-correctness-pattern.md` + anti-circular-audit guard in the fact-check loop.
+- **New reviewers**: `research-sibling-scanner` (Stage-1 sibling-project scan), `roadmap-registry-sync` (+ `doctor` check + `stateful_pairs` schema field), `foundation-stage` (proposed).
+- **Stamper**: Review Portal initial stamp (`--pattern=B`), scoped `--accept-overwrite` restamp (overwrite accepted, skip un-accepted diverged), chrome-profile-aware manifest selection.
+- **Shared initiative-root resolution** for all reviewers + the SessionStart hook (walk up for `blueprint.yml`; subdir layouts now work).
+- **Global methodology rules** distribution (`docs/methodology/global-rules/`) + install snippet + non-fatal hook verification.
+- Portal chrome ergonomics, DoD-ladder hardening, test discipline, and the Initiative/Review Portal rename (waves 62–72) — see WAVE-LOG.
+
+### Proposed (opt-in, default off)
+
+- **Foundation: Design System + IA** capability stage (`foundation.enabled`).
+- **Portal-chrome two-profile model** (`prototype.chrome_profile: methodology-themed | consumer-themed`) for brand-owning consumers.
+
+### Migration
+
+None required. New fields are optional with backward-compatible defaults; proposed items are off unless explicitly enabled.
+
 ## 0.3.0
 
 Waves 57–61 rollup.
