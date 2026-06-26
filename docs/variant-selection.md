@@ -138,6 +138,23 @@ The repo is the **reasoning/provenance layer** (correct, git-native, keep it). T
 
 **Fact-check for research is internal reconciliation, not just external citation-checking.** Inputs are often confidential binaries (not URL-resolvable) and there is no running app to verify current-state claims against, so the standard `fact-check-loop-reviewer` fan-out (citation-checker + current-state-claim-verifier) only half-applies. The highest-value Stage-4 check is **cross-asset reconciliation** — does source A's figure match source B's? does the recommended "live" signal match what FinOps actually pays on? — plus an independent re-pull of any *external* claim the inputs cite (never trust an input's own citation appendix). Two source hazards to handle explicitly: (a) **un-openable / operator-relayed assets** — record `verification: relayed` in `research/sources/` and cross-check the relayed figures against another asset; (b) **partly-illustrative primary sources** (e.g. a prototype dashboard mixing real and placeholder rows) — cite the asset only for its real rows, and use placeholder rows to describe risk *shape*, never as fact. (Both hazards surfaced in the mrr-automation dogfood.)
 
+## Foundation stage placement (when `foundation.enabled: true`)
+
+The Foundation stage (Stage S-B) is an optional capability stage that activates when declared in `blueprint.yml`. It runs after Stage 1 (Research / Targeted Diagnose / Diagnose) and BEFORE feature-spec implementation or feature prototyping. Its purpose: declare the scope model, archetype taxonomy, token/type/icon/component-anatomy contracts, and enforcement scaffold that all downstream feature work renders into.
+
+**When the stage is enabled:**
+
+| Variant | Placement | Reason |
+|---|---|---|
+| **Greenfield** | After Stage 1 Research, before Stage 2 Design Principles | Greenfield routes are planned; Foundation declares which are account-scope vs entity-scope and which archetype each occupies before Design Principles authors the rules those archetypes use. |
+| **Midstream** | After Stage 1 Targeted Diagnose, before Stage 2 Prescription | The product exists; Foundation reconciles existing routes against scope/archetype, discovers drift, and prescribes the enforcement scaffold before any revision features are specced. |
+| **Brownfield** | After Stage 1 Diagnose, before Stage 2 Prescription | Brownfield is audit-first; Foundation is a sub-audit within that (layout/nav-specific reconciliation) that feeds into the overall prescription. |
+| **Research** | N/A | Foundation applies only to initiatives building products. Skip for research variants. |
+
+**When to skip:** throwaway prototype that won't outlive the week, single-purpose single-route deliverable, or initiatives with no plan for multi-session feature work.
+
+**When the gate runs:** `foundation-stage-reviewer` enforces the stage gate when `foundation.enabled: true` and blocks downstream work until all five declarations are present and the enforcement scaffold is wired.
+
 ## Required sub-deliverables per stage
 
 Reviewer agents (next section) enforce these. Empty directories next to a stage marked "complete" should trigger a reviewer block, not pass.

@@ -148,6 +148,54 @@ def load_canonical(blueprint_home: Path) -> list[tuple[str, str]]:
     return out
 
 
+def _verify_global_rules(blueprint_home: Path) -> tuple[bool, str]:
+    """Verify methodology-shaped global rules are installed.
+
+    Returns (all_present, warning_msg). all_present=True if both rules are
+    installed in ~/.claude/CLAUDE.md. warning_msg is empty if OK, else contains
+    the installation reminder.
+    """
+    # Check if the two global-rules docs exist in the blueprint home
+    audit_doc = blueprint_home / "docs" / "methodology" / "global-rules" / "audit-discipline.md"
+    decision_doc = blueprint_home / "docs" / "methodology" / "global-rules" / "decision-bias.md"
+    docs_present = audit_doc.is_file() and decision_doc.is_file()
+    if not docs_present:
+        return False, ""  # Docs should be present in blueprint home; skip warning if not
+
+    # Check if the marker block exists in ~/.claude/CLAUDE.md
+    claude_md = Path.home() / ".claude" / "CLAUDE.md"
+    if not claude_md.is_file():
+        msg = (
+            "Methodology global rules not installed. Run:\n\n"
+            "    cat >> ~/.claude/CLAUDE.md << 'EOF'\n"
+            "    <!-- BEGIN blueprint-methodology-rules -->\n"
+            "    ... (see template/CLAUDE.md for full snippet)\n"
+            "    <!-- END blueprint-methodology-rules -->\n"
+            "    EOF\n\n"
+            "Or consult `$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
+        )
+        return False, msg
+
+    try:
+        content = claude_md.read_text(encoding="utf-8")
+        has_marker = "<!-- BEGIN blueprint-methodology-rules -->" in content
+        if not has_marker:
+            msg = (
+                "Methodology global rules not installed. Run:\n\n"
+                "    cat >> ~/.claude/CLAUDE.md << 'EOF'\n"
+                "    <!-- BEGIN blueprint-methodology-rules -->\n"
+                "    ... (see template/CLAUDE.md for full snippet)\n"
+                "    <!-- END blueprint-methodology-rules -->\n"
+                "    EOF\n\n"
+                "Or consult `$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
+            )
+            return False, msg
+    except Exception:
+        pass
+
+    return True, ""
+
+
 def main() -> int:
     try:
         payload = json.load(sys.stdin) if not sys.stdin.isatty() else {}
@@ -184,6 +232,7 @@ def main() -> int:
         return 0
 
     docs = load_canonical(blueprint_home)
+    _, rules_warning = _verify_global_rules(blueprint_home)
 
     header = (
         "# Blueprint canonical context (auto-loaded at SessionStart)\n\n"
@@ -196,6 +245,9 @@ def main() -> int:
         f"{blueprint_home}`. If you propose a change to Blueprint methodology, "
         "the change lands in those files, not in this consumer session's notes.\n\n"
     )
+
+    if rules_warning:
+        header += f"**Global rules not installed** — {rules_warning}\n\n"
 
     methodology_version = _read_methodology_version(blueprint_home)
     pinned = _read_yaml_scalar(initiative_root / "blueprint.yml", "methodology_version")

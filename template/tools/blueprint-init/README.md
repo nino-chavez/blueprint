@@ -14,8 +14,8 @@ The stamper has two modes, dispatched by `--mode=<mode>` (default `stamp`).
 
 | Mode | What it does | When to use |
 |---|---|---|
-| `stamp` *(default)* | Initial scaffold. Copies `template/apps/portal/` + `template/packages/` (Pattern A) into a fresh `<target>`, runs substitutions, writes `blueprint.yml`, executes the mechanical check. | Once, per new Blueprint initiative. |
-| `restamp-chrome` | Re-stamp canonical chrome files only. Overwrites the canonical chrome surface in `<target>` from `template/portal/` (Pattern B) or `template/apps/portal` styles (Pattern A — not yet implemented). Leaves project-owned files (`project-tokens.css`, `_meta/*`, `pages/*`, `index.html`) untouched. | Any time the methodology bumps the chrome and a consumer needs to catch up. Run instead of `curl`-ing a peer consumer's deployed CSS. |
+| `stamp` *(default)* | Initial scaffold. Copies `template/apps/portal/` + `template/packages/` (Pattern A) or `template/portal/` (Pattern B) into a fresh `<target>`, runs substitutions, writes `blueprint.yml`, executes the mechanical check. | Once, per new Blueprint initiative. |
+| `restamp-chrome` | Re-stamp canonical chrome files only. Overwrites the canonical chrome surface in `<target>` from `template/portal/` (Pattern B) or `template/apps/portal` styles (Pattern A — not yet implemented). Leaves project-owned files (`project-tokens.css`, `_meta/*`, `pages/*`, `index.html`) untouched. When `--accept-overwrite` is specified, treats it as scope (overwrite only those files) instead of consent (block if any diverge). | Any time the methodology bumps the chrome and a consumer needs to catch up. Run instead of `curl`-ing a peer consumer's deployed CSS. |
 
 ## Usage — initial stamp (Pattern A)
 
@@ -42,7 +42,64 @@ node template/tools/blueprint-init/stamp.mjs \
   --target=/path/to/your/project
 ```
 
+## Usage — initial stamp (Pattern B)
+
+Pattern B scaffolding creates a Review Portal at `blueprint/portal/` (or a custom path declared in `blueprint.yml`):
+
+```bash
+node template/tools/blueprint-init/stamp.mjs \
+  --mode=stamp \
+  --name=my-project \
+  --pattern=B \
+  --target=/path/to/your/initiative
+```
+
+Explicit form:
+
+```bash
+node template/tools/blueprint-init/stamp.mjs \
+  --mode=stamp \
+  --name=my-project \
+  --display-name="My Project" \
+  --repo-url=https://github.com/owner/my-project \
+  --tagline="One-line product tagline" \
+  --variant=midstream \
+  --tier=1 \
+  --pattern=B \
+  --target=/path/to/your/initiative
+```
+
+### Chrome Profile Choice (Profile A vs Profile B)
+
+After initial stamp, declare your chrome profile in `blueprint.yml` under `prototype.chrome_profile`:
+
+**Profile A (methodology-themed, default):** Use when your brand is a thin override on canonical chrome.
+```yaml
+prototype:
+  chrome_profile: methodology-themed
+```
+Your `shared.css` is canonical (byte-identical to template). Brand tokens go in `project-tokens.css` overlay.
+
+**Profile B (consumer-themed, opt-in):** Use when your design system is named, branded, and load-bearing (e.g., "Midnight & Indigo").
+```yaml
+prototype:
+  chrome_profile: consumer-themed
+```
+Your `shared.css` is yours (drift allowed). Import canonical primitives:
+```css
+@layer canonical, consumer;
+@import url('./canonical-primitives.css') layer(canonical);
+
+:root {
+  /* your brand tokens */
+}
+```
+
+See `docs/methodology/chrome-profile-pattern.md` for full details and when to pick each.
+
 ## Usage — restamp chrome (Pattern B)
+
+The stamper reads your `prototype.chrome_profile` from `blueprint.yml` and selects the correct manifest automatically.
 
 ```bash
 node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
@@ -51,24 +108,65 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=/path/to/your/initiative
 ```
 
-The Pattern B chrome manifest (`PATTERN_B_CHROME_FILES` in `stamp.mjs`) refreshes:
+First, run `--mode=audit-chrome --pattern=B` to classify divergences (LAG / CUSTOMIZATION-OR-ROT):
+
+```bash
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
+  --mode=audit-chrome \
+  --pattern=B \
+  --target=/path/to/your/initiative
+```
+
+The audit report will show which profile you're using and which files are scanned.
+
+**For Profile A (methodology-themed):** Refresh shared.css and other canonical files:
+```bash
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
+  --mode=restamp-chrome \
+  --pattern=B \
+  --target=/path/to/your/initiative \
+  --accept-overwrite=shared.css,_headers
+```
+
+**For Profile B (consumer-themed):** Refresh canonical-primitives.css only (your shared.css is never touched):
+```bash
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
+  --mode=restamp-chrome \
+  --pattern=B \
+  --target=/path/to/your/initiative \
+  --accept-overwrite=canonical-primitives.css
+```
+
+### Scoped restamp behavior
+
+When `--accept-overwrite=<files>` is specified, it defines the scope of files to overwrite. Files not in the list are **skipped**, not blocked:
+
+- Files in `--accept-overwrite` are overwritten from canonical (safe for LAG-classified files)
+- Diverged files NOT in `--accept-overwrite` emit `SKIPPED <file> (diverged, not in --accept-overwrite)` and the restamp continues
+- This allows LAG + CUSTOMIZATION coexistence: accept the LAG files, skip the CUSTOMIZATION ones in a single run
+
+### Pattern B chrome manifest
+
+The Pattern B chrome manifest (`PATTERN_B_CHROME_FILES` in `stamp.mjs`) includes:
 
 - `shared.css` — canonical chrome CSS (tokens + layout + components + drawers + nav)
 - `_portal-shell.js` — canonical chrome JS (top bar, slice header, footer nav injection)
 - `proto-nav.js` — canonical chrome JS (footer nav, drawers, compare toggle)
 - `proto-annotate.js` — canonical annotation overlay
+- `chat-widget.js` — canonical chat widget
+- `theme-switcher.js` — canonical multi-theme runtime switcher
 - `_headers` — Cloudflare Pages cache headers
 - `_redirects` — Cloudflare Pages redirects
+- `docs/index.html` — canonical docs viewer
 
 What the mode **does not** overwrite (project-owned surface):
 
 - `project-tokens.css` — your overlay. Created from canonical if absent; never overwritten.
 - `_meta/*` — your slice metadata
 - `pages/*` — your project HTML pages
-- `index.html`, `prototype/index.html`, `docs/index.html` — project-stamped shells (PROJECT_NAME tokens already substituted)
-- `functions/*` — your API endpoints
-- `wrangler.toml` — your deploy config
-- `chat-widget.js` — NOT in chrome manifest yet (template version has a Rally HQ brand leak; add after fix)
+- `index.html`, `prototype/index.html` — project-stamped shells (PROJECT_NAME tokens already substituted)
+- `functions/*` — your API endpoints (if Pattern B is extended with serverless support)
+- Any consumer customization marked as `destination: blueprint` in `_meta/*.json`
 
 The mode auto-resolves the consumer's portal directory by checking, in order: `<target>/portal/` then `<target>/blueprint/portal/`. If the consumer's portal lives elsewhere, that's an ADR-worthy path divergence — add the path to `PATTERN_B_PORTAL_CANDIDATES` in `stamp.mjs`.
 
@@ -144,5 +242,5 @@ The stamper is methodology infrastructure (one of two encoded responses to the 2
 
 Pattern B has two modes:
 
-- **Initial stamp** (`--mode=stamp --pattern=B`): still deferred. Pattern B has a narrower substitution surface (project name in `index.html`, repo URL in `functions/api/chat.js`, brand in `_portal-shell.js`). Until the initial stamp lands, Pattern B initiatives copy `template/portal/` by hand and rely on `portal-pattern-b-conformance-reviewer` at Stage 3.
-- **Chrome refresh** (`--mode=restamp-chrome --pattern=B`): **implemented**. Refreshes the canonical chrome manifest (`PATTERN_B_CHROME_FILES` in `stamp.mjs`) without touching project-owned files. This is the encoded response to the 2026-05-25 v3 chrome-drift bug where a consumer truncated 268 lines from `shared.css` mid-edit and restored from a peer consumer's deploy. The `portal-chrome-canonical-reviewer` gate enforces it.
+- **Initial stamp** (`--mode=stamp --pattern=B`): **implemented (2026-06-27, amendment 1)**. Copies `template/portal/` to `blueprint/portal/` (or a custom path declared in `blueprint.yml`), applies narrow substitutions (project name, repo URL, brand tokens), and runs the mechanical check. Pattern B initiatives no longer need to copy by hand.
+- **Chrome refresh** (`--mode=restamp-chrome --pattern=B`): **implemented**. Refreshes the canonical chrome manifest (`PATTERN_B_CHROME_FILES` in `stamp.mjs`) without touching project-owned files. As of 2026-06-27 (amendment 2), `--accept-overwrite` defines scope, not consent: diverged files not in the list are skipped, not blocked. This is the encoded response to the 2026-05-25 v3 chrome-drift bug where a consumer truncated 268 lines from `shared.css` mid-edit and restored from a peer consumer's deploy. The `portal-chrome-canonical-reviewer` gate enforces it.

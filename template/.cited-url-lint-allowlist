@@ -1,0 +1,19 @@
+# cited-url-lint allowlist
+# ========================
+#
+# Convention:
+# - One entry per line
+# - Bare path (e.g., docs/example.md) skips the entire file
+# - allow-url:<url> skips a specific URL across all files
+# - Lines starting with # are comments
+# - Blank lines are ignored
+#
+# When to add an entry:
+# - A URL requires authentication (e.g., private API docs, GitHub private repos)
+# - A URL is behind Cloudflare or other anti-bot protection that blocks HEAD requests
+# - A URL is known-good but the host is rate-limited or flaky
+# - A URL is in a code block / example (not a real assertion) — prefer excluding the file instead
+#
+# Examples (commented out):
+# allow-url:https://api.example.com/internal-docs  # requires auth
+# docs/changelog/internal-migrations.md             # file contains internal-only links

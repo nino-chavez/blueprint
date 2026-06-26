@@ -27,6 +27,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'design-principles-reviewer';
 
@@ -162,13 +163,16 @@ export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
   // ── 1. Variant gate ────────────────────────────────────────────────────────
   // Greenfield-only. Prefer a variant the runner already parsed; else line-scan
   // blueprint.yml on disk. Absent/unknown variant → continue (the .md: "If
   // variant: greenfield is not declared or implied (no variant key), continue").
   let variant = blueprintYml && typeof blueprintYml.variant === 'string' ? blueprintYml.variant.toLowerCase() : null;
   if (!variant) {
-    const ymlText = await read(path.join(targetDir, 'blueprint.yml'));
+    const ymlText = await read(path.join(artifactsRoot, 'blueprint.yml'));
     variant = variantFromYmlText(ymlText);
   }
   if (variant === 'midstream' || variant === 'brownfield' || variant === 'research') {
@@ -178,8 +182,8 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // ── 2. Locate DESIGN.md (prototype/ then portal/) ───────────────────────────
   const candidatePaths = [
-    path.join(targetDir, 'prototype', 'DESIGN.md'),
-    path.join(targetDir, 'portal', 'DESIGN.md'),
+    path.join(artifactsRoot, 'prototype', 'DESIGN.md'),
+    path.join(artifactsRoot, 'portal', 'DESIGN.md'),
   ];
   let designPath = null;
   for (const p of candidatePaths) {
@@ -293,13 +297,128 @@ export default async function review({ targetDir, blueprintYml }) {
     });
   }
 
+  // ── 7. Three-pass research discipline (platform-feature initiatives only) ────
+  // Detect if this is a platform-feature initiative by looking for docs/feasibility/ directory.
+  const feasibilityDir = path.join(artifactsRoot, 'docs', 'feasibility');
+  const hasFeasibilityDocs = await exists(feasibilityDir);
+  let threePassState = 'N/A'; // default for non-platform initiatives
+
+  if (hasFeasibilityDocs) {
+    // Scan for Pass 3 mentions in feasibility/ — look in *.md files
+    try {
+      const files = await fs.readdir(feasibilityDir);
+      const mdFiles = files.filter((f) => f.endsWith('.md'));
+      let pass3Found = false;
+      for (const fname of mdFiles) {
+        const content = await read(path.join(feasibilityDir, fname));
+        if (content && (content.toLowerCase().includes('pass 3') || content.toLowerCase().includes('architectural principles'))) {
+          pass3Found = true;
+          break;
+        }
+      }
+      threePassState = pass3Found ? 'documented' : 'missing';
+      if (!pass3Found) {
+        findings.push({
+          severity: 'BLOCK',
+          location: 'docs/feasibility/',
+          message: 'Platform-ask enumeration detected (feasibility/ docs present) but Pass 3 (architectural-principles re-test) not documented.',
+          remediation:
+            'Document Pass 3 results in docs/feasibility/ or strategy docs. See three-pass-research-discipline-pattern.md for the eight tests.',
+          reference: 'design-principles-reviewer.md#7-three-pass; three-pass-research-discipline-pattern.md',
+        });
+      }
+    } catch (_e) {
+      // If reading fails, skip this check (best-effort)
+      threePassState = 'N/A';
+    }
+  }
+
+  // ── 8. Peer-vs-modifier test (when multiple strategy forks detected) ─────────
+  // Detect multiple strategy docs in docs/strategy/ — if found, check for peer-vs-modifier documentation.
+  const strategyDir = path.join(artifactsRoot, 'docs', 'strategy');
+  const hasStrategyDocs = await exists(strategyDir);
+  let peerVsModifierState = 'N/A';
+
+  if (hasStrategyDocs) {
+    try {
+      const files = await fs.readdir(strategyDir);
+      const strategyMds = files.filter((f) => f.endsWith('.md'));
+      if (strategyMds.length > 1) {
+        // Multiple strategy docs exist — check for peer-vs-modifier test result
+        let peerVsModifierFound = false;
+        for (const fname of strategyMds) {
+          const content = await read(path.join(strategyDir, fname));
+          if (content && (content.toLowerCase().includes('peer-vs-modifier') || content.toLowerCase().includes('peer or modifier'))) {
+            peerVsModifierFound = true;
+            break;
+          }
+        }
+        peerVsModifierState = peerVsModifierFound ? 'documented' : 'undocumented';
+        if (!peerVsModifierFound) {
+          findings.push({
+            severity: 'WARN',
+            location: 'docs/strategy/',
+            message: `Multiple strategy docs detected (${strategyMds.join(', ')}) — peer-vs-modifier test result not explicitly documented.`,
+            remediation:
+              'Document whether each new strategic option is a peer or a modifier (see peer-vs-modifier-test-pattern.md). Recommend a statement in each doc: "This is a [peer|modifier] because..."',
+            reference: 'design-principles-reviewer.md#8-peer-vs-modifier; peer-vs-modifier-test-pattern.md',
+          });
+        }
+      }
+    } catch (_e) {
+      // If reading fails, skip this check (best-effort)
+      peerVsModifierState = 'N/A';
+    }
+  }
+
+  // ── 9. Back-door-native anti-pattern (platform-ask initiatives) ─────────────
+  // Detect domain-named platform asks (e.g., subscription.*, loyalty.* patterns) in feasibility or strategy docs.
+  let backDoorNativeState = 'N/A';
+
+  if (hasFeasibilityDocs || hasStrategyDocs) {
+    try {
+      let domainNamedAsksFound = [];
+      const dirs = [hasFeasibilityDocs && feasibilityDir, hasStrategyDocs && strategyDir].filter(Boolean);
+
+      for (const dir of dirs) {
+        const files = await fs.readdir(dir);
+        for (const fname of files.filter((f) => f.endsWith('.md'))) {
+          const content = await read(path.join(dir, fname));
+          if (!content) continue;
+          // Look for domain-named patterns: subscription.*, loyalty.*, reviews.*, etc.
+          // Match any lowercase-word followed by .* or _*
+          const matches = content.match(/([a-z_]+)\.\*|([a-z_]+)_\*/g) || [];
+          if (matches.length > 0) {
+            domainNamedAsksFound.push(...matches);
+          }
+        }
+      }
+
+      backDoorNativeState = domainNamedAsksFound.length === 0 ? 'compliant' : 'domain-named-asks-detected';
+      if (domainNamedAsksFound.length > 0) {
+        findings.push({
+          severity: 'BLOCK',
+          location: 'docs/feasibility/ or docs/strategy/',
+          message: `Domain-named platform asks detected: ${[...new Set(domainNamedAsksFound)].join(', ')} — reframe to general mechanisms per back-door-native-anti-pattern.md.`,
+          remediation:
+            'Replace domain-named asks (e.g., "subscription.*" events) with general-mechanism reframes (e.g., "sanctioned-app-emitted event topics"). See back-door-native-anti-pattern.md for four reframe patterns.',
+          reference: 'design-principles-reviewer.md#9-back-door-native; back-door-native-anti-pattern.md',
+        });
+      }
+    } catch (_e) {
+      // If reading fails, skip this check (best-effort)
+      backDoorNativeState = 'N/A';
+    }
+  }
+
   // ── Report line (mirrors the .md "How to report" block) ──────────────────────
   const cpState = !cpAcknowledged ? 'missing' : variantPages.length ? 'violated-by-planned-variants' : 'acknowledged';
   const summary =
     `variant=${variantNote.startsWith('greenfield') ? 'greenfield' : variantNote}; ` +
     `${designRel}; visual=${visual.present.length}/5; ` +
     `testing=${testing.missing.length ? 'incomplete' : 'present'}; ` +
-    `invariants=${invariants.present.length}/4; confident-preview=${cpState}`;
+    `invariants=${invariants.present.length}/4; confident-preview=${cpState}; ` +
+    `three-pass=${threePassState}; peer-vs-modifier=${peerVsModifierState}; back-door-native=${backDoorNativeState}`;
   return finalize(findings, summary, startedAt);
 }
 

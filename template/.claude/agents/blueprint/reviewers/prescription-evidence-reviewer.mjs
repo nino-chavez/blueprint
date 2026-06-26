@@ -34,6 +34,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'prescription-evidence-reviewer';
 
@@ -365,8 +366,11 @@ export default async function review({ targetDir }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
   // 1. Read blueprint.yml + determine variant.
-  const blueprintText = readBlueprint(targetDir);
+  const blueprintText = readBlueprint(artifactsRoot);
   if (blueprintText == null) {
     findings.push({
       severity: 'BLOCK',
@@ -400,7 +404,7 @@ export default async function review({ targetDir }) {
 
   // 2. Locate the prescription artifact.
   const prescriptionName = isBrownfield ? '02-prescription.yml' : 'prescription.yml';
-  const prescriptionPath = path.join(targetDir, prescriptionName);
+  const prescriptionPath = path.join(artifactsRoot, prescriptionName);
   let prescriptionText;
   try {
     if (!existsSync(prescriptionPath)) throw new Error('missing');
@@ -590,7 +594,7 @@ export default async function review({ targetDir }) {
   let unresolvedFindings = [];
   let diagnoseScanned = false;
   if (isBrownfield) {
-    const diagnosePath = path.join(targetDir, '01-diagnose.md');
+    const diagnosePath = path.join(artifactsRoot, '01-diagnose.md');
     let diagnoseText = null;
     try {
       if (existsSync(diagnosePath)) diagnoseText = readFileSync(diagnosePath, 'utf8');

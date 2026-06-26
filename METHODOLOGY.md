@@ -68,6 +68,7 @@ Stage 0: Application Legibility → Research → Design Principles → Prototype
 
 Optional capability stages (run alongside, gated by blueprint.yml flags):
    Stage S-A: Archaeology Substrate    (when archaeology.enabled: true)
+   Stage S-B: Foundation: Design System + IA    (when foundation.enabled: true)
 ```
 
 Each main-pipeline stage feeds the next. The key insight: **the prototype and the documents are built simultaneously, not sequentially.** The prototype tests the design decisions, the documents capture the rationale, and the strategy panels on each prototype page connect the two.
@@ -117,6 +118,7 @@ Full Stage 0 reference + escalation rubric: [docs/context/browser-legibility.md]
 - **Existing product** — screenshots, codebase analysis, data model review. What exists today? What terminology does the product use?
 - **Competitors** — direct competitors (same product category) and analogous products (similar billing/pricing/UX patterns in other industries)
 - **Cross-industry** — utility billing, telecom, SaaS dashboards — any industry that solved the same problem
+- **Sibling-project implementations** — workspace scan for prior implementations of the same feature primitive; read their ADRs and audit docs before synthesizing the plan (added 2026-05-28 amendment)
 
 ### How to organize
 
@@ -131,6 +133,19 @@ research/
 └── proposed-changes/
     └── [BRD, requirements, proposals]
 ```
+
+### Sibling-Project Scan (added 2026-05-28 amendment)
+
+Before writing the synthesis, identify the feature primitive and scan `~/Workspace/dev/{apps,wip,tools,client}/` for repos that shipped it. For each found:
+
+1. **Locate their ADR(s)** — look for `docs/architecture/decisions/` or `docs/decisions/` + ADR or audit docs
+2. **Read end-to-end** — understand their decision, rationale, walls hit, alternatives considered
+3. **Cite in synthesis** — under a `## Sibling-Project Scan` section, name: project, primitive shipped, ADR link, what they decided, why we adopt or diverge
+4. **If none exist** — declare the absence explicitly
+
+This prevents re-hitting documented walls. Cost: 15 min to read a sibling ADR. Cost of the miss: 3-5 sessions of rework when the wall is discovered in implementation.
+
+**Reviewer gate**: `research-sibling-scanner` (blocks Stage 2 if the scan section is missing, the primitive is unspecified, or a sibling ADR is mentioned but not read).
 
 ### Key output
 
@@ -154,6 +169,24 @@ For greenfield variants: a planned surface map covering the same fields ahead of
 **Diagnostic test (codified)**: when a cluster of layout or composition bugs surfaces on a single page in a single session, the signal is that L4 templates are missing, NOT that L1 atoms are wrong. Patching at L1 when the missing primitive is at L4 produces a sequence where the bug "moves" — each fix shifts the symptom to a new surface rather than closing it.
 
 Canonical audit template at `template/methodology/design/audit-template.md`. Canonical example at `template/methodology/design/EXAMPLE-surface-audit.md` (from blueprint-redesign's own portal audit).
+
+### Reference Quality Grading (added 2026-05-27 amendment)
+
+Stage 1 research routinely cites external references — apps, design systems, patterns — to ground design recommendations. The failure mode: selecting references by name-recognition (ESPN, Sofascore) and treating "popularity" as "quality." The result: recommendations inherit convention-track flaws (ad-clutter, accessibility gaps) because they were grounded in "what users recognize" not "what is actually good design."
+
+Every reference cited in Stage 1 research must be explicitly classified as:
+
+| Track | Argument | Used for | Evidence required |
+|---|---|---|---|
+| **Convention** | Users recognize this pattern (Jakob's Law) | "Our IA should follow this because users expect it" | Market share, category dominance |
+| **Quality** | This reference meets formal design standards | "Our design should match this because it's actually good" | ≥1 of: Nielsen ≥7/10, Tufte info-density, WCAG 2.2 AA, design-press citation (Refactoring UI, Brad Frost, A List Apart, Stripe Press, etc.), design awards (Cooper-Hewitt, Malofiej, D&AD, Awwwards, Apple Design Award), or published design-system docs |
+| **Both** | Grades on both independently | Either purpose | Must satisfy evidence on BOTH |
+
+A Convention-only reference is valid for "what will users expect" but NOT for "what should we build." Quality claims ("best-in-class", "modern", "canonical", "industry standard") must be grounded in Quality or Both track references.
+
+**Output**: add a `## Reference Grading Table` section to `research/synthesis.md` with columns `Reference | Track | Evidence | What it's cited for`. The evidence column must cite concrete sources — URLs, authors, awards, published design systems — not bare assertions.
+
+**Reviewer gate**: `research-reference-grader` (blocks Stage 2 if quality claims are grounded only in convention-track references, if references lack track classification, or if evidence is missing).
 
 ## Stage 2: Design Principles
 
@@ -399,11 +432,64 @@ The `portal-pattern-{a,b}-conformance-reviewer` agents do NOT gate Stage S-A —
 
 **Why the gates exist**: the promotions initiative (May 2026) deployed a live "Ask the substrate" widget pointed at the subscriptions initiative's reference Worker, because the canonical Layout stamped the component unconditionally AND the component's `WORKER_URL` was hardcoded to the source project. The widget surfaced the *other* initiative's suggested questions to this initiative's stakeholders. Waves 17 + 18 closed the leak at three layers; this stage codifies the correct lifecycle so future consumers know when the operator flag flip is earned.
 
+### Stage S-B: Foundation: Design System + IA (added wave 74 — opt-in proposal)
+
+**Flag**: `blueprint.yml foundation.enabled: true | false` (default: `false`)
+
+**Reference**: [template/methodology/design/foundation-stage-spec.md](template/methodology/design/foundation-stage-spec.md) — full design, five declarations, enforcement scaffold
+
+**Status**: proposed (wave 74) — opt-in; open decisions (brownfield retrofit depth, specchain interaction) noted for operator review.
+
+**Activates when**: initiative is feature-driven (specchain or multi-session feature specs), multi-route authenticated product, or midstream/brownfield replatforming where layout consistency has drifted. Recommended for greenfield and all feature-heavy initiatives; skip for throwaway prototypes or single-surface work.
+
+**Skips when**: prototype-only initiative that won't outlive the week, single-purpose single-route deliverable, or initiatives with no plan for multi-session feature work.
+
+**Why this is a stage, not cross-cutting**: the Foundation stage has a discrete gate-point (after Stage 1 design-discovery, before feature specs), distinct Done-criteria (all five declarations present + enforcement wired), and produces standing contracts that every downstream feature spec must render into. The stage exists because feature-driven work (specchain, feature specs) assigns layout decisions to no one — each feature spec owns its surface, but scope/archetype/nav rules belong to every surface. This stage is the structural answer to bottom-up emergence and adoption decay.
+
+**Lifecycle (when `foundation.enabled: true`):**
+
+| Step | What lands | Done-criterion |
+|---|---|---|
+| S-B.0: Read Stage 1 output | Review `research/surface-audit.md` (L5 inventory) + `research/design-system.md` (L0–L4 dictionary) | Both exist (products of Stage 1 design-discovery sub-track) |
+| S-B.1: Declare scope model | `docs/foundation.md` or equivalent spec: account-scope vs entity-scope + which route roots are which | Scope model written; every route family assigned a scope |
+| S-B.2: Declare archetype taxonomy + layout prescriptions | Closed set of archetypes + per-archetype shell/header/nav/footer rules | All routes assigned an archetype; layout prescriptions written |
+| S-B.3: Declare token/type/icon + component-anatomy contracts | L0 semantic-token rule + type ramp + icon contract + canonical `FormField` / `Container` / `state/*` / entity-header | Four contracts declared; components bound to archetypes |
+| S-B.4: Stand up routes manifest | Machine-readable file (YAML/JSON/TS) declaring scope + archetype per route | Manifest covers 100% of routes; extends existing infrastructure (don't invent parallel tracking) |
+| S-B.5: Wire design linter as build gate | CI or local pre-push check fails when: (a) route missing manifest, (b) entity-scope route renders account nav, (c) tab subtree violates rule, (d) raw scale colors used, (e) page hand-rolls anatomy contract | Linter runs at every build; gate is enforced |
+| S-B.6: Bind primitives to archetypes | Make adoption default path; for existing projects, reconcile against manifest (do not sweep) | Archetype documentation shows "default component" for each archetype |
+
+**Stage-gate enforcement**: `foundation-stage-reviewer` gates when the flag is true. The reviewer checks all five declarations are present and the enforcement scaffold is wired; it does not pass a route to feature specs until those checks clear.
+
+**Why the gate exists**: when features are authored before this stage, projects emerge bottom-up — each feature invents its layout, canonical primitives (if present) remain unadopted, and multi-session work re-derives the grammar from scratch. Rally HQ's case: ~7 of 99 routes adopted the already-built primitives when no scope/archetype binding existed; after this gate, adoption becomes default. Brownfield projects are the acute case — the curatives (scope model, archetype manifest, linter) are usually cheap to add to existing code and pay for themselves the first time a new route lands with no gate failing it.
+
+**Promotion criteria**: promote fully when a second Blueprint consumer independently surfaces the missing-foundation gap — a cluster of nav/layout symptoms tracing to undeclared scope/archetype, with curative primitives present-but-unadopted. Candidates likely to hit it next: midstream/brownfield consumers with multi-route authenticated surfaces, multi-session/multi-agent feature work, specchain-driven builds.
+
+## Parallel Dispatch Safety (added 2026-05-26 amendment)
+
+When dispatching multiple agents in parallel, file-scope overlap can cause commits to bundle unintended changes. The `parallel-dispatch-check` tool detects overlaps before dispatch:
+
+```bash
+bash template/tools/parallel-dispatch-check/check.sh \
+  "agent1-glob1,agent1-glob2" \
+  "agent2-glob1" \
+  "agent3-glob1,..."
+```
+
+Exit codes:
+- **0** — no overlap; safe to dispatch in parallel
+- **1** — overlap detected; switch to serial dispatch or narrow scope
+- **2** — usage error
+
+**Mandatory use**: before every parallel-dispatch wave, run this check. If any two agents' file globs overlap, switch to serial dispatch. This prevents commit-attribution bundling (the 2026-05-26 P14/P20/P15 failure where one agent's worktree inherited another's pending changes).
+
+Tool location: `template/tools/parallel-dispatch-check/check.sh`. Full reference: `template/tools/parallel-dispatch-check/README.md`.
+
 ## Tools
 
 | Tool | Purpose | Location |
 |------|---------|----------|
 | **md-to-docs.mjs** | Convert markdown to HTML + Word | `docs/scripts/` |
+| **parallel-dispatch-check** | Pre-dispatch file-scope overlap detection (mandatory for parallel waves) | `template/tools/parallel-dispatch-check/check.sh` |
 | **forge-signal** | AI-powered document generation (when blog/thought-leadership voice is wanted) | External tool |
 | **figma generator** | Design asset generation from Figma specs | External tool (private) |
 | **Vercel** | Prototype deployment | `prototype/vercel.json` |

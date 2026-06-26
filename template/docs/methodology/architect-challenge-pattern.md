@@ -38,6 +38,8 @@ Escalate to a full [strategic fork entry](../../../apps/portal/src/pages/strateg
 
 Run the [current-state research prompt](current-state-research-prompt.md) before applying this pattern. The architect challenge depends on knowing which platform capabilities are actually available — without that, the comparison table rows are speculative.
 
+Pass 2 (the architect challenge output) feeds into Pass 3 of the three-pass research discipline — see [three-pass-research-discipline-pattern.md](three-pass-research-discipline-pattern.md) for the architectural-principles re-test that validates the options emerging from this pattern.
+
 ## Anti-patterns
 
 - Comparing options at the level of "lines of code" without asking what the expression surface allows

@@ -12,7 +12,7 @@ You fan out to leaf sub-reviewers, collect their results, and decide convergence
 
 | Sub-reviewer | What it validates |
 |---|---|
-| `citation-checker` | Every market-research citation and strategy-panel claim resolves to a real source |
+| `citation-checker` | Every market-research citation and strategy-panel claim resolves to a real source. **CRITICAL: Do NOT accept self-attestation.** When the artifact claims "verified against URL X," resolve X yourself and check directly — do not trust the artifact's verification note. Run `tools/cited-url-lint/` and verify all citations pass; if any 4xx, block and require fixing. Per `template/docs/methodology/citation-correctness-pattern.md` (anti-circular-audit guard). |
 | `current-state-claim-verifier` | Every "this is what exists today" claim matches a screenshot in `current-state/` or `research/current-state/` |
 | `codebase-claim-verifier` | Every claim about what's buildable / what exists in the source code matches the actual code (when codebase access is available) |
 | `hypothetical-demand-claim-checker` | Every future-tense demand claim ("users will/would want/love/pay…") is either anchored to past-specific evidence (analytics, tickets, quotes, recorded behavior) or appears in `docs/content/validation-script.md`'s assumptions table with evidence class `agent-hypothesis`. Unanchored + unlisted → BLOCK; listed → PASS (a hypothesis named as a hypothesis is honest). Per `template/docs/methodology/mom-test-validation-pattern.md` — wave 51 |
