@@ -38,7 +38,7 @@ Skip when:
    4. **Cross-references** — including forward-links to files being written in parallel. Mark them as forward-links so the agent doesn't try to verify.
    5. **Don't-do list** — no marketing copy, no emojis, no padding, no inflation to hit length targets, plus project-specific don'ts from CLAUDE.md.
    6. **Voice + length constraints** — match the tonal model from READ-FIRST; give a natural-fit range, not a target.
-   7. **Reporting expectations** — what the agent reports back (file path, line count, cross-refs they couldn't resolve, judgment calls). This is what makes post-flight cross-review possible.
+   7. **Reporting expectations** — what the agent reports back: the synthesized result plus pointers (file path, line count, cross-refs they couldn't resolve, judgment calls), never the corpus it read. This is what makes post-flight cross-review possible. Canonical rule + tier dial: `template/docs/methodology/agent-output-discipline-pattern.md`.
 
 4. **Select model per artifact**:
    - **Sonnet** — execution-from-complete-brief. Markdown rendering, mirror-coding, mechanical work with clear acceptance criteria. Default.
