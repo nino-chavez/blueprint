@@ -63,3 +63,7 @@ If specchain is not available, the researcher agent performs all research sequen
 - Each pattern has a concrete "adopt/reject" recommendation
 - **R-1 through R-5 each have at least one per-anchor finding** (per `$BLUEPRINT_HOME/docs/case-studies/design-system-audit.md`). A research pass that covers IA + behavior (R-1, R-2) but skips visual/motion/onboarding (R-3, R-4, R-5) is incomplete when `prototype.design_system: custom`.
 - The synthesis includes a cross-cutting patterns section + a "what's distinctive to one anchor" section + recommended Design Principles (DP-N entries)
+
+## Output discipline
+
+Research is the widest read surface in the pipeline — screenshots, codebases, competitors, the web. What each research agent (and this skill) returns is the **synthesis, not the corpus**: claims and patterns organized by category, every load-bearing claim carrying a `file:line` / URL / screenshot pointer, sized to the conclusion. Handing back raw file contents or untrimmed tool output makes the orchestrator re-read what the agent already read — the read fan-out only pays off if the finding, not the input, crosses back. Canonical rule + tier dial: `$BLUEPRINT_HOME/template/docs/methodology/agent-output-discipline-pattern.md`.

@@ -32,7 +32,7 @@ When the agent fails at a stage, the response is *never* "try harder" or "prompt
 
 The alternative — patching prompts session-by-session — produces zero compounding leverage. Every encoded capability multiplies across every future initiative.
 
-This principle is the reason the methodology accumulates: Stage 0 (browser sensor) was an encoded response to "the agent can't see the running app." Reviewer agents (`template/.claude/agents/blueprint/reviewers/`) were an encoded response to "the agent declares stages complete with sub-deliverables empty." The variant taxonomy was an encoded response to "the agent retrofits brownfield work into greenfield pipelines." None of these are prompt fixes; all are repo-level encodings.
+This principle is the reason the methodology accumulates: Stage 0 (browser sensor) was an encoded response to "the agent can't see the running app." Reviewer agents (`template/.claude/agents/blueprint/reviewers/`) were an encoded response to "the agent declares stages complete with sub-deliverables empty." The variant taxonomy was an encoded response to "the agent retrofits brownfield work into greenfield pipelines." Agent output discipline (`template/docs/methodology/agent-output-discipline-pattern.md`) was an encoded response to "a dispatched agent returns the corpus it read instead of the conclusion, making the orchestrator pay to re-read it." None of these are prompt fixes; all are repo-level encodings.
 
 The 2026-05-25 reconciliation added eight more encodings against the same principle — each one a repo change, not a prompt:
 
