@@ -11,6 +11,7 @@
 
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 async function read(p) { try { return await fs.readFile(p, 'utf8'); } catch { return null; } }
 async function exists(p) { try { await fs.access(p); return true; } catch { return false; } }
@@ -45,7 +46,11 @@ const servesRefs = (text) => new Set([...text.matchAll(/\b([a-z][a-z0-9-]*)\/(JO
 export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
-  const ymlText = await read(path.join(targetDir, 'blueprint.yml'));
+
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
+  const ymlText = await read(path.join(artifactsRoot, 'blueprint.yml'));
   const variant = (blueprintYml && blueprintYml.variant) || yamlScalar(ymlText, 'variant') || 'greenfield';
 
   if (variant !== 'research') {
@@ -57,7 +62,7 @@ export default async function review({ targetDir, blueprintYml }) {
   }
 
   // Personas exist + grounded
-  const personasText = await read(path.join(targetDir, 'research', 'personas-and-jtbd.md'));
+  const personasText = await read(path.join(artifactsRoot, 'research', 'personas-and-jtbd.md'));
   if (!personasText || personasText.trim().length < 50) {
     findings.push({ severity: 'BLOCK', location: 'research/personas-and-jtbd.md', message: 'PERSONAS_MISSING — the Stage-1 personas/JTBD gate is absent or empty.', remediation: 'Populate input-grounded personas + jobs before any downstream artifact.', reference: 'persona-fit-reviewer.md' });
   }
@@ -73,10 +78,10 @@ export default async function review({ targetDir, blueprintYml }) {
   }
 
   // Decisions + memo recommendations trace to jobs
-  const decisionsDir = path.join(targetDir, 'decisions');
+  const decisionsDir = path.join(artifactsRoot, 'decisions');
   const artifacts = [];
   for (const f of await listMd(decisionsDir)) artifacts.push([`decisions/${f}`, await read(path.join(decisionsDir, f))]);
-  const memoPath = path.join(targetDir, 'docs', 'decision-memo.md');
+  const memoPath = path.join(artifactsRoot, 'docs', 'decision-memo.md');
   const memoText = await read(memoPath);
   if (memoText !== null) artifacts.push(['docs/decision-memo.md', memoText]);
 
@@ -111,7 +116,7 @@ export default async function review({ targetDir, blueprintYml }) {
   }
 
   // Vanity (mechanical slice): a portal presented alongside the memo
-  if (await exists(path.join(targetDir, 'apps', 'portal'))) {
+  if (await exists(path.join(artifactsRoot, 'apps', 'portal'))) {
     findings.push({ severity: 'WARN', location: 'apps/portal/', message: 'PORTAL_OVER_PROMOTED — for research the portal is optional provenance, not the deliverable; ensure the memo is the deliverable.', remediation: 'Keep the memo as the deliverable; mark the portal provenance-only or remove it.', reference: 'persona-fit-reviewer.md' });
   }
 

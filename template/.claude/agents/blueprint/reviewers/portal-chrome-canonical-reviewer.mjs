@@ -36,16 +36,28 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'portal-chrome-canonical-reviewer';
 
-// Hard-coded mirror of stamp.mjs's PATTERN_B_CHROME_FILES, refreshed 2026-06-06
-// to include theme-switcher.js (the spec's 2026-05-25 list predates it). Used
-// only as a fallback — the live manifest is parsed out of stamp.mjs at runtime
-// (it is a `const`, not an export, so it can't be imported). The spec names
-// stamp.mjs as the manifest's source of truth: "re-read stamp.mjs if this drifts".
-const FALLBACK_CHROME_FILES = [
+// Hard-coded mirror of stamp.mjs's PATTERN_B_CHROME_FILES (both profiles).
+// Used only as a fallback — the live manifest is parsed out of stamp.mjs at
+// runtime. The spec names stamp.mjs as the manifest's source of truth.
+// Wave 74 (2026-06-27): two profiles for chrome ownership.
+const FALLBACK_CHROME_FILES_PROFILE_A = [
   'shared.css',
+  '_portal-shell.js',
+  'proto-nav.js',
+  'proto-annotate.js',
+  'chat-widget.js',
+  'theme-switcher.js',
+  '_headers',
+  '_redirects',
+  'docs/index.html',
+];
+
+const FALLBACK_CHROME_FILES_PROFILE_B = [
+  'canonical-primitives.css',
   '_portal-shell.js',
   'proto-nav.js',
   'proto-annotate.js',
@@ -86,18 +98,53 @@ function resolveMethodologyHome(methodologyHome) {
   return path.resolve(here, '..', '..', '..', '..', '..'); // methodology root
 }
 
-// Parse PATTERN_B_CHROME_FILES out of stamp.mjs source text. Returns the parsed
-// array + a source tag, or the fallback when stamp.mjs is unreadable/unparseable.
+// Parse both PATTERN_B_CHROME_FILES profiles from stamp.mjs source text.
+// Wave 74 (2026-06-27): two profiles for different consumer models.
+// Returns { profileA, profileB, source, stampPath }.
 // Line-scan, not eval — dep-free and never executes consumer/source code.
-async function loadChromeManifest(home) {
+async function loadChromeManifests(home) {
   const stampPath = path.join(home, 'template', 'tools', 'blueprint-init', 'stamp.mjs');
   const src = await read(stampPath);
-  if (src == null) return { files: FALLBACK_CHROME_FILES, source: 'fallback (stamp.mjs unreadable)', stampPath };
-  const m = src.match(/PATTERN_B_CHROME_FILES\s*=\s*\[([\s\S]*?)\]/);
-  if (!m) return { files: FALLBACK_CHROME_FILES, source: 'fallback (manifest not found in stamp.mjs)', stampPath };
-  const files = [...m[1].matchAll(/["'`]([^"'`]+)["'`]/g)].map((x) => x[1]);
-  if (files.length === 0) return { files: FALLBACK_CHROME_FILES, source: 'fallback (empty manifest match)', stampPath };
-  return { files, source: 'stamp.mjs PATTERN_B_CHROME_FILES', stampPath };
+
+  let profileA = null, profileB = null;
+  if (src != null) {
+    // Extract Profile A (PATTERN_B_CHROME_FILES_PROFILE_A)
+    const mA = src.match(/PATTERN_B_CHROME_FILES_PROFILE_A\s*=\s*\[([\s\S]*?)\]/);
+    if (mA) {
+      profileA = [...mA[1].matchAll(/["'`]([^"'`]+)["'`]/g)].map((x) => x[1]);
+    }
+    // Extract Profile B (PATTERN_B_CHROME_FILES_PROFILE_B)
+    const mB = src.match(/PATTERN_B_CHROME_FILES_PROFILE_B\s*=\s*\[([\s\S]*?)\]/);
+    if (mB) {
+      profileB = [...mB[1].matchAll(/["'`]([^"'`]+)["'`]/g)].map((x) => x[1]);
+    }
+  }
+
+  // Fallback if either profile is missing
+  if (!profileA) profileA = FALLBACK_CHROME_FILES_PROFILE_A;
+  if (!profileB) profileB = FALLBACK_CHROME_FILES_PROFILE_B;
+
+  const source = (profileA.length > 0 && profileB.length > 0) ? 'stamp.mjs' : 'fallback';
+  return { profileA, profileB, source, stampPath };
+}
+
+// Read chrome_profile from blueprint.yml. Defaults to 'methodology-themed'.
+// Wave 74 (2026-06-27): consumer-themed profile allows design-system ownership.
+async function readChromeProfile(targetDir) {
+  const ymlPath = path.join(targetDir, 'blueprint.yml');
+  const yml = await read(ymlPath);
+  if (!yml) return 'methodology-themed';
+
+  const lines = yml.split('\n');
+  for (const line of lines) {
+    const stripped = line.replace(/#.*$/, '').trim();
+    const m = stripped.match(/^chrome_profile:\s*["']?([^"'\s]+)["']?\s*$/);
+    if (m && m[1]) {
+      const val = m[1].toLowerCase();
+      if (val === 'consumer-themed' || val === 'methodology-themed') return val;
+    }
+  }
+  return 'methodology-themed';  // default
 }
 
 // Count lines that differ between two strings, in the spirit of `diff a b | wc -l`.
@@ -148,10 +195,13 @@ export default async function review({ targetDir, methodologyHome }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
   // ── 1. Locate the consumer's Pattern B portal ────────────────────────────
   let portalRel = null;
   for (const cand of PORTAL_CANDIDATES) {
-    if (await exists(path.join(targetDir, cand))) {
+    if (await exists(path.join(artifactsRoot, cand))) {
       portalRel = cand;
       break;
     }
@@ -161,24 +211,39 @@ export default async function review({ targetDir, methodologyHome }) {
     // PASS per the contract enum (see header note). Nothing to gate.
     return result('PASS', [], 'not applicable — no blueprint/portal | portal | apps/portal dir', startedAt);
   }
-  const portalDir = path.join(targetDir, portalRel);
+  const portalDir = path.join(artifactsRoot, portalRel);
 
-  // ── 2. Load the canonical chrome manifest (from stamp.mjs, fallback mirror) ─
+  // ── 2. Load the canonical chrome manifests and read consumer's profile ─
   const home = resolveMethodologyHome(methodologyHome);
   const templatePortalDir = path.join(home, 'template', 'portal');
-  const { files: chromeFiles, source: manifestSource, stampPath } = await loadChromeManifest(home);
-  if (manifestSource.startsWith('fallback')) {
+  const { profileA, profileB, source: manifestSource, stampPath } = await loadChromeManifests(home);
+
+  // Wave 74: read consumer's chrome_profile to select the correct manifest
+  const profile = await readChromeProfile(artifactsRoot);
+  const chromeFiles = profile === 'consumer-themed' ? profileB : profileA;
+
+  if (manifestSource === 'fallback') {
     findings.push({
       severity: 'WARN',
       location: stampPath,
-      message: `Could not read the live chrome manifest from stamp.mjs (${manifestSource}); using the hard-coded ${chromeFiles.length}-file mirror. The diff still runs, but the manifest may be stale.`,
-      remediation: 'Confirm $BLUEPRINT_HOME / methodologyHome points at the methodology repo and that template/tools/blueprint-init/stamp.mjs defines PATTERN_B_CHROME_FILES.',
-      reference: 'template/tools/blueprint-init/stamp.mjs (PATTERN_B_CHROME_FILES)',
+      message: `Could not read the live chrome manifest from stamp.mjs; using hard-coded fallback. The diff still runs, but the manifest may be stale. Profile: ${profile}.`,
+      remediation: 'Confirm $BLUEPRINT_HOME / methodologyHome points at the methodology repo and that template/tools/blueprint-init/stamp.mjs defines both PATTERN_B_CHROME_FILES_PROFILE_A and PATTERN_B_CHROME_FILES_PROFILE_B.',
+      reference: 'template/tools/blueprint-init/stamp.mjs (PATTERN_B_CHROME_FILES_*)',
+    });
+  }
+
+  if (profile === 'consumer-themed') {
+    findings.push({
+      severity: 'WARN',
+      location: path.join(portalRel, 'shared.css'),
+      message: `Chrome profile: consumer-themed (Profile B). Consumer owns shared.css; reviewer enforces byte-identity only on canonical-primitives.css.`,
+      remediation: 'Informational. Your shared.css can drift; canonical-primitives.css must match template canonical. See docs/methodology/chrome-profile-pattern.md.',
+      reference: 'docs/methodology/chrome-profile-pattern.md',
     });
   }
 
   // ── 6 (pre-load). Accepted divergence ADRs that can downgrade a drift ──────
-  const adrs = await findDivergenceAdrs(targetDir, chromeFiles);
+  const adrs = await findDivergenceAdrs(artifactsRoot, chromeFiles);
   const adrCoveredFiles = new Set(adrs.flatMap((a) => a.files));
 
   // ── 3. Diff each chrome file against template canonical ───────────────────
@@ -295,7 +360,7 @@ export default async function review({ targetDir, methodologyHome }) {
   }
 
   const summary =
-    `portal=${portalRel} manifest=${chromeFiles.length}(${manifestSource.startsWith('fallback') ? 'fallback' : 'live'}) ` +
+    `portal=${portalRel} profile=${profile} manifest=${chromeFiles.length}(${manifestSource}) ` +
     `match=${matched} drift=${drifted.length} consumer-missing=${consumerMissing.length} ` +
     `template-missing=${templateMissing.length} overlay=${overlayPresent ? 'yes' : 'no'} ` +
     `html-missing-overlay=${htmlMissingOverlay.length} adrs=${adrs.length}`;

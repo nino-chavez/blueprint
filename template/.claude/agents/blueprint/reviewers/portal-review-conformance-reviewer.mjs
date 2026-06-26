@@ -33,6 +33,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'portal-review-conformance-reviewer';
 
@@ -129,8 +130,11 @@ export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
   // Research variant: Review Portal is a brownfield-audit surface; portal optional for research — skip.
-  const _prYml = await fs.readFile(path.join(targetDir, 'blueprint.yml'), 'utf8').catch(() => '');
+  const _prYml = await fs.readFile(path.join(artifactsRoot, 'blueprint.yml'), 'utf8').catch(() => '');
   if (/^variant:\s*research\b/m.test(_prYml)) {
     return result('PASS', [], 'research — out of scope (Review Portal is brownfield; portal optional for research)', startedAt);
   }
@@ -142,9 +146,9 @@ export default async function review({ targetDir, blueprintYml }) {
   }
 
   // ── Check 1: Locate the portal (canonical path + drift fallbacks). ──────────
-  const canonical = path.join(targetDir, 'blueprint', 'portal');
-  const driftPrototype = path.join(targetDir, 'blueprint', 'prototype');
-  const driftPortal = path.join(targetDir, 'portal');
+  const canonical = path.join(artifactsRoot, 'blueprint', 'portal');
+  const driftPrototype = path.join(artifactsRoot, 'blueprint', 'prototype');
+  const driftPortal = path.join(artifactsRoot, 'portal');
 
   let portalDir = null;
   if (await exists(canonical)) {

@@ -29,6 +29,12 @@ You are the Stage 2 gate for greenfield Blueprint initiatives. Other variants sk
 
 6. **Verify the confident-preview rule is acknowledged.** The DESIGN.md must textually acknowledge that the portal is a stakeholder review surface, not a deliberation venue — one confident take per route. Acceptable forms: a section header ("Confident preview" / "Not a deliberation venue"), a sentence in the rules list, or a cross-reference to `template/docs/methodology/confident-preview-rule.md`. If the planned page list (if present in DESIGN.md or a sibling planning doc) contains variant-shaped names (`home-a`, `home-b`, `dashboard-modern`, `dashboard-classic`, `-variant-`, `-v2.`), BLOCK with note "planned variant pages detected — confident-preview rule requires convergence in Stage 2, not multiple takes shipped to stakeholders." Full rule: `template/docs/methodology/confident-preview-rule.md`.
 
+7. **Verify three-pass research discipline was applied** (for platform-feature initiatives only). If the initiative produces platform-side asks (marketplace-app initiatives with shim lane or equivalent), verify that `docs/feasibility/` or equivalent strategy doc cites Pass 3 architectural-principles re-test. Textual evidence sufficient: "architectural principles re-test" or explicit reference to `three-pass-research-discipline-pattern.md`. If platform asks are enumerated but no Pass 3 test is documented, BLOCK with note "Pass 3 (architectural-principles re-test) required before platform-ask enumeration; see `three-pass-research-discipline-pattern.md`." This gate is SKIPPED for non-platform-feature initiatives.
+
+8. **Verify peer-vs-modifier test was applied** (when multiple strategic forks are present). If `docs/strategy/` contains multiple strategy docs that could be read as variants of a single decision (e.g., `delivery-fork.md` and `delivery-shim-path.md`, or `subscription-model-binary.md` and a third option), verify that the initiative documents the peer-vs-modifier test result — either as a deliberate statement ("the shim path is a peer, not a modifier, because...") or as a cross-reference to `peer-vs-modifier-test-pattern.md`. If multiple strategic forks exist but no explicit test result is documented, WARN with note "peer-vs-modifier test result not explicit; recommend doc stating whether new option is peer or modifier." Not a BLOCK.
+
+9. **Verify back-door-native anti-pattern was checked** (for platform-ask initiatives). If the initiative enumerates platform-side asks, verify that the asks do not name the consuming app's domain (e.g., `subscription.*` events, `loyalty.*` contexts, etc.). If domain-named asks are present, BLOCK with note "domain-named platform asks detected (e.g., 'subscription.*'); reframe to general mechanisms per `back-door-native-anti-pattern.md`." If asks have been reframed per the pattern (e.g., "sanctioned-app-emitted events" instead of "subscription events"), PASS this check.
+
 ## How to report
 
 ```
@@ -38,6 +44,9 @@ VISUAL_RULES: <count present / 5>
 TESTING_BASELINE: present | missing
 ARCHITECTURAL_INVARIANTS: <count present / 4>
 CONFIDENT_PREVIEW_RULE: acknowledged | missing | violated-by-planned-variants
+THREE_PASS_RESEARCH: N/A | documented | missing
+PEER_VS_MODIFIER_TEST: N/A | documented | undocumented
+BACK_DOOR_NATIVE_CHECK: N/A | compliant | domain-named-asks-detected
 NOTES: <one-line per finding>
 ```
 

@@ -28,32 +28,28 @@ const VARIANT_TIER_MATRIX = {
   research:   { 0: "default", 1: "portal-optional-provenance", 2: "blocked" },
 };
 
-// ── Review Portal canonical chrome manifest ───────────────────────────────────
-// Files in template/portal/ that are CANONICAL CHROME — methodology-owned,
-// consumer-uneditable. `--mode=restamp-chrome --portal-type=review` overwrites
-// these files in the consumer's portal from template canonical; anything not in
-// this list (project-tokens.css, _meta/*, pages/*, index.html, etc.) is left
-// untouched.
+// ── Review Portal canonical chrome manifest (wave 74, 2026-06-27) ───────────
+// Two profiles model the two consumer relationships to canonical chrome.
 //
-// Adding a file here: the file must be byte-identical to template canonical
+// PROFILE A (methodology-themed, default): consumer's brand is a thin override.
+// Files in template/portal/ that are CANONICAL CHROME — methodology-owned,
+// consumer-uneditable. `--mode=restamp-chrome` overwrites these files in the
+// consumer's portal from template canonical; anything not in this list
+// (project-tokens.css, _meta/*, pages/*, index.html, etc.) is left untouched.
+//
+// PROFILE B (consumer-themed, opt-in): consumer owns shared.css (design system);
+// canonical primitives split into separate file. Byte-identity enforced only on
+// canonical-primitives.css; consumer's shared.css is out of scope.
+//
+// Adding a file: the file must be byte-identical to template canonical
 // after stamp (no PROJECT_NAME-style substitutions). If the file needs any
 // per-project substitution, it does not belong in chrome — move it to the
 // project-owned overlay surface (project-tokens.css, _meta, etc.).
 //
-// docs/index.html (added 2026-05-25 evening): data-driven from
-// _meta/index.json `docs.tiers`, so the viewer JS/CSS/HTML structure is now
-// truly canonical chrome with zero project-specific defaults.
-//
-// chat-widget.js (added 2026-05-25 evening): the prior version's Rally HQ
-// brand string in the header comment was excised; the widget itself was
-// always project-agnostic. Now canonical.
-//
-// theme-switcher.js (added 2026-05-26 wave 9 — multi-theme registry): runtime
-// theme picker that reads ?theme= query param + localStorage and applies one
-// of the 4 canonical themes (slate / coral / forest / minimal) declared in
-// shared.css [data-theme] blocks. Initiative-side switcher promoted to chrome
-// so every Review Portal gets the preview-switcher for free.
-const PATTERN_B_CHROME_FILES = [
+// Origin: rally-hq amendment 2026-05-26 (the portal-chrome-canonical-reviewer
+// model breaks for brand-owning consumers). See docs/methodology/chrome-profile-pattern.md.
+
+const PATTERN_B_CHROME_FILES_PROFILE_A = [
   "shared.css",
   "_portal-shell.js",
   "proto-nav.js",
@@ -64,6 +60,22 @@ const PATTERN_B_CHROME_FILES = [
   "_redirects",
   "docs/index.html",
 ];
+
+// Profile B: shared.css is consumer-owned; canonical primitives are byte-identical
+const PATTERN_B_CHROME_FILES_PROFILE_B = [
+  "canonical-primitives.css",  // NEW: the genuinely universal primitives
+  "_portal-shell.js",
+  "proto-nav.js",
+  "proto-annotate.js",
+  "chat-widget.js",
+  "theme-switcher.js",
+  "_headers",
+  "_redirects",
+  "docs/index.html",
+];
+
+// Backwards compat: existing code references PATTERN_B_CHROME_FILES directly
+const PATTERN_B_CHROME_FILES = PATTERN_B_CHROME_FILES_PROFILE_A;
 
 // Candidate locations a Review Portal consumer might place its portal. Resolve in
 // order; first existing directory wins. Reflects the path-drift observed
@@ -522,6 +534,30 @@ async function readPortalDirFromBlueprintYml(target) {
   return null;
 }
 
+// Read chrome_profile from blueprint.yml (default: methodology-themed).
+// Wave 74 (2026-06-27): two-profile model for chrome ownership.
+async function readChromeProfileFromBlueprintYml(target) {
+  const yml = await fs.readFile(path.join(target, "blueprint.yml"), "utf8").catch(() => null);
+  if (!yml) return "methodology-themed";
+  const lines = yml.split("\n");
+  for (const raw of lines) {
+    const stripped = raw.replace(/#.*$/, "").trimEnd();
+    const m = stripped.match(/^\s*chrome_profile:\s*["']?([^"'\s]+)["']?\s*$/);
+    if (m && m[1] && m[1] !== '""' && m[1] !== "''") {
+      const val = m[1].toLowerCase();
+      if (val === "consumer-themed" || val === "methodology-themed") return val;
+    }
+  }
+  return "methodology-themed";  // default
+}
+
+// Select the correct chrome manifest based on profile.
+function getChromeManifestForProfile(profile) {
+  return profile === "consumer-themed"
+    ? PATTERN_B_CHROME_FILES_PROFILE_B
+    : PATTERN_B_CHROME_FILES_PROFILE_A;
+}
+
 async function resolvePatternBPortalDir(target, { portalDirOverride } = {}) {
   // Priority 1: explicit --portal-dir CLI flag (operator escape hatch).
   // Priority 2: prototype.portal_dir in target's blueprint.yml.
@@ -643,31 +679,35 @@ async function restampChromePatternB({ target, dryRun, acceptOverwrite, portalDi
 
   const srcRoot = path.join(BLUEPRINT_ROOT, "template/portal");
 
+  // Wave 74 (2026-06-27): read chrome_profile from blueprint.yml to select
+  // the correct manifest. Defaults to methodology-themed (Profile A) for
+  // backward compatibility.
+  const profile = await readChromeProfileFromBlueprintYml(target);
+  const chromeFiles = getChromeManifestForProfile(profile);
+  console.log(`  chrome profile: ${profile} (${chromeFiles.length} files in manifest)`);
+
   // Wave 14 (2026-05-27): pre-flight divergence check. Block destructive
   // overwrite of customized chrome unless operator explicitly accepts.
   // Source: rally-hq amendment 2026-05-26 gap 2 — shared.css byte-identical
-  // contract assumes pristine canonical baseline; rally-hq's shared.css IS
-  // the design system, not chrome surrounding one. Without this gate, a
-  // restamp silently overwrites the consumer's design system.
+  // contract assumes pristine canonical baseline; for Profile B, only
+  // canonical-primitives.css is subject to byte-identity enforcement.
   const classifications = [];
-  for (const rel of PATTERN_B_CHROME_FILES) {
+  for (const rel of chromeFiles) {
     const cls = await classifyChromeFile(path.join(srcRoot, rel), path.join(portalDir, rel));
     classifications.push({ rel, ...cls });
   }
   const diverged = classifications.filter((c) => c.status === "diverged");
   const acceptedSet = new Set((acceptOverwrite || "").split(",").map((s) => s.trim()).filter(Boolean));
-  const blockedDiverged = diverged.filter((c) => !acceptedSet.has(c.rel) && !acceptedSet.has("ALL"));
-  if (blockedDiverged.length && !dryRun) {
-    console.error(`\nerror: --mode=restamp-chrome --portal-type=review refusing to overwrite diverged chrome.`);
-    console.error(`The following files diverge from canonical (the chrome you'd be replacing):`);
-    for (const c of blockedDiverged) {
-      console.error(`  - ${c.rel} (consumer=${c.dstLines} lines, canonical=${c.srcLines} lines, Δ=${c.delta >= 0 ? "+" : ""}${c.delta})`);
+
+  // AMENDMENT 2 (2026-06-27): treat --accept-overwrite as scope, not consent.
+  // Overwrite accepted files; skip un-accepted diverged files instead of blocking.
+  const skippedDiverged = diverged.filter((c) => !acceptedSet.has(c.rel) && !acceptedSet.has("ALL"));
+  if (skippedDiverged.length && !dryRun) {
+    console.log(`\n  diverged files not in --accept-overwrite (skipped):`);
+    for (const c of skippedDiverged) {
+      console.log(`    SKIPPED ${c.rel} (diverged, not in --accept-overwrite)`);
+      log.skipped.push(`${c.rel} (diverged; skipped per scoped --accept-overwrite)`);
     }
-    console.error(``);
-    console.error(`Run --mode=audit-chrome --portal-type=review --target=${target} first to classify each divergence (lag / customization / rot).`);
-    console.error(`To force overwrite anyway, re-run with --accept-overwrite=<file1>,<file2>,... or --accept-overwrite=ALL.`);
-    console.error(`This gate exists because canonical-baseline assumption can silently overwrite a consumer's design system.`);
-    process.exit(3);
   }
 
   const missing = [];
@@ -681,6 +721,10 @@ async function restampChromePatternB({ target, dryRun, acceptOverwrite, portalDi
     }
     if (status === "missing-consumer") {
       log.skipped.push(`${rel} (no consumer copy; not creating — re-run full stamp for first-time setup)`);
+      continue;
+    }
+    // AMENDMENT 2: skip diverged files not in --accept-overwrite
+    if (status === "diverged" && !acceptedSet.has(rel) && !acceptedSet.has("ALL")) {
       continue;
     }
     if (dryRun) {
@@ -723,19 +767,26 @@ async function restampChromePatternB({ target, dryRun, acceptOverwrite, portalDi
 // Wave 14 (2026-05-27): read-only divergence audit. Outputs per chrome file
 // status without modifying anything. Source: rally-hq amendment 2026-05-26 —
 // "introduce a --mode=audit-chrome read-only diff command BEFORE restamp-chrome."
+// Wave 74 (2026-06-27): profile-aware — selects manifest based on chrome_profile.
 async function auditChromePatternB({ target, portalDirOverride }) {
   const resolved = await resolvePatternBPortalDir(target, { portalDirOverride });
   if (!resolved) failPortalDirNotFound(target);
   const { dir: portalDir, source: portalDirSource } = resolved;
+
+  // Wave 74: read profile to select correct manifest
+  const profile = await readChromeProfileFromBlueprintYml(target);
+  const chromeFiles = getChromeManifestForProfile(profile);
+
   console.log(`\n— blueprint-init audit-chrome —`);
   console.log(`  target:         ${target}`);
   console.log(`  portal:         ${portalDir} (source: ${portalDirSource})`);
   console.log(`  canonical from: ${path.join(BLUEPRINT_ROOT, "template/portal")}`);
-  console.log(`  manifest:       ${PATTERN_B_CHROME_FILES.length} chrome files in PATTERN_B_CHROME_FILES\n`);
+  console.log(`  chrome profile: ${profile}`);
+  console.log(`  manifest:       ${chromeFiles.length} chrome files\n`);
 
   const srcRoot = path.join(BLUEPRINT_ROOT, "template/portal");
   const rows = [];
-  for (const rel of PATTERN_B_CHROME_FILES) {
+  for (const rel of chromeFiles) {
     const cls = await classifyChromeFile(path.join(srcRoot, rel), path.join(portalDir, rel));
     // Wave 15: for diverged files, run git-history classification to distinguish
     // lag from customization from rot. Only call the classifier when divergence
@@ -801,6 +852,54 @@ async function auditChromePatternB({ target, portalDirOverride }) {
   } else {
     console.log(`  No divergence. Restamp is safe to run without --accept-overwrite.`);
   }
+}
+
+// AMENDMENT 1 (2026-06-27): Pattern B initial stamp.
+// Copy template/portal/ to the resolved portal directory with narrow substitutions
+// (project name in _meta/index.json, repo URL, brand token). Mirrors Pattern A
+// stamp logic but targets the portal directory directly instead of apps/portal.
+async function stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log }) {
+  // Resolve the portal directory (or create blueprint/portal as default for initial stamp).
+  let resolved = await resolvePatternBPortalDir(target, { portalDirOverride });
+  let portalDir = resolved?.dir;
+
+  if (!portalDir) {
+    // No existing portal found; create one at the default location (blueprint/portal).
+    const defaultPortalRel = "blueprint/portal";
+    portalDir = path.join(target, defaultPortalRel);
+    if (!dryRun) await fs.mkdir(portalDir, { recursive: true });
+    log.copied.push(`${defaultPortalRel}/ (dir created for initial stamp)`);
+  }
+
+  const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
+  const srcRoot = path.join(BLUEPRINT_ROOT, "template/portal");
+
+  // Copy the portal tree with substitutions applied.
+  await copyTree({
+    src: srcRoot,
+    dst: portalDir,
+    subs,
+    dryRun,
+    log,
+  });
+
+  // Ensure project-tokens.css exists as the consumer's overlay surface.
+  const overlayDst = path.join(portalDir, "project-tokens.css");
+  const overlayExists = await fs.stat(overlayDst).catch(() => null);
+  if (!overlayExists) {
+    const overlaySrc = path.join(srcRoot, "project-tokens.css");
+    if (await fs.stat(overlaySrc).catch(() => null)) {
+      if (!dryRun) {
+        const content = await fs.readFile(overlaySrc, "utf8");
+        await fs.writeFile(overlayDst, content, "utf8");
+      }
+      log.stamped.push(`project-tokens.css (created from canonical — your project tokens go here)`);
+    }
+  } else {
+    log.skipped.push(`project-tokens.css (preserved; consumer overlay)`);
+  }
+
+  console.log(`blueprint-init: stamped Review Portal into ${portalDir}`);
 }
 
 async function modeRestampChrome(args) {
@@ -928,7 +1027,16 @@ async function main() {
   if (portalType !== "initiative" && portalType !== "review" && portalType !== "bespoke") {
     fail(`--portal-type must be initiative, review, or bespoke; got ${portalType}`);
   }
-  if (portalType === "review") fail(`portal-type=review initial stamp not yet implemented. For chrome refresh on an existing Review Portal, run with --mode=restamp-chrome --portal-type=review --target=<path>. See README §"Review Portal stamper".`);
+  if (portalType === "review") {
+    // AMENDMENT 1 (2026-06-27): Pattern B initial stamp now implemented.
+    const portalDirOverride = args["portal-dir"] || null;
+    await stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log });
+    await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
+    if (!dryRun) await mechanicalCheck({ target, name, log });
+    printReport(log);
+    if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
+    return;
+  }
 
   // Create a missing target (category convention: scaffolders create their
   // directory). Refuse only when the path exists and isn't a directory.

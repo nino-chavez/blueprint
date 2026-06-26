@@ -205,6 +205,26 @@ export async function runDoctor({ home, targetDir }) {
     add('stateful-claims', 'fail', `stateful-claim-lint reviewer threw: ${e.message}`);
   }
 
+  // 9. roadmap-registry sync — registry (e.g., prescription.yml) and view docs
+  //    (e.g., roadmap.md) must stay synchronized (wave 27). Four mechanical
+  //    checks: active items in registry must appear in view; shipped items
+  //    cannot be in build sections; all view references must exist in registry;
+  //    ids must be unique. Declared pairs in blueprint.yml; default pair
+  //    (prescription.yml ↔ docs/roadmap.md) when both exist.
+  try {
+    const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'roadmap-registry-sync-reviewer.mjs');
+    if (existsSync(reviewerPath)) {
+      const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+      const res = await fn({ targetDir, blueprintYml: null, methodologyHome: home });
+      const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
+      add('registry-sync', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''}`, res.status !== 'PASS' ? 'run `blueprint review roadmap-registry-sync-reviewer` for details' : undefined);
+    } else {
+      add('registry-sync', 'skip', 'roadmap-registry-sync reviewer not present in this methodology home');
+    }
+  } catch (e) {
+    add('registry-sync', 'fail', `roadmap-registry-sync reviewer threw: ${e.message}`);
+  }
+
   const status = checks.reduce((acc, c) => worst(acc, c.status), 'pass');
   // Honesty about the boundary: name what doctor did NOT verify, so a green is
   // never read as more than it is.

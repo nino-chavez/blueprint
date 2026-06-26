@@ -12,6 +12,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'portal-initiative-conformance-reviewer';
 const CANONICAL_ROUTES = ['index', 'discover', 'try', 'build', 'operate', 'inspect', 'roadmap'];
@@ -57,12 +58,16 @@ function finalize(findings, targetSummary, startedAt) {
 export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
+
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
   // Research variant: the portal is optional provenance, not the deliverable — skip.
-  const _piYml = await fs.readFile(path.join(targetDir, 'blueprint.yml'), 'utf8').catch(() => '');
+  const _piYml = await fs.readFile(path.join(artifactsRoot, 'blueprint.yml'), 'utf8').catch(() => '');
   if (/^variant:\s*research\b/m.test(_piYml)) {
     return result('PASS', [], 'research — out of scope (portal is optional provenance for research)', startedAt);
   }
-  const portalDir = path.join(targetDir, 'apps', 'portal');
+  const portalDir = path.join(artifactsRoot, 'apps', 'portal');
   const srcDir = path.join(portalDir, 'src');
   const pagesDir = path.join(srcDir, 'pages');
   const componentsDir = path.join(srcDir, 'components');
@@ -86,7 +91,7 @@ export default async function review({ targetDir, blueprintYml }) {
     return finalize(findings, 'no apps/portal/', startedAt);
   }
   for (const rel of ['portal', path.join('blueprint', 'portal')]) {
-    if (await exists(path.join(targetDir, rel))) {
+    if (await exists(path.join(artifactsRoot, rel))) {
       findings.push({
         severity: 'BLOCK',
         location: `${rel}/`,
@@ -214,7 +219,7 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // 7. No REPLACE_FOR_PROJECT banners (portal src + packages/ui/preview).
   const bannerScan = [...portalFiles];
-  const previewDir = path.join(targetDir, 'packages', 'ui', 'preview');
+  const previewDir = path.join(artifactsRoot, 'packages', 'ui', 'preview');
   if (await exists(previewDir)) bannerScan.push(...(await walk(previewDir)));
   const bannered = [];
   for (const f of bannerScan.filter((f) => /\.(astro|tsx|ts|js|html)$/.test(f))) {
@@ -234,7 +239,7 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // 8. Legacy invariants (I-2 page identifier, I-3 providers-in-Layout, I-5 no inline styles).
   // Net-new Tier-1 portals BLOCK on I-3/I-5; migrating initiatives WARN.
-  const netNew = !(await exists(path.join(targetDir, 'blueprint', 'prototype')));
+  const netNew = !(await exists(path.join(artifactsRoot, 'blueprint', 'prototype')));
   const routeFiles = (await fs.readdir(pagesDir).catch(() => [])).filter((f) => f.endsWith('.astro'));
   const inlineStyleHits = [];
   for (const rf of routeFiles) {

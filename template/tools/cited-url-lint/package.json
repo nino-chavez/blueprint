@@ -1,0 +1,17 @@
+{
+  "name": "@blueprint/cited-url-lint",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Verifies that HTTP(S) URLs cited in docs/ resolve (don't 4xx). Catches the failure mode where prose claims point to fabricated or stale documentation paths.",
+  "scripts": {
+    "lint": "tsx index.ts",
+    "lint:offline": "tsx index.ts --offline",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "//": "No dependencies. Uses node:fetch (Node 20+). tsx + vitest picked up from workspace via npx. Intentionally outside npm workspaces graph (matches frontmatter-lint shape)."
+}

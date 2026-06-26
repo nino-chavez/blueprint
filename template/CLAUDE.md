@@ -124,6 +124,14 @@ Per `blueprint.yml` `voices:` block. Canonical voice rules + quality audit + cit
 
 Visual rules + architectural invariants: `prototype/DESIGN.md`. Both are checked at Stage 4 by the reviewer agents.
 
+## Fork-aware priority (when multiple strategic forks exist)
+
+If the initiative produces multiple competing strategies (a binary choice between Path A and Path B, then a third Path C emerges), establish a **fork-aware priority tiebreaker** that explicitly names all lanes. The tiebreaker ranks lanes when queue items tie on other criteria (priority / blocked-by count / phase). Example: if three delivery lanes exist (portable / shim-collaborative / substrate-A), the tiebreaker orders them: `portable > shim-collaborative > substrate-A`.
+
+When a new lane emerges (via the peer-vs-modifier test), **the tiebreaker must be updated explicitly** — silent omission of the new lane from priority rules leaves the queue ambiguous. This is enforced at the peer-vs-modifier test gate: confirming a third option is a peer produces an ADR or decision-fast proposal updating the tiebreaker.
+
+Reference: `peer-vs-modifier-test-pattern.md`.
+
 ## Configuration
 
 Edit `blueprint.yml` for: variant, execution depth, voice modes, prototype settings, research scope, document package, optional-capability flags.
@@ -167,6 +175,45 @@ Reusable prompts for common Blueprint adoption / update scenarios:
 Install `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/` and merge the SessionStart block from `template/.claude/settings.json.example` into `~/.claude/settings.json`. The hook detects Blueprint initiatives (walks up for `blueprint.yml`) and injects `METHODOLOGY.md` + `docs/variant-selection.md` + `docs/portal-and-tier-ladder.md` at the top of every session.
 
 **Why this is mandatory, not optional**: on 2026-05-25, three live consumer sessions reasoned about Blueprint shape from first principles instead of reading the canonical docs, then disagreed about what Blueprint is. Failing to encode this is a direct violation of Blueprint's own first principle (`METHODOLOGY.md` § "First Principle: Agent Struggle Is a Missing Capability") applied to Blueprint itself. The session-prompts paste-snippets above are a fallback for operators who haven't installed the hook; the hook is the encoding.
+
+## Methodology-shaped global rules (required)
+
+The methodology distributes two domain-neutral discipline rules as global context. Install them once per machine (not per initiative).
+
+### Installation
+
+Append the two files below to `~/.claude/CLAUDE.md` at your next session start, or run manually:
+
+```bash
+cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+<!-- BEGIN blueprint-methodology-rules -->
+
+## Audit Discipline — Verification Against Canonical Sources
+
+Methodology principle: self-attestation is not verification. Audits must resolve to ground truth, never trust an artifact's own claims about being verified.
+
+When an artifact claims verification, pull the canonical source yourself and re-verify the claim independently. Use mechanical verification tools where available (cited-url-lint for citations, state-derive for implementation state, scenario-result artifacts for coverage). Circular audits are the failure mode this rule prevents.
+
+See `$BLUEPRINT_HOME/docs/methodology/global-rules/audit-discipline.md` for the full pattern.
+
+## Decision Bias — Default to Action, Not Confirmation
+
+Methodology principle: agents should default to executing the next logical continuation of work instead of pausing to ask for permission. End work turns with a status sentence naming what landed and the next move, not a question.
+
+Override this bias only for destructive actions (force-push, delete, amend), ambiguous requests, or scope expansion. When the next step is obvious and already authorized, do not ask.
+
+See `$BLUEPRINT_HOME/docs/methodology/global-rules/decision-bias.md` for the full pattern.
+
+<!-- END blueprint-methodology-rules -->
+EOF
+```
+
+**Auto-check**: The SessionStart hook verifies these rules are installed and emits a non-fatal warning if absent. Re-run the installation command above if you see the warning.
+
+### Customization
+
+These are append-only managed sections — do not edit them. Local operator preferences (theme, keybindings, project-specific shortcuts) remain in `~/.claude/CLAUDE.md` outside the managed region; they are unaffected by methodology updates.
 
 ## Converter
 

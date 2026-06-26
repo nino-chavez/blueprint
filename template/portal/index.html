@@ -313,7 +313,11 @@
     function renderPaths() {
       const grid = document.getElementById('paths-grid');
       grid.innerHTML = '';
-      [...PATHS].forEach(p => {
+      const enableAudienceSwitcher = MANIFEST?.audience_switcher === true;
+      const pathsToRender = enableAudienceSwitcher
+        ? [...PATHS].sort((a, b) => (a.priority?.reviewer || 999) - (b.priority?.reviewer || 999))
+        : [...PATHS];
+      pathsToRender.forEach(p => {
         const card = document.createElement('div');
         card.className = 'path-card';
         card.innerHTML = `

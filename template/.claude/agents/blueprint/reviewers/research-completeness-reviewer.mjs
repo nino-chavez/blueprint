@@ -38,6 +38,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'research-completeness-reviewer';
 
@@ -314,10 +315,13 @@ export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Resolve the artifacts root (handles both blueprint.yml-at-root and blueprint.yml-in-subdir).
+  const artifactsRoot = findInitiativeRoot(targetDir);
+
   // ── 1. Resolve variant + initiative_type from blueprint.yml (default greenfield)
   let ymlText = null;
   try {
-    ymlText = await read(path.join(targetDir, 'blueprint.yml'));
+    ymlText = await read(path.join(artifactsRoot, 'blueprint.yml'));
   } catch {
     ymlText = null;
   }
@@ -358,7 +362,7 @@ export default async function review({ targetDir, blueprintYml }) {
   const populated = [];
   const missing = [];
   for (const rel of req.dirs) {
-    const dir = path.join(targetDir, rel);
+    const dir = path.join(artifactsRoot, rel);
     if (!(await exists(dir))) {
       missing.push(rel);
       findings.push({
@@ -386,7 +390,7 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // ── 4-5. Synthesizing artifacts (brownfield: 01-diagnose.md ≥1KB, must cite legs)
   for (const artifact of req.artifacts) {
-    const ap = path.join(targetDir, artifact);
+    const ap = path.join(artifactsRoot, artifact);
     if (!(await isSubstantive(ap, ARTIFACT_BYTES))) {
       findings.push({
         severity: 'BLOCK',
@@ -420,7 +424,7 @@ export default async function review({ targetDir, blueprintYml }) {
   const jtbdFieldsIncomplete = [];
   // persona-slug -> Set of surfaces it declares a JTBD for (for funnel coherence).
   const personaSurfaces = new Map();
-  const personasDir = path.join(targetDir, 'research', 'personas');
+  const personasDir = path.join(artifactsRoot, 'research', 'personas');
 
   if (req.requiresJtbd && (await exists(personasDir))) {
     const units = await discoverPersonas(personasDir);
@@ -513,7 +517,7 @@ export default async function review({ targetDir, blueprintYml }) {
   // we look for a known persona slug AND a surface token co-occurring on a funnel
   // line. Surface extraction is heuristic — flagged INFO so the agent knows the
   // mechanical matcher's limits.
-  const funnelDir = path.join(targetDir, 'research', 'funnel');
+  const funnelDir = path.join(artifactsRoot, 'research', 'funnel');
   const funnelSurfacesWithoutJtbd = [];
   if (req.requiresJtbd && (await exists(funnelDir)) && personaSurfaces.size > 0) {
     const funnelFiles = [];
@@ -589,7 +593,7 @@ export default async function review({ targetDir, blueprintYml }) {
   // ── 8. Architect-challenge check (platform-feature only) ─────────────────────
   let architectStatus = 'skipped';
   if (initiativeType === 'platform-feature') {
-    const csDir = path.join(targetDir, 'research', 'current-state');
+    const csDir = path.join(artifactsRoot, 'research', 'current-state');
     const primary = path.join(csDir, 'architectural-options.md');
     let optionsFile = null;
     let body = '';

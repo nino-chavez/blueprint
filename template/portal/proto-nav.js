@@ -455,7 +455,8 @@
     }
 
     const citationRows = resolveCitations(slice);
-    const chipHtml = citationRows.length ? renderCitationChip(citationRows) : '';
+    const hasCitations = MANIFEST?.citations && citationRows.length;
+    const chipHtml = hasCitations ? renderCitationChip(citationRows) : '';
 
     // Three-section nav with active highlighting
     const navItems = [
@@ -492,7 +493,7 @@
     wireCrumbSwitchers(bar);
     bar.querySelector('.palette-hint')?.addEventListener('click', () => openPalette());
 
-    if (citationRows.length) {
+    if (hasCitations) {
       const overlayWrap = document.createElement('div');
       overlayWrap.innerHTML = renderCitationOverlay(citationRows);
       document.body.appendChild(overlayWrap.firstElementChild);
