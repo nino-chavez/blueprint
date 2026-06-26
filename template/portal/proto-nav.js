@@ -570,8 +570,14 @@
   function buildStrategyPanel(meta) {
     if (!meta || !meta.strategy) return;
     const s = meta.strategy;
-    // Helper to render content that may contain markdown-ish inline syntax
-    const render = (text) => text || '';
+    // Helper to render content that may contain markdown-ish inline syntax.
+    // Parses **bold** and `code`; existing HTML (e.g. a consumer that wrote
+    // <strong>/<code> directly) passes through untouched, so this is backward-
+    // compatible. _meta is author-controlled, so raw-HTML passthrough is fine.
+    const render = (text) =>
+      (text || '')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
 
     // Build the systems-position block (phase + chrome) if declared
     const systemsParts = [];
