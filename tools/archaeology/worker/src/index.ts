@@ -366,6 +366,26 @@ async function derive(url: URL, env: Env): Promise<Response> {
   }
 }
 
+// Build the citation-friendly source block shared by /derive and /derive/stream.
+// Each chunk leads with its event_id (load-bearing for the [E:<id>] citation contract);
+// the remaining metadata sits on one compact header line and the payload text follows
+// directly. Field labels are kept (the model uses them) but the per-chunk `---` fences
+// are dropped — across ~20 chunks on every call that scaffolding is pure input-token
+// overhead. The `[#N] event_id=...` header line plus the blank-line join is delimiter
+// enough. Chunk count (20) and per-chunk length (1500) are unchanged: right-sizing
+// those affects answer quality and is gated on measurement, not assumed.
+function buildSourceBlock(
+  ranked: Array<{ score: number; chunk_id: string; event: any }>,
+): string {
+  return ranked.slice(0, 20).map((r, i) => {
+    const ev = r.event;
+    const payload = JSON.parse(ev.payload_json);
+    const text = extractText(ev.type, payload);
+    return `[#${i + 1}] event_id=${ev.event_id} source=${ev.source} type=${ev.type} source_id=${ev.source_id} ts=${ev.source_ts} score=${r.score.toFixed(3)}
+${text.slice(0, 1500)}`;
+  }).join("\n\n");
+}
+
 async function synthesizeWithClaude(
   question: string,
   ranked: Array<{ score: number; chunk_id: string; event: any }>,
@@ -373,20 +393,7 @@ async function synthesizeWithClaude(
 ): Promise<{ answer: string; citations: string[]; model: string }> {
   const model = env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
-  // Build a citation-friendly source block. Each chunk shows event_id, source, type,
-  // ts, and the relevant payload text. The system prompt requires Claude to cite
-  // event_ids inline as [E:<id>] so the answer is auditable.
-  const sources = ranked.slice(0, 20).map((r, i) => {
-    const ev = r.event;
-    const payload = JSON.parse(ev.payload_json);
-    const text = extractText(ev.type, payload);
-    return `[#${i + 1}] event_id=${ev.event_id}
-source=${ev.source} type=${ev.type} source_id=${ev.source_id} ts=${ev.source_ts}
-score=${r.score.toFixed(3)}
----
-${text.slice(0, 1500)}
----`;
-  }).join("\n\n");
+  const sources = buildSourceBlock(ranked);
 
   const system = `You answer archaeological questions about the subs-initiative project by reasoning from a retrieval result of historical events (sessions, ADRs, audits, inputs manifest, iterations register).
 
@@ -529,17 +536,7 @@ async function streamSynthesisFromClaude(
 ): Promise<Response> {
   const model = env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
-  const sources = ranked.slice(0, 20).map((r, i) => {
-    const ev = r.event;
-    const payload = JSON.parse(ev.payload_json);
-    const text = extractText(ev.type, payload);
-    return `[#${i + 1}] event_id=${ev.event_id}
-source=${ev.source} type=${ev.type} source_id=${ev.source_id} ts=${ev.source_ts}
-score=${r.score.toFixed(3)}
----
-${text.slice(0, 1500)}
----`;
-  }).join("\n\n");
+  const sources = buildSourceBlock(ranked);
 
   const contextLine = pageContext
     ? `Context: the visitor asked this from the subs-initiative portal page \`${pageContext}\`. Scope your answer to topics relevant to that page when the retrieval supports it.\n\n`
