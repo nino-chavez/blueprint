@@ -123,7 +123,11 @@ audit, don't accept the proxy.
   encoder.
 - **Lessons 3–4** are CI-config invariants: a check that the acquisition-path test
   exists, is not `skip`-ped, and runs on `pull_request`; and that every host with a
-  contract dependency runs a typecheck in CI.
+  contract dependency runs a typecheck in CI. **Shipped instance**: `subs-initiative`
+  `3462b34f` — a path-scoped `.github/workflows/contract-gate.yml` that runs on
+  `pull_request` paths matching the storefront, api, or contract package; executes
+  the cross-boundary contract test + storefront typecheck. This is the PR-gate shape
+  for Lessons 3–4 ready to copy.
 - **Lesson 5** reuses the `inventory-as-evidence` / ground-truth spine — assert the
   derived artifact, already mechanized as `state-derive` for presence; extend to a
   row-materialization assertion for function.
