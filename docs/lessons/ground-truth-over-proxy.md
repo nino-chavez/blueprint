@@ -4,7 +4,7 @@ canonical: true
 
 # Ground-Truth-Over-Proxy — Lessons From a Gate-Ladder Build Wave
 
-**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path.
+**Status**: Captured 2026-06-16 from the subs-initiative G4 build wave (13 features driven from AI-authored designs to a passing behavioral scenario, one at a time). **Single-initiative** — candidate for cross-consumer promotion when a second initiative reproduces ≥2 of these lessons. The mechanical backbone for Lesson 1 already exists (`state-derive`); Lessons 2–7 are currently discipline, and each is a candidate for the methodology's advice→lint promotion path. **L8 (added 2026-06-25)** is mechanized — its structural guard ships as [`template/tools/spec-obligation-registry/`](../../template/tools/spec-obligation-registry/).
 
 **Last updated**: 2026-06-24 (Lesson 7 added — load-testing surface from subs-initiative June 2026 perf work)
 
@@ -111,6 +111,14 @@ None were subtle. All were invisible to the tests that existed. The shared struc
 
 **Generalization.** Add a smoke-mode load run to CI at the same tier as behavioral tests, not later. Thirty seconds of real traffic against the dev stack is enough to surface the class of bugs that live at the intersection of state, sequence, and realistic inputs — the class that unit and scenario tests structurally cannot reach. The smoke run is ground truth; everything before it is proxy.
 
+### 8. The denominator is the proof — a true check of the wrong set still lies
+
+**Principle.** L1–L7 are one spine: a *representation drifts from the system*. There is a second, independent way a "prove it" lies — the check is faithful to the system but **quantifies over the wrong set**. "Prove we covered all X" is two claims: (a) every member of set S is covered — mechanically checkable; (b) S is *all the X there are* — the denominator. When S silently excludes members, every member of S can pass and the claim is still false. The denominator, not the check, is where the proof is won or lost.
+
+**Grounding.** subs-initiative US-8.1 named three telemetry events in a story's deeper-section block; the completeness machinery's universe was "the story's ACs", which excluded deeper-section requirements. Every AC passed; a named event shipped with **zero producers**, invisible to every gate. The fix was not a stronger check — it was naming the missing denominator (the requirement grain *below* the AC) plus a third false-green guard: a `grep` that didn't exclude the spec proved the event against its *own declaration* (oracle self-reference — a representation-faithful proof reading the wrong *source*).
+
+**Generalization.** For every "prove it," name the **universe-source** before the oracle, and treat "S is complete" as its own claim — derived from ground truth, signed by a human, or pressured by adversarial search; never assumed. This is the [proof-obligation registry](../../template/docs/methodology/proof-obligation-registry-pattern.md): the ladder's five gates plus N more, each required to name where its complete set comes from. The law that ties all eight lessons together: **a proof's evidence must come from a source the claim does not control** — L1–L7 are its representation-drift faces; L8 is its denominator face.
+
 ---
 
 ## How to apply — the pre-build checklist
@@ -123,6 +131,7 @@ Distilled to what a builder does *before* and *as* they build:
 4. **For any destructive change, source from live state and run every consumer of what you touch.** Check for one-way doors first (L5).
 5. **Run the generated design against the known-drift checklist before trusting a line of it.** Verify "no regression" differentially, not absolutely (L6).
 6. **Run a 30-second smoke load test against the dev stack before calling the feature done.** If the handler has never seen real traffic, it hasn't been tested (L7).
+7. **Before proving "all X" are covered, name where the complete set of X comes from — and treat "that set is complete" as its own claim.** A true check of the wrong set still lies (L8).
 
 ## Promotion criteria
 

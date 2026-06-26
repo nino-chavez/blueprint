@@ -4,6 +4,30 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-25 — The DoD ladder grounds ACs, not specs: generalize five fixed gates to N proof obligations
+
+**Trigger**: subs-initiative found a normative requirement (US-8.1's `widget.impression` telemetry, named in a story's `**Data contract.**` deeper-section) that shipped "done" with zero producers — invisible to every gate because the DoD ladder grounds *acceptance criteria* and nothing grounds the requirements a story carries *below* its ACs. ~200 such deeper-section blocks existed; no existing completeness lint descends below AC grain into a story body. Independently verified (lint boundaries, orphan reproduced, parser-feasibility, industry citations) via a verification workflow.
+
+**Scope**: Methodology pattern + portable tool. The five-gate ladder is a *special case* of a more general object — promotion-ready as a pattern doc + a portable registry engine; the requirement-grain instance-1 lint stays consumer-local (BRD-format-coupled) and is referenced as the canonical instance.
+
+**Bucket**: methodology (verification-completeness generalization)
+
+**Status**: Active. Single-initiative — promote to cross-consumer law when a second consumer registers a non-ladder obligation and the registry catches a real defect.
+
+**Finding 1 — The ladder answers five fixed questions about an AC; a real spec makes more claims, at finer grain.** "Did we cover all use cases / verify every normative requirement inside a story / make every handler reachable / match every contract to live?" are all the same shape as a ladder gate. The fix is not a sixth gate — it is a **proof-obligation registry** where every "did we X? prove it" is one obligation (`claim → universe-source → oracle/tier → cadence → freshness`) and the five gates are five rows. The ladder pattern's own note "G4-green ≠ fully tested … recursed one gate up" is this generalization's starting point.
+
+**Finding 2 — Every false "prove it" is one of three failure axes; two are mechanically guardable.** Rigged denominator (the universe silently excludes members — the new face), too-weak oracle (presence ≠ function — the ladder's own G3-read-as-done), oracle self-reference (the proof reads the claim's own declaration as evidence). THE LAW that unifies them, and generalizes the audit-discipline rule to the whole prover: *a proof's evidence must come from a source the claim does not control.* The registry's `validate` enforces axes 1+3 structurally (a `grep` oracle MUST declare a four-guard binding; every obligation MUST name its universe-source).
+
+**Finding 3 — The denominator is the failure axis `ground-truth-over-proxy` was missing.** Its six (now seven) lessons are all representation-drift; the rigged-denominator is a *second spine* (a faithful check of the wrong set), added there as L8. This is also where the achievability ceiling sits: T1 internal completeness is mechanical, T2 requirement quality is a skill, **T3 external completeness ("did we omit a requirement the system needs?") is not mechanically provable** — make the universe explicit, sign it, attack it adversarially; never pretend it's solved.
+
+**Finding 4 — Authored-grain obligations roll out format-on-touch, never a big-bang parse.** A reliable regex over heterogeneous prose deeper-sections is infeasible (verified) and would manufacture the exact false-greens the obligation kills. The requirement is *authored* in a parseable block on touch; the lint runs WARN for the backlog, ERROR for adopted stories, and a known-unbuilt artifact closes via a visible `gap:<issue>` — never silently green.
+
+**Promotion candidates (shipped into `template/` here):** (1) `template/docs/methodology/proof-obligation-registry-pattern.md` (the generalization); (2) `template/tools/spec-obligation-registry/` (the portable registry engine + the three-axis structural contract, seeded with the five ladder gates + a commented instance-1); (3) a forward-pointer added to `dod-verification-ladder-pattern.md`; (4) L8 added to `docs/lessons/ground-truth-over-proxy.md`. The requirement-completeness lint + the parseable `normative-requirements` block format stay consumer-local until a second consumer reproduces them.
+
+**References**: subs-initiative `[Spec] #1700` (proof-obligation registry), `ADR-0076`, `METHODOLOGY §8.1b`, `[Spec-Reconciliation] #1701` (the US-8.1 telemetry orphan); generalizes [[dod-verification-ladder-pattern]] (wave 52/62/63); extends [[ground-truth-over-proxy]] (L8). Relates to the [[2026-06-17]] honest-reckoning discipline (verification, not novelty, is Blueprint's contribution).
+
+---
+
 ## 2026-06-17 — Dogfooding the research variant on a strong-input initiative: Blueprint's value is error-filtering, not strategy generation; research initiatives usually need NO portal
 
 **Trigger**: End-to-end dogfood of the new `research` variant (PRs #22-24) on the mrr-automation / partner-NRR initiative — an A/B/B′ run on the same 8-document input set + a relayed dashboard — followed by an honest reckoning of what the produced decision memo actually *unlocks* versus its inputs.
