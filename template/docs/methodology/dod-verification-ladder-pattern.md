@@ -2,6 +2,8 @@
 
 **Status: mechanical half ratified (wave 62).** Wave 52 shipped the spec side; instance 1 — the `blueprint-example` consumer — built the mechanical implementation, ratified the four delegated design decisions, and ran the ladder at scale across a real backlog. This doc now carries both halves: the principle + five gates (wave 52) and the resolved mechanical realization + verification discipline (wave 62). The check-primitive *code* — `scenario_passes` + the normalizer — shipped into `template/tools/` in **wave 63** (see § The mechanical half → Engine lift).
 
+> **Generalized (2026-06-25, subs-initiative).** The five gates below are five **fixed** proof obligations. A real spec makes more claims than that, at finer grain (e.g. "did every normative requirement *inside* a story get verified, not just its ACs?"). The general form — register N obligations in one table, of which these five are rows — is [`proof-obligation-registry-pattern.md`](proof-obligation-registry-pattern.md). This doc's own note that "G4-green ≠ fully tested … recursed one gate up" is that pattern's starting point. Read this for the canonical five-gate spine; read the registry pattern to extend it.
+
 ## The principle: a presence oracle is not a function oracle
 
 `tools/state-derive` answers one question well: **do the expected code artifacts exist?** Every check primitive it ships is static — `file_exists`, `grep_present`/`grep_absent`/`grep_count`, `schema_has_table`/`schema_has_column`, `commit_message_grep`. None of them execute code, hit an endpoint, or assert that a test passed.

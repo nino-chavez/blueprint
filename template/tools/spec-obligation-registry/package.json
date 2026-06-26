@@ -1,0 +1,17 @@
+{
+  "name": "@blueprint/spec-obligation-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Portable proof-obligation registry — generalizes the DoD ladder to N obligations (claim → universe-source → oracle → cadence → freshness). Validates the three-axis structural contract (rigged-denominator / too-weak-oracle / oracle-self-reference). Pattern: template/docs/methodology/proof-obligation-registry-pattern.md.",
+  "scripts": {
+    "validate": "tsx index.ts validate",
+    "list": "tsx index.ts list",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "//": "No dependencies. tsx + vitest resolve from the workspace. Seeded with the five ladder gates; consumers append their own obligations + a commented instance-1 example."
+}
