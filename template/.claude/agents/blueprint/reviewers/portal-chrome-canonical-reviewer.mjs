@@ -120,11 +120,15 @@ async function loadChromeManifests(home) {
     }
   }
 
-  // Fallback if either profile is missing
+  // 'live' only when BOTH profiles parsed from stamp.mjs. Determine this BEFORE
+  // assigning fallbacks — otherwise the post-assignment arrays are always non-empty
+  // and source could never read 'fallback' (the wave-74 two-profile defect: a
+  // hard-coded manifest would mislabel as live, masking a stale/broken stamp.mjs).
+  const parsedBoth = profileA != null && profileB != null;
   if (!profileA) profileA = FALLBACK_CHROME_FILES_PROFILE_A;
   if (!profileB) profileB = FALLBACK_CHROME_FILES_PROFILE_B;
 
-  const source = (profileA.length > 0 && profileB.length > 0) ? 'stamp.mjs' : 'fallback';
+  const source = parsedBoth ? 'live' : 'fallback';
   return { profileA, profileB, source, stampPath };
 }
 
@@ -388,9 +392,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // A small canonical manifest written into a fake stamp.mjs, exercising the
   // runtime parse path (proves we don't rely on the hard-coded fallback).
   const MANIFEST = ['shared.css', '_headers', 'docs/index.html'];
+  // Wave 74 two-profile model: loadChromeManifests parses PROFILE_A/PROFILE_B.
+  // Default (methodology-themed) scenarios resolve to Profile A; Profile B only
+  // needs to exist so the manifest source reads `live`, not `fallback`.
   await fs.writeFile(
     path.join(stampDir, 'stamp.mjs'),
-    `const PATTERN_B_CHROME_FILES = [\n${MANIFEST.map((f) => `  "${f}",`).join('\n')}\n];\n`,
+    `const PATTERN_B_CHROME_FILES_PROFILE_A = [\n${MANIFEST.map((f) => `  "${f}",`).join('\n')}\n];\n` +
+      `const PATTERN_B_CHROME_FILES_PROFILE_B = [\n  "canonical-primitives.css",\n  "_headers",\n  "docs/index.html",\n];\n`,
   );
   // Canonical chrome contents.
   const canonical = {

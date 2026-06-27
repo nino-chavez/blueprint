@@ -8,6 +8,15 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+## 0.4.1
+
+Patch — fixes a defect in the wave-74 `portal-chrome-canonical-reviewer` two-profile change.
+
+### Fixed
+
+- `loadChromeManifests` computed the manifest `source` label *after* assigning the hard-coded fallbacks, so the post-assignment arrays were always non-empty and `source` could never read `fallback` — a hard-coded (stale/broken `stamp.mjs`) manifest mislabeled as `live`, masking the condition. Now determined from whether the parse actually succeeded.
+- The reviewer's self-test fixture still wrote the pre-wave-74 `PATTERN_B_CHROME_FILES` constant; updated to the two-profile `PATTERN_B_CHROME_FILES_PROFILE_A/B` names so the self-test exercises the live-parse path. All 15 reviewer self-tests pass.
+
 ## 0.4.0
 
 Waves 62–74 rollup. Wave-level detail in [WAVE-LOG.md](./WAVE-LOG.md). **All changes are backward-compatible** — every new schema field is optional and defaults to prior behavior; the two structural items ship opt-in and default off.
