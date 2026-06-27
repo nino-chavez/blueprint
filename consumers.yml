@@ -40,15 +40,17 @@ version: 1                            # registry schema version (NOT a methodolo
 # (additive, optional fields default to prior behavior), so consumers are safe at
 # 0.4.0 without re-stamping. AUTHORITATIVE per-consumer pins (each blueprint.yml)
 # are rolling out as each repo commits; this mirror is bumped per-row only as the
-# consumer's own pin is committed (photography done 2026-06-26). Rows still at
-# 0.3.0/null have their authoritative-pin commit pending their repo's next push.
+# consumer's own pin is committed (rally-hq, atelier, photography done 2026-06-26 —
+# their blueprint.yml pins committed locally, pending each repo's own push). Rows
+# still at 0.3.0/null have their authoritative-pin commit pending their repo's next
+# push (dormant/unpinned consumers left until next active per operator direction).
 
 consumers:
   - repo: nino-chavez/rally-hq
     pattern: B
-    methodology_version: "0.3.0"      # pinned 2026-06-11 via blueprint upgrade --apply (blueprint.yml now at repo ROOT)
+    methodology_version: "0.4.0"      # bumped 0.3.0->0.4.0 2026-06-26 (wave-74 promoted its 7 amendments); pin committed
     owner: nino-chavez
-    synced_at: "2026-06-11"
+    synced_at: "2026-06-26"
 
   - repo: nino-chavez/blog
     pattern: B
@@ -82,9 +84,9 @@ consumers:
 
   - repo: nino-chavez/atelier              # wip/atelier — the coordination-substrate APP + interop
     pattern: bespoke                       #   protocol (the "hive becomes atelier" line). Stamped
-    methodology_version: "0.3.0"           #   2026-06-11: midstream / tier 2 / bespoke (ADR-001
-    owner: nino-chavez                     #   justifies the bespoke portal); state-derive synced to
-    synced_at: "2026-06-11"                #   wave 63. Reference impl of the coordinator↔DoD contract.
+    methodology_version: "0.4.0"           #   midstream / tier 2 / bespoke (ADR-001 justifies the
+    owner: nino-chavez                     #   bespoke portal). Bumped 0.3.0->0.4.0 2026-06-26; pin
+    synced_at: "2026-06-26"                #   committed. Reference impl of the coordinator↔DoD contract.
 
   - repo: nino-chavez/atelier-dashboard    # wip/atelier-dashboard-blueprint — the dashboard north-star
     pattern: null                          #   DESIGN initiative (Blueprint applied to design atelier's
