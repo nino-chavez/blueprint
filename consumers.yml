@@ -34,6 +34,15 @@
 
 version: 1                            # registry schema version (NOT a methodology version)
 
+# 2026-06-26 — methodology v0.4.0 cut (waves 62–74; wave 74 promoted 16 open
+# consumer amendments on operator override of the second-instance gate).
+# Operator directed a fleet-wide pin to 0.4.0. v0.4.0 is fully backward-compatible
+# (additive, optional fields default to prior behavior), so consumers are safe at
+# 0.4.0 without re-stamping. AUTHORITATIVE per-consumer pins (each blueprint.yml)
+# are rolling out as each repo commits; this mirror is bumped per-row only as the
+# consumer's own pin is committed (photography done 2026-06-26). Rows still at
+# 0.3.0/null have their authoritative-pin commit pending their repo's next push.
+
 consumers:
   - repo: nino-chavez/rally-hq
     pattern: B
@@ -117,9 +126,9 @@ consumers:
 
   - repo: nino-chavez/nino-chavez-photography
     pattern: B                        # Confirmed 2026-06-12: blueprint.yml at apps/photography/blueprint/blueprint.yml,
-    methodology_version: "0.3.0"      #   portal_pattern: B, methodology_version: 0.3.0. Variant: MIDSTREAM, tier 2.
-    owner: nino-chavez                #   Portal at blueprint/portal/. Active — docs/index.html synced to template.
-    synced_at: "2026-06-12"
+    methodology_version: "0.4.0"      #   portal_pattern: B. Variant: MIDSTREAM, tier 2. Bumped 0.3.0->0.4.0 on
+    owner: nino-chavez                #   2026-06-26 (wave-74 promoted its 4 amendments); blueprint.yml pin committed.
+    synced_at: "2026-06-26"
 
   # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
   - repo: external-a/media-toolkit    # de-named (external operator, A.); real identity in consumers.local.yml
