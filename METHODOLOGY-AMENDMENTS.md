@@ -4,6 +4,104 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-29 — Subscriber-surface IA audit surfaced three spec-grain gaps the DoD ladder and traceability sweep structurally cannot catch
+
+**Trigger**: A subscriber portal IA/frontend design audit on the subs-initiative (bc-subscriptions) found five P0/P1 issues in shipped code: `past_due` subscriptions rendered a red badge with zero action affordance (subscriber stranded with no path forward); `window.confirm()` used for cancel/reactivate confirmation (browser-native dialog, not designed UI); a standalone "Apply discount" button that BRD US-20.3 scopes exclusively to the cancel funnel; misleading "Currently 1" quantity subtitle (field absent from the portal API type); ARIA violations across dialog, region, and status roles. Retroanalysis traced these to three distinct spec-grain failure modes — and found that the existing DoD ladder (G1–G5), the traceability sweep (prototype→production 4-link chain), and the proof-obligation registry all fail to catch them, because the gap is *before* any of these checks have material to evaluate.
+
+**Scope**: Candidate for methodology promotion (instance 1, from subs-initiative)
+
+**Bucket**: methodology (two failure modes) + reviewer (one failure mode, candidate)
+
+**Status**: Active
+
+---
+
+### Failure mode 1 — The edge-state rendering contract tier is missing from spec (the primary gap)
+
+**Observed:** ACs for subscriber-surface stories describe the golden path. None specify what the subscriber sees when the system is in an error or exception state — no AC for `past_due`, no AC for network failure on form submit, no AC for the empty-state (no subscriptions). The BRD defines the `past_due` status as a system concept (§US-11.x, dunning), but no story says "when subscription.status = past_due, the subscriber portal renders [badge copy] and [action affordance]." Implementers made judgment calls that shipped plausible-looking but subscriber-hostile UX.
+
+**Why the DoD ladder doesn't catch it:** G1 (AC written in spec?) answers YES for "subscriber can view their subscriptions" — a real AC exists. It would answer "not applicable" for "past_due renders update-PM CTA" because that AC *was never written*. The ladder is an honest oracle; it cannot evaluate what was never authored. G2/G3/G4 are all downstream of G1.
+
+**Why the traceability sweep doesn't catch it:** the 4-link chain (research → meta → prototype → production) walks the surfaces that exist. No meta captured a `past_due` state screen because no research finding named subscriber-visible `past_due` handling; no prototype page shows a `past_due` row. The chain faithfully concludes: "nothing to diff against." Absence is invisible.
+
+**The gap:** A missing contract tier between the system-state definitions in BRD §epics and the per-story ACs. For every subscriber-visible status enum value the system can place a subscription into, there must be a corresponding **UI rendering contract** specifying: subscriber-visible label, action affordance(s), and error copy. Without it, the implementer authors the contract at implementation time — silently, with no gate.
+
+**Candidate fix (methodology bucket, per-story section requirement):** For any BRD story whose surface is subscriber-facing (portal, widget, email) AND whose parent system emits multiple status values, add a required `ui-states` section to the AC:
+
+```
+| Status     | Badge / copy          | Primary CTA (if any)        |
+|------------|-----------------------|-----------------------------|
+| active     | "active"              | —                           |
+| paused     | "paused"              | Resume now                  |
+| past_due   | "Payment issue"       | Update payment method       |
+| cancelled  | "cancelled"          | Reactivate (within grace)   |
+```
+
+This section is G1 material — without it, the subscriber-facing portal has no G1 AC to evaluate for error states. The table populates G2 (a prototype screen for each state), G4 (a scenario per non-happy-path state), and G5 if live-path behavior exists.
+
+The retrofix check is mechanical: enumerate every enum value in the domain schema for the resource the surface renders, and confirm each has a corresponding row in a `ui-states` table in some BRD story. Any enum value without a row is a G1 gap.
+
+---
+
+### Failure mode 2 — Prototype screens are golden-path-only; error/edge states are never screened
+
+**Observed:** The convergence stills and prototype screens for the subscriber portal capture the active subscription with management actions expanded. No screen captures: a `past_due` row, the cancel funnel mid-state, an empty subscriptions list, a NTI + prepaid banner stacked on the same row. These states are unreachable from the happy-path flow a prototype author naturally walks.
+
+**Why this is different from failure mode 1:** Even when a `ui-states` table exists in the BRD, the G2 (prototype screen) check would fail if no screen shows the error state. Failure mode 1 is the missing spec; failure mode 2 is the missing prototype artifact for the spec that does exist.
+
+**Why the traceability sweep doesn't catch it:** the sweep agents look for "what the prototype shows for this meta's route" — if no prototype page exists for the error state, the sweep produces no finding. It does not synthesize "there is no screen for past_due; this is a gap."
+
+**Candidate fix (methodology bucket, prototype authoring convention):** Add a convention to the prototype-authoring stage: for any surface that renders a stateful domain object, the prototype MUST include a **states gallery** — one still or interaction screen per status enum value the object can hold. The states gallery is a G2 artifact; its absence makes G2 structurally incomplete for error states even when the happy-path G2 is COMPLIANT.
+
+Practical shape: the Kibble/subs-initiative demo-stills pipeline already supports this — seed a D1 fixture with a `past_due` subscription and run stills capture against the portal route. The output is the states-gallery artifact. No manual Figma work required.
+
+---
+
+### Failure mode 3 — UI micro-contracts have no spec anchor; implementer judgment is the only gate
+
+**Observed:** ARIA role violations (`role="region"` on an inline expansion widget, `role="note"` on a status banner, missing `aria-describedby` on an `alertdialog`); loading state copy missing from intervention buttons (bare "…" instead of "Pausing…" / "Applying…"); focus management on panel open unspecified and unimplemented; duplicate form components (shipping and billing address forms share identical code). None of these are specced in the BRD. No AC says "the cancel funnel alertdialog must carry aria-describedby." No prototype shows a loading state on a button.
+
+**Why this is different from the first two:** This is not an edge-state problem — it is a **behavior-grain** problem. The happy-path AC is fully specified and prototyped. What is missing is a layer of implementation standards that constrains HOW the happy path is rendered — ARIA patterns, loading states, focus management, input type constraints — that are below the AC grain and above raw developer preference.
+
+**Why no existing gate catches it:** The DoD ladder gates existence (G3) and behavior (G4). A G4 scenario "subscriber cancels subscription" passes when the cancel succeeds — it does not test `aria-describedby` presence. ARIA conformance is a structural property of the rendered DOM, not a behavioral property of the subscription lifecycle.
+
+**Candidate fix (reviewer bucket, instance 1):** A `ui-rendering-contract-reviewer` that, for any PR touching subscriber-facing components, checks:
+
+1. Every `role="alertdialog"` carries both `aria-labelledby` AND `aria-describedby`
+2. Every inline disclosure widget uses `role="group"` (not `role="region"`, which is a landmark)
+3. Every interactive state change (pending API call) has explicit loading copy (not a spinner alone)
+4. No `window.confirm()` / `window.alert()` in component files
+5. Interactive elements that open panels carry `aria-expanded`
+
+This reviewer is a second-instance candidate; the subs-initiative audit is instance 1. The reviewer would run as part of the PR gate for any surface touching subscriber-facing or merchant-facing UI.
+
+---
+
+### Relationship to existing patterns
+
+- **DoD Ladder (dod-verification-ladder-pattern.md):** Failure modes 1 and 2 are G1 gaps — the AC and the prototype screen were never authored for error states. The ladder is not the problem; the problem is upstream of G1. The fix belongs in the AC authoring convention (failure mode 1) and the prototype authoring convention (failure mode 2).
+- **Traceability sweep (prototype-vs-production-traceability-sweep.md):** The sweep is designed to catch drift when a prototype screen EXISTS. It has no mechanism for surfacing the absence of a required prototype screen for an error state. A future extension of the sweep could add a "missing states gallery" check: for each meta whose resource has a status enum, verify each enum value has a corresponding sweep target.
+- **Proof-obligation registry (proof-obligation-registry-pattern.md):** Failure mode 1 is the same obligation-grain gap the registry generalized from the DoD ladder — a normative requirement (the subscriber sees X when status = Y) lives implicitly in the domain but never gets registered as a provable claim. The `ui-states` table is the registration mechanism.
+
+### What the retrofix looks like at the story level
+
+For an existing BRD story covering a subscriber-facing surface:
+1. Enumerate every status value the rendered resource can hold (from the D1 schema).
+2. Add a `ui-states` table to the story body (closes G1 for each status).
+3. For each row, add a prototype still showing that state (closes G2).
+4. For each non-happy-path row, author a G4 scenario asserting the correct rendering.
+
+For a new story:
+- The `ui-states` table is required on any subscriber-surface story before the story moves to implementation. A story with a partially populated table (happy path only) is incomplete.
+
+**References**:
+- subs-initiative subscriber portal audit session 2026-06-28/29: `past_due` stranded user, `window.confirm()` removal, standalone discount button removal, ARIA fixes across `CancelSubscriptionButton`, `ManagePanel`, `UpdatePaymentForm`
+- subs-initiative `apps/storefront-svelte/src/lib/subscriptions/` — the concrete artifact set
+- Generalizes [[dod-verification-ladder-pattern]] (the G1 gap class) and [[prototype-vs-production-traceability-sweep]] (golden-path-only screens)
+- Relates to [[proof-obligation-registry-pattern]] (unregistered normative claim → no provable obligation)
+
+---
+
 ## 2026-06-25 — Canonical stakeholder chat: raw-markdown + unescaped innerHTML + mid-word truncation
 
 **Trigger**: ChapterZero's deployed chat (the canonical OpenRouter-over-docs pattern) rendered answers with literal `**asterisks**` and `1.` list markers, and cut off mid-word ("…labeled unpr") on longer answers. Root cause sits in the canonical template: `chat-widget.js renderMessage` did `innerHTML = text.replace(/\n/g,'<br>')` (markdown unrendered AND model output injected unescaped — an XSS hole), and `chat.js` had `max_tokens: 800` with no `finish_reason` handling.
