@@ -4,6 +4,56 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-06-29 — The UI-rendering-contract gap is app-wide, not portal-local; enforcement is a lint EXTENSION, not a new reviewer; and a single-slice amendment shipped two blind spots a breadth pass corrected
+
+**Trigger**: The same subscriber-portal audit that produced the entry below (the narrow, single-slice version) was re-grounded by a 7-agent recon+critique workflow that swept all three of the initiative's design languages (React/BigDesign admin, Svelte storefront, React/Next catalyst) plus the BRD spec structure and the existing enforcement substrate. The breadth pass changed three material conclusions of the entry below and added the hardest finding it missed. An adversarial completeness critic then caught that the draft plan's "smallest proof" was sequenced against an already-fixed component, not the still-broken keystone — verified true in the working tree.
+
+**Scope**: Candidate for methodology promotion (instance 1, **generalized** + enforcement mechanism designed). Pattern doc shipped to `template/` below; the portable lint extension promotes once the consumer ratifies and builds it (it extends the already-shipped [[proof-obligation-registry-pattern]] lineage — the ui-state is one obligation class).
+
+**Bucket**: methodology (spec tier + enforcement mechanism) + meta (amendment-promotion discipline)
+
+**Status**: Active. Promotes and partly supersedes the 2026-06-29 entry below (the diagnosis holds; the candidate fixes are replaced).
+
+---
+
+### Finding 1 — The gap generalizes across every design language; the entry below under-scoped it to the subscriber portal
+
+The breadth pass sampled 28 surfaces across ~90 app-functional interactive surfaces and found the missing-non-happy-path-rendering-contract gap in all three, with an **inverse profile** that proves it is a spec-tier cause, not a framework one:
+
+- **Svelte storefront** (39 surfaces): 9/10 sampled miss ≥1 state; the most-missing are error and edge-status. `GiftClaimView` is the lone full-coverage control — same author, same framework, full 6-state coverage — which is the proof that the floor is *author-dependent*, i.e. a missing templated contract, not an impossible one.
+- **React/Next catalyst** (~8 functional): 7/8 miss focus-mgmt, 4/8 miss edge-status; mutation forms ship with **no error catch at all** (rejected call = permanent spinner).
+- **React/BigDesign admin** (43 surfaces): the *inverse* — the component library auto-provides error/badge rendering, so the silence shows through exactly where the library does NOT help: focus-mgmt absent 10/10, two hard P1 keyboard dead-ends (`<div onClick>` with no role/tabIndex; bare unlabeled `<input>`/`<select>`).
+
+**The generalization**: a framework that bakes in error/badge rendering (BigDesign) masks the gap on the states it auto-provides and exposes it on the states it does not (loading, focus, keyboard). The contract tier is what forces the floor *regardless of framework*. Of the BRD's 218 stories, **181 are UI-surface** (37 backend, partitioned by a persona predicate), and only ~8–10 enumerate any state at all, in 6 inconsistent prose spellings, **zero machine-enforceable**. The gap is the spec template's, and every UI story written from it inherits it.
+
+### Finding 2 — Enforcement is an EXTENSION of the requirement-completeness lint, not a new `ui-rendering-contract-reviewer` (corrects the entry below, failure-mode-3 candidate fix)
+
+The entry below proposed a new bespoke reviewer that greps for ARIA/`window.confirm`/`aria-expanded`. The recon found that is the wrong host on minimum-complexity grounds: the initiative already runs `requirement-completeness-lint` — **the only completeness lint that descends *into* a story body** ("one grain below the AC," per its OWNER-SPEC), already carrying a block parser, a `closes:`-via taxonomy, and the format-on-touch WARN/ERROR rollout. The ui-states rule is an additive parser + three structural guards on that engine, not a new tool. A standalone DOM reviewer would fork the closure machinery and the AC↔scenario join the project already owns. **Generalizable rule: a new spec-grain check extends the body-descending completeness lint; it does not spawn a sibling reviewer.**
+
+### Finding 3 — The contract is a schematized block with content-aware ERROR guards, not a markdown table (supersedes the entry below's candidate fix)
+
+The entry below's `ui-states` markdown table is human-readable but enforces nothing beyond "a table exists." The ratified shape is a fenced ` ```yaml ui-states ` block with the full 6-state matrix and **three ERROR guards that fire on the actual defect classes observed**: (a) any `edge_status` entry with empty/missing `affordance` — the dead-end guard, the `past_due` P0 directly; (b) `error` missing `surfaced_at`/`recovery` — the vanishing-toast guard; (c) an `inputs` field over an enumerable domain typed `control: text` with no `allowed_values` — the raw-ISO-country guard. Key-presence alone is insufficient: it passes a story that hand-waves the highest-density gap (see Finding 4).
+
+### Finding 4 — The hardest gap the entry below missed entirely: focus-mgmt/keyboard is the MOST-missing state AND the LEAST-tooled
+
+Focus-management and keyboard-reachability is the single most-missing state across all three apps (admin 10/10, svelte 5/10, catalyst 7/8), and the existing render-assertion harness **cannot assert it**. The initiative's Playwright tier asserts badge visibility and `getByRole` *presence* — not focus movement, tab order, or the keyboard-reachability of `div-onClick` controls. Nothing in-repo asserts it. So the enforcement tier, if built naively, will mechanically pass on the easy route-badge cases while leaving the actual P0/P1 defects — keyboard dead-ends and inline-panel error holes — un-asserted and un-queued. **The contract tier must own a focus/keyboard-assertion capability explicitly (Playwright `keyboard.press('Tab')` sequencing + `:focus` checks, or axe-core for the dead-end class); it is not free, and it is exactly where the gap is largest.** Two structural corollaries the recon found: component-level inline panels are not route-mounted (the `page.goto` harness can't reach them — needs a component-mount tier or parent-route driving), and the binding rail should be the minimal `closes: render:<page-object#method>` against the *existing* Playwright tier, NOT a net-new scenario-spine render-state rail (that rail's only marginal value is demo-tour sync — defer it).
+
+### Finding 5 (meta) — A single-slice amendment ships the slice's blind spots into every future project unless a breadth pass re-grounds it before promotion
+
+The entry below was authored from one surface's audit. It got two things materially wrong — it scoped the gap to the subscriber portal (it is app-wide, with an inverse profile in component-library surfaces) and it proposed a new reviewer (the right host is the existing body-descending lint) — and it missed the hardest finding (focus-mgmt is both most-missing and least-tooled). None of these were visible from one slice; all three fell out of a breadth pass across the other design languages. **Promotion-gate rule: an amendment scoped "candidate for methodology promotion" from a *single* surface/slice must be re-grounded by a deliberate breadth pass (other surfaces, other frameworks, the enforcement substrate it assumes) before it lands in `template/` — otherwise the slice's framing and its tooling blind spots are inherited by every project that adopts the template.** This is the amendment-process analogue of the rigged-denominator axis in [[proof-obligation-registry-pattern]]: a faithful capture of too-narrow a universe.
+
+### Promotion candidate (shipped into `template/` here)
+
+`template/docs/methodology/ui-rendering-contract-tier.md` — the pattern: every UI-surface story carries a `ui-states` contract (the 6-state matrix) as required G1 material, authored before implementation; enforcement extends the body-descending completeness lint with three content-aware guards; render assertions bind via the existing component/e2e tier, with focus-mgmt called out as the capability that must be built, not assumed. The portable lint engine stays consumer-local until the subs-initiative ratifies+builds it; the pattern doc is promotion-ready now because it is a spec-authoring discipline, not code.
+
+**References**:
+- subs-initiative recon+critique workflow `wf_5f5b3afd-876` (7 agents, 768K tokens): 3 surface audits + BRD spec-structure analysis + enforcement-substrate analysis + synthesis + adversarial completeness critic
+- Working-tree verification: `apps/storefront-svelte/src/lib/subscriptions/SubscriptionDetailView.svelte:52-58,99` (the still-broken keystone — `/portal/subscriptions/[id]`) vs `SubscriberPortalApp.svelte:528-542` (the fixed sibling at three other routes); the two are divergent duplicate detail surfaces
+- Promotes the [[2026-06-29]] subscriber-surface entry below; extends [[proof-obligation-registry-pattern]] (the ui-state as an obligation class) and [[dod-verification-ladder-pattern]] (the contract is G1 material the ladder cannot evaluate when unauthored)
+- Enforcement host: subs-initiative `tools/requirement-completeness-lint` (the body-descending completeness lint, instance-1 of the obligation registry)
+
+---
+
 ## 2026-06-29 — Subscriber-surface IA audit surfaced three spec-grain gaps the DoD ladder and traceability sweep structurally cannot catch
 
 **Trigger**: A subscriber portal IA/frontend design audit on the subs-initiative (bc-subscriptions) found five P0/P1 issues in shipped code: `past_due` subscriptions rendered a red badge with zero action affordance (subscriber stranded with no path forward); `window.confirm()` used for cancel/reactivate confirmation (browser-native dialog, not designed UI); a standalone "Apply discount" button that BRD US-20.3 scopes exclusively to the cancel funnel; misleading "Currently 1" quantity subtitle (field absent from the portal API type); ARIA violations across dialog, region, and status roles. Retroanalysis traced these to three distinct spec-grain failure modes — and found that the existing DoD ladder (G1–G5), the traceability sweep (prototype→production 4-link chain), and the proof-obligation registry all fail to catch them, because the gap is *before* any of these checks have material to evaluate.
@@ -12,7 +62,7 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 **Bucket**: methodology (two failure modes) + reviewer (one failure mode, candidate)
 
-**Status**: Active
+**Status**: Superseded in part by the 2026-06-29 recon-grounded entry above — the three-failure-mode *diagnosis* holds and remains the audit trail; the *candidate fixes* (markdown `ui-states` table; a new `ui-rendering-contract-reviewer`) are replaced by the schematized block + `requirement-completeness-lint` extension, and the portal-local *scope* is corrected to app-wide.
 
 ---
 
