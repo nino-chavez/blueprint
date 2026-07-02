@@ -6,7 +6,7 @@ canonical: true
 
 **Date**: 2026-06-04 (registry + fleet); 2026-06-05 (upgrade — the DOWN channel)
 **Status**: Accepted
-**Surfaced by**: `wip/blueprint-platform` productization dogfood, build-order step 7 (Distribution & Versioning track A). Operationalizes the bidirectional-update vision recorded in the blueprint-platform consumer's `decisions/ADR-0005-bidirectional-update-protocol.md`; this methodology-source ADR fixes the concrete v1 shape (the consumer ADR is a sibling, not a duplicate — it argues the protocol, this one ships the registry + read command).
+**Surfaced by**: `wip/blueprint-platform` productization dogfood, build-order step 7 (Distribution & Versioning track A). Operationalizes the bidirectional-update vision recorded in `ADR-0005-bidirectional-update-protocol.md` (the blueprint-platform consumer's ADR, promoted to this directory at the 2026-06-05 fold); this methodology-source ADR fixes the concrete v1 shape (the consumer ADR is a sibling, not a duplicate — it argues the protocol, this one ships the registry + read command).
 
 ## Context
 

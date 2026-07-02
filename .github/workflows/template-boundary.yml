@@ -1,0 +1,32 @@
+name: Template boundary
+
+# CLAUDE.md's boundary rule made mechanical (wave 75): "a change to template/
+# is a methodology change" — and methodology changes ship as waves. A PR that
+# touches template/** without also touching WAVE-LOG.md is either an undeclared
+# methodology change or the leak the charter warns about (editing template/ to
+# fix the root self-application). Root-only PRs are untouched. Solo-phase
+# direct pushes to main bypass PRs, so like CODEOWNERS this gate binds when
+# PR flow is real.
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: template/ edits carry a wave entry
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE_SHA"..."$HEAD_SHA")
+          if echo "$changed" | grep -q '^template/' && ! echo "$changed" | grep -qx 'WAVE-LOG.md'; then
+            echo "::error::This PR touches template/ (a methodology change) without a WAVE-LOG.md entry. If it is methodology work, add the wave entry; if it is a fix for the root self-application, it belongs outside template/ (CLAUDE.md: 'that's the leak')."
+            exit 1
+          fi
+          echo "boundary ok"

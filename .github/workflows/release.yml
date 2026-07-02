@@ -37,6 +37,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      # Publish only from a healthy tree. doctor.yml runs the same gate on every
+      # push, but as a separate workflow nothing tied its result to the publish
+      # path — a failing main could still ship to npm (wave 75). Dependency-free,
+      # so it runs before npm install.
+      - name: blueprint doctor (release gate)
+        run: node bin/blueprint.mjs doctor
       - run: npm install --no-audit --no-fund
       - name: Authenticate to npm
         run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> "$HOME/.npmrc"
