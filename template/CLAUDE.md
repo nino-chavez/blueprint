@@ -51,7 +51,7 @@ Canonical taxonomy: `$BLUEPRINT_HOME/docs/variant-selection.md` — pattern-matc
 | Flag | Reference doc | Read when starting |
 |---|---|---|
 | `b2b_edition.enabled: true` | the private platform B2B context packs (supplied per engagement) + `$BLUEPRINT_HOME/docs/context/voice-b2b-addendum.md` | Stage 1 research |
-| `hive.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/hive-coordination-pattern.md` | Session start — register with Hive before any work |
+| `hive.enabled: true` | `docs/methodology/hive-integration-contract.md` (the substrate-agnostic tool contract) + `$BLUEPRINT_HOME/docs/patterns/hive-coordination-pattern.md` (when to use it) | Session start — register with Hive before any work |
 | `cloudflare.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/cloudflare-deployment-pattern.md` | Before writing infra code; produce ADR for CF resource inventory |
 | `archaeology.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/archaeology-substrate-pattern.md` | Stage 0 — run `bash tools/archaeology/scaffold.sh` BEFORE first commit |
 | `owner_spec.enabled: true` | `$BLUEPRINT_HOME/docs/patterns/owner-spec-pattern.md` | When project has >3 substrate tools |

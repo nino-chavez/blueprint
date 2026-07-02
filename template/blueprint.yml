@@ -153,7 +153,13 @@ b2b_edition:
 # ──────────────────────────────────────────────────────────────────
 
 hive:
-  enabled: false                    # set true to bootstrap Hive on a dedicated CF account
+  enabled: false                    # set true to coordinate via a Hive companion
+  # Blueprint integrates with Hive through its MCP TOOL CONTRACT — substrate-agnostic.
+  # ANY Hive exposing the hive_* coordination tools satisfies it, regardless of host.
+  # Blueprint owns methodology; Hive owns coordination/persistence — integrate, not absorb.
+  # The contract + tool list: docs/methodology/hive-integration-contract.md.
+  mcp_endpoint: ""                  # the Hive MCP server URL (ANY host) — the only required wiring
+  # Host-specific — fill ONLY if you self-host the CF Worker + D1 reference impl:
   source: ""                        # e.g., "~/Workspace/dev/wip/blueprint-example/.hive"
   mcp_server: ""                    # e.g., "myproject-hive-mcp"
   dashboard: ""                     # e.g., "myproject-hive-dashboard"
