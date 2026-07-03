@@ -6,7 +6,7 @@ Paste at the start of a fresh Claude Code session, in the target project's worki
 
 - An existing live project is adopting Blueprint for the first time to do a full redesign or audit-driven product evolution.
 - The SessionStart auto-loader hook (`template/.claude/hooks/blueprint-session-start.py`) is not yet installed in the operator's `~/.claude/settings.json` — the prompt is the manual fallback that forces canonical-doc reading before the agent reasons about methodology.
-- The default pattern-match this prompt encodes: **brownfield variant + Pattern B (redesign-review-portal) + Tier 1**. If the project is actually greenfield (no live product yet), the prompt tells the agent to flag the mismatch back to the operator before scaffolding.
+- The default pattern-match this prompt encodes: **brownfield variant + Review Portal (redesign-review-portal) + Tier 1**. If the project is actually greenfield (no live product yet), the prompt tells the agent to flag the mismatch back to the operator before scaffolding.
 
 ## Prerequisites
 
@@ -27,8 +27,8 @@ STEP 1 — Read these three docs in order. Do not skip and do not skim:
   2. ~/Workspace/dev/tools/blueprint/docs/variant-selection.md
      (decision tree + worked examples)
   3. ~/Workspace/dev/tools/blueprint/docs/portal-and-tier-ladder.md
-     (Variant × Tier matrix near the top, Pattern A vs B decision tree,
-      Pattern B drawer contract)
+     (Variant × Tier matrix near the top, the Initiative-vs-Review-Portal
+      decision tree, the Review Portal drawer contract)
 
 STEP 2 — Pattern-match this initiative against the canonical docs. Do not
 propose methodology changes; the methodology is settled. The expected match
@@ -41,9 +41,9 @@ for "existing live product + full redesign":
     prototype the new state? yes), the canonical match is brownfield.
     Worked example: website-nc-v3.
 
-  - Portal pattern: B (redesign-review-portal). Per portal-and-tier-ladder.md
+  - Portal type: review (redesign-review-portal). Per portal-and-tier-ladder.md
     decision tree: a brownfield audit/redesign with current-state vs proposed
-    comparison wants Pattern B's four primitives — strategy drawer,
+    comparison wants the Review Portal's four primitives — strategy drawer,
     current-state drawer, PROPOSED/COMPARE/SHIPPED toggle, AI chat FAB.
 
   - Tier: 1 (per the Variant × Tier matrix; brownfield's default). Tier 2
@@ -59,9 +59,9 @@ the existing product) or at the repo root (the redesign replaces the project
 entirely — the subscriptions initiative did this). Then:
 
   - Copy ~/Workspace/dev/tools/blueprint/template/portal/ into the chosen
-    location. Pattern B has no stamper yet (per the 2026-05-25 deferred-L5
-    decision); copy-stamp by hand. The portal-pattern-b-conformance-reviewer
-    catches drift mechanically at Stage 3, not at scaffold time.
+    location, or stamp via `stamp.mjs --mode=stamp --pattern=B` (wave 74).
+    The portal-review-conformance-reviewer catches drift mechanically at
+    Stage 3, not at scaffold time.
 
   - Write blueprint.yml with:
         variant: brownfield
@@ -103,7 +103,7 @@ Adoption of a methodology is a decision, not a default. Auto-injecting this prom
 
 This prompt encodes the most common case: an existing project doing a full redesign. Two adjacent cases the prompt tells the agent to flag rather than force:
 
-- **The project is actually greenfield** (no live product at all). The agent should pattern-match to greenfield + Pattern A or B (pick by audience shape, per `docs/portal-and-tier-ladder.md`) and report the mismatch before scaffolding.
-- **Active in-flight feature work, not a full redesign**. That's midstream variant, not brownfield. The agent should pattern-match to midstream + the pattern that fits the audience shape and report the mismatch.
+- **The project is actually greenfield** (no live product at all). The agent should pattern-match to greenfield + Initiative or Review Portal (pick by audience shape, per `docs/portal-and-tier-ladder.md`) and report the mismatch before scaffolding.
+- **Active in-flight feature work, not a full redesign**. That's midstream variant, not brownfield. The agent should pattern-match to midstream + the portal type that fits the audience shape and report the mismatch.
 
 In both cases the canonical docs (variant-selection.md + portal-and-tier-ladder.md) carry the decision; this prompt's role is to force them to be read first, not to make the decision unilaterally.

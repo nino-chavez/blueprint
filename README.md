@@ -82,18 +82,18 @@ What `init --pattern=A` actually generates today:
 
 ```
 my-initiative/
-├── blueprint.yml                  # Variant, tier, pattern, capability flags
+├── blueprint.yml                  # Variant, tier, portal type, capability flags
 ├── package.json                   # Workspace root
 ├── apps/
-│   └── portal/                    # The Astro stakeholder portal (Pattern A)
+│   └── portal/                    # The Astro stakeholder portal (Initiative Portal)
 ├── packages/                      # @<name>/ui, design tokens (workspace pkgs)
-└── portal/                        # Static-HTML shell (Pattern B surface)
+└── portal/                        # Static-HTML shell (Review Portal surface)
 ```
 
 The initiative then grows `research/`, `docs/content/`, `decisions/`, and (per
 variant) `prototype/` as the stages run — the evidence column the methodology
-exists to produce. Pattern B initiatives copy `template/portal/` instead — `init`
-can't scaffold Pattern B yet.
+exists to produce. Review Portal initiatives stamp via
+`stamp.mjs --mode=stamp --pattern=B` or copy `template/portal/`.
 
 ## Command-line interface — `@nino-chavez-labs/blueprint-cli`
 
@@ -277,7 +277,7 @@ Cross-cutting disciplines that apply across initiative types. Pull in when the a
 | [docs/patterns/inventory-as-evidence-pattern.md](docs/patterns/inventory-as-evidence-pattern.md) | Operator asks for cleanup/reorg/consolidation on a surface with >50 items | Methodology pattern: read-only walk → classify against rubric → surface surprises → present to operator → file as [Spec] body's evidence section |
 | [docs/patterns/doc-discipline-micro-patterns.md](docs/patterns/doc-discipline-micro-patterns.md) | Always (small disciplines, low overhead) | Surface-existing-discipline-before-inventing-new; capture-ambiguity-via-secondary-tags; wrong-copy-is-signal; avoid-multi-role-template-files; memory-entries-point-at-proposals; trigger-to-revisit on anchored forks |
 | [docs/patterns/clustered-tool-surface-pattern.md](docs/patterns/clustered-tool-surface-pattern.md) | New project decision: how the tooling around the project deploys (Hive dashboard / prototype / demos / traceability) | Unify by **auth profile**, not by vibes. Three modes (unified / clustered / separate) gated on auth cleavage. Companion: `template/apps/tool-shell/` (Vite+React skeleton) and `blueprint.yml` `tool_surface:` schema |
-| [docs/portal-and-tier-ladder.md](docs/portal-and-tier-ladder.md) | Every initiative that needs to externalize itself to an audience (stakeholders, hiring managers, peer reviewers) | Two canonical portal patterns: **Pattern A** (platform-portal — the subscriptions-initiative Astro shape, 6-verb IA + audience switcher, consumes `@blueprint/ui` + `@blueprint/design-tokens`) and **Pattern B** (redesign-review-portal — rally-hq/ninochavez.co static-HTML shape, strategy + current-state drawers + PROPOSED/COMPARE/SHIPPED toggle + chat FAB, copy-stamped from `template/portal/`). Three-tier ladder applies independently to each pattern. Decision tree for choosing A vs B — plus a bespoke-with-ADR escape for archetypes that fit neither (e.g. an operator-facing process console; candidate Pattern C, not yet canonized). Migration recipe for path-drifted projects. Enforced by `portal-pattern-a-conformance-reviewer` and `portal-pattern-b-conformance-reviewer`. |
+| [docs/portal-and-tier-ladder.md](docs/portal-and-tier-ladder.md) | Every initiative that needs to externalize itself to an audience (stakeholders, hiring managers, peer reviewers) | Two canonical portal types: the **Initiative Portal** (platform-portal — the subscriptions-initiative Astro shape, 6-verb IA + audience switcher, consumes `@blueprint/ui` + `@blueprint/design-tokens`) and the **Review Portal** (redesign-review-portal — rally-hq/ninochavez.co static-HTML shape, strategy + current-state drawers + PROPOSED/COMPARE/SHIPPED toggle + chat FAB, stamped from `template/portal/`). Three-tier ladder applies independently to each type. Decision tree for choosing between them — plus a bespoke-with-ADR escape for archetypes that fit neither (e.g. an operator-facing process console; a third frozen type waits for a second instance of the same archetype). Migration recipe for path-drifted projects. Enforced by `portal-initiative-conformance-reviewer` and `portal-review-conformance-reviewer`. |
 
 **Companion template artifacts** (in `template/` — get stamped into new projects):
 - `template/docs/invalidated-paths.md` — register skeleton (high-value default for any project with pivots)

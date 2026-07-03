@@ -8,12 +8,20 @@ The docs a **stranger** reads to answer "what is this and how do I use it" have 
 
 `README.md` · `METHODOLOGY.md` · `CONTRIBUTING.md` · `docs/README.md` (this file) · `docs/variant-selection.md` · `docs/portal-and-tier-ladder.md` · `docs/prompts/add-blueprint-to-project.md` · `docs/prompts/pick-up-blueprint-updates.md` · `template/CLAUDE.md` · the portal `/` + `/learn` pages
 
-Last full review: 2026-06-10 (wave 56); first set-level pass 2026-06-11 (wave 58 — START-HERE folded into README, claim-ownership fixes: the five-check audit and voice-mode tables now have one owning doc each). Cadence: every wave that touches positioning, naming, or the portal — and any time a reader's question reveals a wrong claim.
+Last full review: 2026-07-02 (post-wave-76 — the wave-72 portal-type rename had missed this manifest's own surface: "Pattern A/B" labels and pre-rename reviewer names survived in README, this index, and `add-blueprint-to-project.md` for three weeks; also folded in the stakeholder-surface-packaging class mapping below). Prior: 2026-06-10 (wave 56); set-level pass 2026-06-11 (wave 58). Cadence: every wave that touches positioning, naming, or the portal — and any time a reader's question reveals a wrong claim.
 
 **Set-level questions the per-file review must ALSO ask** (added after the wave-56 review missed both — per-file claim adjudication can't see between-doc problems):
 
 1. **Deletion test, per doc**: if this doc disappeared, what would a reader lose that no other surface provides? A doc that fails it gets folded, not maintained. (Miss it caught: README vs START-HERE — three surfaces answering "what is this" once the portal became the evaluator front door.)
 2. **Claim ownership, per shared claim**: every reader-path claim (the pipeline shape, the command list, the positioning) has ONE owning doc; every other surface links or sketches-with-a-pointer, never restates in full. Duplicated claims rot at different rates — the wave-56 repositioning reached the README tagline but not its "How It Works" section, and the Project Structure tree drifted a whole portal-architecture behind the stamper. Partial updates are the symptom; duplication is the disease.
+
+## Class boundary — how this index maps to stakeholder-surface-packaging
+
+[`docs/patterns/stakeholder-surface-packaging-pattern.md`](patterns/stakeholder-surface-packaging-pattern.md) classifies a project's surfaces as P (recipient account) / H (construction harness) / D (demo). This corpus already carries that classification — built waves 56/58, before the pattern was named — with one deliberate inversion: **Blueprint's harness is its product**, so H-material is public receipts routed one click behind the account, never quarantined ceremony.
+
+- **P — the adopter account**: the reader-path manifest above, the on-ramp, and the [By role](#by-role) sets. Truth gate: the Stage-4 fact-check this manifest names. Fitness gate: the portal persona walks in [`docs/content/validation-script.md`](content/validation-script.md).
+- **H — receipts**: [Self-application working artifacts](#self-application-working-artifacts) + [Archive & history](#archive--history) (`WAVE-LOG.md`, `METHODOLOGY-AMENDMENTS.md`, `research/`, `feedback/`, root `decisions/`, case studies). Evidence by design — cited from P-surfaces, not required onboarding.
+- **D — live proof**: the portal's `/demo`, `/inspect`, and `/graph` pages — derived from the repo at build time (durable-derived; no point-in-time counts as load-bearing claims).
 
 ## New here? Read these 3 first
 
@@ -64,7 +72,7 @@ Specs, checklists, decision records, stage methodology, conventions.
 
 | Doc | What it specifies |
 |---|---|
-| [`docs/portal-and-tier-ladder.md`](portal-and-tier-ladder.md) | Portal Pattern A vs B; Tier 0/1/2 ladder; bespoke-with-ADR escape |
+| [`docs/portal-and-tier-ladder.md`](portal-and-tier-ladder.md) | Initiative Portal vs Review Portal; Tier 0/1/2 ladder; bespoke-with-ADR escape |
 | [`docs/case-studies/design-system-audit.md`](case-studies/design-system-audit.md) | 15-dimension acceptance checklist (R-1..R-5 research, D-1..D-10 decision) |
 | [`docs/context/voice-template.md`](context/voice-template.md) | Canonical voice rules, quality-audit 5-checks, citation rules, 8 anti-patterns |
 | [`docs/patterns/amendment-classification-pattern.md`](patterns/amendment-classification-pattern.md) | 4-bucket triage taxonomy + decision tree (consumer-local / template / reviewer / methodology) |
@@ -177,7 +185,7 @@ Then by gate type:
 
 As work progresses:
 
-- **Portal launch / user research:** [`apps/portal/README.md`](../apps/portal/README.md) (Pattern A reference impl).
+- **Portal launch / user research:** [`apps/portal/README.md`](../apps/portal/README.md) (Initiative Portal reference impl).
 - **Team onboarding:** [`docs/prompts/add-blueprint-to-project.md`](prompts/add-blueprint-to-project.md).
 - **Cost / scaling:** [`docs/decisions/ADR-0003-cost-effort-dial.md`](decisions/ADR-0003-cost-effort-dial.md).
 - **Cross-team governance:** [`docs/decisions/ADR-0004-native-access-governance.md`](decisions/ADR-0004-native-access-governance.md).
@@ -191,8 +199,8 @@ As work progresses:
 
 ## Live reference implementations
 
-- **Pattern A (platform portal):** [`apps/portal/README.md`](../apps/portal/README.md) → live at `blueprint.ninochavez.co`.
-- **Pattern B (brownfield review portal):** `apps/rally-hq/blueprint/`, `apps/website-nc-v3/blueprint/` (at rest, reference impls).
+- **Initiative Portal reference:** [`apps/portal/README.md`](../apps/portal/README.md) → live at `blueprint.ninochavez.co` (bespoke product-site divergence recorded in [`decisions/02-portal-bespoke-product-site.md`](../decisions/02-portal-bespoke-product-site.md); the conformant reference is `template/apps/portal/`).
+- **Review Portal references:** the consumer repos rally-hq and website-nc-v3 (`~/Workspace/dev/apps/`, external to this repo — see [`consumers.yml`](../consumers.yml)).
 
 ## Self-application working artifacts
 
