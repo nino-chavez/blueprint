@@ -352,14 +352,14 @@ async function readYmlFields(targetDir) {
   if (raw == null) return out; // read() resolves null on a missing file rather than throwing
   let section = null;
   for (const line of raw.split('\n')) {
-    const top = line.match(/^([A-Za-z_]+):\s*(.*?)\s*(#.*)?$/);
+    const top = line.match(/^([A-Za-z0-9_]+):\s*(.*?)\s*(#.*)?$/);  // digits: b2b_edition
     if (top) {
       section = top[1];
       if (top[1] === 'product_type' && top[2]) out.product_type = top[2].replace(/^["']|["']$/g, '');
       continue;
     }
     if (/^\S/.test(line)) { section = null; continue; }
-    const kv = line.match(/^\s+([A-Za-z_]+):\s*(.*?)\s*(#.*)?$/);
+    const kv = line.match(/^\s+([A-Za-z0-9_]+):\s*(.*?)\s*(#.*)?$/);
     if (!kv) continue;
     const v = (kv[2] || '').replace(/^["']|["']$/g, '');
     if (section === 'terminology' && kv[1] === 'glossary' && v) out.terminology = { glossary: v };

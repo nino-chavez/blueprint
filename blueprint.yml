@@ -16,6 +16,13 @@ project:
   name: "blueprint-platform"
   description: "Productize the Blueprint methodology into a team-adoptable, portable platform: configurable cost-efficiency, org-scale access control, bidirectional non-breaking update distribution, full docs, and an onboarding/enablement ramp."
   product: "Blueprint methodology"
+  audience:
+    leadership: []
+    engineering: []
+    broader:
+      - "Teams adopting Blueprint across departments"
+      - "Non-Nino operators running their first initiative"
+      - "Org contributors filing reviewers / amendments from the field"
 
 # Gates the terminology-linter's jargon rules: for a dev tool, 'endpoint' /
 # 'schema' / 'payload' are legitimate domain vocabulary, not leaked jargon
@@ -29,13 +36,6 @@ product_type: "dev-tool"
 # linter's missing-glossary WARN + its "create docs/terminology.md" nag.
 terminology:
   glossary: none
-  audience:
-    leadership: []
-    engineering: []
-    broader:
-      - "Teams adopting Blueprint across departments"
-      - "Non-Nino operators running their first initiative"
-      - "Org contributors filing reviewers / amendments from the field"
 
 # ──────────────────────────────────────────────────────────────────
 # Pilot profile (REQUIRED — Stage 0 → Stage 1 gate)
