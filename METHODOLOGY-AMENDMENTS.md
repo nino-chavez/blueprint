@@ -4,6 +4,20 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-07-02 — Stateful-claim lint scans docs, not the portal source; a hand-typed stat rotted on the public compare page while the derivation lib sat unused
+
+**Trigger**: Applying `docs/patterns/stakeholder-surface-packaging-pattern.md` (merged this day from the bc-subscriptions export) to the self-application's product site. The pattern's truth-axis DoD — "no hand-typed number that isn't computed at build time" — was checked against `apps/portal/` and failed on first contact: `apps/portal/src/pages/compare.astro` shipped "the executable set is 15 of 18 reviewers" on the live public site (truth: 17 of 22 since the wave-74 reviewer additions), inside a hand-authored narrative string, while `apps/portal/src/lib/derived.ts` exported `loadReviewerCount()` / `loadReviewerSpecCount()` in the same codebase. The same stale pair was caught in CLAUDE.md the same day by `stateful-claim-lint-reviewer` — which proves the lint works, and proves its scan surface stops short: it walks root docs + `docs/**` + `template/CLAUDE.md` (`.md` only), so portal page source is invisible to it. The drift class the wave-59 reviewer was built for reproduced one directory over, ungated.
+
+**Observed**: The mechanical gate exists (reviewer, wave 59), the derivation layer exists (`lib/derived.ts`, thorough — wave/consumer/reviewer/ADR counts all read live sources), and the failure still shipped, because prose in `.astro` page source is in neither's jurisdiction. Instance fix applied in place: `compare.astro` now interpolates both counts at build time.
+
+**Candidate fix** (mechanical realization second-instance-gated per convention): extend `stateful-claim-lint-reviewer`'s walk to the initiative's resolved portal source (`prototype.portal_dir`, else `apps/portal/src`), scanning `.astro`/`.html`/`.ts` prose strings with the same claim regexes and the same fenced-code stripping. Second-instance candidates: any consumer whose portal narrates fleet/count claims in page source — rally-hq's front door shows stats; bc-subscriptions' portal narrates coverage counts.
+
+**Bucket**: reviewer (scan-surface extension)
+
+**Status**: Active (instance 1; in-place fix shipped, lint extension awaits second instance)
+
+---
+
 ## 2026-06-29 — The UI-rendering-contract gap is app-wide, not portal-local; enforcement is a lint EXTENSION, not a new reviewer; and a single-slice amendment shipped two blind spots a breadth pass corrected
 
 **Trigger**: The same subscriber-portal audit that produced the entry below (the narrow, single-slice version) was re-grounded by a 7-agent recon+critique workflow that swept all three of the initiative's design languages (React/BigDesign admin, Svelte storefront, React/Next catalyst) plus the BRD spec structure and the existing enforcement substrate. The breadth pass changed three material conclusions of the entry below and added the hardest finding it missed. An adversarial completeness critic then caught that the draft plan's "smallest proof" was sequenced against an already-fixed component, not the still-broken keystone — verified true in the working tree.

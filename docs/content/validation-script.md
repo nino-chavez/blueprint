@@ -67,6 +67,31 @@ Asked first, while being wrong is cheap:
 - **Time (A6, named target)**: a working session with R. mapping his four-skill loop onto Blueprint primitives. Whether he shows up IS the A6 test — a second compliment-and-keep-theirs is a second disconfirming datum.
 - **ACCEPT the inbound offer (A2/A3/A7 + the ground-truth bug, one experiment)**: J.'s team proposed a second attempt with full repo scope + their review time. Accepting tests whether correct ground truth fixes the accuracy finding, and their structured retro (worked / didn't / accelerated / slowed) is the A1–A7 conversation plan run by the stakeholders themselves. Response pending — the hottest open item.
 
+## Portal persona-walk gate (recurring; adopted 2026-07-02)
+
+The fitness half of `docs/patterns/stakeholder-surface-packaging-pattern.md`'s
+two-axis DoD, applied to the product site. A1's 2026-06-09 disconfirmation was a
+persona walk that failed once and was never re-institutionalized — this section
+makes the walk the standing gate instead of a one-off datum. The truth half is
+already mechanized (derived counts in `apps/portal/src/lib/derived.ts`; drift
+instance filed in `METHODOLOGY-AMENDMENTS.md` 2026-07-02).
+
+**Rule:** any change to a first-contact page (`index`, `discover`, `try`, `faq`)
+ships only after the affected walks below pass. A walk passes when the reader
+reaches their decision; it fails with a *named* failure mode, which goes in the
+Log like any other datum.
+
+| Walk | Reader (grounded in Log) | Decision they must reach | Budget |
+|---|---|---|---|
+| Casual visitor | D.'s segment — opens cold, no context | "I can say what Blueprint is and whether it's for me" | single scroll, sub-60s |
+| Evaluating team lead | R. / V. / J.'s segment — has the multi-session entropy problem, owns an incumbent loop | "I know what a trial costs, what I keep if I quit, and what evidence says it works for a team that isn't the author" | one visit |
+| Prospective contributor | A6-adjacent — practitioner deciding whether to engage with the source | "I know where to start and what the contribution loop is" | one visit from `/build` or CONTRIBUTING link |
+
+The casual-visitor walk is currently **red** (A1 disconfirmed, unremediated —
+the pending P4 cold-open re-test is its re-run). Until it passes, front-door
+changes must not make it worse: no new unglossed methodology vocabulary on
+first-contact pages (convention 1–2 of the pattern's IA rules).
+
 ## Log
 
 | Date | Who | What they said (summary) | What they GAVE | Ask made → outcome | Assumptions touched |
