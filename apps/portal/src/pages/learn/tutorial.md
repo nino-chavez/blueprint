@@ -8,11 +8,11 @@ description: "Run a brownfield Blueprint initiative end to end: scaffold, every 
 
 This walks a single brownfield initiative end to end: a team adds Blueprint to an existing, live product to plan a real redesign. You will scaffold the portal, run every stage in order, clear each reviewer gate, deploy, and verify with `blueprint doctor`.
 
-Brownfield is the common case. Your product already ships to real users; the work is audit-first — diagnose what exists, prescribe ordered changes, then optionally prototype the result for stakeholders to compare against current state. The deliverables are the diagnose and prescription documents plus a Pattern B review portal.
+Brownfield is the common case. Your product already ships to real users; the work is audit-first — diagnose what exists, prescribe ordered changes, then optionally prototype the result for stakeholders to compare against current state. The deliverables are the diagnose and prescription documents plus a Review Portal.
 
 Running example throughout: **`acme-checkout`** — an existing e-commerce checkout flow that converts poorly. The team wants to redesign it and needs leadership, engineering, and reviewers all looking at the same evidence.
 
-**Coming from [Getting Started](/learn/getting-started)?** That page stamped you a Pattern A workspace — the full project site. This tutorial deliberately walks Pattern B, the lighter review portal for an existing-product redesign, because it exercises every reviewer gate without scaffolding in the way. The pipeline is the same. If you're holding a Pattern A scaffold, the stage sections below map 1:1 — run the same skills in the same order against your own workspace, and skip the "Scaffold the portal" copy step (`blueprint init` already did it).
+**Coming from [Getting Started](/learn/getting-started)?** That page stamped you an Initiative Portal workspace — the full project site. This tutorial deliberately walks the Review Portal, the lighter shape for an existing-product redesign, because it exercises every reviewer gate without scaffolding in the way. The pipeline is the same. If you're holding an Initiative Portal scaffold, the stage sections below map 1:1 — run the same skills in the same order against your own workspace, and skip the "Scaffold the portal" copy step (`blueprint init` already did it).
 
 ---
 
@@ -30,7 +30,7 @@ Run the decision tree. First "yes" wins:
 
 ### Pick the pattern
 
-Brownfield audit/redesign with current-state vs proposed comparison → **Pattern B (redesign-review portal)**. Pattern B gives stakeholders a per-page strategy drawer, a current-state drawer, a `PROPOSED / COMPARE / SHIPPED` toggle, and an AI chat FAB grounded in the project corpus. Stack is static HTML + Cloudflare Pages Functions (zero-build).
+Brownfield audit/redesign with current-state vs proposed comparison → the **Review Portal** (redesign-review shape). It gives stakeholders a per-page strategy drawer, a current-state drawer, a `PROPOSED / COMPARE / SHIPPED` toggle, and an AI chat FAB grounded in the project corpus. Stack is static HTML + Cloudflare Pages Functions (zero-build).
 
 ### Pick the tier
 
@@ -54,7 +54,7 @@ blueprint --version
 
 ## Scaffold the portal
 
-Pattern B has no `blueprint init` scaffold path yet — `init` stamps Pattern A only and refuses `--pattern=B`. Scaffold by copying the canonical Pattern B shell out of the methodology repo:
+Scaffold the Review Portal shell with the stamper — `stamp.mjs --mode=stamp --pattern=B` — or copy the canonical shell out of the methodology repo:
 
 ```bash
 git clone https://github.com/nino-chavez/blueprint /tmp/blueprint
@@ -62,7 +62,7 @@ mkdir -p /abs/path/to/acme-checkout-blueprint
 cp -R /tmp/blueprint/template/portal /abs/path/to/acme-checkout-blueprint/portal
 ```
 
-What lands: the Pattern B portal shell — `portal/` with `index.html`, `shared.css`, `_portal-shell.js`, `chat-widget.js`, `proto-nav.js`, `_meta/index.json`.
+What lands: the Review Portal shell — `portal/` with `index.html`, `shared.css`, `_portal-shell.js`, `chat-widget.js`, `proto-nav.js`, `_meta/index.json`.
 
 Then create `blueprint.yml` at the initiative root, declaring the project, the brownfield variant, and its stage requirements:
 
@@ -189,7 +189,7 @@ Both PASS unblocks Stage 3.
 
 ---
 
-## Stage 3 — Design Brief + Prototype (Pattern B portal)
+## Stage 3 — Design Brief + Prototype (Review Portal)
 
 **You run:** the agent first authors `03-design-brief.md` (visual + IA direction for the prescribed changes). For the tangible artifact:
 
@@ -197,7 +197,7 @@ Both PASS unblocks Stage 3.
 /blueprint-prototype
 ```
 
-**The agent does (Pattern B):** builds the redesign-review portal under `portal/` — `index.html` (landing), `_meta/index.json` (manifest), `_meta/<page-id>.json` (per-page metadata with `strategy`/`currentState`), `pages/*.html` (the proposed checkout pages), and wires the shell files (`shared.css`, `_portal-shell.js`, `chat-widget.js`, `proto-nav.js`). Each page gets a strategy drawer, a current-state drawer, the `PROPOSED / COMPARE / SHIPPED` toggle, and the chat FAB.
+**The agent does (Review Portal):** builds the redesign-review portal under `portal/` — `index.html` (landing), `_meta/index.json` (manifest), `_meta/<page-id>.json` (per-page metadata with `strategy`/`currentState`), `pages/*.html` (the proposed checkout pages), and wires the shell files (`shared.css`, `_portal-shell.js`, `chat-widget.js`, `proto-nav.js`). Each page gets a strategy drawer, a current-state drawer, the `PROPOSED / COMPARE / SHIPPED` toggle, and the chat FAB.
 
 **Artifacts:** the populated `portal/` shell with per-page metadata and the proposed checkout pages.
 
@@ -320,7 +320,7 @@ blueprint doctor — /abs/path/to/acme-checkout-blueprint
   ✓ methodology-home       resolved at /methodology/home
   ✓ blueprint-yml          tier 1
   ✓ cost-config            all stages at/above anchor or justified
-  ✓ portal-conformance     Pattern B portal structure valid
+  ✓ portal-conformance     Review Portal structure valid
 
   not checked (by design — a green here is not a build/browser green):
     · full build (npm run build)
@@ -356,7 +356,7 @@ It runs feedback through a state machine. Categories: bug, scope-add, scope-clar
 
 ## What you have now
 
-A deployed Pattern B portal at one URL, serving three audiences off the same evidence base:
+A deployed Review Portal at one URL, serving three audiences off the same evidence base:
 
 - **Leadership** reads `strategy.md` through the portal and the per-page strategy drawers — the why, the priorities, the risk register.
 - **Engineering** reads `feasibility.md` and `integration-plan.md` — codebase mapping, effort per capability, phased rollout, open questions with code references.

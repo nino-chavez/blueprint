@@ -7,7 +7,7 @@
       "exitCode": 0,
       "durationMs": 95,
       "lines": [
-        "blueprint-init: stamping Pattern A scaffold into ~/work/field-guide",
+        "blueprint-init: stamping Initiative Portal scaffold into ~/work/field-guide",
         "  variant=greenfield tier=1 (default)",
         "  name=field-guide display-name=\"Field Guide\"",
         "  repo-url=https://github.com/your-org/field-guide",
@@ -255,7 +255,7 @@
         "  ✓ cost-config          no cost: block (built-in defaults — advisory)",
         "  ✓ reviewers-loadable   15 reviewer(s) load + validate",
         "  ✓ consumers-registry   12 consumer(s) registered",
-        "  ✓ portal-conformance   bespoke portal — divergence recorded in 02-portal-bespoke-product-site.md; Pattern A/B conformance not applicable",
+        "  ✓ portal-conformance   bespoke portal — divergence recorded in 02-portal-bespoke-product-site.md; Initiative/Review Portal conformance not applicable",
         "  ✓ doc-currency         PASS — docs=57, broken-links=0, missing-citations=21, unknown-cli=0",
         "  ✓ stateful-claims      PASS — docs=45, claims-checked=3, mismatches=0, skipped=[]",
         "",

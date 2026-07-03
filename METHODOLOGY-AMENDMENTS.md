@@ -4,6 +4,34 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-07-02 — Reviewer jurisdiction audit: every drift lint has a surface it doesn't cover, one is wired to no enforcement point, and nothing at all covers the consumer-shipped docs
+
+**Trigger**: Operator-directed audit after the same failure shape surfaced three times in one day (the entry below; the wave-72 labels that survived three weeks in the reader-path set; wave 75's release-not-gated-on-doctor): detection exists, but a surface sits outside its jurisdiction — or the detector runs into the void. Method: extracted each corpus-scanning reviewer's actual walk roots from its code, enumerated the tree's prose surfaces, diffed.
+
+**Findings** (jurisdiction as-coded, 2026-07-02):
+
+| Detector | Enforcement | Covers | Uncovered surfaces carrying its failure class |
+|---|---|---|---|
+| `doc-currency-reviewer` | CI (doctor, wave 55) | `docs/**` (minus `_archive`) + root `METHODOLOGY/README/START-HERE/CLAUDE.md` | **`template/docs/methodology/**`** (consumer-shipped — a broken link here stamps into every consumer), `CONTRIBUTING.md`, `HANDOFF.md`, portal prose links |
+| `stateful-claim-lint-reviewer` | CI (doctor, wave 59) | root six + `docs/**` (minus records dirs) + `template/CLAUDE.md` | portal source (entry below), `template/docs/**`, workflow comments (the doctor.yml "7 checks" rot, fixed wave 75 by de-numbering) |
+| `terminology-linter` | **NONE — invocation-only** | `prototype/`, `portal/`, `apps/portal/src`, `_meta/`, `docs/content/`, root `README.md` + `index.html` | `docs/**` outside `content/` — which is exactly how `docs/README.md` and `docs/prompts/` escaped the wave-72 rename sweep |
+| — | — | — | `template/docs/methodology/**` is covered by NOTHING (links, claims, labels) — the highest-blast-radius gap |
+
+**The enforcement finding is the live proof**: the linter's wave-72 deprecated-label check was firing BLOCK on the deployed portal's own nav (`PortalNav.tsx`), three data files, and both `/learn` docs — for three weeks, because no CI step, doctor check, or hook runs the linter. Wave-55 class, third instance (doctor→CI was wave 55; release→doctor was wave 75). Fixed in place this day: all deprecated labels + two stale wave-74 capability claims ("Review Portal has no initial stamp") purged from portal source; violations 19→9 (remainder: jargon findings + acronym false-positives).
+
+**Conflict finding**: the linter's standing remediation for its glossary checks is "create `docs/terminology.md`" — which contradicts the operator's no-glossary rule (jargon gets rewrites or define-on-first-use inline, never a glossary artifact). The linter needs a config to declare "no-glossary repo" so its glossary-conflict checks retire instead of WARN-ing forever.
+
+**Candidate fixes** (mechanical realization second-instance-gated, though the class fired 4× in one initiative in one day):
+1. **Jurisdiction manifest** — each scanning reviewer exports its scanned-set declaration; a doctor check diffs the union against the tree's actual prose surfaces and reports uncovered ones. Closes the *class*: a new surface or a new scanner automatically re-raises the question.
+2. Wire `terminology-linter` into doctor/CI once its BLOCK count reaches 0 (9 violations remain).
+3. Extend `doc-currency` to `template/docs/**` — the consumer-shipped docs are the one surface where rot multiplies by fleet size.
+
+**Bucket**: reviewer (jurisdiction) + hook (enforcement wiring) + meta (the recurring wave-55 class)
+
+**Status**: Active (instance: the class, observed 4×; fixes 2–3 are small, fix 1 is the class-closer)
+
+---
+
 ## 2026-07-02 — Stateful-claim lint scans docs, not the portal source; a hand-typed stat rotted on the public compare page while the derivation lib sat unused
 
 **Trigger**: Applying `docs/patterns/stakeholder-surface-packaging-pattern.md` (merged this day from the bc-subscriptions export) to the self-application's product site. The pattern's truth-axis DoD — "no hand-typed number that isn't computed at build time" — was checked against `apps/portal/` and failed on first contact: `apps/portal/src/pages/compare.astro` shipped "the executable set is 15 of 18 reviewers" on the live public site (truth: 17 of 22 since the wave-74 reviewer additions), inside a hand-authored narrative string, while `apps/portal/src/lib/derived.ts` exported `loadReviewerCount()` / `loadReviewerSpecCount()` in the same codebase. The same stale pair was caught in CLAUDE.md the same day by `stateful-claim-lint-reviewer` — which proves the lint works, and proves its scan surface stops short: it walks root docs + `docs/**` + `template/CLAUDE.md` (`.md` only), so portal page source is invisible to it. The drift class the wave-59 reviewer was built for reproduced one directory over, ungated.

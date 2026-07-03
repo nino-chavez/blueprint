@@ -1,7 +1,7 @@
 import * as NavBar from '@blueprint/ui/navbar';
 
 // Blueprint — the product brand. (This portal is Blueprint's own product site,
-// a bespoke instance; the generic Pattern A reference lives in template/apps/portal.)
+// a bespoke instance; the generic Initiative Portal reference lives in template/apps/portal.)
 const PROJECT_NAME = 'Blueprint';
 
 // Product nav — a linear adoption path, not an audience-routed lane switcher.

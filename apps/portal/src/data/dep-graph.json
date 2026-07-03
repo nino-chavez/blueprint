@@ -24,7 +24,7 @@
     },
     {
       "id": "02-portal-bespoke-product-site",
-      "label": "02 — Portal divergence: bespoke product site (neither Pattern A nor B)",
+      "label": "02 — Portal divergence: bespoke product site (fits neither portal type)",
       "kind": "adr",
       "stage": null,
       "status": null,
