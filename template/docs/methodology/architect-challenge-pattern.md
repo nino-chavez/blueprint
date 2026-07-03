@@ -32,7 +32,7 @@ Present as a side-by-side comparison table with one row per challenge dimension.
 
 If the two options have **identical short-term costs** but **different long-term expression surfaces**, default to the option with the *smaller* expression surface. The reason: a narrow surface is fully testable; a wide surface (general expression language) carries an implicit maintenance commitment to every construct a user might write. This is the "typed-condition DSL wins ties" heuristic from promo-initiative.
 
-Escalate to a full [strategic fork entry](../../../apps/portal/src/pages/strategy/) when the two options require **different organizational commitments** (team ownership, partner dependencies, runtime platform) — not just different code paths.
+Escalate to a full strategic fork entry (a dedicated strategy page on the initiative’s portal) when the two options require **different organizational commitments** (team ownership, partner dependencies, runtime platform) — not just different code paths.
 
 ## Relation to the current-state research prompt
 

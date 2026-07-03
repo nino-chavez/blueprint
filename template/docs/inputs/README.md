@@ -4,7 +4,7 @@ canonical: true
 
 # `docs/inputs/` — provenance manifest
 
-The **objective axis** of the trust-restoration surface — every external input that informed this project, with `included_why` for what was used and `excluded_why` for what was deliberately not used. Companion to [`../iterations/`](../iterations/) (the non-objective axis — what we tried and rejected) and [`../decisions/`](../decisions/) (the affirmative decisions themselves).
+The **objective axis** of the trust-restoration surface — every external input that informed this project, with `included_why` for what was used and `excluded_why` for what was deliberately not used. Companion to [`../iterations/`](../iterations/) (the non-objective axis — what we tried and rejected) and `../decisions/` (the affirmative decisions themselves; the directory exists in the stamped initiative, not in the methodology source).
 
 ## Why this exists
 

@@ -52,6 +52,17 @@ const SKIP_DIRS = new Set(['_archive', 'case-studies', 'decisions', 'node_module
 const EXCLUDE_FILES = new Set(['WAVE-LOG.md', 'METHODOLOGY-AMENDMENTS.md']);
 const MAX_FINDINGS = 40;
 
+// The scanned-set declaration the doctor's lint-jurisdiction check diffs
+// against the tree's actual prose surfaces (wave 77). Keep in sync with the
+// doc-collection logic in review() — this export IS the honest-scope statement.
+export const jurisdiction = {
+  description: 'count/version/currency claims in living operator docs',
+  roots: ['docs'],
+  rootFiles: [...ROOT_DOCS, 'template/CLAUDE.md'],
+  extensions: ['.md'],
+  excludes: [...SKIP_DIRS].filter((d) => d !== 'node_modules' && d !== '.git'),
+};
+
 const read = (p) => fs.readFile(p, 'utf8').then((s) => s, () => null);
 
 // ── number words (one..ninety-nine) ──────────────────────────────────────────

@@ -225,6 +225,100 @@ export async function runDoctor({ home, targetDir }) {
     add('registry-sync', 'fail', `roadmap-registry-sync reviewer threw: ${e.message}`);
   }
 
+  // 10. terminology — user-facing copy carries no deprecated methodology
+  //     labels, unglossed jargon, or brand anti-patterns (wave 72 rules).
+  //     Wired here in wave 77: the linter's BLOCK findings sat live on the
+  //     deployed portal for three weeks because it was invocation-only —
+  //     the same detection-without-enforcement class waves 55 and 75 closed
+  //     for doctor and release.
+  try {
+    const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'terminology-linter.mjs');
+    if (existsSync(reviewerPath)) {
+      const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+      const res = await fn({ targetDir, blueprintYml: null, methodologyHome: home });
+      const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
+      add('terminology', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''}`, res.status !== 'PASS' ? 'run `blueprint review terminology-linter` for details' : undefined);
+    } else {
+      add('terminology', 'skip', 'terminology-linter not present in this methodology home');
+    }
+  } catch (e) {
+    add('terminology', 'fail', `terminology-linter threw: ${e.message}`);
+  }
+
+  // 11. lint-jurisdiction — the union of the drift lints' declared scan sets,
+  //     diffed against the tree's actual prose surfaces (wave 77, from the
+  //     2026-07-02 jurisdiction audit). Informational by design: uncovered
+  //     surfaces WARN, never fail — the check's job is to make a new surface
+  //     or a new scanner automatically re-raise the coverage question instead
+  //     of each gap being operator-found. Record dirs (append-only receipts)
+  //     are exempt: their claims were true at writing.
+  try {
+    const scannerFiles = ['doc-currency-reviewer.mjs', 'stateful-claim-lint-reviewer.mjs', 'terminology-linter.mjs'];
+    const decls = [];
+    for (const f of scannerFiles) {
+      const p = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', f);
+      if (!existsSync(p)) continue;
+      const mod = await import(pathToFileURL(p).href);
+      if (mod.jurisdiction) decls.push(mod.jurisdiction);
+    }
+    if (decls.length === 0) {
+      add('lint-jurisdiction', 'skip', 'no scanning reviewer declares a jurisdiction export');
+    } else {
+      const SKIP_WALK = new Set(['node_modules', '.git', 'dist', '.astro', '.wrangler', '.changeset', '.claude', '.github']);
+      const RECORD_DIRS = new Set(['_archive', 'case-studies', 'feedback', 'research', 'decisions', 'handoffs', 'raw']);
+      const RECORD_FILES = new Set(['WAVE-LOG.md', 'METHODOLOGY-AMENDMENTS.md', 'CHANGELOG.md', 'HANDOFF.md', 'LICENSE.md']);
+      // Code-adjacent operator docs (a README next to a package, a DESIGN.md
+      // next to a prototype) are working language, not reader-path surfaces —
+      // same exemption the terminology-linter applies inside its own roots.
+      // Root-level files are NOT exempt (the repo-root README is the public
+      // entry point); the exemption applies only inside subtrees.
+      const OPERATOR_BASENAMES = new Set(['README.md', 'DESIGN.md', 'CONVENTIONS.md', 'CLAUDE.md', 'STATE.md', 'BOOTSTRAP.md', 'ONBOARDING.md', 'CONTRIBUTING.md', 'TESTING.md', 'SETUP.md']);
+      const PROSE_EXT = new Set(['.md', '.astro', '.html']);
+      const surfaces = [];
+      const walk = (dir, rel) => {
+        let entries;
+        try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+        for (const e of entries) {
+          if (e.isDirectory()) {
+            if (!SKIP_WALK.has(e.name) && !RECORD_DIRS.has(e.name) && !e.name.startsWith('.')) walk(join(dir, e.name), rel ? `${rel}/${e.name}` : e.name);
+          } else {
+            const ext = e.name.slice(e.name.lastIndexOf('.'));
+            if (!PROSE_EXT.has(ext) || RECORD_FILES.has(e.name) || /^\d{4}-\d{2}-\d{2}-/.test(e.name)) continue;
+            if (rel && OPERATOR_BASENAMES.has(e.name)) continue;
+            surfaces.push(rel ? `${rel}/${e.name}` : e.name);
+          }
+        }
+      };
+      walk(targetDir, '');
+      const covers = (d, rel) => {
+        if ((d.rootFiles || []).includes(rel)) return true;
+        const inRoot = (d.roots || []).some((r) => rel.startsWith(`${r}/`));
+        if (!inRoot) return false;
+        if (d.extensions && !d.extensions.some((x) => rel.endsWith(x))) return false;
+        if ((d.excludes || []).some((x) => rel.split('/').includes(x))) return false;
+        return true;
+      };
+      // A template/ path is covered when its STAMPED location is covered: the
+      // substrate is linted consumer-side after stamping (e.g. template/apps/
+      // portal/src → apps/portal/src falls inside the terminology roots, and
+      // doctor's terminology check enforces it in every consumer). Source-side
+      // rot therefore surfaces at the first consumer doctor run.
+      const uncovered = surfaces.filter(
+        (rel) => !decls.some((d) => covers(d, rel)) &&
+          !(rel.startsWith('template/') && decls.some((d) => covers(d, rel.slice('template/'.length))))
+      );
+      const sample = uncovered.slice(0, 4).join(', ');
+      add(
+        'lint-jurisdiction',
+        uncovered.length ? 'warn' : 'pass',
+        `${uncovered.length ? 'WARN' : 'PASS'} — scanners=${decls.length}, prose-surfaces=${surfaces.length}, uncovered=${uncovered.length}`,
+        uncovered.length ? `uncovered by every drift lint: ${sample}${uncovered.length > 4 ? ` (+${uncovered.length - 4} more)` : ''}` : undefined
+      );
+    }
+  } catch (e) {
+    add('lint-jurisdiction', 'fail', `lint-jurisdiction check threw: ${e.message}`);
+  }
+
   const status = checks.reduce((acc, c) => worst(acc, c.status), 'pass');
   // Honesty about the boundary: name what doctor did NOT verify, so a green is
   // never read as more than it is.

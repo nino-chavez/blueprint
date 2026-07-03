@@ -28,7 +28,7 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 **Bucket**: reviewer (jurisdiction) + hook (enforcement wiring) + meta (the recurring wave-55 class)
 
-**Status**: Active (instance: the class, observed 4×; fixes 2–3 are small, fix 1 is the class-closer)
+**Status**: Promoted to methodology (wave 77, same day — operator override of the second-instance gate on the 4-observations-in-one-day evidence). All three candidate fixes shipped: jurisdiction exports on the three scanners + doctor `lint-jurisdiction` check (fix 1); `terminology` wired as doctor check 10 with `product_type` gating + `terminology.glossary: none` config replacing the glossary nag (fix 2); doc-currency extended to `template/docs/**`, which immediately caught 3 broken links in consumer-shipped docs (fix 3).
 
 ---
 

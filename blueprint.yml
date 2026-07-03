@@ -16,6 +16,19 @@ project:
   name: "blueprint-platform"
   description: "Productize the Blueprint methodology into a team-adoptable, portable platform: configurable cost-efficiency, org-scale access control, bidirectional non-breaking update distribution, full docs, and an onboarding/enablement ramp."
   product: "Blueprint methodology"
+
+# Gates the terminology-linter's jargon rules: for a dev tool, 'endpoint' /
+# 'schema' / 'payload' are legitimate domain vocabulary, not leaked jargon
+# (wave 77 — the linter's isDevTool gate existed since wave 60 but this field
+# was never declared, so the self-application's own copy BLOCKed on its own
+# vocabulary).
+product_type: "dev-tool"
+
+# No-glossary repo (operator rule: jargon gets copy rewrites or
+# define-on-first-use inline, never a glossary artifact). Retires the
+# linter's missing-glossary WARN + its "create docs/terminology.md" nag.
+terminology:
+  glossary: none
   audience:
     leadership: []
     engineering: []

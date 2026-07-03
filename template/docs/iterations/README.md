@@ -4,7 +4,7 @@ canonical: true
 
 # `docs/iterations/` — iteration ledger
 
-The **non-objective axis** of the trust-restoration surface — what we tried, what we rejected, how the thesis evolved. Companion to [`../inputs/`](../inputs/) (objective axis) and [`../decisions/`](../decisions/) (the affirmative decisions themselves).
+The **non-objective axis** of the trust-restoration surface — what we tried, what we rejected, how the thesis evolved. Companion to [`../inputs/`](../inputs/) (objective axis) and `../decisions/` (the affirmative decisions themselves; the directory exists in the stamped initiative, not in the methodology source).
 
 ## Why this exists
 
@@ -28,7 +28,7 @@ One block per ratified ADR:
 ```markdown
 ### ADR-NNNN — <title> · `YYYY-MM-DD`
 
-[`docs/decisions/NNNN-slug.md`](../decisions/NNNN-slug.md)
+`docs/decisions/NNNN-slug.md`
 
 Synthesis: `<id-or-uuid>`
 

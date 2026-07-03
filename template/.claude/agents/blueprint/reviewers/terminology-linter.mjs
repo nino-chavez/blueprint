@@ -338,6 +338,49 @@ async function initiativeAgeDays(targetDir) {
   }
 }
 
+// --- blueprint.yml fallback (dependency-free line-scan) ---------------------
+
+// Doctor and the CLI dispatcher pass blueprintYml: null, so the fields this
+// linter gates on (product_type, terminology.glossary, b2b_edition.enabled)
+// are read from targetDir/blueprint.yml directly when the parsed object lacks
+// them (wave 77 — before this, isDevTool never fired outside a caller that
+// parsed yaml, and dev-tool repos got jargon BLOCKs on their own vocabulary).
+async function readYmlFields(targetDir) {
+  const out = {};
+  let raw;
+  try { raw = await read(path.join(targetDir, 'blueprint.yml')); } catch { return out; }
+  if (raw == null) return out; // read() resolves null on a missing file rather than throwing
+  let section = null;
+  for (const line of raw.split('\n')) {
+    const top = line.match(/^([A-Za-z_]+):\s*(.*?)\s*(#.*)?$/);
+    if (top) {
+      section = top[1];
+      if (top[1] === 'product_type' && top[2]) out.product_type = top[2].replace(/^["']|["']$/g, '');
+      continue;
+    }
+    if (/^\S/.test(line)) { section = null; continue; }
+    const kv = line.match(/^\s+([A-Za-z_]+):\s*(.*?)\s*(#.*)?$/);
+    if (!kv) continue;
+    const v = (kv[2] || '').replace(/^["']|["']$/g, '');
+    if (section === 'terminology' && kv[1] === 'glossary' && v) out.terminology = { glossary: v };
+    if (section === 'b2b_edition' && kv[1] === 'enabled') out.b2b_edition = { enabled: v === 'true' };
+  }
+  return out;
+}
+
+// --- jurisdiction (wave 77) -------------------------------------------------
+
+// The scanned-set declaration the doctor's lint-jurisdiction check diffs
+// against the tree's actual prose surfaces. Keep in sync with the roots list
+// inside review() — this export IS the honest-scope statement.
+export const jurisdiction = {
+  description: 'user-facing copy (deprecated labels, jargon, glossary conflicts, acronyms)',
+  roots: ['prototype', 'portal', 'apps/portal/src', '_meta', 'docs/content'],
+  rootFiles: ['README.md', 'index.html'],
+  extensions: null, // all reader-facing file types under the roots
+  excludes: [],
+};
+
 // --- main -----------------------------------------------------------------
 
 // Build the set of glossary-conflict BLOCK rules. The spec's "conflict with the
@@ -350,10 +393,13 @@ export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
 
+  // Effective config: parsed object wins; blueprint.yml line-scan fills the
+  // gaps (doctor and the CLI dispatcher pass blueprintYml: null).
+  const yml = { ...(await readYmlFields(targetDir)), ...(blueprintYml || {}) };
+
   // Is the product a developer tool? Then 'endpoint'/'schema'/'payload' are
-  // legitimate domain vocabulary. Read defensively from the parsed blueprint.yml.
+  // legitimate domain vocabulary.
   const isDevTool = (() => {
-    const yml = blueprintYml || {};
     const hay = JSON.stringify(yml).toLowerCase();
     return /dev[- ]?tool|developer[- ]?tool|api|sdk|cli/.test(
       String(yml.product_type || yml.productType || yml.category || '').toLowerCase()
@@ -362,10 +408,16 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // B2B Edition flag (parsed object: b2b_edition.enabled).
   const b2bEnabled = (() => {
-    const yml = blueprintYml || {};
     const b = yml.b2b_edition || yml.b2bEdition;
     return !!(b && (b.enabled === true || b.enabled === 'true'));
   })();
+
+  // No-glossary repo (terminology.glossary: none): jargon is handled by
+  // copy rewrites or define-on-first-use inline, never a glossary artifact.
+  // The missing-glossary WARN retires instead of nagging on every run;
+  // glossary-conflict checks are vacuous anyway with no glossary to conflict.
+  const glossaryDeclaredNone =
+    String((yml.terminology && yml.terminology.glossary) || '').toLowerCase() === 'none';
 
   // 1. Locate glossary.
   let glossary;
@@ -375,7 +427,7 @@ export default async function review({ targetDir, blueprintYml }) {
     glossary = { file: null, terms: new Set(), count: 0, raw: null };
   }
 
-  if (!glossary.file || glossary.count === 0) {
+  if (!glossaryDeclaredNone && (!glossary.file || glossary.count === 0)) {
     const ageDays = await initiativeAgeDays(targetDir);
     const oldEnough = ageDays == null ? true : ageDays > 3;
     if (oldEnough) {
@@ -532,7 +584,7 @@ export default async function review({ targetDir, blueprintYml }) {
   }
 
   const summary =
-    `glossary=${glossary.file || 'missing'} (${glossary.count} terms), ` +
+    `glossary=${glossaryDeclaredNone ? 'declared-none' : `${glossary.file || 'missing'} (${glossary.count} terms)`}, ` +
     `files=${scanned}, violations=${violations}` +
     (b2bEnabled ? ', b2b=on' : '') +
     (isDevTool ? ', dev-tool=on' : '');

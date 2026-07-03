@@ -10,6 +10,19 @@ project:
     engineering: []                 # e.g., ["platform team"]
     broader: []                     # e.g., ["All stakeholders"]
 
+# What kind of product this is — gates the terminology-linter's jargon rules
+# (wave 77). For a dev tool, 'endpoint'/'schema'/'payload' are legitimate
+# domain vocabulary, not leaked jargon. Leave empty for end-user products.
+product_type: ""                    # e.g., "dev-tool" | "api" | "sdk" | "cli"
+
+# Terminology / glossary posture (wave 77). Default (empty): the linter
+# expects a glossary at docs/terminology.md (or a "User terminology" section
+# in prototype/DESIGN.md) once the initiative is >3 days old. Set to "none"
+# for a no-glossary repo — jargon is handled by copy rewrites or
+# define-on-first-use inline; the missing-glossary WARN retires.
+terminology:
+  glossary: ""                      # "" (expect a glossary) | "none"
+
 # ──────────────────────────────────────────────────────────────────
 # Pilot profile (REQUIRED — Stage 0 → Stage 1 gate)
 # Reference: docs/methodology/pilot-profile-template.md

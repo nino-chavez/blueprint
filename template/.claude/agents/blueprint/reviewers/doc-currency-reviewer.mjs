@@ -62,6 +62,17 @@ const NAME = 'doc-currency-reviewer';
 
 const ROOT_DOCS = ['METHODOLOGY.md', 'README.md', 'START-HERE.md', 'CLAUDE.md'];
 const SKIP_DOC_DIRS = new Set(['_archive', 'node_modules', '.git']);
+
+// The scanned-set declaration the doctor's lint-jurisdiction check diffs
+// against the tree's actual prose surfaces (wave 77). Keep in sync with the
+// collection logic in review() — this export IS the honest-scope statement.
+export const jurisdiction = {
+  description: 'internal links + path citations + CLI mentions in living docs',
+  roots: ['docs', 'template/docs'],
+  rootFiles: ['METHODOLOGY.md', 'README.md', 'START-HERE.md', 'CLAUDE.md'],
+  extensions: ['.md'],
+  excludes: ['_archive'],
+};
 const MAX_FINDINGS_PER_CHECK = 30;
 
 const read = (p) => fs.readFile(p, 'utf8').then((s) => s, () => null);
@@ -152,9 +163,13 @@ export default async function review({ targetDir, methodologyHome }) {
   const startedAt = Date.now();
   const findings = [];
 
-  // 1. Collect docs.
+  // 1. Collect docs. template/docs/** is in scope since wave 77: those are the
+  //    consumer-SHIPPED methodology docs — a broken link there stamps into
+  //    every consumer, so it is the highest-blast-radius surface this reviewer
+  //    covers. (Absent in consumer repos; the walk is a no-op there.)
   const docs = [];
   await walkDocs(path.join(targetDir, 'docs'), docs);
+  await walkDocs(path.join(targetDir, 'template', 'docs'), docs);
   for (const f of ROOT_DOCS) {
     const p = path.join(targetDir, f);
     if (await exists(p)) docs.push(p);
