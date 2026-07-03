@@ -1054,6 +1054,20 @@ async function main() {
   if (defaulted.length) console.log(`  defaulted: ${defaulted.join("  ")}`);
   console.log(`  dry-run=${dryRun}`);
 
+  // Variant-fit hint (METHODOLOGY-AMENDMENTS 2026-06-25, promoted wave 78 on
+  // its 2nd instance): greenfield-by-default hands decision/strategy work the
+  // full product-build pipeline. Both instances (mrr-automation, chapterzero)
+  // surfaced the mis-fit only at Stage 5, after the portal scaffold was built
+  // and mostly throwaway.
+  if (!args["variant"]) {
+    console.log(
+      `  HINT: variant defaulted to greenfield — the product-build pipeline. If this initiative is\n` +
+      `        a decision driven by a brief / deck / dataset (no product, no codebase), re-run with\n` +
+      `        --variant=research: portal-optional, provenance-only, deliverable is a decision memo.\n` +
+      `        Pre-stamp fit check: docs/variant-selection.md (top).`
+    );
+  }
+
   // Imposition layer — installed into EVERY stamped initiative so the SessionStart
   // hook + reviewer agents are present (fixes the install gap; see
   // METHODOLOGY-AMENDMENTS 2026-06-16). settings.json is project-level.

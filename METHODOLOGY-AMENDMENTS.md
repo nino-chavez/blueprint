@@ -219,9 +219,9 @@ Three fixes applied to the canonical Pattern-B chat:
 
 **Scope**: Candidate for methodology promotion (2nd instance — promotion bar met)
 
-**Bucket**: methodology (doc) + template (stamp warning — deferred)
+**Bucket**: methodology (doc) + template (stamp warning)
 
-**Status**: Active
+**Status**: Promoted to methodology — the doc half (pre-stamp variant-fit check leading `docs/variant-selection.md`) landed 2026-06-25 with this entry; the deferred template half landed wave 78 (2026-07-02): `stamp.mjs` echoes the variant-fit hint whenever `variant` is defaulted rather than passed, pointing brief/deck/dataset work at `--variant=research` before the scaffold is built.
 
 `init` defaults `variant: greenfield` and nothing checks fit. When the input is a brief/deck/dataset with no codebase, the correct variant is `research` (portal-optional, provenance-only, deliverable = decision memo) — but the operator gets the product-build pipeline by default, then builds "product-shaped scaffolding no stakeholder can use" (the exact failure the research variant names). ChapterZero ran research → prototype → docs → validate → deploy before the variant was corrected; most of the portal scaffold was throwaway.
 
