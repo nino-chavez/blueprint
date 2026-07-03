@@ -377,6 +377,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 
 ## 2026-06-11 — Blueprint↔Hive gaps from the partner working session: DoD-gate wiring, decision-graph surface, audit-trail edges
 
+**Status**: Active — candidate B has a consumer-side reference impl (atelier ADR-061, `atelier dod`, recorded below); its template promotion and candidates A/C remain second-instance-gated. The wave-76 hive integration contract (2026-07-02) is B's transport substrate: the DoD verdict would flow through the `hive_*` tool surface it defines. Sequencing B → C → A stands.
+
 **Three new candidates (all instance 1); two meeting asks resolve to already-shipped capability.** Source: the first co-development working session with the partner SA (T.) — `feedback/2026-06-11-partner-working-session.md`. The meeting's own next-step assigned this analysis ("identify gaps between Blueprint and Hive regarding archaeology and definition-of-done"). The discipline holds: mechanical realization is second-instance-gated, **except** where the partner's live engagement can serve as the instance-1 calibration test (the same exception the ground-truth-scope fix took with the second-attempt experiment).
 
 ### First, what is NOT a gap (named so the methodology doesn't re-derive shipped work)
@@ -415,6 +417,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 
 ## 2026-06-11 — Ground-truth scope: fact-check verifies green against the wrong codebase; plus two second-instance promotions fired
 
+**Status**: Active for the ground-truth-scope candidate (instance 1; the live test is the accepted second-attempt experiment). The two promotions recorded below landed as wave 57. The role-mapped approval gates item remains instance 1 (A7).
+
 **One new candidate (instance 1); two prior candidates PROMOTED (wave 57).**
 
 **Observed (eng-team thread, June 7–9):** an engineering lead reviewed the promotions initiative's generated architecture against his own domain knowledge: "It's not very accurate" — the analysis was pointed at a service repo that implements only a slice of the domain (translation behavior); the main domain logic lives in the monolith. Stage-4 fact-check had verified the claims GREEN — correctly, against the repo it was given. The loop has no check that the analyzed codebase is the right ground truth. This is the false-green class at the research boundary: a domain insider catches it instantly; no in-repo gate can.
@@ -442,7 +446,7 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 
 **Bucket**: reviewer
 
-**Status**: Active
+**Status**: Active — scan-set half promoted wave 60; wave 77 added the jurisdiction export + doctor/CI enforcement + `product_type` jargon gating + the `terminology.glossary: none` posture. The three-surface rule taxonomy (reader / practitioner / agent rule classes) remains second-instance-gated.
 
 **Observed:** the 2026-06-10 audit found two distinct gaps in `terminology-linter`:
 
@@ -464,6 +468,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 
 **Candidate for promotion (release-engineering fix; latent since wave 45).**
 
+**Status**: Active, workaround-is-the-pipeline — `bin/release-if-unpublished.mjs` publishes on main pushes and has shipped every release 0.2.0→0.4.1 (wave 75 added the doctor gate in front of it). The proper-fix decision (relocate CLI to `packages/cli/` vs delete the changesets dependency) and the changeset-presence CI check remain open.
+
 **Observed:** the first changesets authored since 0.1.0 crashed the Release workflow: `Found changeset … for package @nino-chavez-labs/blueprint-cli which is not in the workspace`. Root cause: the publishable package IS the repo root, but the wave-45 fold added `workspaces: ["apps/*", "packages/*"]` — and `@changesets/cli` excludes the monorepo root from its package set. The pipeline was *present* and *green* for six waves only because no changeset existed to exercise it — the same presence ≠ function class as the doctor-CI gap, in the release layer. The deferred changeset-presence CI check (2026-06-10 enforcement-gaps entry) would have caught this six waves earlier by forcing a changeset (and thus this crash) at the first consumer-affecting wave.
 
 **Worked around (this change):** version bumped to 0.2.0 by hand, the two pending changesets folded into a hand-written CHANGELOG entry (ADR-0007's register is the migration guide, not the tool), changeset files removed so the workflow's no-changeset path runs `changeset publish` for the unpublished 0.2.0. Whether `changeset publish` also root-blinds post-fold is answered by the next Release run — if it no-ops, the publish step swaps to a plain `npm publish --access public` + tag.
@@ -477,6 +483,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 ## 2026-06-10 — Enforcement gaps: checks exist but nothing runs them; claims rot that no reviewer reads
 
 **Two candidates for promotion (one sibling promoted directly as wave 55).**
+
+**Status**: Promoted in part — doctor CI (wave 55), stateful-claim lint (wave 59), and the same enforcement class extended twice since: release gates on doctor (wave 75), terminology-linter wired to doctor (wave 77). Remaining open: the changeset-presence CI check.
 
 **Observed (operator challenge: "is Blueprint failing its own reviews?"):** a same-day audit found that every failure caught in the 2026-06-10 session — PII pushed public, a 41-file docs/ dump, stateful claims stale for 5 waves ("forty-nine waves captured in CLAUDE.md"), a 6-wave changeset lapse despite ADR-0007's own policy — was caught by the *operator*, not a gate. The mechanical gates that exist (doctor's 7 checks, doc-currency) were green and did catch what they cover (30 broken links during the reorg) — but they are invocation-gated: **no CI workflow ran doctor or any reviewer**, so a doctor-failing state could land on main and deploy. Presence ≠ function, applied to the enforcement layer itself (the wave-52 critique, one level up).
 
@@ -494,6 +502,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 
 **Candidate for promotion (two deferred candidates; a sibling gap promoted directly as wave 53).**
 
+**Status**: Promoted to methodology — the ask-outcome Log shape landed wave 53 (direct); both deferred candidates (`market-signal` triage category, assumption-archetype checklist) landed wave 57 when their second instances fired (see the 2026-06-11 ground-truth-scope entry).
+
 **Observed:** triaging the first buyer-persona feedback (`feedback/2026-06-10-eng-lead-thread.md`): an eng lead described his own four-skill spec loop — past-specific behavior about HIS practice, the highest-value Mom Test evidence class — and the triage state machine had no honest category for it. It is not bug / scope-add / scope-clarify / opinion / question / kudos; it is evidence about the market, not about the deliverable. It got shoehorned into `opinion` with a prose note (`feedback/2026-06-10-triage.md` item 3). Second gap from the same exchange: "personal-incumbent displacement" (practitioners with hand-rolled loops keep their kitchen) had to be *discovered* from the feedback as assumption A6 — the validation-script generator never prompted for it at script-generation time, though it is a predictable archetype for any tool whose buyers already hand-roll a version of the thing.
 
 **Candidate fixes (second-instance gated):**
@@ -509,6 +519,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 ## 2026-06-05 — Pattern A/B portal contract has no archetype for an operator-facing process console (ops cockpit)
 
 **Candidate for promotion (significant — missing pattern category).**
+
+**Status**: Promoted to methodology — the bespoke-with-ADR lane landed with this change (wave 46 named the escape); `blueprint doctor` automates the divergence-ADR check since wave 48 (second bespoke instance: the self-application's product-site portal, `decisions/02-portal-bespoke-product-site.md`). A frozen ops-console contract stays deliberately unfrozen pending a second ops-console consumer.
 
 **Observed:** `ai-content-engine` (github.com/alejandrodavidvela/ai-content-engine), a greenfield Blueprint consumer whose deliverable is a daily content *operation*, not a product. It declared `tier: 0` with **no `portal_pattern`**, then hand-rolled a bespoke `prototype/` static bundle: an `index.html` front door over three surfaces (Ops cockpit / System overview / Work-with-us), a live cockpit reading a generated `state.json`, and Cloudflare-Pages deploy config. Its audience is `builders / ai_practitioners / ai_curious_execs`, not the Pattern A `executive / evaluator / engineering` pills.
 
@@ -533,6 +545,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 
 **Candidate for promotion (significant — root cause).**
 
+**Status**: Promoted to methodology — the generic config-driven harness (portal-config.ts, degrade-to-empty loaders, `blueprint.yml portal:` block) is on main; Pattern A consumers re-stamp to inherit it (CLAUDE.md standing state). The `platform/substrate` branch merged and was retired.
+
 **Observed:** stamping `--pattern=A` produces a portal that cannot build/render a fresh consumer's deliverables, because the shell is hardwired to a substrate this (and any new) consumer doesn't have:
 - `src/lib/repo-root.ts` keys `REPO_ROOT` on `METHODOLOGY.md` — exists only in the methodology source, never in a consumer.
 - `src/lib/derived.ts` reads `docs/audits/derived/_state.json` (state-derive), `docs/hive/_board.json` (hive-board-derive), `docs/audits/derived/_epic-footprints.json`, plus GitHub Projects "Ready Queue" / Epic-N trackers (#30–#59).
@@ -553,6 +567,8 @@ Additions worth promoting into the research-variant playbook (noted in `variant-
 ## 2026-06-04 — Stamper mechanical-check false-positives on evidence docs that cite the source example project
 
 **Candidate for promotion.**
+
+**Status**: Promoted to methodology — `stamp.mjs` `mechanicalCheck` scoped to stamped paths, on main since 2026-06-04 (the charter cites it: "its mechanicalCheck is scoped to the stamped target").
 
 **Observed:** `stamp.mjs --mode=stamp --pattern=A` into this initiative reported `UNEXPECTED RESIDUAL STRINGS (stamper bug — fix template/tools/blueprint-init/stamp.mjs)` for `CLAUDE.md`, `blueprint.yml`, and `research/00-recon-synthesis.md` — all matching the source-project slug `subs-initiative`.
 
