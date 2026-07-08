@@ -35,6 +35,16 @@ const read = (p) => (isFile(p) ? readFileSync(p, 'utf8') : '');
 const mdCount = (p) => ls(p).filter((f) => f.endsWith('.md') && read(join(p, f)).trim().length > 40).length;
 const anyContains = (p, re) => ls(p).some((f) => f.endsWith('.md') && re.test(read(join(p, f))));
 
+// Layout tolerance (calibrated against the real consumer fleet, 2026-07-08):
+// real initiatives keep blueprint work at the root OR nested under `blueprint/`.
+// Resolve a relative path under whichever root candidate has it (prefer the
+// plain root), so a gate finds `blueprint/research/` as readily as `research/`.
+const rootDirs = (root) => (isDir(join(root, 'blueprint')) ? [root, join(root, 'blueprint')] : [root]);
+const underRoots = (root, rel) => {
+  for (const base of rootDirs(root)) { const p = join(base, rel); if (existsSync(p)) return p; }
+  return join(root, rel);
+};
+
 // ── minimal blueprint.yml readers (no YAML dep) ────────────────────
 // ymlHasBlock: true if a TOP-LEVEL `key:` has a non-empty inline value or an
 // indented body. Anchored to zero indent on purpose — a key nested under some
@@ -84,26 +94,26 @@ const CHECK_KINDS = {
 
   'dir-md-min': ({ dirs, min }, c) => {
     if (!Array.isArray(dirs) || !dirs.length || typeof min !== 'number') return badParams('dir-md-min', 'need dirs[] + numeric min');
-    const n = Math.max(...dirs.map((d) => mdCount(join(c.root, d))));
+    const n = Math.max(...dirs.map((d) => mdCount(underRoots(c.root, d))));
     if (n >= min) return { state: 'pass', evidence: `${dirs.join('|')}: ${n} artifacts` };
     if (n > 0) return { state: 'partial', evidence: `${dirs.join('|')}: ${n} (<${min})` };
     return { state: 'absent', evidence: `${dirs.join('|')}: none` };
   },
 
   'dir-contains': ({ dir, pattern, missState = 'absent' }, c) => (!dir || !pattern) ? badParams('dir-contains', 'need dir + pattern')
-    : anyContains(join(c.root, dir), new RegExp(pattern, 'i'))
+    : anyContains(underRoots(c.root, dir), new RegExp(pattern, 'i'))
       ? { state: 'pass', evidence: `${dir}: matched /${pattern}/` }
       : { state: missState, evidence: `${dir}: no /${pattern}/ match` },
 
   'file-exists': ({ path }, c) => !path ? badParams('file-exists', 'missing path')
-    : isFile(join(c.root, path))
+    : isFile(underRoots(c.root, path))
       ? { state: 'pass', evidence: `${path} present` }
       : { state: 'absent', evidence: `${path} missing` },
 
   'name-match': ({ dirs, pattern, missState = 'absent' }, c) => {
     if (!Array.isArray(dirs) || !dirs.length || !pattern) return badParams('name-match', 'need dirs[] + pattern');
     const re = new RegExp(pattern, 'i');
-    return dirs.some((d) => ls(join(c.root, d)).some((f) => re.test(f)))
+    return dirs.some((d) => ls(underRoots(c.root, d)).some((f) => re.test(f)))
       ? { state: 'pass', evidence: `${dirs.join('|')}: filename ~ /${pattern}/` }
       : { state: missState, evidence: `${dirs.join('|')}: no filename ~ /${pattern}/` };
   },
@@ -112,8 +122,8 @@ const CHECK_KINDS = {
 
   'deploy-signals': ({ paths = [], distDir }, c) => {
     if (!Array.isArray(paths)) return badParams('deploy-signals', 'paths must be an array');
-    const hits = paths.filter((p) => existsSync(join(c.root, p)));
-    const dist = distDir && isDir(join(c.root, distDir));
+    const hits = paths.filter((p) => existsSync(underRoots(c.root, p)));
+    const dist = distDir && isDir(underRoots(c.root, distDir));
     return (hits.length || dist)
       ? { state: 'pass', evidence: `deploy signals: ${[...hits, dist ? distDir : ''].filter(Boolean).join(', ')}` }
       : { state: 'absent', evidence: 'no deploy config detected' };
@@ -121,7 +131,7 @@ const CHECK_KINDS = {
 
   'feedback-triaged': ({ dir }, c) => {
     if (!dir) return badParams('feedback-triaged', 'missing dir');
-    const f = ls(join(c.root, dir));
+    const f = ls(underRoots(c.root, dir));
     const cap = f.some((x) => x.endsWith('.md') && !/triage|kudos/i.test(x));
     const tri = f.some((x) => /triage/i.test(x));
     if (cap && tri) return { state: 'pass', evidence: `${dir}: captures + triage present` };
@@ -130,15 +140,32 @@ const CHECK_KINDS = {
   },
 
   // pass if ANY listed path is a file OR any listed dir has ≥1 non-hidden file.
-  // Covers "sub-deliverable dir populated" (dirs) and "portal OR prototype shell"
-  // (paths+dirs) — the midstream/brownfield/research gate shapes.
   'any-exists': ({ paths = [], dirs = [], missState = 'absent' }, c) => {
     if (!Array.isArray(paths) || !Array.isArray(dirs) || (!paths.length && !dirs.length)) return badParams('any-exists', 'need paths[] and/or dirs[]');
-    const fileHits = paths.filter((p) => existsSync(join(c.root, p)));
-    const dirHits = dirs.filter((d) => ls(join(c.root, d)).some((f) => !f.startsWith('.'))).map((d) => `${d}/`);
+    const fileHits = paths.filter((p) => existsSync(underRoots(c.root, p)));
+    const dirHits = dirs.filter((d) => ls(underRoots(c.root, d)).some((f) => !f.startsWith('.'))).map((d) => `${d}/`);
     const hits = [...fileHits, ...dirHits];
     return hits.length ? { state: 'pass', evidence: `present: ${hits.join(', ')}` }
       : { state: missState, evidence: `none of: ${[...paths, ...dirs.map((d) => `${d}/`)].join(', ')}` };
+  },
+
+  // LAYOUT-TOLERANT research/diagnose gate (calibrated 2026-07-08 — the strict
+  // per-leg-by-canonical-name gate passed 0/7 real consumers). A "leg" = a
+  // non-hidden subdir OR a substantive (>40 char) top-level .md file under
+  // `<root|blueprint>/<dir>`, regardless of the leg's name (real initiatives use
+  // architecture/, problem-space/, etc.). Excludes README + any `exclude` names
+  // (e.g. research/sources for the research variant's Stage-0 intake). The
+  // reviewer (`research-completeness-reviewer`) still enforces the RIGHT legs +
+  // primary-source grounding; this gate answers only "did research happen".
+  'research-legs': ({ dir = 'research', min = 1, exclude = [] }, c) => {
+    const base = underRoots(c.root, dir);
+    if (!isDir(base)) return { state: 'absent', evidence: `${dir}/ not found (root or blueprint/)` };
+    const skip = new Set(['readme.md', ...exclude.map((x) => x.toLowerCase())]);
+    const legs = ls(base).filter((f) => !f.startsWith('.') && !skip.has(f.toLowerCase()) &&
+      (isDir(join(base, f)) || (f.endsWith('.md') && read(join(base, f)).trim().length > 40)));
+    if (legs.length >= min) return { state: 'pass', evidence: `${dir}/: ${legs.length} legs (${legs.slice(0, 4).join(', ')}${legs.length > 4 ? '…' : ''})` };
+    if (legs.length > 0) return { state: 'partial', evidence: `${dir}/: ${legs.length} leg(s) (<${min})` };
+    return { state: 'absent', evidence: `${dir}/: no legs` };
   },
 };
 
@@ -150,16 +177,22 @@ export const GREENFIELD_MODEL = {
   variant: 'greenfield',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      // pilot_profile is OPTIONAL to the cursor — its Stage 0→1 gate is owned by
+      // pilot-profile-lock-reviewer; many mature initiatives never declared the
+      // field and pinning them to Stage -1 on it is a false negative (calibrated
+      // 2026-07-08). Present → shows a real pass; absent → non-blocking.
+      { id: 'pilot-profile', derivable: true, optional: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'not derivable from disk — requires driving the running app' } },
     ] },
     { id: 1, name: 'Research', gates: [
-      { id: 'research-artifacts', derivable: true, kind: 'dir-md-min', params: { dirs: ['research'], min: 2 } },
-      { id: 'sibling-scan', derivable: true, kind: 'dir-contains', params: { dir: 'research', pattern: 'sibling|reference impl|internal reference|comparable' } },
-      { id: 'reference-grading', derivable: true, kind: 'dir-contains', params: { dir: 'research', pattern: 'track|evidence-track|convention-track|reference quality', missState: 'partial' } },
+      // layout-tolerant legs; sibling-scan + reference-grading are enforced by
+      // their reviewers (research-sibling-scanner / research-reference-grader).
+      { id: 'research-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 2 } },
     ] },
     { id: 2, name: 'Design Principles', gates: [
-      { id: 'principles-doc', derivable: true, kind: 'name-match', params: { dirs: ['docs', 'research'], pattern: 'design-principle|design-system|principles' } },
+      // canonical location is prototype/DESIGN.md (docs/variant-selection.md
+      // § Greenfield Stage 2) — search prototype/ too, not just docs/research.
+      { id: 'principles-doc', derivable: true, kind: 'name-match', params: { dirs: ['prototype', 'docs', 'research'], pattern: '^design\\.md$|design-principle|design-system|principles' } },
     ] },
     { id: 3, name: 'Prototype', gates: [
       { id: 'portal-shell', derivable: true, kind: 'file-exists', params: { path: 'apps/portal/package.json' } },
@@ -190,12 +223,13 @@ export const MIDSTREAM_MODEL = {
   variant: 'midstream',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      { id: 'pilot-profile', derivable: true, optional: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for midstream — the live touchpoint must be driven/captured' } },
     ] },
     { id: 1, name: 'Targeted Diagnose', gates: [
-      { id: 'current-state', derivable: true, kind: 'any-exists', params: { dirs: ['research/current-state'] } },
-      { id: 'competitive-scoped', derivable: true, kind: 'any-exists', params: { dirs: ['research/competitive'] } },
+      // layout-tolerant: ≥2 diagnose legs (subdirs or files, any names, root or
+      // blueprint/). research-completeness-reviewer enforces the scoped legs.
+      { id: 'diagnose-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 2 } },
     ] },
     { id: 2, name: 'Prescription', gates: [
       { id: 'prescription', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'prescription' } },
@@ -228,19 +262,16 @@ export const BROWNFIELD_MODEL = {
   variant: 'brownfield',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      { id: 'pilot-profile', derivable: true, optional: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for brownfield — every audit claim grounds in a captured surface' } },
     ] },
     { id: 1, name: 'Diagnose', gates: [
-      // canonical legs are subdirs, ALL required ("all five populated",
-      // docs/variant-selection.md § sub-deliverables). One gate PER leg (AND
-      // semantics — a single collapsed any-exists would confirm the stage on
-      // one leg). Matches midstream's per-leg shape; the program owns the guard.
-      { id: 'leg-current-state', derivable: true, kind: 'any-exists', params: { dirs: ['research/current-state'] } },
-      { id: 'leg-personas', derivable: true, kind: 'any-exists', params: { dirs: ['research/personas'] } },
-      { id: 'leg-funnel', derivable: true, kind: 'any-exists', params: { dirs: ['research/funnel'] } },
-      { id: 'leg-competitive', derivable: true, kind: 'any-exists', params: { dirs: ['research/competitive'] } },
-      { id: 'diagnose-synthesis', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'diagnose' } },
+      // layout-tolerant: ≥2 diagnose legs (subdirs or files, any names, root or
+      // blueprint/). The canonical "all five populated" + the 01-diagnose
+      // synthesis are enforced by research-completeness-reviewer — a mechanical
+      // cursor gating on exact leg names passed 0/7 real consumers (calibrated
+      // 2026-07-08: no initiative uses the canonical leg names verbatim).
+      { id: 'diagnose-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 2 } },
     ] },
     { id: 2, name: 'Prescription', gates: [
       { id: 'prescription', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'prescription' } },
@@ -279,13 +310,11 @@ export const RESEARCH_MODEL = {
       { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas' } },
     ] },
     { id: 2, name: 'Research', gates: [
-      // canonical layout keeps the legs in SUBDIRS, ALL THREE required (≥3 legs,
-      // docs/variant-selection.md § Research). One gate PER leg (AND semantics —
-      // a single collapsed any-exists would confirm on one leg). The program
-      // owns the guard; the reviewer enforces primary-source grounding on top.
-      { id: 'leg-problem-space', derivable: true, kind: 'any-exists', params: { dirs: ['research/problem-space'] } },
-      { id: 'leg-competitive', derivable: true, kind: 'any-exists', params: { dirs: ['research/competitive'] } },
-      { id: 'leg-prior-art', derivable: true, kind: 'any-exists', params: { dirs: ['research/prior-art'] } },
+      // layout-tolerant: ≥3 research legs (any names), excluding the Stage-0
+      // `sources/` intake dir so it isn't counted as a research leg. The
+      // research-completeness-reviewer enforces the specific legs +
+      // primary-source grounding. (Uncalibrated — no local research consumer.)
+      { id: 'research-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 3, exclude: ['sources'] } },
     ] },
     { id: 3, name: 'Synthesis & Decisions', gates: [
       { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
@@ -410,6 +439,11 @@ export function deriveStageStatus({ root, assertions = {} }) {
   let cursor = -1;
   for (const s of stages) { if (s.complete) cursor = s.id; else break; }
 
+  // Coverage: real initiatives complete stages NON-CONTIGUOUSLY (research done,
+  // Stage-2 skipped, decisions + deploy done — see case-study-subs-skipped-
+  // stages-2-4.md). The linear spine under-reports them, so report both: the
+  // spine (contiguous prefix) AND coverage (how many stages are complete at all).
+  const stagesComplete = stages.filter((s) => s.complete).map((s) => s.id);
   const allGates = stages.flatMap((s) => s.gates);
   const derivableCount = allGates.filter((g) => g.derivable).length;
   return {
@@ -418,6 +452,8 @@ export function deriveStageStatus({ root, assertions = {} }) {
     modelNote: note,
     cursor,
     cursorName: cursor >= 0 ? stages.find((x) => x.id === cursor).name : null,
+    stagesComplete,
+    stageCount: stages.length,
     artifactCursor,
     artifactCursorName: artifactCursor >= 0 ? stages.find((x) => x.id === artifactCursor).name : null,
     stages,

@@ -172,4 +172,14 @@ the freeze acknowledgment. Sequencing:
 
 **Rollout complete — (a) through (e) all shipped (waves 80–83).**
 
+**Calibration (wave 84, 2026-07-08).** Running `blueprint stage status` against the seven local
+consumers found the gates derived a sensible cursor for **0/7** — the self-tests + synthetic fixtures
+had been circular (shaped to match the gates). Four layout-mismatch classes were fixed (greenfield
+subdir bug; `blueprint/`-nested roots; `pilot_profile` made optional; leg-name divergence). This
+**reversed** the wave-82 per-leg-AND-by-canonical-name decision — no real initiative uses the
+canonical leg names, so a layout-tolerant `research-legs` gate replaced it, with the reviewer still
+owning "the right legs." The deeper finding: real initiatives complete stages **non-contiguously**
+(the linear spine under-reports; a `stagesComplete` coverage metric now reports alongside it). The
+strict-vs-tolerant fork was an operator decision, resolved to tolerant on the 0/7 evidence.
+
 Shipped in waves 80–81 (46f7eaf, f41a1d9, c698198 pushed; wave 81 this commit).

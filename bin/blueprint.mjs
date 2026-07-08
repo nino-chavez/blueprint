@@ -615,6 +615,7 @@ async function runStage(stageArgv, home) {
   console.log(`\n  legend: ✓ pass  ~ partial  ✗ absent    *? = NOT machine-derivable (needs agent/human assertion)`);
   console.log(`\nartifact cursor:  Stage ${res.artifactCursor} ${res.artifactCursor >= 0 ? `(${res.artifactCursorName})` : '(none)'}  — how far the disk artifacts reach (derivable gates only)`);
   console.log(`confirmed cursor: Stage ${res.cursor} ${res.cursor >= 0 ? `(${res.cursorName})` : '(none)'}  — all gates incl. recorded assertions (what \`advance\` moves)`);
+  console.log(`stages complete:  ${res.stagesComplete.length}/${res.stageCount} [${res.stagesComplete.join(', ') || '—'}]  — coverage (may be non-contiguous; the spine stops at the first gap)`);
   if (res.nextStage) console.log(`frontier (advance target): Stage ${res.nextStage.id} — ${res.nextStage.name}`);
   console.log(`\nderivability: ${res.derivableCount}/${res.totalGates} gates machine-derivable, ${res.nonderivableCount}/${res.totalGates} need assertion`);
   console.log(`  the deterministic core owns the ${res.derivableCount}; the agentic shell owns the ${res.nonderivableCount}.`);
