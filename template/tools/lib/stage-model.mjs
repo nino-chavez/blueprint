@@ -36,18 +36,20 @@ const mdCount = (p) => ls(p).filter((f) => f.endsWith('.md') && read(join(p, f))
 const anyContains = (p, re) => ls(p).some((f) => f.endsWith('.md') && re.test(read(join(p, f))));
 
 // ── minimal blueprint.yml readers (no YAML dep) ────────────────────
-// ymlHasBlock: true if `key:` has a non-empty inline value or an indented body.
+// ymlHasBlock: true if a TOP-LEVEL `key:` has a non-empty inline value or an
+// indented body. Anchored to zero indent on purpose — a key nested under some
+// other block must NOT satisfy a top-level gate (the wave-77 mis-nesting class:
+// `project.audience` silently re-parented under `terminology:`, commit 44f50b4).
 export function ymlHasBlock(yml, key) {
   const lines = yml.split('\n');
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^(\s*)([A-Za-z0-9_]+):\s*(.*)$/);
-    if (!m || m[2] !== key) continue;
-    const indent = m[1].length;
-    const inlineVal = m[3].trim();
+    const m = lines[i].match(/^([A-Za-z0-9_]+):\s*(.*)$/); // zero-indent only
+    if (!m || m[1] !== key) continue;
+    const inlineVal = m[2].trim();
     if (inlineVal && inlineVal !== 'null' && !inlineVal.startsWith('#')) return true;
     for (let j = i + 1; j < lines.length; j++) {
       if (!lines[j].trim() || lines[j].trim().startsWith('#')) continue;
-      if (lines[j].match(/^(\s*)/)[1].length > indent) return true;
+      if (lines[j].match(/^(\s*)/)[1].length > 0) return true; // indented child = block body
       break;
     }
   }
@@ -68,27 +70,38 @@ export function ymlScalar(yml, key) {
 // ── check-kind registry ────────────────────────────────────────────
 // Each kind: (params, ctx) -> { state: 'pass'|'partial'|'absent', evidence }.
 // `missState` lets a gate treat a miss as 'partial' (soft) vs 'absent' (hard).
+// Params come from (possibly consumer-authored) JSON, so each kind validates
+// its own params and returns a `bad-params` absent state rather than throwing
+// or — worse — silently building `new RegExp(undefined)` (= /undefined/i, which
+// matches the literal "undefined"). deriveStageStatus also try/catches each
+// gate as a backstop.
+const badParams = (kind, why) => ({ state: 'absent', evidence: `${kind}: bad params (${why})` });
 const CHECK_KINDS = {
-  'yml-block': ({ key }, c) => ymlHasBlock(c.yml, key)
-    ? { state: 'pass', evidence: `blueprint.yml: ${key} present` }
-    : { state: 'absent', evidence: `blueprint.yml: no ${key}` },
+  'yml-block': ({ key }, c) => !key ? badParams('yml-block', 'missing key')
+    : ymlHasBlock(c.yml, key)
+      ? { state: 'pass', evidence: `blueprint.yml: ${key} present` }
+      : { state: 'absent', evidence: `blueprint.yml: no ${key}` },
 
   'dir-md-min': ({ dirs, min }, c) => {
+    if (!Array.isArray(dirs) || !dirs.length || typeof min !== 'number') return badParams('dir-md-min', 'need dirs[] + numeric min');
     const n = Math.max(...dirs.map((d) => mdCount(join(c.root, d))));
     if (n >= min) return { state: 'pass', evidence: `${dirs.join('|')}: ${n} artifacts` };
     if (n > 0) return { state: 'partial', evidence: `${dirs.join('|')}: ${n} (<${min})` };
     return { state: 'absent', evidence: `${dirs.join('|')}: none` };
   },
 
-  'dir-contains': ({ dir, pattern, missState = 'absent' }, c) => anyContains(join(c.root, dir), new RegExp(pattern, 'i'))
-    ? { state: 'pass', evidence: `${dir}: matched /${pattern}/` }
-    : { state: missState, evidence: `${dir}: no /${pattern}/ match` },
+  'dir-contains': ({ dir, pattern, missState = 'absent' }, c) => (!dir || !pattern) ? badParams('dir-contains', 'need dir + pattern')
+    : anyContains(join(c.root, dir), new RegExp(pattern, 'i'))
+      ? { state: 'pass', evidence: `${dir}: matched /${pattern}/` }
+      : { state: missState, evidence: `${dir}: no /${pattern}/ match` },
 
-  'file-exists': ({ path }, c) => isFile(join(c.root, path))
-    ? { state: 'pass', evidence: `${path} present` }
-    : { state: 'absent', evidence: `${path} missing` },
+  'file-exists': ({ path }, c) => !path ? badParams('file-exists', 'missing path')
+    : isFile(join(c.root, path))
+      ? { state: 'pass', evidence: `${path} present` }
+      : { state: 'absent', evidence: `${path} missing` },
 
   'name-match': ({ dirs, pattern, missState = 'absent' }, c) => {
+    if (!Array.isArray(dirs) || !dirs.length || !pattern) return badParams('name-match', 'need dirs[] + pattern');
     const re = new RegExp(pattern, 'i');
     return dirs.some((d) => ls(join(c.root, d)).some((f) => re.test(f)))
       ? { state: 'pass', evidence: `${dirs.join('|')}: filename ~ /${pattern}/` }
@@ -98,6 +111,7 @@ const CHECK_KINDS = {
   'manual': ({ evidence }) => ({ state: 'partial', evidence: evidence || 'not derivable from disk — needs assertion' }),
 
   'deploy-signals': ({ paths = [], distDir }, c) => {
+    if (!Array.isArray(paths)) return badParams('deploy-signals', 'paths must be an array');
     const hits = paths.filter((p) => existsSync(join(c.root, p)));
     const dist = distDir && isDir(join(c.root, distDir));
     return (hits.length || dist)
@@ -106,6 +120,7 @@ const CHECK_KINDS = {
   },
 
   'feedback-triaged': ({ dir }, c) => {
+    if (!dir) return badParams('feedback-triaged', 'missing dir');
     const f = ls(join(c.root, dir));
     const cap = f.some((x) => x.endsWith('.md') && !/triage|kudos/i.test(x));
     const tri = f.some((x) => /triage/i.test(x));
@@ -169,8 +184,15 @@ export function loadStageModel(root) {
   const sel = ymlScalar(yml, 'stage_model');
   if (sel && /\.json$/.test(sel)) {
     const p = isAbsolute(sel) ? sel : join(root, sel);
-    try { return { model: JSON.parse(read(p)), source: p, note: null }; }
-    catch (e) { return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' unreadable: ${e.message}` }; }
+    try {
+      const model = JSON.parse(read(p));
+      if (!model || !Array.isArray(model.stages)) {
+        return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' has no stages[] array — using greenfield` };
+      }
+      return { model, source: p, note: null };
+    } catch (e) {
+      return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' unreadable: ${e.message}` };
+    }
   }
   if (sel && BUILTIN_MODELS[sel]) return { model: BUILTIN_MODELS[sel], source: sel, note: null };
   if (sel) return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' not shipped yet (ADR-0008 rollout step d) — using greenfield` };
@@ -184,10 +206,15 @@ export function deriveStageStatus({ root }) {
   const ctx = { root, yml: read(join(root, 'blueprint.yml')) };
 
   const stages = model.stages.map((st) => {
-    const gates = st.gates.map((g) => {
+    const gates = (st.gates || []).map((g) => {
       const kind = CHECK_KINDS[g.kind];
-      const r = kind ? kind(g.params || {}, ctx)
-        : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
+      let r;
+      try {
+        r = kind ? kind(g.params || {}, ctx)
+          : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
+      } catch (e) {
+        r = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
+      }
       return { gate: g.id, derivable: g.derivable, kind: g.kind, ...r };
     });
     const derivable = gates.filter((g) => g.derivable);
@@ -243,11 +270,17 @@ export function previewAdvance({ root }) {
 function selftest() {
   const assert = (c, m) => { if (!c) { console.error('FAIL:', m); process.exit(1); } };
   const yml = 'project:\n  name: "x"\npilot_profile:\n  slug: "y"\nstage_model: "greenfield"\nempty_key: null\n';
-  assert(ymlHasBlock(yml, 'pilot_profile'), 'block detected');
+  assert(ymlHasBlock(yml, 'pilot_profile'), 'top-level block detected');
   assert(!ymlHasBlock(yml, 'empty_key'), 'null block rejected');
+  // wave-77 regression: a key nested under another block must NOT satisfy a
+  // top-level gate (commit 44f50b4 — audience re-parented under terminology).
+  assert(!ymlHasBlock('terminology:\n  pilot_profile:\n    slug: "z"\n', 'pilot_profile'), 'nested key rejected (zero-indent anchor)');
   assert(ymlScalar(yml, 'stage_model') === 'greenfield', 'scalar read (quoted)');
   assert(ymlScalar(yml, 'empty_key') === null, 'null scalar → null');
   assert(ymlScalar(yml, 'missing') === null, 'absent scalar → null');
+  // bad-params must not throw and must not build /undefined/
+  assert(CHECK_KINDS['dir-contains']({ dir: 'x' }, { root: process.cwd(), yml: '' }).state === 'absent', 'dir-contains missing pattern → absent, not /undefined/');
+  assert(CHECK_KINDS['file-exists']({}, { root: process.cwd(), yml: '' }).state === 'absent', 'file-exists missing path → absent');
 
   // every gate references a known check kind
   for (const s of GREENFIELD_MODEL.stages)

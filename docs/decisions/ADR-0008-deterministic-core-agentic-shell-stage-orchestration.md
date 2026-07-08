@@ -27,7 +27,7 @@ references:
 > `stage advance` behavior remains deferred to rollout steps c/d. Lands under a wave with the
 > freeze acknowledgment per the charter.
 
-Status: **proposed** — grounded in a run of the derivability probe against this repo; ratify on operator review.
+Status: **accepted** (operator go 2026-07-07) — grounded in a run of the derivability probe against this repo.
 
 ## Context
 
@@ -169,4 +169,4 @@ the freeze acknowledgment. Sequencing:
 - (d) extend the stage model to the other three variants (midstream/brownfield/research) — PENDING.
 - (e) retire the overlapping `STATE.md` sections; add a `doctor` check that the declared stage model matches the wired reviewers/hooks — PENDING.
 
-Not yet committed — lands with its wave entry on operator direction.
+Shipped in wave 80 (commit 46f7eaf); review follow-ups in the next commit. Not yet pushed.

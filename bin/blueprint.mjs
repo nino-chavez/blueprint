@@ -559,7 +559,7 @@ async function runStage(stageArgv, home) {
     // ADR-0008 rollout step c). Reports whether the next stage's entry-guard
     // passes and what blocks it; --execute is honestly not-yet-wired.
     const res = lib.previewAdvance({ root: targetDir });
-    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(0); }
+    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.advance.canAdvance ? 0 : 1); }
     console.log(`blueprint stage advance (dry-run) — ${targetDir}\n`);
     const a = res.advance;
     if (!a.target) { console.log(`  ${a.reason}`); process.exit(0); }
