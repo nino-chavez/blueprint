@@ -8,6 +8,23 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+## 0.5.0
+
+Minor — **`blueprint stage`: deterministic stage orchestration** (ADR-0008), rolled up from waves 80–84. Additive; no breaking changes. Consumers gain the command on their next `blueprint upgrade`; nothing in existing initiatives changes.
+
+The through-line: an external talk (Khourshid, *"goodbye slop; welcome determinism"*) named the deterministic-core / agentic-shell architecture Blueprint had already half-built — its stage *sequencing* lived only in `METHODOLOGY.md` prose (the "hope the agent follows it" failure mode). This release promotes it to an executable model, hardened across an adversarial review loop and a calibration pass against the real consumer fleet.
+
+### Added
+
+- **`blueprint stage status`** — derives an initiative's pipeline position from artifacts-on-disk + recorded assertions, and reports it honestly: an **artifact cursor** (how far the disk artifacts reach), a **confirmed cursor** (all gates incl. operator assertions), and a **coverage** metric (stages complete — which are usually *non-contiguous* for real initiatives). Every gate is classified `derivable` (a program can decide it) vs. agentic-shell (needs an operator/reviewer assertion).
+- **`blueprint stage advance`** — gates the next transition: refuses unless every derivable gate passes on disk AND every shell gate has a recorded assertion (`--assert-<gate>="evidence"`). Dry-run by default (terraform-plan style); `--execute` records the advance to `.blueprint/stage-state.json`. A recorded assertion satisfies a non-derivable gate but never a derivable one the disk contradicts.
+- **Four variant stage models** — `greenfield` / `midstream` / `brownfield` / `research`, encoded from `docs/variant-selection.md` and auto-selected from `blueprint.yml` `variant:` (or an explicit `stage_model:` / a repo-relative JSON model).
+- **`doctor` stage-model check** (the 12th) — a misdeclared `variant:` that silently falls back to greenfield now surfaces as a WARN instead of running the wrong pipeline invisibly.
+
+### Changed
+
+- **Stage gates calibrated against the real consumer fleet** — the first run derived a sensible cursor for 0/7 real consumers (self-tests + synthetic fixtures had been circular). Gates are now layout-tolerant: they search `blueprint/`-nested roots as well as the initiative root, count research legs as populated subdirs *or* files under any name, and defer leg-name / completeness enforcement to the reviewers. `template/STATE.md` routes stage/cursor state to `blueprint stage status` (the machine owns it; a hand-copied cursor drifts).
+
 ## 0.4.1
 
 Patch — fixes a defect in the wave-74 `portal-chrome-canonical-reviewer` two-profile change.
