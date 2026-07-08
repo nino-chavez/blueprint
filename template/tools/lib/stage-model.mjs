@@ -24,8 +24,9 @@
 // YAML dep — a top-level-key scan is all the loader needs (scalar select +
 // block presence); the model shape itself travels as JSON when overridden.
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join, resolve, isAbsolute } from 'node:path';
+import { tmpdir } from 'node:os';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
@@ -37,13 +38,15 @@ const anyContains = (p, re) => ls(p).some((f) => f.endsWith('.md') && re.test(re
 
 // Layout tolerance (calibrated against the real consumer fleet, 2026-07-08):
 // real initiatives keep blueprint work at the root OR nested under `blueprint/`.
-// Resolve a relative path under whichever root candidate has it (prefer the
-// plain root), so a gate finds `blueprint/research/` as readily as `research/`.
+// Rather than resolve to one root (first-existing-wins, which lets an empty root
+// stub SHADOW real work under blueprint/), each gate is evaluated against BOTH
+// candidate roots and the BEST result is taken (see deriveStageStatus). So the
+// kinds themselves stay root-agnostic — they read `c.root`.
 const rootDirs = (root) => (isDir(join(root, 'blueprint')) ? [root, join(root, 'blueprint')] : [root]);
-const underRoots = (root, rel) => {
-  for (const base of rootDirs(root)) { const p = join(base, rel); if (existsSync(p)) return p; }
-  return join(root, rel);
-};
+const rankState = (s) => (s === 'pass' ? 2 : s === 'partial' ? 1 : 0);
+// a directory is a populated "leg" only if it holds ≥1 non-hidden entry — an
+// empty stamp-time subdir (or a .gitkeep placeholder) is not research.
+const isPopulatedDir = (d) => isDir(d) && ls(d).some((f) => !f.startsWith('.'));
 
 // ── minimal blueprint.yml readers (no YAML dep) ────────────────────
 // ymlHasBlock: true if a TOP-LEVEL `key:` has a non-empty inline value or an
@@ -94,26 +97,26 @@ const CHECK_KINDS = {
 
   'dir-md-min': ({ dirs, min }, c) => {
     if (!Array.isArray(dirs) || !dirs.length || typeof min !== 'number') return badParams('dir-md-min', 'need dirs[] + numeric min');
-    const n = Math.max(...dirs.map((d) => mdCount(underRoots(c.root, d))));
+    const n = Math.max(...dirs.map((d) => mdCount(join(c.root, d))));
     if (n >= min) return { state: 'pass', evidence: `${dirs.join('|')}: ${n} artifacts` };
     if (n > 0) return { state: 'partial', evidence: `${dirs.join('|')}: ${n} (<${min})` };
     return { state: 'absent', evidence: `${dirs.join('|')}: none` };
   },
 
   'dir-contains': ({ dir, pattern, missState = 'absent' }, c) => (!dir || !pattern) ? badParams('dir-contains', 'need dir + pattern')
-    : anyContains(underRoots(c.root, dir), new RegExp(pattern, 'i'))
+    : anyContains(join(c.root, dir), new RegExp(pattern, 'i'))
       ? { state: 'pass', evidence: `${dir}: matched /${pattern}/` }
       : { state: missState, evidence: `${dir}: no /${pattern}/ match` },
 
   'file-exists': ({ path }, c) => !path ? badParams('file-exists', 'missing path')
-    : isFile(underRoots(c.root, path))
+    : isFile(join(c.root, path))
       ? { state: 'pass', evidence: `${path} present` }
       : { state: 'absent', evidence: `${path} missing` },
 
   'name-match': ({ dirs, pattern, missState = 'absent' }, c) => {
     if (!Array.isArray(dirs) || !dirs.length || !pattern) return badParams('name-match', 'need dirs[] + pattern');
     const re = new RegExp(pattern, 'i');
-    return dirs.some((d) => ls(underRoots(c.root, d)).some((f) => re.test(f)))
+    return dirs.some((d) => ls(join(c.root, d)).some((f) => re.test(f)))
       ? { state: 'pass', evidence: `${dirs.join('|')}: filename ~ /${pattern}/` }
       : { state: missState, evidence: `${dirs.join('|')}: no filename ~ /${pattern}/` };
   },
@@ -122,8 +125,8 @@ const CHECK_KINDS = {
 
   'deploy-signals': ({ paths = [], distDir }, c) => {
     if (!Array.isArray(paths)) return badParams('deploy-signals', 'paths must be an array');
-    const hits = paths.filter((p) => existsSync(underRoots(c.root, p)));
-    const dist = distDir && isDir(underRoots(c.root, distDir));
+    const hits = paths.filter((p) => existsSync(join(c.root, p)));
+    const dist = distDir && isDir(join(c.root, distDir));
     return (hits.length || dist)
       ? { state: 'pass', evidence: `deploy signals: ${[...hits, dist ? distDir : ''].filter(Boolean).join(', ')}` }
       : { state: 'absent', evidence: 'no deploy config detected' };
@@ -131,7 +134,7 @@ const CHECK_KINDS = {
 
   'feedback-triaged': ({ dir }, c) => {
     if (!dir) return badParams('feedback-triaged', 'missing dir');
-    const f = ls(underRoots(c.root, dir));
+    const f = ls(join(c.root, dir));
     const cap = f.some((x) => x.endsWith('.md') && !/triage|kudos/i.test(x));
     const tri = f.some((x) => /triage/i.test(x));
     if (cap && tri) return { state: 'pass', evidence: `${dir}: captures + triage present` };
@@ -142,8 +145,8 @@ const CHECK_KINDS = {
   // pass if ANY listed path is a file OR any listed dir has ≥1 non-hidden file.
   'any-exists': ({ paths = [], dirs = [], missState = 'absent' }, c) => {
     if (!Array.isArray(paths) || !Array.isArray(dirs) || (!paths.length && !dirs.length)) return badParams('any-exists', 'need paths[] and/or dirs[]');
-    const fileHits = paths.filter((p) => existsSync(underRoots(c.root, p)));
-    const dirHits = dirs.filter((d) => ls(underRoots(c.root, d)).some((f) => !f.startsWith('.'))).map((d) => `${d}/`);
+    const fileHits = paths.filter((p) => existsSync(join(c.root, p)));
+    const dirHits = dirs.filter((d) => ls(join(c.root, d)).some((f) => !f.startsWith('.'))).map((d) => `${d}/`);
     const hits = [...fileHits, ...dirHits];
     return hits.length ? { state: 'pass', evidence: `present: ${hits.join(', ')}` }
       : { state: missState, evidence: `none of: ${[...paths, ...dirs.map((d) => `${d}/`)].join(', ')}` };
@@ -158,11 +161,13 @@ const CHECK_KINDS = {
   // reviewer (`research-completeness-reviewer`) still enforces the RIGHT legs +
   // primary-source grounding; this gate answers only "did research happen".
   'research-legs': ({ dir = 'research', min = 1, exclude = [] }, c) => {
-    const base = underRoots(c.root, dir);
+    const base = join(c.root, dir);
     if (!isDir(base)) return { state: 'absent', evidence: `${dir}/ not found (root or blueprint/)` };
     const skip = new Set(['readme.md', ...exclude.map((x) => x.toLowerCase())]);
+    // a leg = a POPULATED subdir (not an empty stamp-time dir) OR a substantive
+    // top-level .md file — an empty research/problem-space/ is not research.
     const legs = ls(base).filter((f) => !f.startsWith('.') && !skip.has(f.toLowerCase()) &&
-      (isDir(join(base, f)) || (f.endsWith('.md') && read(join(base, f)).trim().length > 40)));
+      (isPopulatedDir(join(base, f)) || (f.endsWith('.md') && read(join(base, f)).trim().length > 40)));
     if (legs.length >= min) return { state: 'pass', evidence: `${dir}/: ${legs.length} legs (${legs.slice(0, 4).join(', ')}${legs.length > 4 ? '…' : ''})` };
     if (legs.length > 0) return { state: 'partial', evidence: `${dir}/: ${legs.length} leg(s) (<${min})` };
     return { state: 'absent', evidence: `${dir}/: no legs` };
@@ -388,15 +393,23 @@ export function deriveStageStatus({ root, assertions = {} }) {
   const { model, source, note } = loadStageModel(root);
   const ctx = { root, yml: read(join(root, 'blueprint.yml')) };
 
+  const candidates = rootDirs(root); // [root] or [root, root/blueprint]
   const stages = model.stages.map((st) => {
     const gates = (st.gates || []).map((g) => {
       const kind = CHECK_KINDS[g.kind];
-      let r;
-      try {
-        r = kind ? kind(g.params || {}, ctx)
-          : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
-      } catch (e) {
-        r = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
+      // Evaluate against EACH candidate root and take the BEST result — so an
+      // empty root stub never shadows real work under blueprint/ (and vice
+      // versa). Content wins over existence.
+      let r = { state: 'absent', evidence: 'no candidate root produced a result' };
+      for (const cand of candidates) {
+        let rr;
+        try {
+          rr = kind ? kind(g.params || {}, { ...ctx, root: cand })
+            : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
+        } catch (e) {
+          rr = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
+        }
+        if (rankState(rr.state) > rankState(r.state)) r = rr;
       }
       // A non-derivable (agentic-shell) gate is satisfied by a RECORDED
       // assertion — the operator/reviewer confirmed the fuzzy edge. Derivable
@@ -405,14 +418,15 @@ export function deriveStageStatus({ root, assertions = {} }) {
       if (!g.derivable && r.state !== 'pass' && assertions[g.id]) {
         r = { state: 'pass', evidence: `asserted: ${assertions[g.id].evidence || 'confirmed'}` };
       }
-      // An OPTIONAL gate (e.g. brownfield's optional prototype, research's
-      // iterate) never blocks the spine: absent/partial reads as pass so the
-      // stage can complete without the artifact, while a present artifact still
-      // shows as a real pass.
+      // An OPTIONAL gate never blocks the spine: absent/partial reads as pass so
+      // the stage can complete without the artifact. Tag it `vacuous` so the
+      // coverage metric doesn't count an optional-only stage as real progress.
+      let vacuous = false;
       if (g.optional && r.state !== 'pass') {
         r = { ...r, state: 'pass', evidence: `${r.evidence} (optional)` };
+        vacuous = true;
       }
-      return { gate: g.id, derivable: g.derivable, kind: g.kind, ...r };
+      return { gate: g.id, derivable: g.derivable, kind: g.kind, vacuous, ...r };
     });
     // Two notions, deliberately distinct:
     //  - artifactPass: all DERIVABLE gates pass — "how far the raw artifacts
@@ -443,7 +457,13 @@ export function deriveStageStatus({ root, assertions = {} }) {
   // Stage-2 skipped, decisions + deploy done — see case-study-subs-skipped-
   // stages-2-4.md). The linear spine under-reports them, so report both: the
   // spine (contiguous prefix) AND coverage (how many stages are complete at all).
-  const stagesComplete = stages.filter((s) => s.complete).map((s) => s.id);
+  // A stage counts as real coverage only if it is complete AND at least one gate
+  // passed on real evidence — a stage whose gates ALL passed vacuously (optional
+  // + absent) or by assertion-only isn't "progress on disk". This stops an empty
+  // brownfield repo reporting Stage 4 (optional prototype) as complete coverage.
+  const stagesComplete = stages
+    .filter((s) => s.complete && s.gates.some((g) => g.state === 'pass' && !g.vacuous))
+    .map((s) => s.id);
   const allGates = stages.flatMap((s) => s.gates);
   const derivableCount = allGates.filter((g) => g.derivable).length;
   return {
@@ -656,6 +676,49 @@ function selftest() {
   for (const bad of [null, [], 'x', 42, { assertions: ['a'] }, { assertions: null }, { history: 42 }, { history: 'note' }])
     assert(!isValidStateShape(bad), `rejected malformed state shape: ${JSON.stringify(bad)}`);
   assert(isValidStateShape({ cursor: 0, assertions: {} }) && isValidStateShape({ cursor: -1 }), 'valid state shapes accepted');
+
+  // ── fs-based behavior tests (the prior tests were circular — fixtures shaped
+  //    like the gates. These build real dir layouts and assert the calibration
+  //    fixes hold.) ──
+  const fx = join(tmpdir(), 'bp-stage-selftest');
+  const mk = (p, body) => { mkdirSync(join(fx, p.split('/').slice(0, -1).join('/') || '.'), { recursive: true }); if (body != null) writeFileSync(join(fx, p), body); };
+  const LONG = 'substantive content well over forty characters so mdCount counts it as real';
+  try {
+    rmSync(fx, { recursive: true, force: true });
+    // research variant, empty leg subdirs + a personas stub → NOT 3 legs (empty
+    // dirs are not research). Stage 2 must NOT pass.
+    mkdirSync(join(fx, 'research', 'problem-space'), { recursive: true });
+    mkdirSync(join(fx, 'research', 'competitive'), { recursive: true });
+    mkdirSync(join(fx, 'research', 'prior-art'), { recursive: true });
+    mk('research/personas-and-jtbd.md', LONG);
+    mk('blueprint.yml', 'variant: research\n');
+    let s = deriveStageStatus({ root: fx });
+    let s2 = s.stages.find((x) => x.id === 2).gates.find((g) => g.gate === 'research-legs');
+    assert(s2.state !== 'pass', 'empty leg subdirs do NOT pass research-legs');
+    // now populate the legs → passes
+    mk('research/problem-space/a.md', LONG); mk('research/competitive/a.md', LONG); mk('research/prior-art/a.md', LONG);
+    s = deriveStageStatus({ root: fx });
+    s2 = s.stages.find((x) => x.id === 2).gates.find((g) => g.gate === 'research-legs');
+    assert(s2.state === 'pass', 'populated leg subdirs pass research-legs');
+
+    // multi-root: empty root research/ must NOT shadow populated blueprint/research/
+    rmSync(fx, { recursive: true, force: true });
+    mkdirSync(join(fx, 'research'), { recursive: true }); // empty root stub
+    mk('blueprint/research/current-state/a.md', LONG); mk('blueprint/research/competitive/a.md', LONG);
+    mk('blueprint.yml', 'variant: midstream\npilot_profile:\n  slug: x\n');
+    s = deriveStageStatus({ root: fx });
+    const leg = s.stages.find((x) => x.id === 1).gates.find((g) => g.gate === 'diagnose-legs');
+    assert(leg.state === 'pass', 'blueprint/research/ is not shadowed by an empty root research/');
+
+    // coverage excludes optional-only vacuous stages: empty brownfield → [] not [4]
+    rmSync(fx, { recursive: true, force: true });
+    mk('blueprint.yml', 'variant: brownfield\n');
+    s = deriveStageStatus({ root: fx });
+    assert(!s.stagesComplete.includes(4), 'optional-only Stage 4 not counted as coverage on an empty repo');
+  } finally {
+    rmSync(fx, { recursive: true, force: true });
+  }
+
   console.log(`selftest OK (${GREENFIELD_MODEL.stages.length} stages, ${res.totalGates} gates, ${Object.keys(CHECK_KINDS).length} check kinds)`);
 }
 
