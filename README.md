@@ -24,7 +24,7 @@ npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 npx @nino-chavez-labs/blueprint-cli doctor
 ```
 
-Seven commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor` · `hive`. (`fleet` reports how far each project running Blueprint has fallen behind the current methodology; `hive` sets up multi-agent coordination — see the Hive note below.) Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Eight commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor` · `hive` · `stage`. (`fleet` reports how far each project running Blueprint has fallen behind the current methodology; `hive` sets up multi-agent coordination — see the Hive note below; `stage` derives an initiative's position in the pipeline from artifacts on disk — see [ADR-0008](docs/decisions/ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md).) Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
@@ -135,8 +135,8 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 `CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
 
 > Status: **published** — `@nino-chavez-labs/blueprint-cli` is live on npm (`npm view` for the current version; releases ship automatically from main).
-> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all seven
-> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`) are real.
+> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all eight
+> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`/`stage`) are real.
 
 ## This repo is its own first consumer (the reference portal)
 
