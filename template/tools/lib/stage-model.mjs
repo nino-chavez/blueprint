@@ -186,8 +186,15 @@ export function loadStageModel(root) {
     const p = isAbsolute(sel) ? sel : join(root, sel);
     try {
       const model = JSON.parse(read(p));
-      if (!model || !Array.isArray(model.stages)) {
-        return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' has no stages[] array — using greenfield` };
+      // Consumer-authored JSON: validate the whole stage shape, not just that
+      // `stages` is an array. A null stage element, or `gates` authored as an
+      // object (a plausible YAML-map→JSON slip), otherwise throws out of
+      // deriveStageStatus — which bin/blueprint.mjs calls with no try/catch.
+      // Fail closed to greenfield rather than crash `stage status`.
+      const stagesOk = Array.isArray(model?.stages)
+        && model.stages.every((s) => s && typeof s === 'object' && Array.isArray(s.gates ?? []));
+      if (!stagesOk) {
+        return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' has a malformed stages[] (need objects with gates[]) — using greenfield` };
       }
       return { model, source: p, note: null };
     } catch (e) {
@@ -291,6 +298,12 @@ function selftest() {
   const fake = [{ stagePass: false, id: 0 }, { stagePass: true, id: 1 }];
   let cur = -1; for (const s of fake) { if (s.stagePass) cur = s.id; else break; }
   assert(cur === -1, 'linear-spine cursor halts at first gap');
+
+  // malformed consumer models must fall back, never throw (loadStageModel guard)
+  for (const bad of [{ stages: [null] }, { stages: [{ id: 0, gates: { x: 1 } }] }, { stages: {} }, {}]) {
+    const v = Array.isArray(bad?.stages) && bad.stages.every((s) => s && typeof s === 'object' && Array.isArray(s.gates ?? []));
+    assert(v === false, `malformed model rejected: ${JSON.stringify(bad)}`);
+  }
 
   const res = deriveStageStatus({ root: process.cwd() });
   assert(res.stages.length === GREENFIELD_MODEL.stages.length, 'derives all stages');
