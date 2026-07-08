@@ -315,6 +315,10 @@ export function isValidStateShape(parsed) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
   const a = parsed.assertions;
   if (a !== undefined && (a === null || typeof a !== 'object' || Array.isArray(a))) return false;
+  // history is spread on advance (`[...(prev.history || []), …]`) — a non-array
+  // here throws (number) or silently mangles (string spreads to chars); both are
+  // the crash/clobber this guard exists to refuse.
+  if (parsed.history !== undefined && !Array.isArray(parsed.history)) return false;
   return true;
 }
 
@@ -324,7 +328,7 @@ export function readStageState(root) {
   if (!existsSync(p)) return empty;
   try {
     const parsed = JSON.parse(readFileSync(p, 'utf8'));
-    if (!isValidStateShape(parsed)) return { ...empty, corrupt: true, error: 'state file is valid JSON but not a {assertions:{…}} object' };
+    if (!isValidStateShape(parsed)) return { ...empty, corrupt: true, error: 'state file is valid JSON but malformed (need an object with assertions:{…}, history:[…])' };
     return { ...empty, ...parsed };
   } catch (e) { return { ...empty, corrupt: true, error: e.message }; }
 }
@@ -441,7 +445,7 @@ function selftest() {
   // corrupt state is flagged, never silently emptied
   assert(readStageState(process.cwd()).corrupt === undefined, 'absent state file is not corrupt');
   // state-shape guard: valid JSON that isn't a {assertions:{…}} object is corrupt
-  for (const bad of [null, [], 'x', 42, { assertions: ['a'] }, { assertions: null }])
+  for (const bad of [null, [], 'x', 42, { assertions: ['a'] }, { assertions: null }, { history: 42 }, { history: 'note' }])
     assert(!isValidStateShape(bad), `rejected malformed state shape: ${JSON.stringify(bad)}`);
   assert(isValidStateShape({ cursor: 0, assertions: {} }) && isValidStateShape({ cursor: -1 }), 'valid state shapes accepted');
   console.log(`selftest OK (${GREENFIELD_MODEL.stages.length} stages, ${res.totalGates} gates, ${Object.keys(CHECK_KINDS).length} check kinds)`);
