@@ -18,6 +18,7 @@ This file ships in the template scaffold as a **fallback** for solo projects wit
 | **Key Decisions** table | Project has `docs/decisions/` ADRs OR Hive `hive_log_decision` substrate | ADRs (authoritative); link from this file as `[D-NN → ADR-NNNN](docs/decisions/NNNN-*.md)` if you want a project-level index |
 | **Active / Resolved Blockers** | Project has issue tracker (GitHub Issues, Linear, Jira) OR Hive task substrate | The tracker. This file can link to a saved filter URL, but don't re-state the blockers here. |
 | **Current Status / Next Steps** | Project has `tools/state-derive/` or equivalent derived snapshot | The derived snapshot (`docs/audits/derived/_state.md` or similar). This file becomes a thin pointer. |
+| **Stage / pipeline position** | Always — the stage machine derives it | `blueprint stage status` (ADR-0008): derives the current stage from artifacts-on-disk + recorded assertions. Never hand-maintain "we're at Stage N" here — the machine owns it, and a hand-copied cursor drifts. |
 | **Session Log** | Project has commit history with conventional commits + Hive checkpoints | Git log + Hive trace. Append-only history is the commit graph. |
 | **Patterns Established** | Project has ≥3 entries | Promote to `docs/lessons/` or a dedicated register; STATE.md is the wrong home once it grows past a few entries |
 

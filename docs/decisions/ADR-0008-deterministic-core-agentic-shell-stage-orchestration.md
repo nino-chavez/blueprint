@@ -48,7 +48,7 @@ your agents.* The evidence in-tree:
   someone forced the model.
 - **Variant selection** (`greenfield | midstream | brownfield | research`) selects between four stage
   sequences with distinct gates — state-machine *selection* by a config field.
-- Real deterministic guards already execute: `stamp.mjs` mechanicalCheck, `doctor` (11 checks), 17
+- Real deterministic guards already execute: `stamp.mjs` mechanicalCheck, `doctor` (12 checks), 17
   executable reviewers, and the `worktree-guard` / `frontmatter-lint` / `terminology-linter` /
   `cited-url-lint` hooks.
 
@@ -168,6 +168,8 @@ the freeze acknowledgment. Sequencing:
 - **(b) `blueprint stage status`** (read-only, zero blast radius) — SHIPPED: `template/tools/lib/stage-model.mjs` + the `stage` subcommand; lib self-test green; `doctor` unaffected.
 - **(c1) config-driven model** — SHIPPED (wave 80): declarative model + `stage_model:` select in `blueprint.yml`; **(c2) `advance` entry-guard + `--execute`** — SHIPPED (wave 81, corrected in the same wave's review-fix): dry-run by default, records to `.blueprint/stage-state.json`, `--assert-<gate>` confirms shell gates; a recorded assertion satisfies a non-derivable gate but never a derivable one the disk contradicts. **Two cursors, because the domain has two:** `artifactCursor` = how far the disk artifacts reach (derivable gates only); `cursor` = the confirmed position (all gates, shell gates via recorded assertion) — the one `advance` moves. Completeness folds *all* gates (the first cut checked only derivable ones, making `advance` unsatisfiable on the shipped model — caught in review); `advance` targets the fixed frontier and records incrementally.
 - **(d) other three variants** — SHIPPED (wave 82): declarative `midstream` / `brownfield` / `research` models encoded from `docs/variant-selection.md` (§ Stage shapes + sub-deliverables). `loadStageModel` now follows the declared `blueprint.yml` `variant:` when no explicit `stage_model:` is set (one declaration, not two). Added an `any-exists` check kind (sub-deliverable dir populated / portal-or-prototype shell) and an `optional` gate flag (brownfield's optional prototype, research's iterate never wedge the cursor). Research starts at Inputs Intake (no sensor — there's no app).
-- (e) retire the overlapping `STATE.md` sections; add a `doctor` check that the declared stage model matches the wired reviewers/hooks — PENDING.
+- **(e) STATE.md retirement + doctor conformance** — SHIPPED (wave 83): `template/STATE.md`'s tiered-usage table gains a "Stage / pipeline position" row pointing at `blueprint stage status` (the machine owns the cursor; hand-maintaining "we're at Stage N" drifts). New `doctor` **stage-model** check (12th) — the declared `variant:`/`stage_model:` must resolve to a real model and derive without error; a misdeclared `variant: midstreem` that silently falls back to greenfield is a first-class WARN, not an invisible wrong-pipeline. The program owns the guard.
+
+**Rollout complete — (a) through (e) all shipped (waves 80–83).**
 
 Shipped in waves 80–81 (46f7eaf, f41a1d9, c698198 pushed; wave 81 this commit).

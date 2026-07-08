@@ -108,6 +108,23 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
+  // 3b. stage-model — the declared variant/stage_model resolves to a REAL model,
+  //     not a silent greenfield fallback (a misdeclared `variant: midstreem` would
+  //     otherwise run the wrong pipeline invisibly). ADR-0008 rollout step (e):
+  //     the program owns the guard, so the false-green is a first-class doctor WARN.
+  if (hasYml) {
+    try {
+      const sm = await import(libUrl(home, 'stage-model.mjs'));
+      const { source, note } = sm.loadStageModel(targetDir);
+      // deriving proves every gate references a known check kind (no throw)
+      sm.deriveStageStatus({ root: targetDir });
+      if (note) add('stage-model', 'warn', `stage model fell back — ${note}`, 'fix the `variant:` / `stage_model:` value in blueprint.yml, or author a JSON model');
+      else add('stage-model', 'pass', `stage model: ${source}`);
+    } catch (e) {
+      add('stage-model', 'fail', `stage-model failed to load/derive: ${e.message}`, 'check blueprint.yml stage_model / a custom JSON model for a bad gate kind');
+    }
+  }
+
   // 4. reviewers-loadable — every discovered reviewer (canonical + org) actually
   //    LOADS + validates. A broken .mjs is a real FAIL, not a files-exist green.
   try {
@@ -348,8 +365,10 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   const r2 = await runDoctor({ home, targetDir: home });
   assert(r2.checks.find((c) => c.name === 'methodology-home').status === 'pass', 'real home → methodology-home pass');
   assert(r2.checks.find((c) => c.name === 'reviewers-loadable').status === 'pass', 'real reviewers all load');
+  const smCheck = r2.checks.find((c) => c.name === 'stage-model');
+  assert(smCheck && smCheck.status === 'pass', 'stage-model resolves (self-app declares greenfield, no fallback)');
   assert(Array.isArray(r2.notChecked) && r2.notChecked.length === 2, 'reports its not-checked boundary');
   assert(['pass', 'warn'].includes(r2.status), 'real home is healthy (pass/warn)');
 
-  console.log('doctor self-test: PASS (8 assertions)');
+  console.log('doctor self-test: PASS (9 assertions)');
 }
