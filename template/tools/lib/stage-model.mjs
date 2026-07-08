@@ -231,16 +231,26 @@ export function deriveStageStatus({ root, assertions = {} }) {
       }
       return { gate: g.id, derivable: g.derivable, kind: g.kind, ...r };
     });
+    // Two notions, deliberately distinct:
+    //  - artifactPass: all DERIVABLE gates pass — "how far the raw artifacts
+    //    reach", independent of any assertion. Drives `artifactCursor`.
+    //  - complete: EVERY gate passes (derivable by disk, non-derivable by a
+    //    folded assertion) — the officially-confirmed position. Drives `cursor`
+    //    and the advance frontier. Empty-gate stages are vacuously complete.
     const derivable = gates.filter((g) => g.derivable);
-    const stagePass = derivable.length > 0 && derivable.every((g) => g.state === 'pass');
-    return { id: st.id, name: st.name, gates, stagePass };
+    const artifactPass = derivable.length > 0 && derivable.every((g) => g.state === 'pass');
+    const complete = gates.every((g) => g.state === 'pass');
+    return { id: st.id, name: st.name, gates, artifactPass, complete };
   });
 
-  // Linear spine: cursor is the highest N such that EVERY stage ≤ N passes.
-  // (Rejects "furthest independent all-pass" — a later stage's artifacts
-  // existing does not mean the spine reached it.)
+  // Linear spine: a cursor is the highest N such that EVERY stage ≤ N holds the
+  // property. artifactCursor uses artifactPass (disk reach); cursor uses
+  // complete (disk + recorded assertions — you cannot be "confirmed through" a
+  // stage whose shell gate nobody signed off).
+  let artifactCursor = -1;
+  for (const s of stages) { if (s.artifactPass) artifactCursor = s.id; else break; }
   let cursor = -1;
-  for (const s of stages) { if (s.stagePass) cursor = s.id; else break; }
+  for (const s of stages) { if (s.complete) cursor = s.id; else break; }
 
   const allGates = stages.flatMap((s) => s.gates);
   const derivableCount = allGates.filter((g) => g.derivable).length;
@@ -250,11 +260,14 @@ export function deriveStageStatus({ root, assertions = {} }) {
     modelNote: note,
     cursor,
     cursorName: cursor >= 0 ? stages.find((x) => x.id === cursor).name : null,
+    artifactCursor,
+    artifactCursorName: artifactCursor >= 0 ? stages.find((x) => x.id === artifactCursor).name : null,
     stages,
     derivableCount,
     nonderivableCount: allGates.length - derivableCount,
     totalGates: allGates.length,
-    nextStage: stages.find((s) => !s.stagePass) || null,
+    // frontier = first stage not yet CONFIRMED complete (what advance targets)
+    nextStage: stages.find((s) => !s.complete) || null,
   };
 }
 
@@ -288,48 +301,69 @@ export function previewAdvance({ root, assertions = {} }) {
 // that carried it past the agentic-shell (non-derivable) gates.
 const STATE_REL = join('.blueprint', 'stage-state.json');
 
+// readStageState — distinguishes ABSENT (fresh initiative) from CORRUPT (file
+// exists but won't parse). Corrupt must never be silently treated as empty:
+// this is the authoritative machine-owned record, and overwriting it would lose
+// recorded assertions/history permanently (mirrors c698198's fall-back-with-a-
+// note discipline for consumer JSON).
 export function readStageState(root) {
-  try {
-    const s = JSON.parse(read(join(resolve(root), STATE_REL)));
-    return { cursor: -1, assertions: {}, history: [], ...s };
-  } catch { return { cursor: -1, assertions: {}, history: [] }; }
+  const p = join(resolve(root), STATE_REL);
+  const empty = { cursor: -1, assertions: {}, history: [] };
+  if (!existsSync(p)) return empty;
+  try { return { ...empty, ...JSON.parse(readFileSync(p, 'utf8')) }; }
+  catch (e) { return { ...empty, corrupt: true, error: e.message }; }
 }
 
-// recordAdvance — evaluate the next transition's entry-guard folding in
-// recorded + newly-supplied assertions; on a satisfied guard, optionally
-// (execute) persist the advance. Dry-run by default (execute: false).
-// `now` is injected so the writer is testable and deterministic.
+// recordAdvance — advance the CONFIRMED cursor by completing the current
+// frontier stage (the first not-yet-complete stage, computed from the
+// ALREADY-recorded assertions so the target is fixed for this call and doesn't
+// drift when new assertions are folded). The frontier completes iff its
+// derivable gates pass on disk AND its non-derivable gates are covered by
+// recorded ∪ new assertions. On success the confirmed cursor jumps to wherever
+// disk-complete stages then reach. Dry-run by default; `now` injected for
+// deterministic testing.
 export function recordAdvance({ root, asserts = {}, execute = false, now }) {
   root = resolve(root);
   const prev = readStageState(root);
+  if (prev.corrupt) {
+    return { ok: false, corrupt: true, message: `${STATE_REL} is unparseable (${prev.error}) — refusing to overwrite; fix or remove it`, state: prev };
+  }
   const stamp = now || new Date().toISOString();
-  const merged = { ...prev.assertions };
-  for (const [gate, evidence] of Object.entries(asserts)) merged[gate] = { evidence, at: stamp };
+  const recorded = prev.assertions || {};
 
-  const pv = previewAdvance({ root, assertions: merged });
-  const a = pv.advance;
-  if (!a.target) return { ok: true, complete: true, cursor: pv.cursor, message: a.reason, state: prev };
-  if (!a.canAdvance) {
+  // frontier from recorded assertions only — the fixed target for this call
+  const base = deriveStageStatus({ root, assertions: recorded });
+  const frontier = base.nextStage;
+  if (!frontier) return { ok: true, complete: true, cursor: base.cursor, message: 'all stages confirmed — pipeline complete', state: prev };
+
+  // fold the new assertions and test whether THIS frontier completes
+  const merged = { ...recorded };
+  for (const [gate, evidence] of Object.entries(asserts)) merged[gate] = { evidence, at: stamp };
+  const withNew = deriveStageStatus({ root, assertions: merged });
+  const target = withNew.stages.find((s) => s.id === frontier.id);
+  const blocking = target.gates.filter((g) => g.derivable && g.state !== 'pass');
+  const stillNeeding = target.gates.filter((g) => !g.derivable && g.state !== 'pass');
+  if (blocking.length || stillNeeding.length) {
     return {
-      ok: false, target: a.target,
-      blocking: a.blocking,
-      // which shell gates still lack an assertion the operator must supply
-      missingAssertions: a.needsAssertion.filter((g) => !merged[g.gate]),
+      ok: false,
+      target: { id: target.id, name: target.name },
+      blocking: blocking.map((g) => ({ gate: g.gate, evidence: g.evidence })),
+      missingAssertions: stillNeeding.map((g) => ({ gate: g.gate, evidence: g.evidence })),
       state: prev,
     };
   }
 
   const state = {
-    cursor: a.target.id,
-    advancedTo: a.target.name,
+    cursor: withNew.cursor,          // may jump past already-disk-complete stages
+    advancedTo: withNew.cursorName,
     assertions: merged,
-    history: [...(prev.history || []), { stage: a.target.id, at: stamp }],
+    history: [...(prev.history || []), { stage: frontier.id, at: stamp }],
   };
   if (execute) {
     mkdirSync(join(root, '.blueprint'), { recursive: true });
     writeFileSync(join(root, STATE_REL), JSON.stringify(state, null, 2) + '\n');
   }
-  return { ok: true, target: a.target, cursor: a.target.id, wrote: execute ? STATE_REL : null, state };
+  return { ok: true, target: { id: frontier.id, name: frontier.name }, cursor: withNew.cursor, wrote: execute ? STATE_REL : null, state };
 }
 
 // ── self-test (node stage-model.mjs --selftest) ────────────────────
@@ -378,11 +412,19 @@ function selftest() {
   const s2 = forged.stages.find((s) => s.id === 2).gates.find((g) => g.gate === 'principles-doc');
   assert(s2.state !== 'pass', 'assertion does NOT override a derivable gate the disk contradicts');
 
-  // recordAdvance dry-run must not write and must block on this repo (Stage 2
-  // derivable gate fails) — a derivable blocker cannot be asserted past.
+  // frontier on this repo is Stage 0 (sensor-wired unasserted) — an assertion
+  // gap, not a disk gap; recordAdvance dry-run must not write.
   const dry = recordAdvance({ root: process.cwd(), execute: false, now: '2026-01-01T00:00:00Z' });
-  assert(dry.ok === false && dry.blocking.some((g) => g.gate === 'principles-doc'), 'recordAdvance blocks on derivable gap');
+  assert(dry.ok === false && dry.missingAssertions.some((g) => g.gate === 'sensor-wired'), 'frontier needs the shell assertion');
+  assert(!(dry.blocking || []).length, 'no derivable blocker at the Stage-0 frontier here');
+  // GREENFIELD SUCCESS PATH (the case finding #1 proved was unreachable):
+  // asserting the frontier's shell gate completes it and advances the confirmed
+  // cursor past every already-disk-complete stage.
+  const ok = recordAdvance({ root: process.cwd(), asserts: { 'sensor-wired': 'drove it' }, execute: false, now: '2026-01-01T00:00:00Z' });
+  assert(ok.ok === true && ok.cursor >= 1, 'asserting the frontier shell gate advances the confirmed cursor');
   assert(readStageState(process.cwd()).cursor === -1, 'dry-run wrote no state file');
+  // corrupt state is flagged, never silently emptied
+  assert(readStageState(process.cwd()).corrupt === undefined, 'absent state file is not corrupt');
   console.log(`selftest OK (${GREENFIELD_MODEL.stages.length} stages, ${res.totalGates} gates, ${Object.keys(CHECK_KINDS).length} check kinds)`);
 }
 

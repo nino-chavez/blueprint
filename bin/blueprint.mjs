@@ -560,45 +560,59 @@ async function runStage(stageArgv, home) {
   for (const [k, v] of Object.entries(flags)) if (k.startsWith('assert-')) asserts[k.slice('assert-'.length)] = v;
   const state = lib.readStageState(targetDir);
 
+  // Corrupt state file must not be silently discarded (it holds the recorded
+  // assertions/history). Warn on every path; advance --execute refuses below.
+  if (state.corrupt) console.error(`  ! .blueprint/stage-state.json is unparseable (${state.error}) — ignoring recorded state; fix or remove it`);
+
   if (sub === 'advance') {
-    // Dry-run by default (terraform-plan idiom); --execute persists the advance
-    // to .blueprint/stage-state.json once the entry-guard is satisfied.
     const execute = !!flags.execute;
+    // Validate --assert-<gate> ids against the model's non-derivable gates, and
+    // reject evidence-less bare flags — a typo'd or empty assertion silently
+    // "satisfying" a shell gate defeats the whole recorded-confirmation point.
+    const shellGateIds = new Set(
+      lib.deriveStageStatus({ root: targetDir }).stages.flatMap((s) => s.gates).filter((g) => !g.derivable).map((g) => g.gate),
+    );
+    const assertErrors = [];
+    for (const [gate, evidence] of Object.entries(asserts)) {
+      if (!shellGateIds.has(gate)) assertErrors.push(`unknown assertable gate '${gate}' — non-derivable gates are: ${[...shellGateIds].join(', ') || '(none)'}`);
+      else if (evidence === 'true') assertErrors.push(`--assert-${gate} needs evidence: --assert-${gate}="what you confirmed"`);
+    }
+    if (assertErrors.length) { for (const e of assertErrors) console.error(`  ✗ ${e}`); process.exit(2); }
+
     const res = lib.recordAdvance({ root: targetDir, asserts, execute });
     if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.ok ? 0 : 1); }
     console.log(`blueprint stage advance${execute ? '' : ' (dry-run)'} — ${targetDir}\n`);
+    if (res.corrupt) { console.error(`  ✗ ${res.message}`); process.exit(2); }
     if (res.complete) { console.log(`  ${res.message}`); process.exit(0); }
-    console.log(`target: Stage ${res.target.id} — ${res.target.name}\n`);
+    console.log(`target frontier: Stage ${res.target.id} — ${res.target.name}\n`);
     if (!res.ok) {
       for (const g of res.blocking || []) console.log(`  ✗ ${g.gate.padEnd(20)} ${g.evidence}  (derivable — fix on disk, cannot assert)`);
       for (const g of res.missingAssertions || []) console.log(`  ~ ${g.gate.padEnd(20)} ${g.evidence}  (assert with --assert-${g.gate}="…")`);
       console.log(`\n  BLOCKED — entry-guard not satisfied.`);
       process.exit(1);
     }
-    console.log(`  ✓ entry-guard satisfied — advance permitted`);
-    if (execute) console.log(`  ✓ recorded → ${res.wrote} (cursor now Stage ${res.cursor})`);
-    else console.log(`  (dry-run — re-run with --execute to record the advance)`);
+    console.log(`  ✓ entry-guard satisfied — frontier Stage ${res.target.id} completes`);
+    if (execute) console.log(`  ✓ recorded → ${res.wrote} (confirmed cursor now Stage ${res.cursor})`);
+    else console.log(`  (dry-run — re-run with --execute to record; confirmed cursor would be Stage ${res.cursor})`);
     process.exit(0);
   }
 
   const res = lib.deriveStageStatus({ root: targetDir, assertions: state.assertions });
   if (flags.json) { console.log(JSON.stringify({ ...res, recordedCursor: state.cursor }, null, 2)); process.exit(0); }
   console.log(`blueprint stage status — ${targetDir}`);
-  console.log(`model: ${res.variant} [${res.modelSource}]${res.modelNote ? `  (${res.modelNote})` : ''}`);
-  if (state.cursor >= 0) console.log(`recorded cursor: Stage ${state.cursor} (${state.advancedTo || '?'}) — from ${'.blueprint/stage-state.json'}`);
-  console.log('');
+  console.log(`model: ${res.variant} [${res.modelSource}]${res.modelNote ? `  (${res.modelNote})` : ''}\n`);
   for (const s of res.stages) {
     const passN = s.gates.filter((g) => g.state === 'pass').length;
-    console.log(`Stage ${s.id} — ${s.name}   [${passN}/${s.gates.length} pass]${s.stagePass ? '' : '  ← spine stops at/after here'}`);
+    console.log(`Stage ${s.id} — ${s.name}   [${passN}/${s.gates.length} pass]${s.complete ? '' : '  ← not yet confirmed complete'}`);
     for (const g of s.gates) {
       const der = g.derivable ? '   ' : ' *?';
       console.log(`  ${icon[g.state] || '?'}${der} ${g.gate.padEnd(20)} ${g.evidence}`);
     }
   }
   console.log(`\n  legend: ✓ pass  ~ partial  ✗ absent    *? = NOT machine-derivable (needs agent/human assertion)`);
-  console.log(`\nderivable cursor: Stage ${res.cursor} ${res.cursor >= 0 ? `(${res.cursorName})` : '(none)'}`);
-  console.log(`  = highest stage whose gates all pass, walking the linear spine (stops at first gap)`);
-  if (res.nextStage) console.log(`next stage to work: Stage ${res.nextStage.id} — ${res.nextStage.name}`);
+  console.log(`\nartifact cursor:  Stage ${res.artifactCursor} ${res.artifactCursor >= 0 ? `(${res.artifactCursorName})` : '(none)'}  — how far the disk artifacts reach (derivable gates only)`);
+  console.log(`confirmed cursor: Stage ${res.cursor} ${res.cursor >= 0 ? `(${res.cursorName})` : '(none)'}  — all gates incl. recorded assertions (what \`advance\` moves)`);
+  if (res.nextStage) console.log(`frontier (advance target): Stage ${res.nextStage.id} — ${res.nextStage.name}`);
   console.log(`\nderivability: ${res.derivableCount}/${res.totalGates} gates machine-derivable, ${res.nonderivableCount}/${res.totalGates} need assertion`);
   console.log(`  the deterministic core owns the ${res.derivableCount}; the agentic shell owns the ${res.nonderivableCount}.`);
   process.exit(0);
