@@ -24,7 +24,7 @@
 // YAML dep — a top-level-key scan is all the loader needs (scalar select +
 // block presence); the model shape itself travels as JSON when overridden.
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync, rmSync, mkdtempSync } from 'node:fs';
 import { join, resolve, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -399,8 +399,10 @@ export function deriveStageStatus({ root, assertions = {} }) {
       const kind = CHECK_KINDS[g.kind];
       // Evaluate against EACH candidate root and take the BEST result — so an
       // empty root stub never shadows real work under blueprint/ (and vice
-      // versa). Content wins over existence.
-      let r = { state: 'absent', evidence: 'no candidate root produced a result' };
+      // versa). Content wins over existence. Seed null (not a placeholder absent)
+      // so a genuinely-absent gate keeps the kind's real diagnostic evidence
+      // ("research/: no legs", "no pilot_profile") the operator acts on.
+      let r = null;
       for (const cand of candidates) {
         let rr;
         try {
@@ -409,7 +411,7 @@ export function deriveStageStatus({ root, assertions = {} }) {
         } catch (e) {
           rr = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
         }
-        if (rankState(rr.state) > rankState(r.state)) r = rr;
+        if (!r || rankState(rr.state) > rankState(r.state)) r = rr;
       }
       // A non-derivable (agentic-shell) gate is satisfied by a RECORDED
       // assertion — the operator/reviewer confirmed the fuzzy edge. Derivable
@@ -457,12 +459,14 @@ export function deriveStageStatus({ root, assertions = {} }) {
   // Stage-2 skipped, decisions + deploy done — see case-study-subs-skipped-
   // stages-2-4.md). The linear spine under-reports them, so report both: the
   // spine (contiguous prefix) AND coverage (how many stages are complete at all).
-  // A stage counts as real coverage only if it is complete AND at least one gate
-  // passed on real evidence — a stage whose gates ALL passed vacuously (optional
-  // + absent) or by assertion-only isn't "progress on disk". This stops an empty
-  // brownfield repo reporting Stage 4 (optional prototype) as complete coverage.
+  // Coverage = stages with real DISK progress: complete AND ≥1 derivable gate
+  // that passed on disk (not a vacuous optional-absent pass, and not an
+  // assertion — assertions live on non-derivable gates and are operator
+  // confirmations, tracked by the confirmed cursor, not disk artifacts). Stops
+  // an empty brownfield reporting Stage 4 (optional prototype) or an
+  // assertion-only research Fact-Check from inflating coverage.
   const stagesComplete = stages
-    .filter((s) => s.complete && s.gates.some((g) => g.state === 'pass' && !g.vacuous))
+    .filter((s) => s.complete && s.gates.some((g) => g.derivable && g.state === 'pass' && !g.vacuous))
     .map((s) => s.id);
   const allGates = stages.flatMap((s) => s.gates);
   const derivableCount = allGates.filter((g) => g.derivable).length;
@@ -680,7 +684,7 @@ function selftest() {
   // ── fs-based behavior tests (the prior tests were circular — fixtures shaped
   //    like the gates. These build real dir layouts and assert the calibration
   //    fixes hold.) ──
-  const fx = join(tmpdir(), 'bp-stage-selftest');
+  const fx = mkdtempSync(join(tmpdir(), 'bp-stage-selftest-')); // unique — no concurrent-run race
   const mk = (p, body) => { mkdirSync(join(fx, p.split('/').slice(0, -1).join('/') || '.'), { recursive: true }); if (body != null) writeFileSync(join(fx, p), body); };
   const LONG = 'substantive content well over forty characters so mdCount counts it as real';
   try {
