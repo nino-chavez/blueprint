@@ -23,9 +23,10 @@ references:
 > a methodology change (a new `blueprint stage` command + a stage model that ships to consumers).
 > The fleet was audited before touching `template/` (no consumer mid-migration — 3 behind, 10
 > unpinned, none picking up an update), so the methodology-freeze is not tripped. Live: `blueprint
-> stage status` (wave 80) and `stage advance` with the entry-guard + `--execute` state recording to
-> `.blueprint/stage-state.json` (wave 81). Remaining: the other three variants (d) and STATE.md
-> retirement (e). Lands under a wave with the freeze acknowledgment per the charter.
+> stage status` (wave 80), `stage advance` with the entry-guard + `--execute` state recording to
+> `.blueprint/stage-state.json` (wave 81), and the midstream/brownfield/research models
+> auto-selected from `blueprint.yml` `variant:` (wave 82). Remaining: STATE.md retirement + a doctor
+> model-conformance check (e). Lands under a wave with the freeze acknowledgment per the charter.
 
 Status: **accepted** (operator go 2026-07-07) — grounded in a run of the derivability probe against this repo.
 
@@ -166,7 +167,7 @@ the freeze acknowledgment. Sequencing:
 - **(a) ratify this ADR** — DONE (operator go 2026-07-07).
 - **(b) `blueprint stage status`** (read-only, zero blast radius) — SHIPPED: `template/tools/lib/stage-model.mjs` + the `stage` subcommand; lib self-test green; `doctor` unaffected.
 - **(c1) config-driven model** — SHIPPED (wave 80): declarative model + `stage_model:` select in `blueprint.yml`; **(c2) `advance` entry-guard + `--execute`** — SHIPPED (wave 81, corrected in the same wave's review-fix): dry-run by default, records to `.blueprint/stage-state.json`, `--assert-<gate>` confirms shell gates; a recorded assertion satisfies a non-derivable gate but never a derivable one the disk contradicts. **Two cursors, because the domain has two:** `artifactCursor` = how far the disk artifacts reach (derivable gates only); `cursor` = the confirmed position (all gates, shell gates via recorded assertion) — the one `advance` moves. Completeness folds *all* gates (the first cut checked only derivable ones, making `advance` unsatisfiable on the shipped model — caught in review); `advance` targets the fixed frontier and records incrementally.
-- (d) extend the stage model to the other three variants (midstream/brownfield/research) — PENDING.
+- **(d) other three variants** — SHIPPED (wave 82): declarative `midstream` / `brownfield` / `research` models encoded from `docs/variant-selection.md` (§ Stage shapes + sub-deliverables). `loadStageModel` now follows the declared `blueprint.yml` `variant:` when no explicit `stage_model:` is set (one declaration, not two). Added an `any-exists` check kind (sub-deliverable dir populated / portal-or-prototype shell) and an `optional` gate flag (brownfield's optional prototype, research's iterate never wedge the cursor). Research starts at Inputs Intake (no sensor — there's no app).
 - (e) retire the overlapping `STATE.md` sections; add a `doctor` check that the declared stage model matches the wired reviewers/hooks — PENDING.
 
 Shipped in waves 80–81 (46f7eaf, f41a1d9, c698198 pushed; wave 81 this commit).

@@ -128,6 +128,18 @@ const CHECK_KINDS = {
     if (cap || tri) return { state: 'partial', evidence: `${dir}: partial (capture or triage, not both)` };
     return { state: 'absent', evidence: `${dir}: none` };
   },
+
+  // pass if ANY listed path is a file OR any listed dir has ≥1 non-hidden file.
+  // Covers "sub-deliverable dir populated" (dirs) and "portal OR prototype shell"
+  // (paths+dirs) — the midstream/brownfield/research gate shapes.
+  'any-exists': ({ paths = [], dirs = [], missState = 'absent' }, c) => {
+    if (!Array.isArray(paths) || !Array.isArray(dirs) || (!paths.length && !dirs.length)) return badParams('any-exists', 'need paths[] and/or dirs[]');
+    const fileHits = paths.filter((p) => existsSync(join(c.root, p)));
+    const dirHits = dirs.filter((d) => ls(join(c.root, d)).some((f) => !f.startsWith('.'))).map((d) => `${d}/`);
+    const hits = [...fileHits, ...dirHits];
+    return hits.length ? { state: 'pass', evidence: `present: ${hits.join(', ')}` }
+      : { state: missState, evidence: `none of: ${[...paths, ...dirs.map((d) => `${d}/`)].join(', ')}` };
+  },
 };
 
 // ── the canonical greenfield model (declarative data) ──────────────
@@ -170,7 +182,122 @@ export const GREENFIELD_MODEL = {
   ],
 };
 
-const BUILTIN_MODELS = { greenfield: GREENFIELD_MODEL };
+// MIDSTREAM — hybrid pipeline (docs/variant-selection.md § Midstream): an
+// active mid-development product; the prototype revises in-flight work.
+// Prescription precedes Design Principles (names which existing patterns to
+// preserve vs revise). Stage 0 sensor is mandatory.
+export const MIDSTREAM_MODEL = {
+  variant: 'midstream',
+  stages: [
+    { id: 0, name: 'Application Legibility', gates: [
+      { id: 'pilot-profile', derivable: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for midstream — the live touchpoint must be driven/captured' } },
+    ] },
+    { id: 1, name: 'Targeted Diagnose', gates: [
+      { id: 'current-state', derivable: true, kind: 'any-exists', params: { dirs: ['research/current-state'] } },
+      { id: 'competitive-scoped', derivable: true, kind: 'any-exists', params: { dirs: ['research/competitive'] } },
+    ] },
+    { id: 2, name: 'Prescription', gates: [
+      { id: 'prescription', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'prescription' } },
+    ] },
+    { id: 3, name: 'Design Principles', gates: [
+      { id: 'design-principles', derivable: true, kind: 'name-match', params: { dirs: ['prototype', 'docs', 'research'], pattern: 'DESIGN|design-principle|design-system', missState: 'partial' } },
+    ] },
+    { id: 4, name: 'Prototype-as-Patch', gates: [
+      { id: 'prototype-shell', derivable: true, kind: 'any-exists', params: { paths: ['apps/portal/package.json'], dirs: ['prototype'] } },
+    ] },
+    { id: 5, name: 'Fact-Check', gates: [
+      { id: 'validation-report', derivable: true, kind: 'name-match', params: { dirs: ['docs/content', 'docs'], pattern: 'validation|fact-check', missState: 'partial' } },
+      { id: 'claims-verified', derivable: false, kind: 'manual', params: { evidence: 'Ralph Wiggum convergence — reviewers pass' } },
+    ] },
+    { id: 6, name: 'Documents', gates: [
+      { id: 'strategy-docs', derivable: true, kind: 'dir-md-min', params: { dirs: ['docs', 'decisions'], min: 1 } },
+    ] },
+    { id: 7, name: 'Deploy + Iterate', gates: [
+      { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
+      { id: 'live-url', derivable: false, kind: 'manual', params: { evidence: 'not derivable from disk — requires a reachability check' } },
+    ] },
+  ],
+};
+
+// BROWNFIELD — audit pipeline (docs/variant-selection.md § Brownfield): a mature
+// live product; the diagnose + prescription docs ARE the deliverables, a
+// prototype is optional. Stage 0 sensor mandatory (every audit claim grounds in
+// a captured surface); Fact-Check mandatory whether or not a prototype ran.
+export const BROWNFIELD_MODEL = {
+  variant: 'brownfield',
+  stages: [
+    { id: 0, name: 'Application Legibility', gates: [
+      { id: 'pilot-profile', derivable: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for brownfield — every audit claim grounds in a captured surface' } },
+    ] },
+    { id: 1, name: 'Diagnose', gates: [
+      { id: 'research-legs', derivable: true, kind: 'dir-md-min', params: { dirs: ['research'], min: 2 } },
+      { id: 'diagnose-synthesis', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'diagnose' } },
+    ] },
+    { id: 2, name: 'Prescription', gates: [
+      { id: 'prescription', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'prescription' } },
+    ] },
+    { id: 3, name: 'Design Brief', gates: [
+      { id: 'design-brief', derivable: true, kind: 'name-match', params: { dirs: ['.', 'docs', 'research'], pattern: 'design-brief' } },
+    ] },
+    { id: 4, name: 'Prototype (optional)', gates: [
+      { id: 'prototype-shell', derivable: true, optional: true, kind: 'any-exists', params: { paths: ['apps/portal/package.json'], dirs: ['prototype'] } },
+    ] },
+    { id: 5, name: 'Fact-Check', gates: [
+      { id: 'validation-report', derivable: true, kind: 'name-match', params: { dirs: ['docs/content', 'docs'], pattern: 'validation|fact-check', missState: 'partial' } },
+      { id: 'claims-verified', derivable: false, kind: 'manual', params: { evidence: 'Ralph Wiggum convergence — mandatory whether or not a prototype ran' } },
+    ] },
+    { id: 6, name: 'Documents', gates: [
+      { id: 'package-docs', derivable: true, kind: 'dir-md-min', params: { dirs: ['docs', 'decisions'], min: 1 } },
+    ] },
+    { id: 7, name: 'Deploy + Iterate', gates: [
+      { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
+      { id: 'live-url', derivable: false, kind: 'manual', params: { evidence: 'share-link is the brief if no prototype; the prototype if Stage 4 ran' } },
+    ] },
+  ],
+};
+
+// RESEARCH — strategy pipeline (docs/variant-selection.md § Research): no product
+// to build/audit; starts from input assets, ends in a decision memo. No app, so
+// Stage 0 is Inputs Intake (not sensor wiring). Personas/JTBD is a MANDATORY
+// Stage-1 gate. Portal optional (provenance-only) — the memo is the deliverable.
+export const RESEARCH_MODEL = {
+  variant: 'research',
+  stages: [
+    { id: 0, name: 'Inputs Intake', gates: [
+      { id: 'sources-catalog', derivable: true, kind: 'any-exists', params: { dirs: ['research/sources'] } },
+    ] },
+    { id: 1, name: 'Personas & JTBD', gates: [
+      { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas' } },
+    ] },
+    { id: 2, name: 'Research', gates: [
+      { id: 'research-legs', derivable: true, kind: 'dir-md-min', params: { dirs: ['research'], min: 3 } },
+    ] },
+    { id: 3, name: 'Synthesis & Decisions', gates: [
+      { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
+    ] },
+    { id: 4, name: 'Fact-Check', gates: [
+      { id: 'cross-asset-reconciled', derivable: false, kind: 'manual', params: { evidence: 'cross-asset reconciliation + independent re-pull of any external claim' } },
+    ] },
+    { id: 5, name: 'Decision Memo', gates: [
+      { id: 'decision-memo', derivable: true, kind: 'name-match', params: { dirs: ['docs', '.'], pattern: 'decision-memo' } },
+    ] },
+    { id: 6, name: 'Deliver', gates: [
+      { id: 'delivered', derivable: false, kind: 'manual', params: { evidence: 'memo shared where the audience is (portal optional, provenance-only)' } },
+    ] },
+    { id: 7, name: 'Iterate', gates: [
+      { id: 'feedback', derivable: true, optional: true, kind: 'feedback-triaged', params: { dir: 'feedback' } },
+    ] },
+  ],
+};
+
+const BUILTIN_MODELS = {
+  greenfield: GREENFIELD_MODEL,
+  midstream: MIDSTREAM_MODEL,
+  brownfield: BROWNFIELD_MODEL,
+  research: RESEARCH_MODEL,
+};
 
 // ── model loading (config-driven) ──────────────────────────────────
 // Resolution order: blueprint.yml `stage_model:` scalar →
@@ -202,8 +329,13 @@ export function loadStageModel(root) {
     }
   }
   if (sel && BUILTIN_MODELS[sel]) return { model: BUILTIN_MODELS[sel], source: sel, note: null };
-  if (sel) return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' not shipped yet (ADR-0008 rollout step d) — using greenfield` };
-  return { model: GREENFIELD_MODEL, source: 'greenfield (default)', note: null };
+  if (sel) return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' is not a known model — using greenfield` };
+  // No explicit stage_model → follow the declared `variant` (all four variants
+  // ship a model). This connects the existing blueprint.yml `variant` field to
+  // the stage machine so consumers don't declare the shape twice.
+  const variant = ymlScalar(yml, 'variant');
+  if (variant && BUILTIN_MODELS[variant]) return { model: BUILTIN_MODELS[variant], source: `variant:${variant}`, note: null };
+  return { model: GREENFIELD_MODEL, source: variant ? `greenfield (fallback)` : 'greenfield (default)', note: variant ? `variant '${variant}' has no stage model — using greenfield` : null };
 }
 
 // ── derivation ─────────────────────────────────────────────────────
@@ -228,6 +360,13 @@ export function deriveStageStatus({ root, assertions = {} }) {
       // check the disk contradicts.
       if (!g.derivable && r.state !== 'pass' && assertions[g.id]) {
         r = { state: 'pass', evidence: `asserted: ${assertions[g.id].evidence || 'confirmed'}` };
+      }
+      // An OPTIONAL gate (e.g. brownfield's optional prototype, research's
+      // iterate) never blocks the spine: absent/partial reads as pass so the
+      // stage can complete without the artifact, while a present artifact still
+      // shows as a real pass.
+      if (g.optional && r.state !== 'pass') {
+        r = { ...r, state: 'pass', evidence: `${r.evidence} (optional)` };
       }
       return { gate: g.id, derivable: g.derivable, kind: g.kind, ...r };
     });
@@ -401,10 +540,24 @@ function selftest() {
   assert(CHECK_KINDS['dir-contains']({ dir: 'x' }, { root: process.cwd(), yml: '' }).state === 'absent', 'dir-contains missing pattern → absent, not /undefined/');
   assert(CHECK_KINDS['file-exists']({}, { root: process.cwd(), yml: '' }).state === 'absent', 'file-exists missing path → absent');
 
-  // every gate references a known check kind
-  for (const s of GREENFIELD_MODEL.stages)
-    for (const g of s.gates)
-      assert(CHECK_KINDS[g.kind], `gate ${g.id} kind '${g.kind}' registered`);
+  // all four variant models are well-formed (every gate references a known
+  // kind, carries a boolean derivable flag, and has a unique id per stage)
+  assert(Object.keys(BUILTIN_MODELS).length === 4, 'four variant models registered');
+  for (const [name, m] of Object.entries(BUILTIN_MODELS)) {
+    assert(m.variant === name, `${name}: variant field matches registry key`);
+    for (const s of m.stages) {
+      const ids = s.gates.map((g) => g.gate ?? g.id);
+      assert(new Set(ids).size === ids.length, `${name} stage ${s.id}: gate ids unique`);
+      for (const g of s.gates) {
+        assert(CHECK_KINDS[g.kind], `${name}: gate ${g.id} kind '${g.kind}' registered`);
+        assert(typeof g.derivable === 'boolean', `${name}: gate ${g.id} has a derivable flag`);
+      }
+    }
+  }
+  // any-exists finds a populated dir and is absent on a missing one
+  assert(CHECK_KINDS['any-exists']({ dirs: ['research'] }, { root: process.cwd(), yml: '' }).state === 'pass', 'any-exists finds a populated dir');
+  assert(CHECK_KINDS['any-exists']({ dirs: ['nope-xyz-123'] }, { root: process.cwd(), yml: '' }).state === 'absent', 'any-exists absent on missing dir');
+  assert(CHECK_KINDS['any-exists']({}, { root: process.cwd(), yml: '' }).state === 'absent', 'any-exists bad-params → absent');
 
   // linear-spine cursor halts at first failing stage
   const fake = [{ stagePass: false, id: 0 }, { stagePass: true, id: 1 }];
