@@ -201,7 +201,7 @@ export const MIDSTREAM_MODEL = {
       { id: 'prescription', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'prescription' } },
     ] },
     { id: 3, name: 'Design Principles', gates: [
-      { id: 'design-principles', derivable: true, kind: 'name-match', params: { dirs: ['prototype', 'docs', 'research'], pattern: 'DESIGN|design-principle|design-system', missState: 'partial' } },
+      { id: 'design-principles', derivable: true, kind: 'name-match', params: { dirs: ['prototype', 'docs', 'research'], pattern: '^design\\.md$|design-principle|design-system', missState: 'partial' } },
     ] },
     { id: 4, name: 'Prototype-as-Patch', gates: [
       { id: 'prototype-shell', derivable: true, kind: 'any-exists', params: { paths: ['apps/portal/package.json'], dirs: ['prototype'] } },
@@ -232,7 +232,9 @@ export const BROWNFIELD_MODEL = {
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for brownfield — every audit claim grounds in a captured surface' } },
     ] },
     { id: 1, name: 'Diagnose', gates: [
-      { id: 'research-legs', derivable: true, kind: 'dir-md-min', params: { dirs: ['research'], min: 2 } },
+      // canonical legs are subdirs (current-state/personas/funnel/competitive);
+      // gate on those, not top-level md count. Reviewer enforces all five.
+      { id: 'research-legs', derivable: true, kind: 'any-exists', params: { dirs: ['research/current-state', 'research/personas', 'research/funnel', 'research/competitive'] } },
       { id: 'diagnose-synthesis', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'diagnose' } },
     ] },
     { id: 2, name: 'Prescription', gates: [
@@ -272,7 +274,10 @@ export const RESEARCH_MODEL = {
       { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas' } },
     ] },
     { id: 2, name: 'Research', gates: [
-      { id: 'research-legs', derivable: true, kind: 'dir-md-min', params: { dirs: ['research'], min: 3 } },
+      // canonical layout keeps the legs in SUBDIRS (docs/variant-selection.md
+      // § Research) — gate on those, not a non-recursive top-level md count
+      // (which sees ~1 file and wedges). Reviewer enforces the full ≥3 legs.
+      { id: 'research-legs', derivable: true, kind: 'any-exists', params: { dirs: ['research/problem-space', 'research/competitive', 'research/prior-art'] } },
     ] },
     { id: 3, name: 'Synthesis & Decisions', gates: [
       { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
@@ -300,12 +305,14 @@ const BUILTIN_MODELS = {
 };
 
 // ── model loading (config-driven) ──────────────────────────────────
-// Resolution order: blueprint.yml `stage_model:` scalar →
-//   - a path ending in .json → load + parse that file
-//   - a built-in name (e.g. 'greenfield') → that model
-//   - unset / unknown → greenfield default (with a `note` when a name was
-//     given we don't ship yet — midstream/brownfield/research are ADR-0008
-//     rollout step d, PENDING).
+// Resolution order:
+//   1. blueprint.yml `stage_model:` scalar —
+//        - a path ending in .json → load + parse that file
+//        - a built-in name (greenfield | midstream | brownfield | research) → that model
+//   2. else blueprint.yml `variant:` scalar → the matching built-in model
+//        (the field already exists and means exactly this — declare once)
+//   3. else greenfield default
+// Unknown names in (1)/(2) fall back to greenfield with a `note`.
 export function loadStageModel(root) {
   const yml = read(join(root, 'blueprint.yml'));
   const sel = ymlScalar(yml, 'stage_model');
@@ -377,7 +384,11 @@ export function deriveStageStatus({ root, assertions = {} }) {
     //    folded assertion) — the officially-confirmed position. Drives `cursor`
     //    and the advance frontier. Empty-gate stages are vacuously complete.
     const derivable = gates.filter((g) => g.derivable);
-    const artifactPass = derivable.length > 0 && derivable.every((g) => g.state === 'pass');
+    // A stage with NO derivable gates has no disk artifacts to reach — it is
+    // vacuously artifact-passing (research's Fact-Check / Deliver are
+    // all-non-derivable; without this the artifact cursor caps at the last
+    // stage that has a derivable gate). Mirrors the empty-gate `complete` rule.
+    const artifactPass = derivable.length === 0 ? true : derivable.every((g) => g.state === 'pass');
     const complete = gates.every((g) => g.state === 'pass');
     return { id: st.id, name: st.name, gates, artifactPass, complete };
   });
