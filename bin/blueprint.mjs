@@ -575,7 +575,10 @@ async function runStage(stageArgv, home) {
     const assertErrors = [];
     for (const [gate, evidence] of Object.entries(asserts)) {
       if (!shellGateIds.has(gate)) assertErrors.push(`unknown assertable gate '${gate}' — non-derivable gates are: ${[...shellGateIds].join(', ') || '(none)'}`);
-      else if (evidence === 'true') assertErrors.push(`--assert-${gate} needs evidence: --assert-${gate}="what you confirmed"`);
+      // reject both the bare-flag sentinel ('true') and empty/whitespace
+      // evidence (--assert-x= or --assert-x="$UNSET") — an evidence-less
+      // confirmation defeats the recorded-confirmation purpose.
+      else if (evidence === 'true' || !String(evidence).trim()) assertErrors.push(`--assert-${gate} needs evidence: --assert-${gate}="what you confirmed"`);
     }
     if (assertErrors.length) { for (const e of assertErrors) console.error(`  ✗ ${e}`); process.exit(2); }
 

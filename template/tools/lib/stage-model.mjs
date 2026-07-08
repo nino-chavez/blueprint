@@ -306,12 +306,27 @@ const STATE_REL = join('.blueprint', 'stage-state.json');
 // this is the authoritative machine-owned record, and overwriting it would lose
 // recorded assertions/history permanently (mirrors c698198's fall-back-with-a-
 // note discipline for consumer JSON).
+// A well-formed state file is a JSON OBJECT (not null/array/scalar) whose
+// `assertions` (if present) is itself a plain object. Anything else is corrupt
+// — parsing successfully is not the same as being the right shape, and
+// overwriting a wrong-shaped file would still lose whatever the operator meant
+// to keep there.
+export function isValidStateShape(parsed) {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
+  const a = parsed.assertions;
+  if (a !== undefined && (a === null || typeof a !== 'object' || Array.isArray(a))) return false;
+  return true;
+}
+
 export function readStageState(root) {
   const p = join(resolve(root), STATE_REL);
   const empty = { cursor: -1, assertions: {}, history: [] };
   if (!existsSync(p)) return empty;
-  try { return { ...empty, ...JSON.parse(readFileSync(p, 'utf8')) }; }
-  catch (e) { return { ...empty, corrupt: true, error: e.message }; }
+  try {
+    const parsed = JSON.parse(readFileSync(p, 'utf8'));
+    if (!isValidStateShape(parsed)) return { ...empty, corrupt: true, error: 'state file is valid JSON but not a {assertions:{…}} object' };
+    return { ...empty, ...parsed };
+  } catch (e) { return { ...empty, corrupt: true, error: e.message }; }
 }
 
 // recordAdvance — advance the CONFIRMED cursor by completing the current
@@ -425,6 +440,10 @@ function selftest() {
   assert(readStageState(process.cwd()).cursor === -1, 'dry-run wrote no state file');
   // corrupt state is flagged, never silently emptied
   assert(readStageState(process.cwd()).corrupt === undefined, 'absent state file is not corrupt');
+  // state-shape guard: valid JSON that isn't a {assertions:{…}} object is corrupt
+  for (const bad of [null, [], 'x', 42, { assertions: ['a'] }, { assertions: null }])
+    assert(!isValidStateShape(bad), `rejected malformed state shape: ${JSON.stringify(bad)}`);
+  assert(isValidStateShape({ cursor: 0, assertions: {} }) && isValidStateShape({ cursor: -1 }), 'valid state shapes accepted');
   console.log(`selftest OK (${GREENFIELD_MODEL.stages.length} stages, ${res.totalGates} gates, ${Object.keys(CHECK_KINDS).length} check kinds)`);
 }
 
