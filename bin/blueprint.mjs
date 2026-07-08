@@ -59,9 +59,9 @@ Commands:
   hive       Stand up the team coordination substrate      (blueprint hive setup --slug=<x> --cf-account-id=<id> [--hive-dir=.hive] [--execute])
              dry-run PLAN by default (terraform-plan style); --execute provisions CF D1+Worker+Pages from a vendored ai-hive kit
              the "run" rung of crawl→walk→run — only when contention is real (docs/governance/team-roles-and-conventions.md litmus)
-  stage      Derive the initiative's pipeline position      (blueprint stage status [--target=<dir>] [--json])
-             the deterministic-core view (ADR-0008): reads stage state from artifacts-on-disk, marks derivable vs. assertion-only gates
-             read-only today; 'stage advance' (gating transitions) lands in ADR-0008 rollout steps c/d
+  stage      Derive/advance the initiative's pipeline position (blueprint stage <status|advance> [--target=<dir>] [--json])
+             deterministic-core view (ADR-0008): status marks derivable vs. assertion-only gates; advance gates the next transition
+             advance is dry-run by default; --execute records to .blueprint/stage-state.json; --assert-<gate>="…" confirms a shell gate
 
 Global:
   -h, --help       Show help
@@ -532,7 +532,7 @@ async function runHive(hiveArgv, home) {
 // position in the pipeline (ADR-0008). `status` derives current stage from
 // artifacts-on-disk + blueprint.yml and reports it, honestly marking which
 // gates are machine-derivable vs. which need an agent/human assertion.
-// `advance` (the gating behavior) is deferred to ADR-0008 rollout steps c/d —
+// `advance` gates the next transition: dry-run by default, --execute records —
 // it stubs honestly rather than pretending to gate. Read-only today.
 async function runStage(stageArgv, home) {
   const { flags, positionals } = parseArgs(stageArgv);
@@ -553,37 +553,40 @@ async function runStage(stageArgv, home) {
   }
 
   const icon = { pass: '✓', partial: '~', absent: '✗' };
+  // --assert-<gate>=<evidence> flags record operator assertions for the
+  // non-derivable (agentic-shell) gates. Any flag key starting `assert-` maps
+  // to a gate id (dashes preserved, e.g. --assert-live-url="https://…").
+  const asserts = {};
+  for (const [k, v] of Object.entries(flags)) if (k.startsWith('assert-')) asserts[k.slice('assert-'.length)] = v;
+  const state = lib.readStageState(targetDir);
 
   if (sub === 'advance') {
-    // Dry-run preview of the next transition (state recording deferred — see
-    // ADR-0008 rollout step c). Reports whether the next stage's entry-guard
-    // passes and what blocks it; --execute is honestly not-yet-wired.
-    const res = lib.previewAdvance({ root: targetDir });
-    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.advance.canAdvance ? 0 : 1); }
-    console.log(`blueprint stage advance (dry-run) — ${targetDir}\n`);
-    const a = res.advance;
-    if (!a.target) { console.log(`  ${a.reason}`); process.exit(0); }
-    console.log(`current cursor: Stage ${res.cursor} ${res.cursorName ? `(${res.cursorName})` : ''}`);
-    console.log(`target:         Stage ${a.target.id} — ${a.target.name}\n`);
-    if (a.blocking.length) {
-      console.log(`  ✗ BLOCKED — ${a.blocking.length} derivable gate(s) not passing:`);
-      for (const g of a.blocking) console.log(`      ✗ ${g.gate.padEnd(20)} ${g.evidence}`);
-    } else {
-      console.log(`  ✓ derivable gates pass — advance permitted by the deterministic core`);
+    // Dry-run by default (terraform-plan idiom); --execute persists the advance
+    // to .blueprint/stage-state.json once the entry-guard is satisfied.
+    const execute = !!flags.execute;
+    const res = lib.recordAdvance({ root: targetDir, asserts, execute });
+    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.ok ? 0 : 1); }
+    console.log(`blueprint stage advance${execute ? '' : ' (dry-run)'} — ${targetDir}\n`);
+    if (res.complete) { console.log(`  ${res.message}`); process.exit(0); }
+    console.log(`target: Stage ${res.target.id} — ${res.target.name}\n`);
+    if (!res.ok) {
+      for (const g of res.blocking || []) console.log(`  ✗ ${g.gate.padEnd(20)} ${g.evidence}  (derivable — fix on disk, cannot assert)`);
+      for (const g of res.missingAssertions || []) console.log(`  ~ ${g.gate.padEnd(20)} ${g.evidence}  (assert with --assert-${g.gate}="…")`);
+      console.log(`\n  BLOCKED — entry-guard not satisfied.`);
+      process.exit(1);
     }
-    if (a.needsAssertion.length) {
-      console.log(`  *? needs assertion (agentic-shell edges — an operator/reviewer must confirm):`);
-      for (const g of a.needsAssertion) console.log(`      ~ ${g.gate.padEnd(20)} ${g.evidence}`);
-    }
-    console.log(`\n  note: this is a preview. Recording the transition (+ assertions) is deferred to a`);
-    console.log(`        later slice; \`stage advance --execute\` is not wired yet (ADR-0008 rollout step c).`);
-    process.exit(a.canAdvance ? 0 : 1);
+    console.log(`  ✓ entry-guard satisfied — advance permitted`);
+    if (execute) console.log(`  ✓ recorded → ${res.wrote} (cursor now Stage ${res.cursor})`);
+    else console.log(`  (dry-run — re-run with --execute to record the advance)`);
+    process.exit(0);
   }
 
-  const res = lib.deriveStageStatus({ root: targetDir });
-  if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(0); }
+  const res = lib.deriveStageStatus({ root: targetDir, assertions: state.assertions });
+  if (flags.json) { console.log(JSON.stringify({ ...res, recordedCursor: state.cursor }, null, 2)); process.exit(0); }
   console.log(`blueprint stage status — ${targetDir}`);
-  console.log(`model: ${res.variant} [${res.modelSource}]${res.modelNote ? `  (${res.modelNote})` : ''}\n`);
+  console.log(`model: ${res.variant} [${res.modelSource}]${res.modelNote ? `  (${res.modelNote})` : ''}`);
+  if (state.cursor >= 0) console.log(`recorded cursor: Stage ${state.cursor} (${state.advancedTo || '?'}) — from ${'.blueprint/stage-state.json'}`);
+  console.log('');
   for (const s of res.stages) {
     const passN = s.gates.filter((g) => g.state === 'pass').length;
     console.log(`Stage ${s.id} — ${s.name}   [${passN}/${s.gates.length} pass]${s.stagePass ? '' : '  ← spine stops at/after here'}`);

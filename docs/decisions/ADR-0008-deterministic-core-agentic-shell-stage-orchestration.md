@@ -4,7 +4,7 @@ adr: 0008
 status: accepted
 date: 2026-07-07
 deciders: ["Nino Chavez"]
-ratification: "accepted on operator go 2026-07-07 (explicit 'proceed' + 'keep going'); rollout step (b) shipped same day"
+ratification: "explicitly ratified by operator 2026-07-07 ('ratify it'); rollout (a)+(b) status command + (c1) config-driven model shipped in wave 80 (46f7eaf); (c2) advance --execute follows"
 scope_ceiling: "A — methodology-native only (state derives from artifacts-on-disk; no external substrate)"
 informs: ../../decisions/01-prescription.md
 depends_on:
@@ -19,13 +19,13 @@ references:
 
 # ADR-0008 — Deterministic core / agentic shell for stage orchestration
 
-> **Authored in the self-application; rollout step (b) shipped on ratification (2026-07-07).** This is
+> **Authored in the self-application; shipped across waves 80–81 on ratification (2026-07-07).** This is
 > a methodology change (a new `blueprint stage` command + a stage model that ships to consumers).
 > The fleet was audited before touching `template/` (no consumer mid-migration — 3 behind, 10
-> unpinned, none picking up an update), so the methodology-freeze is not tripped. The read-only
-> `blueprint stage status` command + `template/tools/lib/stage-model.mjs` are live; the gating
-> `stage advance` behavior remains deferred to rollout steps c/d. Lands under a wave with the
-> freeze acknowledgment per the charter.
+> unpinned, none picking up an update), so the methodology-freeze is not tripped. Live: `blueprint
+> stage status` (wave 80) and `stage advance` with the entry-guard + `--execute` state recording to
+> `.blueprint/stage-state.json` (wave 81). Remaining: the other three variants (d) and STATE.md
+> retirement (e). Lands under a wave with the freeze acknowledgment per the charter.
 
 Status: **accepted** (operator go 2026-07-07) — grounded in a run of the derivability probe against this repo.
 
@@ -165,8 +165,8 @@ model matches the reviewers/hooks actually wired.
 the freeze acknowledgment. Sequencing:
 - **(a) ratify this ADR** — DONE (operator go 2026-07-07).
 - **(b) `blueprint stage status`** (read-only, zero blast radius) — SHIPPED: `template/tools/lib/stage-model.mjs` + the `stage` subcommand; lib self-test green; `doctor` unaffected.
-- (c) author the declared `stages:` model into `blueprint.yml` (so the model is config-driven, not lib-hardcoded) + wire `advance` behind an opt-in flag — PENDING.
+- **(c1) config-driven model** — SHIPPED (wave 80): declarative model + `stage_model:` select in `blueprint.yml`; **(c2) `advance` entry-guard + `--execute`** — SHIPPED (wave 81): dry-run by default, records to `.blueprint/stage-state.json`, `--assert-<gate>` confirms shell gates; a recorded assertion satisfies a non-derivable gate but never a derivable one the disk contradicts.
 - (d) extend the stage model to the other three variants (midstream/brownfield/research) — PENDING.
 - (e) retire the overlapping `STATE.md` sections; add a `doctor` check that the declared stage model matches the wired reviewers/hooks — PENDING.
 
-Shipped in wave 80 (commit 46f7eaf); review follow-ups in the next commit. Not yet pushed.
+Shipped in waves 80–81 (46f7eaf, f41a1d9, c698198 pushed; wave 81 this commit).

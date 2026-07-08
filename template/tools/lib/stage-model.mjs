@@ -24,7 +24,7 @@
 // YAML dep — a top-level-key scan is all the loader needs (scalar select +
 // block presence); the model shape itself travels as JSON when overridden.
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, resolve, isAbsolute } from 'node:path';
 
 // ── fs helpers ─────────────────────────────────────────────────────
@@ -207,7 +207,7 @@ export function loadStageModel(root) {
 }
 
 // ── derivation ─────────────────────────────────────────────────────
-export function deriveStageStatus({ root }) {
+export function deriveStageStatus({ root, assertions = {} }) {
   root = resolve(root);
   const { model, source, note } = loadStageModel(root);
   const ctx = { root, yml: read(join(root, 'blueprint.yml')) };
@@ -221,6 +221,13 @@ export function deriveStageStatus({ root }) {
           : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
       } catch (e) {
         r = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
+      }
+      // A non-derivable (agentic-shell) gate is satisfied by a RECORDED
+      // assertion — the operator/reviewer confirmed the fuzzy edge. Derivable
+      // gates ignore assertions: you cannot assert your way past a mechanical
+      // check the disk contradicts.
+      if (!g.derivable && r.state !== 'pass' && assertions[g.id]) {
+        r = { state: 'pass', evidence: `asserted: ${assertions[g.id].evidence || 'confirmed'}` };
       }
       return { gate: g.id, derivable: g.derivable, kind: g.kind, ...r };
     });
@@ -256,8 +263,8 @@ export function deriveStageStatus({ root }) {
 // next stage: the next stage's derivable gates must all pass, and each
 // non-derivable gate needs an assertion (assertion RECORDING — the state
 // mutation — is deferred to a later slice; today advance is read-only preview).
-export function previewAdvance({ root }) {
-  const st = deriveStageStatus({ root });
+export function previewAdvance({ root, assertions = {} }) {
+  const st = deriveStageStatus({ root, assertions });
   const next = st.nextStage;
   if (!next) return { ...st, advance: { canAdvance: true, target: null, reason: 'all stages pass — pipeline complete' } };
   const blocking = next.gates.filter((g) => g.derivable && g.state !== 'pass');
@@ -265,12 +272,64 @@ export function previewAdvance({ root }) {
   return {
     ...st,
     advance: {
-      canAdvance: blocking.length === 0,
+      // advance is permitted when no DERIVABLE gate blocks AND every
+      // non-derivable gate is covered by an assertion (needsAssertion empty).
+      canAdvance: blocking.length === 0 && needsAssertion.length === 0,
       target: { id: next.id, name: next.name },
       blocking: blocking.map((g) => ({ gate: g.gate, evidence: g.evidence })),
       needsAssertion: needsAssertion.map((g) => ({ gate: g.gate, evidence: g.evidence })),
     },
   };
+}
+
+// ── recorded state (ADR-0008 decision #3: a machine-read state file) ──
+// Replaces the drift-prone hand-maintained STATE.md for the one thing a
+// program should own: which stage the initiative is in, and the assertions
+// that carried it past the agentic-shell (non-derivable) gates.
+const STATE_REL = join('.blueprint', 'stage-state.json');
+
+export function readStageState(root) {
+  try {
+    const s = JSON.parse(read(join(resolve(root), STATE_REL)));
+    return { cursor: -1, assertions: {}, history: [], ...s };
+  } catch { return { cursor: -1, assertions: {}, history: [] }; }
+}
+
+// recordAdvance — evaluate the next transition's entry-guard folding in
+// recorded + newly-supplied assertions; on a satisfied guard, optionally
+// (execute) persist the advance. Dry-run by default (execute: false).
+// `now` is injected so the writer is testable and deterministic.
+export function recordAdvance({ root, asserts = {}, execute = false, now }) {
+  root = resolve(root);
+  const prev = readStageState(root);
+  const stamp = now || new Date().toISOString();
+  const merged = { ...prev.assertions };
+  for (const [gate, evidence] of Object.entries(asserts)) merged[gate] = { evidence, at: stamp };
+
+  const pv = previewAdvance({ root, assertions: merged });
+  const a = pv.advance;
+  if (!a.target) return { ok: true, complete: true, cursor: pv.cursor, message: a.reason, state: prev };
+  if (!a.canAdvance) {
+    return {
+      ok: false, target: a.target,
+      blocking: a.blocking,
+      // which shell gates still lack an assertion the operator must supply
+      missingAssertions: a.needsAssertion.filter((g) => !merged[g.gate]),
+      state: prev,
+    };
+  }
+
+  const state = {
+    cursor: a.target.id,
+    advancedTo: a.target.name,
+    assertions: merged,
+    history: [...(prev.history || []), { stage: a.target.id, at: stamp }],
+  };
+  if (execute) {
+    mkdirSync(join(root, '.blueprint'), { recursive: true });
+    writeFileSync(join(root, STATE_REL), JSON.stringify(state, null, 2) + '\n');
+  }
+  return { ok: true, target: a.target, cursor: a.target.id, wrote: execute ? STATE_REL : null, state };
 }
 
 // ── self-test (node stage-model.mjs --selftest) ────────────────────
@@ -310,6 +369,20 @@ function selftest() {
   assert(res.totalGates === res.derivableCount + res.nonderivableCount, 'gate counts reconcile');
   const adv = previewAdvance({ root: process.cwd() });
   assert(adv.advance && typeof adv.advance.canAdvance === 'boolean', 'advance preview shape');
+
+  // an assertion satisfies a non-derivable gate; a derivable gate ignores it
+  const asserted = deriveStageStatus({ root: process.cwd(), assertions: { 'sensor-wired': { evidence: 'drove it' } } });
+  const s0 = asserted.stages.find((s) => s.id === 0).gates.find((g) => g.gate === 'sensor-wired');
+  assert(s0.state === 'pass', 'assertion satisfies non-derivable gate');
+  const forged = deriveStageStatus({ root: process.cwd(), assertions: { 'principles-doc': { evidence: 'nope' } } });
+  const s2 = forged.stages.find((s) => s.id === 2).gates.find((g) => g.gate === 'principles-doc');
+  assert(s2.state !== 'pass', 'assertion does NOT override a derivable gate the disk contradicts');
+
+  // recordAdvance dry-run must not write and must block on this repo (Stage 2
+  // derivable gate fails) — a derivable blocker cannot be asserted past.
+  const dry = recordAdvance({ root: process.cwd(), execute: false, now: '2026-01-01T00:00:00Z' });
+  assert(dry.ok === false && dry.blocking.some((g) => g.gate === 'principles-doc'), 'recordAdvance blocks on derivable gap');
+  assert(readStageState(process.cwd()).cursor === -1, 'dry-run wrote no state file');
   console.log(`selftest OK (${GREENFIELD_MODEL.stages.length} stages, ${res.totalGates} gates, ${Object.keys(CHECK_KINDS).length} check kinds)`);
 }
 
