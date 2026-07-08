@@ -37,6 +37,13 @@ product_type: "dev-tool"
 terminology:
   glossary: none
 
+# Stage-orchestration model (ADR-0008 — deterministic core / agentic shell).
+# Selects which declarative stage model `blueprint stage status|advance` derives
+# against. Built-in: `greenfield` (default). A repo-relative *.json path selects a
+# custom model; midstream/brownfield/research ship as built-ins in rollout step d.
+# This self-application runs the greenfield pipeline, so the default is explicit.
+stage_model: greenfield
+
 # ──────────────────────────────────────────────────────────────────
 # Pilot profile (REQUIRED — Stage 0 → Stage 1 gate)
 # Reference: tools/blueprint/template/docs/methodology/pilot-profile-template.md

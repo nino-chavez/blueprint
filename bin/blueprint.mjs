@@ -13,6 +13,8 @@
  *   upgrade  preview/apply this consumer's pin bump         (real — step 8, ADR-0005)
  *   doctor   conformance / health check (the false-green guard) (real — step 12)
  *   hive     stand up the team coordination substrate (hive setup --slug=<x>)
+ *   stage    derive pipeline position from artifacts-on-disk (stage status — ADR-0008)
+
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
  */
@@ -57,6 +59,9 @@ Commands:
   hive       Stand up the team coordination substrate      (blueprint hive setup --slug=<x> --cf-account-id=<id> [--hive-dir=.hive] [--execute])
              dry-run PLAN by default (terraform-plan style); --execute provisions CF D1+Worker+Pages from a vendored ai-hive kit
              the "run" rung of crawl→walk→run — only when contention is real (docs/governance/team-roles-and-conventions.md litmus)
+  stage      Derive the initiative's pipeline position      (blueprint stage status [--target=<dir>] [--json])
+             the deterministic-core view (ADR-0008): reads stage state from artifacts-on-disk, marks derivable vs. assertion-only gates
+             read-only today; 'stage advance' (gating transitions) lands in ADR-0008 rollout steps c/d
 
 Global:
   -h, --help       Show help
@@ -523,6 +528,79 @@ async function runHive(hiveArgv, home) {
   process.exit(0);
 }
 
+// stage <status|advance> — the deterministic-core view of the initiative's
+// position in the pipeline (ADR-0008). `status` derives current stage from
+// artifacts-on-disk + blueprint.yml and reports it, honestly marking which
+// gates are machine-derivable vs. which need an agent/human assertion.
+// `advance` (the gating behavior) is deferred to ADR-0008 rollout steps c/d —
+// it stubs honestly rather than pretending to gate. Read-only today.
+async function runStage(stageArgv, home) {
+  const { flags, positionals } = parseArgs(stageArgv);
+  const sub = positionals[0] || 'status';
+  const targetDir = resolve(flags.target || process.cwd());
+
+  if (sub !== 'status' && sub !== 'advance') {
+    console.error('blueprint stage: usage — blueprint stage <status|advance> [--target=<dir>] [--json]');
+    process.exit(2);
+  }
+
+  let lib;
+  try {
+    lib = await import(pathToFileURL(join(home, 'template', 'tools', 'lib', 'stage-model.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint stage: failed to load stage-model lib — ${e.message}`);
+    process.exit(2);
+  }
+
+  const icon = { pass: '✓', partial: '~', absent: '✗' };
+
+  if (sub === 'advance') {
+    // Dry-run preview of the next transition (state recording deferred — see
+    // ADR-0008 rollout step c). Reports whether the next stage's entry-guard
+    // passes and what blocks it; --execute is honestly not-yet-wired.
+    const res = lib.previewAdvance({ root: targetDir });
+    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(0); }
+    console.log(`blueprint stage advance (dry-run) — ${targetDir}\n`);
+    const a = res.advance;
+    if (!a.target) { console.log(`  ${a.reason}`); process.exit(0); }
+    console.log(`current cursor: Stage ${res.cursor} ${res.cursorName ? `(${res.cursorName})` : ''}`);
+    console.log(`target:         Stage ${a.target.id} — ${a.target.name}\n`);
+    if (a.blocking.length) {
+      console.log(`  ✗ BLOCKED — ${a.blocking.length} derivable gate(s) not passing:`);
+      for (const g of a.blocking) console.log(`      ✗ ${g.gate.padEnd(20)} ${g.evidence}`);
+    } else {
+      console.log(`  ✓ derivable gates pass — advance permitted by the deterministic core`);
+    }
+    if (a.needsAssertion.length) {
+      console.log(`  *? needs assertion (agentic-shell edges — an operator/reviewer must confirm):`);
+      for (const g of a.needsAssertion) console.log(`      ~ ${g.gate.padEnd(20)} ${g.evidence}`);
+    }
+    console.log(`\n  note: this is a preview. Recording the transition (+ assertions) is deferred to a`);
+    console.log(`        later slice; \`stage advance --execute\` is not wired yet (ADR-0008 rollout step c).`);
+    process.exit(a.canAdvance ? 0 : 1);
+  }
+
+  const res = lib.deriveStageStatus({ root: targetDir });
+  if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(0); }
+  console.log(`blueprint stage status — ${targetDir}`);
+  console.log(`model: ${res.variant} [${res.modelSource}]${res.modelNote ? `  (${res.modelNote})` : ''}\n`);
+  for (const s of res.stages) {
+    const passN = s.gates.filter((g) => g.state === 'pass').length;
+    console.log(`Stage ${s.id} — ${s.name}   [${passN}/${s.gates.length} pass]${s.stagePass ? '' : '  ← spine stops at/after here'}`);
+    for (const g of s.gates) {
+      const der = g.derivable ? '   ' : ' *?';
+      console.log(`  ${icon[g.state] || '?'}${der} ${g.gate.padEnd(20)} ${g.evidence}`);
+    }
+  }
+  console.log(`\n  legend: ✓ pass  ~ partial  ✗ absent    *? = NOT machine-derivable (needs agent/human assertion)`);
+  console.log(`\nderivable cursor: Stage ${res.cursor} ${res.cursor >= 0 ? `(${res.cursorName})` : '(none)'}`);
+  console.log(`  = highest stage whose gates all pass, walking the linear spine (stops at first gap)`);
+  if (res.nextStage) console.log(`next stage to work: Stage ${res.nextStage.id} — ${res.nextStage.name}`);
+  console.log(`\nderivability: ${res.derivableCount}/${res.totalGates} gates machine-derivable, ${res.nonderivableCount}/${res.totalGates} need assertion`);
+  console.log(`  the deterministic core owns the ${res.derivableCount}; the agentic shell owns the ${res.nonderivableCount}.`);
+  process.exit(0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -582,6 +660,11 @@ async function main() {
 
   if (cmd === 'hive') {
     await runHive(argv.slice(argv.indexOf('hive') + 1), home);
+    return;
+  }
+
+  if (cmd === 'stage') {
+    await runStage(argv.slice(argv.indexOf('stage') + 1), home);
     return;
   }
 
