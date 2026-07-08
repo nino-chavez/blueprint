@@ -232,9 +232,14 @@ export const BROWNFIELD_MODEL = {
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for brownfield — every audit claim grounds in a captured surface' } },
     ] },
     { id: 1, name: 'Diagnose', gates: [
-      // canonical legs are subdirs (current-state/personas/funnel/competitive);
-      // gate on those, not top-level md count. Reviewer enforces all five.
-      { id: 'research-legs', derivable: true, kind: 'any-exists', params: { dirs: ['research/current-state', 'research/personas', 'research/funnel', 'research/competitive'] } },
+      // canonical legs are subdirs, ALL required ("all five populated",
+      // docs/variant-selection.md § sub-deliverables). One gate PER leg (AND
+      // semantics — a single collapsed any-exists would confirm the stage on
+      // one leg). Matches midstream's per-leg shape; the program owns the guard.
+      { id: 'leg-current-state', derivable: true, kind: 'any-exists', params: { dirs: ['research/current-state'] } },
+      { id: 'leg-personas', derivable: true, kind: 'any-exists', params: { dirs: ['research/personas'] } },
+      { id: 'leg-funnel', derivable: true, kind: 'any-exists', params: { dirs: ['research/funnel'] } },
+      { id: 'leg-competitive', derivable: true, kind: 'any-exists', params: { dirs: ['research/competitive'] } },
       { id: 'diagnose-synthesis', derivable: true, kind: 'name-match', params: { dirs: ['.', 'research', 'docs'], pattern: 'diagnose' } },
     ] },
     { id: 2, name: 'Prescription', gates: [
@@ -274,10 +279,13 @@ export const RESEARCH_MODEL = {
       { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas' } },
     ] },
     { id: 2, name: 'Research', gates: [
-      // canonical layout keeps the legs in SUBDIRS (docs/variant-selection.md
-      // § Research) — gate on those, not a non-recursive top-level md count
-      // (which sees ~1 file and wedges). Reviewer enforces the full ≥3 legs.
-      { id: 'research-legs', derivable: true, kind: 'any-exists', params: { dirs: ['research/problem-space', 'research/competitive', 'research/prior-art'] } },
+      // canonical layout keeps the legs in SUBDIRS, ALL THREE required (≥3 legs,
+      // docs/variant-selection.md § Research). One gate PER leg (AND semantics —
+      // a single collapsed any-exists would confirm on one leg). The program
+      // owns the guard; the reviewer enforces primary-source grounding on top.
+      { id: 'leg-problem-space', derivable: true, kind: 'any-exists', params: { dirs: ['research/problem-space'] } },
+      { id: 'leg-competitive', derivable: true, kind: 'any-exists', params: { dirs: ['research/competitive'] } },
+      { id: 'leg-prior-art', derivable: true, kind: 'any-exists', params: { dirs: ['research/prior-art'] } },
     ] },
     { id: 3, name: 'Synthesis & Decisions', gates: [
       { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
