@@ -13,7 +13,7 @@
 // Manifest-driven corpus (wave 5 — 2026-05-25): the doc list is read from
 // _meta/index.json docs.tiers[].docs[] at request time, not hardcoded here.
 // Prior version shipped the source project's hardcoded DOCS array
-// (research-synthesis, cx-strategy, etc.) that every consumer inherited
+// (the source project's doc slugs) that every consumer inherited
 // verbatim — the chat function would 404 on every doc and silently render
 // zero context, producing hallucinated answers. Caught in the blog consumer
 // session 2026-05-25; encoded here.

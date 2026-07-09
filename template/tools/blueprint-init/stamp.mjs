@@ -113,6 +113,13 @@ function substitutions({ name, displayName, repoUrl, tagline, theme }) {
     { from: "REPLACE_FOR_PROJECT_NAME", to: displayName },
     { from: "REPLACE_FOR_PROJECT_REPO", to: repoUrl },
     { from: "REPLACE_FOR_PROJECT_TAGLINE", to: tagline },
+    // Wave 85: the Pattern B shells used a placeholder vocabulary the table
+    // never covered — consumers shipped a literal PROJECT_SLUG in wrangler.toml
+    // and the first `wrangler pages deploy` failed on the project name. Only
+    // PROJECT_SLUG joins the table: it appears solely in string/prose contexts.
+    // (A bare PROJECT_NAME rule would clobber Layout.astro's PROJECT_NAME JS
+    // identifier — the Pattern B shells now use REPLACE_FOR_PROJECT_NAME.)
+    { from: "PROJECT_SLUG", to: name },
     // Multi-theme registry (2026-05-26 wave 11): the stamper writes the
     // initiative's chosen theme into <html> as data-theme so the default applies
     // before JS loads. Runtime theme-switcher.js can override at the operator's
@@ -163,9 +170,11 @@ const BANNER_LINES = {
 };
 
 // Extensions the stamper performs substitutions inside. Skip binary assets.
+// Wave 85: .toml added — wrangler.toml rode the binary path, preserving its
+// PROJECT_SLUG token through every stamp (and hiding it from mechanicalCheck).
 const TEXT_EXTS = new Set([
   ".astro", ".tsx", ".ts", ".jsx", ".js", ".mjs", ".cjs",
-  ".json", ".md", ".css", ".html", ".yml", ".yaml",
+  ".json", ".md", ".css", ".html", ".yml", ".yaml", ".toml",
 ]);
 
 function parseArgs(argv) {
@@ -451,6 +460,14 @@ const SUBSTRATE_TRIPWIRES = [
   "trust axioms",
   "synthesis #",
   "[Epic-",
+  // Wave 85: front-door leak markers — the source project's doc slugs and hero
+  // copy shipped verbatim inside the Pattern B index.html until the ai-enablement
+  // consumer's operator met "five paths" on a deployed portal and asked what
+  // they were. index.html is manifest-driven now; these tripwires keep it so.
+  "cx-strategy",
+  "validation-jtbd-dry-run",
+  "One front door,",
+  "PROJECT_SLUG",
 ];
 
 async function mechanicalCheck({ target, log }) {
@@ -461,6 +478,11 @@ async function mechanicalCheck({ target, log }) {
   const scopedRoots = [
     path.join(target, "apps/portal"),
     path.join(target, "packages"),
+    // Wave 85: Pattern B portal scope — without these the check was VACUOUS
+    // for review-portal stamps (nothing exists under apps/portal), so
+    // "mechanical check: PASS" shipped source-project strings untested.
+    path.join(target, "portal"),
+    path.join(target, "blueprint/portal"),
   ];
   const allFiles = [];
   for (const root of scopedRoots) {
@@ -883,6 +905,31 @@ async function stampPatternB({ target, name, displayName, repoUrl, tagline, them
     log,
   });
 
+  // Wave 85: chrome-manifest files must land BYTE-IDENTICAL to canonical —
+  // copyTree applies substitutions (incl. the wave-11 data-theme swap), which
+  // drifted docs/index.html against portal-chrome-canonical-reviewer on every
+  // fresh stamp. Re-copy the Profile A manifest verbatim.
+  for (const rel of PATTERN_B_CHROME_FILES_PROFILE_A) {
+    const chromeSrc = path.join(srcRoot, rel);
+    if (await fs.stat(chromeSrc).catch(() => null)) {
+      if (!dryRun) {
+        await fs.mkdir(path.dirname(path.join(portalDir, rel)), { recursive: true });
+        await fs.copyFile(chromeSrc, path.join(portalDir, rel));
+      }
+    }
+  }
+  log.stamped.push("chrome manifest re-copied byte-identical (portal-chrome-canonical-reviewer contract)");
+
+  // (wrangler.toml's PROJECT_SLUG is handled by the substitution table now
+  // that .toml is a TEXT_EXTS member — wave 85.)
+
+  // Wave 85: canonical-primitives.css is the Profile B (consumer-themed)
+  // import; under the default Profile A the conformance reviewer correctly
+  // rejects it as an orphan top-level stylesheet. Not stamped by default —
+  // Profile B consumers pull it via restamp-chrome --accept-overwrite.
+  if (!dryRun) await fs.rm(path.join(portalDir, "canonical-primitives.css"), { force: true });
+  log.skipped.push("canonical-primitives.css (Profile B import — pull via restamp-chrome when opting into consumer-themed)");
+
   // Ensure project-tokens.css exists as the consumer's overlay surface.
   const overlayDst = path.join(portalDir, "project-tokens.css");
   const overlayExists = await fs.stat(overlayDst).catch(() => null);
@@ -1029,7 +1076,38 @@ async function main() {
   }
   if (portalType === "review") {
     // AMENDMENT 1 (2026-06-27): Pattern B initial stamp now implemented.
+    // Wave 85 (ai-enablement consumer, 9 defects): the outer Pattern A
+    // `const log` sits in its temporal dead zone here — every fresh Pattern B
+    // stamp crashed on ReferenceError. Block-scoped log fixes it.
+    const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
     const portalDirOverride = args["portal-dir"] || null;
+    // Wave 85: the imposition layer (.claude reviewers + tools/lib +
+    // run-reviewers) is installed into EVERY stamped initiative — the
+    // 2026-06-16 install-gap fix wired it for Pattern A only, so Pattern B
+    // consumers got a portal with no stage gates.
+    const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
+    await copyTree({
+      src: path.join(BLUEPRINT_ROOT, "template/.claude"),
+      dst: path.join(target, ".claude"),
+      subs,
+      dryRun,
+      log,
+    });
+    await copyTree({
+      src: path.join(BLUEPRINT_ROOT, "template/tools/lib"),
+      dst: path.join(target, "tools/lib"),
+      subs,
+      dryRun,
+      log,
+    });
+    if (!dryRun) {
+      await fs.mkdir(path.join(target, "tools"), { recursive: true });
+      await fs.copyFile(
+        path.join(BLUEPRINT_ROOT, "template/tools/run-reviewers.mjs"),
+        path.join(target, "tools/run-reviewers.mjs")
+      );
+    }
+    log.copied.push("tools/run-reviewers.mjs");
     await stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log });
     await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
     if (!dryRun) await mechanicalCheck({ target, name, log });

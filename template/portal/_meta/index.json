@@ -1,13 +1,25 @@
 {
-  "name": "PROJECT_NAME Blueprint",
-  "tagline": "Synthetic design study for PROJECT_NAME — replace this string in _meta/index.json",
+  "name": "REPLACE_FOR_PROJECT_NAME Blueprint",
+  "tagline": "REPLACE_FOR_PROJECT_TAGLINE",
   "slices": [
     "example-slice"
   ],
   "groups": [
-    { "id": "marketing", "label": "Marketing",  "color": "brand" },
-    { "id": "audience",  "label": "Audience",   "color": "accent" },
-    { "id": "operator",  "label": "Operator",   "color": "neutral" }
+    {
+      "id": "marketing",
+      "label": "Marketing",
+      "color": "brand"
+    },
+    {
+      "id": "audience",
+      "label": "Audience",
+      "color": "accent"
+    },
+    {
+      "id": "operator",
+      "label": "Operator",
+      "color": "neutral"
+    }
   ],
   "pages": [
     "example"
@@ -17,7 +29,9 @@
       "id": "main-journey",
       "label": "Main journey",
       "summary": "Replace with your primary persona's end-to-end flow across pages.",
-      "pages": ["example"]
+      "pages": [
+        "example"
+      ]
     }
   ],
   "docs": {
@@ -40,5 +54,12 @@
   "footer": {
     "line": "",
     "repo_url": ""
+  },
+  "front_door": {
+    "label": "",
+    "h1": "",
+    "lede": "",
+    "tiles": [],
+    "paths": []
   }
 }
