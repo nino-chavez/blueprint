@@ -108,11 +108,11 @@ consumers:
 
   # Operator-declared, NOT locally verified on THIS machine (the registry is machine-local).
   # Confirm repo / pattern / pin before relying on these for fleet/upgrade.
-  - repo: nino-chavez/ninochavez.co
-    pattern: null
-    methodology_version: null         # operator-declared; confirm
+  - repo: nino-chavez/nino-chavez-site   # ninochavez.co — AI Practice Surface Rebuild (brownfield, Tier 2 shipped 2026-07-09)
+    pattern: B                            # apps/website-nc worktree blueprint/ai-enablement; portal at blueprint/portal
+    methodology_version: "0.5.0"          # stamped at wave 84; wave 85 promoted from its 9 logged amendments
     owner: nino-chavez
-    synced_at: "2026-06-06"
+    synced_at: "2026-07-09"
 
   - repo: private/promo-initiative   # de-named for the public registry; real identity in consumers.local.yml
     pattern: null

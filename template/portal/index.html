@@ -223,19 +223,24 @@
   <header data-portal-shell="index"></header>
 
   <main class="container">
+    <!-- Wave 85: hero + tiles + paths render from _meta/index.json `front_door`
+         (same manifest-driven contract as docs.tiers[] and footer). The prior
+         version baked the source project's hero copy, stat tiles, and a
+         five-path grid into this file — every consumer shipped another
+         project's front door. Markup below carries neutral fallbacks only. -->
     <div class="hero-row">
       <div class="hero-lead">
-        <span class="label">The PROJECT_NAME Blueprint</span>
-        <h1>One front door,<br/>five paths in.</h1>
+        <span class="label" data-fd-label>Blueprint</span>
+        <h1 data-fd-h1>The review package,<br/>on one shelf.</h1>
       </div>
     </div>
 
-    <p class="hero-lede">
-      Synthetic design study against the personas, market, and operational reality of the product.
-      Prototype walk-through, system docs, phased roadmap, active validation queue, and methodology — every surface on one shelf.
+    <p class="hero-lede" data-fd-lede>
+      Prototype pages with strategy and current-state drawers, the strategic
+      documents behind them, and a chat grounded in the initiative's corpus.
     </p>
 
-    <section class="stat-row">
+    <section class="stat-row" id="stat-row">
       <div class="stat-tile">
         <div class="stat-label">Prototype</div>
         <div class="stat-value" id="stat-pages">…</div>
@@ -246,16 +251,7 @@
         <div class="stat-value" id="stat-docs">…</div>
         <div class="stat-sub">Strategic artifacts + working documents</div>
       </div>
-      <div class="stat-tile">
-        <div class="stat-label">Findings</div>
-        <div class="stat-value" id="stat-findings">…</div>
-        <div class="stat-sub">From research synthesis · synthetic until validated</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-label">Hypotheses</div>
-        <div class="stat-value" id="stat-hypotheses">…</div>
-        <div class="stat-sub">Kill + tune + taste claims · validation queue</div>
-      </div>
+      <!-- front_door.tiles entries append here -->
     </section>
 
     <section class="paths-section">
@@ -272,68 +268,52 @@
   </main>
 
   <script>
-    const PATHS = [
+    // Wave 85: everything on this page renders from _meta/index.json. The
+    // prior version hardcoded a five-path grid full of the source project's
+    // doc slugs, AND referenced an undeclared MANIFEST identifier — the
+    // ReferenceError killed this whole script, so consumers saw frozen "…"
+    // tiles, an empty grid, and a dead footer. One async flow, no globals.
+    const PATH_ICONS = {
+      play: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>',
+      compass: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16 8l-3 5-5 3 3-5 5-3z" fill="currentColor" stroke="none"/></svg>',
+      search: '<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>'
+    };
+
+    // Neutral defaults when the manifest declares no front_door block: the two
+    // surfaces every Review Portal has. No project content lives here.
+    const DEFAULT_PATHS = [
       {
-        id: 'try', title: 'Try', status: 'ready',
-        icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>',
-        description: 'Walk the prototype pages with strategy + current-state drawers, proposed-vs-shipped toggle, and multi-page flows. The interactive study.',
-        links: 'Catalog: <a href="/prototype/">/prototype/</a> · Sample: <a href="/pages/example">example page</a>',
-        priority: { reviewer: 1, engineer: 3, operator: 4 }
+        id: 'compare', title: 'Compare', status: 'ready', icon: 'play',
+        description: 'Walk the prototype pages with strategy + current-state drawers and the proposed / compare / shipped toggle.',
+        links_html: 'Catalog: <a href="/prototype/">/prototype/</a>'
       },
       {
-        id: 'discover', title: 'Discover', status: 'ready',
-        icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16 8l-3 5-5 3 3-5 5-3z" fill="currentColor" stroke="none"/></svg>',
-        description: 'Why the blueprint makes its decisions. CX strategy plus the four system docs — business model, monetization, product lifecycle, adaptive chrome.',
-        links: '<a href="/docs/?doc=cx-strategy">CX Strategy</a> · <a href="/docs/?doc=business-model">Business model</a> · <a href="/docs/?doc=research-synthesis">Research synthesis</a>',
-        priority: { reviewer: 2, engineer: 5, operator: 2 }
-      },
-      {
-        id: 'roadmap', title: 'Roadmap', status: 'ready',
-        icon: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M6 8.5v7M8.5 6h7M8.5 18h7"/></svg>',
-        description: 'Phased plan: Phase 1 (~17 hrs) free-mode launch keystones. Phase 2 (~30 hrs) identity + retention. Phase 3 primary-research gates before structural commits.',
-        links: '<a href="/docs/?doc=roadmap">Roadmap</a> · <a href="/docs/?doc=gaps">Per-page gaps</a>',
-        priority: { reviewer: 3, engineer: 4, operator: 1 }
-      },
-      {
-        id: 'operate', title: 'Operate', status: 'ready',
-        icon: '<svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h14M18 18h2"/><circle cx="16" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="8" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="18" r="2" fill="currentColor" stroke="none"/></svg>',
-        description: 'Conventions for building on top of this blueprint. Design principles, production-UI sanctity rule, page-creation contract, per-tool OWNER-SPECs.',
-        links: '<a href="/docs/?doc=design-principles">Design principles</a> · <a href="/docs/?doc=feasibility">Feasibility</a> · CONVENTIONS.md in repo',
-        priority: { reviewer: 5, engineer: 1, operator: 3 }
-      },
-      {
-        id: 'validate', title: 'Validate', status: 'partial',
-        icon: '<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>',
-        description: 'Active validation queue. 19 hypotheses tiered by load. JTBD dry run pressure-tested the conversation guides; real interviews next. The honest fork between hypothesis and evidence.',
-        links: '<a href="/docs/?doc=validation-plan">Validation plan</a> · <a href="/docs/?doc=validation-jtbd-dry-run">JTBD dry run</a>',
-        priority: { reviewer: 4, engineer: 2, operator: 5 }
+        id: 'read', title: 'Read', status: 'ready', icon: 'compass',
+        description: 'The strategic documents behind the prototype — why the proposal makes its calls.',
+        links_html: '<a href="/docs/">Docs shelf</a>'
       }
     ];
 
-    function renderPaths() {
+    function renderPaths(paths) {
       const grid = document.getElementById('paths-grid');
       grid.innerHTML = '';
-      const enableAudienceSwitcher = MANIFEST?.audience_switcher === true;
-      const pathsToRender = enableAudienceSwitcher
-        ? [...PATHS].sort((a, b) => (a.priority?.reviewer || 999) - (b.priority?.reviewer || 999))
-        : [...PATHS];
-      pathsToRender.forEach(p => {
+      paths.forEach(p => {
         const card = document.createElement('div');
         card.className = 'path-card';
         card.innerHTML = `
           <div class="icon-row">
-            <div class="icon">${p.icon}</div>
-            <span class="status ${p.status}"><span class="dot"></span>${p.status}</span>
+            <div class="icon">${PATH_ICONS[p.icon] ?? PATH_ICONS.compass}</div>
+            <span class="status ${p.status ?? 'ready'}"><span class="dot"></span>${p.status ?? 'ready'}</span>
           </div>
           <h3>${p.title}</h3>
-          <p>${p.description}</p>
-          <div class="links">${p.links}</div>
+          <p>${p.description ?? ''}</p>
+          <div class="links">${p.links_html ?? ''}</div>
         `;
         grid.appendChild(card);
       });
     }
 
-    renderPaths();
+    renderPaths(DEFAULT_PATHS);
 
     (async function () {
       try {
@@ -342,6 +322,26 @@
         document.getElementById('stat-pages').textContent = (m.pages || []).length;
         const slicesEl = document.getElementById('stat-slices');
         if (slicesEl) slicesEl.textContent = (m.slices || []).length;
+        const docsEl = document.getElementById('stat-docs');
+        if (docsEl) docsEl.textContent = ((m.docs && m.docs.tiers) || [])
+          .reduce((n, t) => n + ((t.docs || []).length), 0);
+
+        // front_door block: hero copy, extra tiles, and the path grid.
+        const fd = m.front_door || {};
+        const setHtml = (sel, v) => { const el = document.querySelector(sel); if (el && v) el.innerHTML = v; };
+        setHtml('[data-fd-label]', fd.label || (m.name ? `The ${m.name}` : null));
+        setHtml('[data-fd-h1]', fd.h1 ? fd.h1.replace(/\n/g, '<br/>') : null);
+        setHtml('[data-fd-lede]', fd.lede);
+        if (Array.isArray(fd.tiles)) {
+          const row = document.getElementById('stat-row');
+          for (const t of fd.tiles) {
+            const tile = document.createElement('div');
+            tile.className = 'stat-tile';
+            tile.innerHTML = `<div class="stat-label">${t.label ?? ''}</div><div class="stat-value">${t.value ?? ''}</div><div class="stat-sub">${t.sub ?? ''}</div>`;
+            row.appendChild(tile);
+          }
+        }
+        if (Array.isArray(fd.paths) && fd.paths.length) renderPaths(fd.paths);
 
         // Populate footer from manifest. footer.line falls back to tagline.
         // repo_url is optional — anchor stays hidden if absent.

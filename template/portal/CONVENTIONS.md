@@ -1,6 +1,6 @@
 # Blueprint Portal Conventions
 
-**Version 6 (2026-06-12).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
+**Version 7 (2026-07-09).** Canonical convention set for blueprint **portal-mode** projects (static HTML + Cloudflare Pages Functions). For React/the platform design system projects, use `template/prototype/` instead.
 
 ---
 
@@ -282,6 +282,43 @@ The "On this page" rail is built from `h2`/`h3` text and is narrow (≈200px). L
 
 ---
 
+## Front-door manifest block
+
+`index.html` (the portal front door / studio catalog) renders its hero, stat
+tiles, and path grid from `_meta/index.json` `front_door:` — the same
+manifest-driven contract as `docs.tiers[]` and `footer:`. The file ships with
+neutral fallbacks (two generic paths: Compare + Read); a consumer authors its
+real front door by editing the manifest only:
+
+```json
+"front_door": {
+  "label": "The Acme Blueprint",
+  "h1": "Current vs proposed,\nside by side.",
+  "lede": "One-paragraph description of what this review package is.",
+  "tiles": [
+    { "label": "Diagnose findings", "value": "8", "sub": "D1–D8 · every claim probed" }
+  ],
+  "paths": [
+    { "id": "compare", "title": "Compare", "status": "ready", "icon": "play",
+      "description": "…", "links_html": "<a href=\"/prototype/\">catalog</a>" }
+  ]
+}
+```
+
+Fields: `h1` uses `\n` for line breaks; `tiles` append after the two derived
+tiles (prototype pages/slices + docs counts — computed, never authored);
+`paths[].icon` is one of `play | compass | search`; `links_html` is trusted
+markup (the manifest is repo-owned). Empty/missing fields keep the neutral
+fallbacks.
+
+**Why data-driven, not hardcoded**: the pre-wave-85 front door baked the source
+project's hero copy ("five paths in"), stat tiles, and a five-path grid with
+foreign doc slugs into the HTML — every consumer shipped another project's
+front door, and an undeclared-identifier crash froze the whole page. Same
+incident class as the docs-viewer leak (`case-study-v3-portal-css-gap.md`).
+
+---
+
 ## One confident preview, not a deliberation venue
 
 The portal is a stakeholder review surface. Each route shows ONE confident take of what the team is proposing — not three competing variants walked through page-by-page, and not a tour of every option considered. The PROPOSED / COMPARE / SHIPPED toggle is the comparison primitive (proposed vs what exists today). It is not variant-walking.
@@ -389,6 +426,16 @@ wrangler pages deploy . --project-name <PROJECT_SLUG>-blueprint --branch main --
 
 The `wrangler.toml` at `portal/` root is required so wrangler detects `functions/` and compiles them as Pages Functions.
 
+### Deploy gotchas (wave 85)
+
+- `wrangler.toml`'s `name` is stamped from your project slug (`<slug>-blueprint`)
+  as of wave 85. Pre-wave-85 stamps carry a literal `PROJECT_SLUG-blueprint`
+  that fails the deploy — edit it by hand or re-stamp.
+- **Pages secrets bind on the NEXT deployment.** Set the secret, then deploy
+  (or redeploy): `wrangler pages secret put OPENROUTER_API_KEY ...` followed by
+  `wrangler pages deploy .` — a secret added after a deploy does not reach the
+  already-live Functions.
+
 ### Required env vars on the Pages project
 
 - `OPENROUTER_API_KEY` — powers the chat function. Stored as Pages secret. Source: 1Password `blueprint-global` item (or rotate per-project).
@@ -404,6 +451,8 @@ The `wrangler.toml` at `portal/` root is required so wrangler detects `functions
 ---
 
 ## Versioning
+
+**v7 (2026-07-09, wave 85)** — manifest-driven front door: `index.html` hero/tiles/paths render from `_meta/index.json front_door:` (new block; neutral fallbacks in markup); fixes the source-content leak + the undeclared-identifier crash. Chrome gains canonical rules for the footer / lifecycle strip / phone frame classes proto-nav.js emits. Stamp hardening: Pattern B stamps the imposition layer (.claude reviewers + tools/lib + run-reviewers), chrome-manifest files land byte-identical, `canonical-primitives.css` no longer stamped under Profile A, `PROJECT_SLUG` substituted (wrangler.toml deployable), mechanical check now scans Pattern B portals.
 
 **v5 (2026-06-11)** — the canvas rule + mock frame primitive. New optional page-meta field `mock_frame` (`desktop` default | `phone` | `none`); `proto-nav.js` frames each `.proposed-view` / `.shipped-view` (browser-window bar with route for desktop surfaces, ≤420px bezel for handheld ones) so per-surface themes — including fully dark mocks — live inside a portal-owned frame instead of restyling the page body. New anti-pattern: page-level `body { background: ... }` theming. Additive for existing consumers: the default `desktop` frame applies on next chrome sync; pages that should not be framed declare `"mock_frame": "none"`.
 
