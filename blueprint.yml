@@ -39,9 +39,17 @@ terminology:
 
 # Stage-orchestration model (ADR-0008 — deterministic core / agentic shell).
 # Selects which declarative stage model `blueprint stage status|advance` derives
-# against. Built-in: `greenfield` (default). A repo-relative *.json path selects a
-# custom model; midstream/brownfield/research ship as built-ins in rollout step d.
-# This self-application runs the greenfield pipeline, so the default is explicit.
+# against. Built-in models: greenfield/midstream/brownfield/research; a
+# repo-relative *.json path selects a custom model.
+#
+# WHY greenfield HERE despite `variant: brownfield` below (explicit override,
+# wave-82 mechanism): the brownfield stage model gates on the numbered
+# 01-diagnose / 02-prescription / 03-design-brief artifact set, which this
+# self-application predates — its artifacts are greenfield-shaped (research/
+# legs + decisions/ ADRs + apps/portal), so the brownfield model would wedge
+# the cursor at Stage 1 on artifacts that will never exist. The brownfield
+# variant declaration still drives reviewer selection; only the stage-machine
+# derivation runs the greenfield shape.
 stage_model: greenfield
 
 # ──────────────────────────────────────────────────────────────────

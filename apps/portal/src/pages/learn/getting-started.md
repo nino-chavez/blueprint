@@ -33,13 +33,23 @@ blueprint --help
 
 If the installed version trails `npm view @nino-chavez-labs/blueprint-cli version`, reinstall before continuing.
 
-## 2. The mental model
+## 2. What Blueprint is — and isn't
+
+Blueprint has a three-role contract, and knowing who does what is the fastest way to orient:
+
+- **You steer.** You pick the variant, tier, and portal type; you bring the context (screenshots, requirements, codebase access, competitive intel); you approve gate transitions and make the calls the pipeline surfaces.
+- **The agent executes.** The stage skills (`/blueprint-research`, `/blueprint-prototype`, and the rest) do the producing work — research legs, prototype pages, strategy documents — inside your agent harness.
+- **The program verifies.** Executable reviewers, `blueprint doctor`, and the stage machine (`blueprint stage status|advance`) check the work mechanically. An agent can't declare itself done; the gates have to pass.
+
+What Blueprint is **not**: an autonomous pipeline that runs stages unattended. `blueprint stage advance` validates gates and records confirmed transitions — it doesn't dispatch work. The value proposition is the inverse: agent-executed work you can actually trust, because verification is mechanical rather than self-attested.
+
+## 3. The mental model
 
 Blueprint runs a **7-stage pipeline**: Legibility (0) -> Research (1) -> Design Principles (2) -> Prototype (3) -> Fact-Check (4) -> Documents (5) -> Deploy (6), with Iterate (7) after stakeholders see it. Each stage gate is an **executable reviewer** — `research-completeness-reviewer`, `doc-quality-auditor`, `prototype-smoke-runner`, and the rest — that has to PASS before the next stage unblocks. You drive the producing stages with slash-command skills: `/blueprint-research`, `/blueprint-prototype`, `/blueprint-validate`, `/blueprint-docs`, `/blueprint-deploy`, `/blueprint-triage`.
 
 Before any of that, three orthogonal choices set the shape of the work. **Variant** is what you're doing: Greenfield (build a north-star prototype), Midstream (revise a live in-flight product), or Brownfield (audit + prescribe against a mature product). **Tier** is how far you've gone: Tier 0 (pre-portal scratch, <=1 week), Tier 1 (a portal exists — the default starting point), Tier 2 (portal plus live product surfaces). **Portal type** is the portal's IA: the Initiative Portal (platform-portal, multi-surface product with a fixed route contract and an audience switcher) or the Review Portal (redesign-review-portal, current-state-vs-proposed comparison for a brownfield audit). Pick variant, tier, and portal type before you scaffold — the wrong type forces a rebuild.
 
-## 3. Install and scaffold your first portal
+## 4. Install and scaffold your first portal
 
 `blueprint init` scaffolds an Initiative Portal at Tier 1. Under the hood it *stamps*: copies the template, substitutes your name/repo/tagline for a fixed token set, writes `blueprint.yml`, and finishes with a post-stamp grep — a search proving no strings from the template's source project leaked into your copy.
 
@@ -72,7 +82,7 @@ Flag notes:
 - The stamper covers both types: `--portal-type=initiative` (the default; `--pattern=A` survives as a deprecated alias) scaffolds the full project site, and `--mode=stamp --pattern=B` stamps a fresh Review Portal shell. `--mode=restamp-chrome` refreshes the shared shell files (the "chrome") of an existing portal.
 - `--target` is the path to the new initiative root. Defaults to `./<name>`; created when missing.
 
-## 4. What you just got
+## 5. What you just got
 
 After the stamp runs, the output reports three things:
 

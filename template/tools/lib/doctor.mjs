@@ -186,6 +186,43 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
+  // 6b. Pattern B portal conformance (wave 86). The check above keyed the ENTIRE
+  //     conformance gate on `apps/portal` existing, so a Review Portal at
+  //     `portal/` or `blueprint/portal/` shipped with zero doctor coverage —
+  //     the same "path never executed against its own gates" root cause wave 85
+  //     fixed for the stamper, still open in doctor. Detection: a chrome-marked
+  //     portal dir (index.html + _meta/index.json or proto-nav.js). Runs BOTH
+  //     Pattern B reviewers and reports each — a skipped reviewer is a visible
+  //     'skip', never a silent green. Bespoke portals keep the divergence-ADR
+  //     gate (only when the apps/portal branch didn't already run it).
+  {
+    const patternBRoot = ['portal', join('blueprint', 'portal')].find((rel) =>
+      existsSync(join(targetDir, rel, 'index.html')) &&
+      (existsSync(join(targetDir, rel, '_meta', 'index.json')) || existsSync(join(targetDir, rel, 'proto-nav.js'))));
+    if (patternBRoot) {
+      if (portalPattern === 'bespoke') {
+        if (!existsSync(join(targetDir, 'apps', 'portal'))) {
+          const adr = findDivergenceAdr(targetDir);
+          if (adr) add('portal-conformance', 'pass', `bespoke portal (Pattern B tree) — divergence recorded in ${adr}`);
+          else add('portal-conformance', 'fail', 'portal_type: bespoke but no divergence ADR found in decisions/', 'write decisions/NNNN-portal-bespoke-*.md per docs/portal-and-tier-ladder.md');
+        }
+      } else {
+        for (const [name, warnOk] of [['portal-chrome-canonical-reviewer', false], ['portal-review-conformance-reviewer', true]]) {
+          try {
+            const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', `${name}.mjs`);
+            if (!existsSync(reviewerPath)) { add('portal-conformance', 'skip', `${name} not present in this methodology home`); continue; }
+            const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+            const res = await fn({ targetDir, blueprintYml: { tier }, methodologyHome: home });
+            const map = { PASS: 'pass', WARN: warnOk ? 'pass' : 'warn', BLOCKED: 'fail' };
+            add('portal-conformance', map[res.status] || 'warn', `${name}: ${res.status} — ${patternBRoot}/ (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? `run \`blueprint review ${name} --target=<dir>\` for details` : undefined);
+          } catch (e) {
+            add('portal-conformance', 'fail', `${name} threw: ${e.message}`);
+          }
+        }
+      }
+    }
+  }
+
   // 7. doc-currency — docs reference files/paths/commands that exist (wave 50).
   //    RUNS the reviewer (runtime verification): broken internal links → fail,
   //    unknown CLI mentions → warn; unresolved citations are agent-verified

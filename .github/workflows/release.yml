@@ -26,8 +26,43 @@ permissions:
   id-token: write       # npm provenance
 
 jobs:
+  # Release gates (wave 86). The npm artifact ships template/ — including the
+  # stampable portal — so publish must exercise the stamped output, not just
+  # doctor. Command lists live in `npm run test:core` (single source; doctor.yml
+  # runs the same script). portal-health (apps/portal) deliberately does NOT
+  # gate release: it is not in the npm `files` array; deploy-portal.yml owns it.
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: lib self-tests + stamp smoke (bare node, no install)
+        run: npm run test:core
+
+  template-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: stamp Pattern A fixture
+        run: node template/tools/blueprint-init/stamp.mjs --mode=stamp --name=ci-fixture --display-name="CI Fixture" --tagline="template-health fixture" --portal-type=initiative --target="$RUNNER_TEMP/ci-fixture"
+      - name: install stamped fixture
+        run: npm install --no-audit --no-fund
+        working-directory: ${{ runner.temp }}/ci-fixture
+      - name: typecheck stamped fixture
+        run: npm run typecheck
+        working-directory: ${{ runner.temp }}/ci-fixture
+      - name: build stamped fixture
+        run: npm run build
+        working-directory: ${{ runner.temp }}/ci-fixture
+
   release:
     runs-on: ubuntu-latest
+    needs: [core-tests, template-health]
     steps:
       - uses: actions/checkout@v4
       # NOTE: no `registry-url:` here on purpose. setup-node's registry-url writes

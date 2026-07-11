@@ -398,6 +398,26 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
     "",
   ];
   const portalBody = [
+    "# ──────────────────────────────────────────────────────────────────",
+    "# Pilot profile — REQUIRED before Stage 0 → 1. `blueprint stage advance`",
+    "# and pilot-profile-lock-reviewer BOTH block until every field below is",
+    "# filled and walkthrough_citation resolves to a real file.",
+    "# Reference: template/docs/methodology/pilot-profile-template.md",
+    "# pilot_profile_policy: required is stamped on every new initiative;",
+    "# initiatives stamped before the field existed lack it and get legacy",
+    "# tolerance (the reviewer still audits their substance).",
+    "# ──────────────────────────────────────────────────────────────────",
+    "pilot_profile_policy: required",
+    "pilot_profile:",
+    '  slug: ""                          # short id, e.g., "tournament-organizer"',
+    '  display_name: ""                  # e.g., "Tournament Organizer (regional, multi-court)"',
+    '  pain_point: ""                    # one-sentence specific pain this initiative addresses',
+    '  monetization_side: ""             # who pays / whose budget — name the side',
+    '  walkthrough_citation: ""          # path to a REAL artifact: interview transcript, walkthrough',
+    '                                    # doc, observation notes. NOT "I imagined this user."',
+    "  competitors_in_scope: []          # competitors derived FROM this pilot, not arbitrary picks",
+    "  out_of_scope_pilots: []           # pilots deliberately not targeted — naming them prevents drift",
+    "",
     "# Portal type — which portal harness this initiative uses",
     "# initiative = Initiative Portal (Astro + @blueprint/ui, multi-audience platform front-door)",
     "# review     = Review Portal (static HTML + drawers, brownfield audit/redesign)",
@@ -1113,6 +1133,7 @@ async function main() {
     if (!dryRun) await mechanicalCheck({ target, name, log });
     printReport(log);
     if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
+    if (!dryRun) printNextSteps({ variant, portalType, target });
     return;
   }
 
@@ -1198,6 +1219,30 @@ async function main() {
   printReport(log);
 
   if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
+  if (!dryRun) printNextSteps({ variant, portalType, target });
+}
+
+// First-five-minutes pointer, printed ONLY after a successful non-dry-run stamp
+// (wave 86 — stamped consumers never receive the hosted /learn route; the
+// stamped CLAUDE.md is the full onboarding map, this is just the on-ramp).
+// Variant-aware: research has no pilot_profile (personas/JTBD instead) and no
+// portal shell.
+function printNextSteps({ variant, portalType, target }) {
+  console.log(`\n  next steps (shell is ready; content is not — that's the pipeline's job):`);
+  if (variant === "research") {
+    console.log(`    1. Catalog your input assets into research/sources/ (Stage 0: Inputs Intake).`);
+    console.log(`    2. Ground personas/JTBD: research/personas-and-jtbd.md (Stage 1 gate).`);
+    console.log(`    3. Run \`blueprint stage status --target=${target}\` to see the derived pipeline position.`);
+    console.log(`    4. Open the initiative in your agent harness and run /blueprint-research.`);
+  } else {
+    console.log(`    1. Fill pilot_profile in blueprint.yml (all 7 fields + a real walkthrough_citation`);
+    console.log(`       file) — \`blueprint stage advance\` blocks until it's populated.`);
+    console.log(`    2. Run \`blueprint stage status --target=${target}\` to see the derived pipeline position.`);
+    console.log(`    3. Open the initiative in your agent harness and run /blueprint-research (Stage 1).`);
+    if (portalType === "review") console.log(`    4. The portal shell ships placeholder pages by design — /blueprint-prototype fills them.`);
+    else console.log(`    4. apps/portal builds green with placeholder content by design — /blueprint-prototype fills it.`);
+  }
+  console.log(`    Full map: the stamped CLAUDE.md at the initiative root.`);
 }
 
 // Research-variant scaffolding: the decision-memo pipeline structure + templates.

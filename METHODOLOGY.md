@@ -71,7 +71,7 @@ Optional capability stages (run alongside, gated by blueprint.yml flags):
    Stage S-B: Foundation: Design System + IA    (when foundation.enabled: true)
 ```
 
-Each main-pipeline stage feeds the next. The key insight: **the prototype and the documents are built simultaneously, not sequentially.** The prototype tests the design decisions, the documents capture the rationale, and the strategy panels on each prototype page connect the two.
+Each main-pipeline stage feeds the next. The key insight: **the prototype and the documents are built simultaneously, not sequentially.** The prototype tests the design decisions, the documents capture the rationale, and the strategy panels on each prototype page connect the two. The stage numbers do not contradict this: the stage machine's spine is a **reporting frontier** (the furthest stage whose gates are all confirmed — `blueprint stage status`), not an execution order. Documents work runs throughout Stages 3–5; Stage 5 is where the document *package* closes its gate, and the `stagesComplete` coverage metric reports the non-contiguous reality alongside the spine (ADR-0008, wave 84).
 
 Capability stages (the `S-` prefix denotes substrate / sidecar) are independent of the main pipeline — they activate based on per-initiative flags in `blueprint.yml`, have their own Done-criteria, and feed UI affordances back into the main-pipeline surfaces (e.g. the archaeology substrate populates the "Ask the substrate" widget that mounts in the portal layout). The "Optional Capability Stages" section below documents each.
 

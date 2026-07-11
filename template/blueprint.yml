@@ -37,6 +37,7 @@ terminology:
 #
 # The lock prevents implicit pilot substitution. Stage 1 research must derive
 # from this profile; any pivot to a different pilot requires an explicit ADR.
+pilot_profile_policy: required     # stage machine + reviewer both block until the profile fills (wave 86)
 pilot_profile:
   slug: ""                          # short id, e.g., "tournament-organizer"
   display_name: ""                  # e.g., "Tournament Organizer (regional, multi-court)"

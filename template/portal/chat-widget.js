@@ -17,7 +17,40 @@
  * chrome surface). Added to PATTERN_B_CHROME_FILES manifest the same day.
  */
 (function () {
-  if (window.PROTO_CHAT_DISABLED) return;
+  // ── manifest-derived copy (wave 86) ──────────────────────────────
+  // The widget's subtitle, greeting, and quick prompts derive from
+  // _meta/index.json instead of shipping baked-in claims: the prior copy
+  // attested "Claude has read the docs" (false on a zero-doc stamp) and
+  // carried the source project's doc list + quick prompts ("viral loop",
+  // "Phase 3") into every consumer. Schema: CONVENTIONS.md § "Chat widget
+  // manifest block" — `chat.suggestions: [string]` optional; doc count from
+  // docs.tiers[].docs[]. Pure function; node-testable via
+  // require('./chat-widget.js').deriveChatMeta (smoke.mjs exercises it).
+  function deriveChatMeta(manifest) {
+    let docCount = 0;
+    const tiers = manifest && manifest.docs && Array.isArray(manifest.docs.tiers) ? manifest.docs.tiers : [];
+    for (const t of tiers) if (t && Array.isArray(t.docs)) docCount += t.docs.length;
+    const custom = manifest && manifest.chat && Array.isArray(manifest.chat.suggestions)
+      ? manifest.chat.suggestions.filter((s) => typeof s === 'string' && s.trim() && s.length <= 80).slice(0, 6)
+      : [];
+    return {
+      docCount,
+      subtitle: docCount > 0
+        ? `Grounded in the ${docCount} doc${docCount === 1 ? '' : 's'} here · ask anything`
+        : 'Docs not published yet · ask about the prototype',
+      greeting: docCount > 0
+        ? `I'm grounded in the ${docCount} doc${docCount === 1 ? '' : 's'} published in this portal. Ask about any decision, gap, or recommendation — I'll say so when something isn't covered.`
+        : "No docs are published in this portal yet, so answers are limited to what's deployed. Ask away — I'll say so when something isn't covered.",
+      suggestions: custom.length ? custom : [
+        "What's the biggest gap?",
+        "What's the riskiest assumption?",
+        'What decisions are already locked?',
+        "What's out of scope?"
+      ],
+    };
+  }
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') { module.exports = { deriveChatMeta }; }
+  if (typeof window === 'undefined' || window.PROTO_CHAT_DISABLED) return;
 
   function el(tag, props = {}, ...children) {
     const node = document.createElement(tag);
@@ -174,12 +207,9 @@
   const messages = [];
   let messagesEl, inputEl, sendBtn;
 
-  const SUGGESTIONS = [
-    "What's the biggest gap?",
-    "What's the riskiest assumption?",
-    "How does the viral loop work?",
-    "What's deferred to Phase 3?"
-  ];
+  // Populated from _meta/index.json before buildWindow runs; deriveChatMeta(null)
+  // is the safe default when the manifest is missing or unreadable.
+  let chatMeta = deriveChatMeta(null);
 
   // ── minimal, SAFE markdown → HTML (escape first, then inline + blocks) ──
   // Replaces the prior `innerHTML = text.replace(/\n/g,'<br>')` which both left
@@ -263,7 +293,7 @@
     const header = el('div', { class: 'chat-header' },
       el('div', {},
         el('strong', {}, 'Ask the blueprint'),
-        el('small', {}, 'Claude has read the docs · ask anything')
+        el('small', {}, chatMeta.subtitle)
       ),
       el('button', { onclick: toggle, 'aria-label': 'Close chat' }, '×')
     );
@@ -271,7 +301,7 @@
     messagesEl = el('div', { class: 'chat-messages' });
 
     const suggestions = el('div', { class: 'chat-suggestions' });
-    SUGGESTIONS.forEach(s => {
+    chatMeta.suggestions.forEach(s => {
       suggestions.appendChild(el('button', { onclick: () => send(s) }, s));
     });
 
@@ -288,8 +318,8 @@
     document.body.appendChild(window_);
     window.__chatWindow = window_;
 
-    // Greeting
-    renderMessage('bot', "I've read the blueprint docs — research synthesis, design principles, CX strategy, roadmap, gaps, and feasibility. Ask about any decision, gap, or recommendation.");
+    // Greeting — manifest-derived; never claims docs that aren't deployed.
+    renderMessage('bot', chatMeta.greeting);
   }
 
   function toggle() {
@@ -298,5 +328,11 @@
     if (isOpen && inputEl) inputEl.focus();
   }
 
-  document.addEventListener('DOMContentLoaded', buildWindow);
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('/_meta/index.json');
+      if (res.ok) chatMeta = deriveChatMeta(await res.json());
+    } catch { /* file:// or missing manifest — deriveChatMeta(null) defaults stand */ }
+    buildWindow();
+  });
 })();

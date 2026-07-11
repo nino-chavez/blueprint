@@ -319,6 +319,34 @@ incident class as the docs-viewer leak (`case-study-v3-portal-css-gap.md`).
 
 ---
 
+## Chat widget manifest block
+
+`chat-widget.js` derives its header subtitle, greeting, and quick prompts from
+`_meta/index.json` (wave 86). The doc count comes from `docs.tiers[].docs[]` —
+computed, never authored. Zero deployed docs → the widget says "Docs not
+published yet · ask about the prototype" instead of claiming a corpus that
+does not exist. Quick prompts come from an optional `chat:` block:
+
+```json
+"chat": {
+  "suggestions": ["What's the biggest gap?", "Which flows change for coaches?"]
+}
+```
+
+Rules: strings only, max 6 used, entries over 80 chars or empty are dropped.
+Absent/empty block → four neutral defaults (biggest gap / riskiest assumption /
+locked decisions / out of scope). The derivation is a pure function
+(`deriveChatMeta`) exercised by the stamp smoke test for the zero-docs, custom,
+and absent-manifest cases.
+
+**Why**: the pre-wave-86 widget shipped three baked-in claims to every
+consumer — a "Claude has read the docs" subtitle (false on a zero-doc stamp),
+a greeting listing the source project's doc corpus, and the source project's
+quick prompts ("viral loop", "Phase 3"). Prose residue evades the slug
+tripwires; deriving from the manifest is the structural fix.
+
+---
+
 ## One confident preview, not a deliberation venue
 
 The portal is a stakeholder review surface. Each route shows ONE confident take of what the team is proposing — not three competing variants walked through page-by-page, and not a tour of every option considered. The PROPOSED / COMPARE / SHIPPED toggle is the comparison primitive (proposed vs what exists today). It is not variant-walking.
@@ -451,6 +479,8 @@ The `wrangler.toml` at `portal/` root is required so wrangler detects `functions
 ---
 
 ## Versioning
+
+**v8 (2026-07-11, wave 86)** — chat honesty + abuse caps: `chat-widget.js` subtitle/greeting/suggestions derive from `_meta/index.json` (new optional `chat.suggestions` block; zero-doc stamps stop claiming a read corpus; source-project prompt residue excised). `/api/chat` gains partial abuse mitigation (same-origin check, 64KB/30-msg/4000-char caps, server-fixed `max_tokens: 1024`) — NOT access control; the OpenRouter key spend cap is the required backstop, per `chat.OWNER-SPEC.md` § Security posture.
 
 **v7 (2026-07-09, wave 85)** — manifest-driven front door: `index.html` hero/tiles/paths render from `_meta/index.json front_door:` (new block; neutral fallbacks in markup); fixes the source-content leak + the undeclared-identifier crash. Chrome gains canonical rules for the footer / lifecycle strip / phone frame classes proto-nav.js emits. Stamp hardening: Pattern B stamps the imposition layer (.claude reviewers + tools/lib + run-reviewers), chrome-manifest files land byte-identical, `canonical-primitives.css` no longer stamped under Profile A, `PROJECT_SLUG` substituted (wrangler.toml deployable), mechanical check now scans Pattern B portals.
 

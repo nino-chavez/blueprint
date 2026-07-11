@@ -532,8 +532,10 @@ async function runHive(hiveArgv, home) {
 // position in the pipeline (ADR-0008). `status` derives current stage from
 // artifacts-on-disk + blueprint.yml and reports it, honestly marking which
 // gates are machine-derivable vs. which need an agent/human assertion.
-// `advance` gates the next transition: dry-run by default, --execute records —
-// it stubs honestly rather than pretending to gate. Read-only today.
+// `advance` gates the next transition: dry-run by default; --execute records
+// the confirmed cursor + assertions to .blueprint/stage-state.json (wave 81).
+// It validates and records — it does NOT dispatch the stage skill/agent;
+// reviewer dispatch is scheduled per the ADR-0008 wave-86 addendum.
 async function runStage(stageArgv, home) {
   const { flags, positionals } = parseArgs(stageArgv);
   const sub = positionals[0] || 'status';

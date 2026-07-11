@@ -183,3 +183,27 @@ owning "the right legs." The deeper finding: real initiatives complete stages **
 strict-vs-tolerant fork was an operator decision, resolved to tolerant on the 0/7 evidence.
 
 Shipped in waves 80–81 (46f7eaf, f41a1d9, c698198 pushed; wave 81 this commit).
+
+**Addendum (wave 86, 2026-07-11) — dispatch: the promise decision #2 made and the rollout didn't keep.**
+An external audit correctly caught that decision #2 promises `advance` "dispatches the stage
+skill/agent as the node executor," while the shipped `advance` validates the entry-guard and records
+state — it never dispatches anything. Wave 83's "rollout complete" claim was scoped to steps (a)–(e),
+none of which included dispatch; leaving the gap unnamed was exactly the self-attestation drift this
+repo's audit-discipline rule exists to catch. Recording the split explicitly:
+
+- **Dispatch of *verifying* reviewers — SCHEDULED (wave-87 ADR).** The reviewers are executable
+  `.mjs` with a uniform contract (ADR-0002), so `advance` invoking the transition's mapped reviewer
+  and recording its PASS as the gate assertion is feasible and is the half of the dispatch promise
+  that fits the deterministic core. The wave-87 ADR must settle: a machine-readable
+  transition→reviewer mapping (in the stage-model data, not CLAUDE.md prose), PASS/WARN/BLOCKED→gate
+  semantics per reviewer (no single global WARN policy), behavior for `.md`-only reviewers (two of
+  the mapped gates — `fact-check-loop-reviewer`, `doc-quality-auditor` — have no `.mjs` today), and
+  assertion freshness: recorded PASSes carry reviewer name, reviewer-file hash (its effective
+  version), timestamp, and a content fingerprint of the reviewer's declared input globs — not the
+  whole repo — so a fingerprint mismatch on a later `advance` invalidates the stale PASS.
+- **Dispatch of *producing* skills (research, prototype, docs) — DECLINED.** The producing stages run
+  as skills inside the agent harness; CLI-side dispatch would couple `bin/` to a specific harness's
+  invocation surface, against this ADR's own scope-discipline (#5: model the confusing parts only —
+  the spine and gate-closing, not the fuzzy node work). The operating contract stays: the agent
+  executes stages, the operator steers, `advance` gates and records. README/onboarding copy states
+  this contract explicitly as of wave 86.

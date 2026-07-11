@@ -16,7 +16,10 @@
  *   3. portal-chrome-canonical-reviewer over the stamped tree → PASS
  *   4. portal-review-conformance-reviewer over the stamped tree → not BLOCKED
  *   5. No deploy-fatal placeholders in the stamped portal (wrangler.toml)
- *   6. Pattern A stamp --dry-run → exit 0 (flow/parse sanity)
+ *   6. Stamped Pattern B tree → FULL doctor; both conformance reviewers executed
+ *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present
+ *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
+ *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
  * Exit: 0 = all green; 1 = any failure (each failure printed).
@@ -105,19 +108,94 @@ try {
   else if (wrangler.includes("smoke-test-blueprint")) ok("wrangler.toml deployable (name = smoke-test-blueprint)");
   else bad("wrangler.toml deployable", "expected name not found");
 
-  // 6 — Pattern A dry-run sanity (flow + parse; no writes).
+  // 6 — the stamped Pattern B tree passes FULL doctor, and both Pattern B
+  // conformance reviewers demonstrably EXECUTED (wave 86 — doctor used to key
+  // conformance on apps/portal existing, so Pattern B trees were never
+  // doctor-covered; a skipped reviewer must read as a failure here, not green).
+  try {
+    const { runDoctor } = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "doctor.mjs")).href);
+    const doc = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: target });
+    const conf = doc.checks.filter((c) => c.name === "portal-conformance");
+    for (const reviewer of ["portal-chrome-canonical-reviewer", "portal-review-conformance-reviewer"]) {
+      const row = conf.find((c) => (c.detail || "").includes(reviewer));
+      if (!row) bad(`doctor ran ${reviewer} on the stamped Pattern B tree`, `portal-conformance rows: ${JSON.stringify(conf.map((c) => c.detail))}`);
+      else if (row.status === "fail") bad(`doctor: ${reviewer} not failing`, row.detail);
+      else ok(`doctor executed ${reviewer}: ${row.status}`);
+    }
+    if (doc.checks.some((c) => c.status === "fail")) bad("doctor over stamped Pattern B tree has no fails", doc.checks.filter((c) => c.status === "fail").map((c) => `${c.name}: ${c.detail}`).join(" | "));
+    else ok(`doctor over stamped Pattern B tree: ${doc.status}`);
+  } catch (err) {
+    bad("doctor over stamped Pattern B tree", err.message);
+  }
+
+  // 7 — Pattern A REAL stamp (was dry-run-only; the npm artifact ships this
+  // path, so release must exercise it — wave-86 review requirement).
+  const aTarget = path.join(tmp, "smoke-a");
   try {
     await execFile(process.execPath, [
       STAMP,
       "--mode=stamp",
       "--name=smoke-test-a",
+      "--display-name=Smoke Test A",
+      "--tagline=Pattern A smoke",
       "--portal-type=initiative",
-      `--target=${path.join(tmp, "smoke-a")}`,
-      "--dry-run=true",
+      `--target=${aTarget}`,
     ]);
-    ok("Pattern A stamp --dry-run exits 0");
+    ok("Pattern A real stamp exits 0");
   } catch (err) {
-    bad("Pattern A stamp --dry-run exits 0", (err.stderr || err.message).split("\n")[0]);
+    bad("Pattern A real stamp exits 0", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
+  const aYml = await fs.readFile(path.join(aTarget, "blueprint.yml"), "utf8").catch(() => "");
+  if (/^pilot_profile_policy: required$/m.test(aYml)) ok("Pattern A stamp writes pilot_profile_policy: required");
+  else bad("Pattern A stamp writes pilot_profile_policy: required", "policy line missing from stamped blueprint.yml");
+  if (await fs.stat(path.join(aTarget, "apps", "portal", "package.json")).catch(() => null)) ok("Pattern A portal shell present");
+  else bad("Pattern A portal shell present", "apps/portal/package.json missing");
+
+  // 8 — pilot-gate integration (wave 86): a FRESH stamp must block advance on
+  // the empty profile; populating all 7 fields + a real citation file unblocks
+  // the gate. This is the required-for-new / legacy-exception contract proven
+  // against actual `init` output, not a synthetic fixture.
+  try {
+    const sm = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "stage-model.mjs")).href);
+    const gateOf = (root) => sm.deriveStageStatus({ root }).stages.find((s) => s.id === 0).gates.find((g) => g.gate === "pilot-profile");
+    const fresh = gateOf(aTarget);
+    if (fresh.state !== "pass") ok(`fresh stamp: pilot-profile gate blocks (${fresh.state})`);
+    else bad("fresh stamp: pilot-profile gate blocks", `expected non-pass, got pass (${fresh.evidence})`);
+    let yml2 = aYml
+      .replace('slug: ""', 'slug: "smoke-pilot"')
+      .replace('display_name: ""', 'display_name: "Smoke Pilot"')
+      .replace('pain_point: ""', 'pain_point: "A concrete failing thing."')
+      .replace('monetization_side: ""', 'monetization_side: "operator"')
+      .replace('walkthrough_citation: ""', 'walkthrough_citation: "research/walkthrough.md"')
+      .replace("competitors_in_scope: []", 'competitors_in_scope: ["CompA"]')
+      .replace("out_of_scope_pilots: []", 'out_of_scope_pilots: ["Other pilot"]');
+    await fs.mkdir(path.join(aTarget, "research"), { recursive: true });
+    await fs.writeFile(path.join(aTarget, "research", "walkthrough.md"), "smoke walkthrough\n");
+    await fs.writeFile(path.join(aTarget, "blueprint.yml"), yml2);
+    const filled = gateOf(aTarget);
+    if (filled.state === "pass") ok("populated profile + citation: pilot-profile gate passes");
+    else bad("populated profile + citation: pilot-profile gate passes", `${filled.state} — ${filled.evidence}`);
+  } catch (err) {
+    bad("pilot-gate integration", err.message);
+  }
+
+  // 9 — chat-widget copy derivation (wave 86): zero docs must NOT claim a read
+  // corpus; custom manifest suggestions are honored; absent manifest is safe.
+  try {
+    const { createRequire } = await import("node:module");
+    const req = createRequire(import.meta.url);
+    const { deriveChatMeta } = req(path.join(BLUEPRINT_ROOT, "template", "portal", "chat-widget.js"));
+    const zero = deriveChatMeta({ docs: { tiers: [] } });
+    const absent = deriveChatMeta(null);
+    const custom = deriveChatMeta({ docs: { tiers: [{ docs: [{ id: "a" }, { id: "b" }] }] }, chat: { suggestions: ["Custom Q?", "", "x".repeat(99)] } });
+    if (zero.docCount === 0 && /not published/.test(zero.subtitle) && !/read the docs/.test(zero.greeting)) ok("chat copy: zero docs → honest subtitle/greeting");
+    else bad("chat copy: zero docs → honest subtitle/greeting", JSON.stringify(zero));
+    if (absent.suggestions.length === 4 && /not published/.test(absent.subtitle)) ok("chat copy: absent manifest → neutral defaults");
+    else bad("chat copy: absent manifest → neutral defaults", JSON.stringify(absent));
+    if (custom.docCount === 2 && custom.suggestions.length === 1 && custom.suggestions[0] === "Custom Q?") ok("chat copy: custom suggestions filtered + doc count real");
+    else bad("chat copy: custom suggestions filtered + doc count real", JSON.stringify(custom));
+  } catch (err) {
+    bad("chat-widget copy derivation", err.message);
   }
 } finally {
   await fs.rm(tmp, { recursive: true, force: true });

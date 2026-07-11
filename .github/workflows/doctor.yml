@@ -1,12 +1,20 @@
 name: Doctor
 
-# The enforcement half of the false-green fix (wave 55): doctor's checks
-# (config, reviewer loads, portal conformance, doc-currency, stateful claims,
-# registry sync, terminology, lint jurisdiction — `blueprint doctor` for the
-# live list; a count cached here rotted twice) used to be invocation-gated —
-# green only when someone remembered to run them. This makes every push/PR
-# to main carry the gate. Dependency-free by design
-# (ADR-0002): bare checkout + node, no install step.
+# The enforcement half of the false-green fix (wave 55), split into three
+# explicit gates (wave 86 — the audit found main green while the portal
+# typecheck was red, because only doctor ran here):
+#
+#   doctor          — bare checkout + node, no install (ADR-0002 property kept)
+#   core-tests      — lib self-tests + stamp-then-gate smoke; also dependency-free
+#   template-health — REAL Pattern A stamp → install → typecheck → build
+#                     (the npm artifact ships template/, so its stamped output
+#                     health gates release too — see release.yml `needs:`)
+#   portal-health   — the self-application portal (apps/portal); NOT a release
+#                     gate: apps/portal is not in the npm `files` array; its
+#                     ship gate is deploy-portal.yml
+#
+# Verified failure-mode: a deliberately broken fixture branch fails the
+# matching job; a repaired branch passes (wave-86 review requirement).
 
 on:
   push:
@@ -24,3 +32,46 @@ jobs:
           node-version: 22
       - name: blueprint doctor
         run: node bin/blueprint.mjs doctor
+
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: lib self-tests + stamp smoke (bare node, no install)
+        run: npm run test:core
+
+  template-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: stamp Pattern A fixture
+        run: node template/tools/blueprint-init/stamp.mjs --mode=stamp --name=ci-fixture --display-name="CI Fixture" --tagline="template-health fixture" --portal-type=initiative --target="$RUNNER_TEMP/ci-fixture"
+      - name: install stamped fixture
+        run: npm install --no-audit --no-fund
+        working-directory: ${{ runner.temp }}/ci-fixture
+      - name: typecheck stamped fixture
+        run: npm run typecheck
+        working-directory: ${{ runner.temp }}/ci-fixture
+      - name: build stamped fixture
+        run: npm run build
+        working-directory: ${{ runner.temp }}/ci-fixture
+
+  portal-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: install
+        run: npm install --no-audit --no-fund
+      - name: typecheck self-application portal
+        run: npm run typecheck
+      - name: build self-application portal
+        run: npm run build

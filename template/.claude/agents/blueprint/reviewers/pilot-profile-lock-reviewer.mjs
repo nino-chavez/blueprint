@@ -263,17 +263,35 @@ export default async function review({ targetDir }) {
 
   const { present, fields } = readPilotProfile(targetDir);
 
-  // §1 — pilot_profile block must exist.
+  // §1 — pilot_profile block must exist. POLICY-AWARE (wave 86, kept in lockstep
+  // with stage-model.mjs's `pilot-profile` check kind so the deterministic core
+  // and this reviewer can never disagree on the same tree): the stamper writes
+  // `pilot_profile_policy: required` on every new initiative; a tree WITHOUT the
+  // policy field predates it (legacy) and gets WARN — not BLOCK — on a missing
+  // block, because pinning mature pre-policy initiatives was the wave-84
+  // false-negative class. Substance checks below still run whenever a block exists.
+  const policy = (_pplYml.match(/^pilot_profile_policy:\s*["']?([A-Za-z0-9_-]+)["']?\s*(?:#.*)?$/m) || [])[1] || null;
   if (!present) {
+    if (policy === 'required') {
+      findings.push({
+        severity: 'BLOCK',
+        location: 'blueprint.yml',
+        message: 'pilot_profile_policy is `required` but there is no `pilot_profile:` block. Stage 1 research has no falsifiable anchor without a locked pilot.',
+        remediation:
+          'Add a pilot_profile: block with all 7 fields (slug, display_name, pain_point, monetization_side, walkthrough_citation, competitors_in_scope, out_of_scope_pilots). See template/docs/methodology/pilot-profile-template.md.',
+        reference: 'pilot-profile-lock-reviewer.md#1-blueprintyml-exists-and-has-a-pilot_profile-block',
+      });
+      return finalize(findings, 'policy=required, no pilot_profile: block', startedAt);
+    }
     findings.push({
-      severity: 'BLOCK',
+      severity: 'WARN',
       location: 'blueprint.yml',
-      message: 'No `pilot_profile:` block in blueprint.yml. Stage 1 research has no falsifiable anchor without a locked pilot.',
+      message: 'No `pilot_profile:` block and no `pilot_profile_policy:` — legacy pre-policy initiative. Stage 1 research has no falsifiable pilot anchor; the gap is tolerated, not closed.',
       remediation:
-        'Add a pilot_profile: block with all 7 fields (slug, display_name, pain_point, monetization_side, walkthrough_citation, competitors_in_scope, out_of_scope_pilots). See template/docs/methodology/pilot-profile-template.md.',
+        'When next revisiting Stage 1, add `pilot_profile_policy: required` + a pilot_profile: block per template/docs/methodology/pilot-profile-template.md.',
       reference: 'pilot-profile-lock-reviewer.md#1-blueprintyml-exists-and-has-a-pilot_profile-block',
     });
-    return finalize(findings, 'no pilot_profile: block', startedAt);
+    return finalize(findings, 'legacy: no pilot_profile block, no policy field', startedAt);
   }
 
   // §2 — every required field non-empty. One BLOCK per unfilled field.
@@ -499,13 +517,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     cleanup(dir);
   }
 
-  // ── gate: missing pilot_profile block ──
-  console.log('review() — missing block BLOCK:');
+  // ── gate: missing pilot_profile block — policy-aware (wave 86) ──
+  console.log('review() — missing block, policy=required → BLOCKED:');
+  {
+    const dir = mkInit('variant: greenfield\npilot_profile_policy: required\n');
+    const r = await review({ targetDir: dir });
+    assert(r.status === 'BLOCKED', `policy=required + no block → BLOCKED (got ${r.status})`);
+    assert(r.findings.length === 1 && /pilot_profile_policy/.test(r.findings[0].message), 'single policy-block finding');
+    cleanup(dir);
+  }
+  console.log('review() — missing block, no policy → legacy WARN:');
   {
     const dir = mkInit('variant: greenfield\n');
     const r = await review({ targetDir: dir });
-    assert(r.status === 'BLOCKED', `no pilot_profile block → BLOCKED (got ${r.status})`);
-    assert(r.findings.length === 1 && /No `pilot_profile:`/.test(r.findings[0].message), 'single missing-block finding');
+    assert(r.status === 'WARN', `no block + no policy → legacy WARN (got ${r.status})`);
+    assert(r.findings.length === 1 && /legacy pre-policy/.test(r.findings[0].message), 'single legacy-warn finding');
     cleanup(dir);
   }
 

@@ -95,23 +95,53 @@ export async function onRequestPost(context) {
     });
   }
 
+  // ── Abuse mitigation (wave 86) — PARTIAL, not access control. ──────────────
+  // This endpoint proxies the operator's OpenRouter key. The checks below bound
+  // what one request can cost and reject non-browser cross-origin callers, but
+  // Origin headers are attacker-controlled outside a browser: a direct HTTP
+  // client can spoof them, and nothing here rate-limits repeat requests. The
+  // REQUIRED backstop is a spend cap on the OpenRouter key itself, and the
+  // surface stays experimental/default-off — see chat.OWNER-SPEC.md. Real
+  // access control (Turnstile + stateful rate limit) is a consumer-side
+  // provisioning decision tracked in the methodology's wave-87 ADR.
+  const reject = (status, error) =>
+    new Response(JSON.stringify({ error }), { status, headers: { 'Content-Type': 'application/json' } });
+
+  const originHdr = request.headers.get('Origin');
+  const selfOrigin = new URL(request.url).origin;
+  if (originHdr && originHdr !== selfOrigin) {
+    return reject(403, 'Cross-origin requests are not accepted');
+  }
+
+  const LIMITS = {
+    bodyBytes: 64 * 1024,   // raw request cap, checked before JSON.parse
+    messages: 30,           // conversation window the widget itself keeps
+    messageChars: 4000,     // one message
+    totalChars: 48000,      // whole conversation
+  };
+  const raw = await request.text();
+  if (raw.length > LIMITS.bodyBytes) return reject(413, `Request too large (max ${LIMITS.bodyBytes} bytes)`);
   let body;
   try {
-    body = await request.json();
+    body = JSON.parse(raw);
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return reject(400, 'Invalid JSON body');
   }
 
   const { messages = [], page, pageTitle } = body;
   if (!Array.isArray(messages) || messages.length === 0) {
-    return new Response(JSON.stringify({ error: 'messages array required' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return reject(400, 'messages array required');
   }
+  if (messages.length > LIMITS.messages) return reject(413, `Too many messages (max ${LIMITS.messages})`);
+  let totalChars = 0;
+  for (const m of messages) {
+    if (!m || typeof m.content !== 'string' || (m.role !== 'user' && m.role !== 'assistant')) {
+      return reject(400, 'Each message needs role user|assistant and string content');
+    }
+    if (m.content.length > LIMITS.messageChars) return reject(413, `Message too long (max ${LIMITS.messageChars} chars)`);
+    totalChars += m.content.length;
+  }
+  if (totalChars > LIMITS.totalChars) return reject(413, `Conversation too large (max ${LIMITS.totalChars} chars)`);
 
   const system = (await loadContext(env, request.url)) +
     (page ? `\n\nUser is currently viewing the "${pageTitle || page}" prototype page (id: ${page}).` : '');
@@ -152,7 +182,10 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         model: 'anthropic/claude-haiku-4.5',
-        max_tokens: 2048,
+        // Server-selected, never client-influenced. 1024 honors the OWNER-SPEC
+        // danger zone (>1500 risks Pages execution-time limits) and bounds the
+        // worst-case per-request spend on the operator's key.
+        max_tokens: 1024,
         messages: [
           { role: 'system', content: system },
           ...messages.map(m => ({ role: m.role, content: m.content }))

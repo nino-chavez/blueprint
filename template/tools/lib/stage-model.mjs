@@ -80,6 +80,45 @@ export function ymlScalar(yml, key) {
   return null;
 }
 
+// ── pilot-profile policy parsing ───────────────────────────────────
+// The 7 required fields (canonical set: pilot-profile-lock-reviewer.mjs, which
+// owns SUBSTANCE validation — semantics, ADR-lock, drift. This gate answers only
+// "is a complete profile declared" so `advance` can block mechanically).
+const PILOT_SCALARS = ['slug', 'display_name', 'pain_point', 'monetization_side', 'walkthrough_citation'];
+const PILOT_LISTS = ['competitors_in_scope', 'out_of_scope_pilots'];
+// readPilotProfile: shallow line-scan of the top-level pilot_profile: block +
+// the pilot_profile_policy: scalar. Children are flat scalars or lists (inline
+// `[a]` or block `- a`); no nesting. Returns { policy, present, filled, missing }.
+export function readPilotProfile(yml) {
+  const policy = ymlScalar(yml, 'pilot_profile_policy');
+  const present = ymlHasBlock(yml, 'pilot_profile');
+  const lines = yml.split('\n');
+  const fields = {};
+  let inBlock = false, lastKey = null;
+  for (const line of lines) {
+    if (/^pilot_profile:\s*(#.*)?$/.test(line)) { inBlock = true; continue; }
+    if (!inBlock) continue;
+    if (/^\S/.test(line) && line.trim()) break; // dedent to next top-level key
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const kv = t.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
+    if (kv) {
+      lastKey = kv[1];
+      const raw = kv[2].replace(/\s+#.*$/, '').trim();
+      if (raw.startsWith('[')) fields[lastKey] = raw.replace(/^\[|\]$/g, '').split(',').map((s) => s.replace(/^["']|["']$/g, '').trim()).filter(Boolean);
+      else fields[lastKey] = raw.replace(/^["']|["']$/g, '').trim();
+    } else if (t.startsWith('- ') && lastKey) {
+      if (!Array.isArray(fields[lastKey])) fields[lastKey] = [];
+      fields[lastKey].push(t.slice(2).replace(/^["']|["']$/g, '').trim());
+    }
+  }
+  const missing = [
+    ...PILOT_SCALARS.filter((k) => !(typeof fields[k] === 'string' && fields[k].length)),
+    ...PILOT_LISTS.filter((k) => !(Array.isArray(fields[k]) && fields[k].length)),
+  ];
+  return { policy, present, fields, missing, filled: missing.length === 0 };
+}
+
 // ── check-kind registry ────────────────────────────────────────────
 // Each kind: (params, ctx) -> { state: 'pass'|'partial'|'absent', evidence }.
 // `missState` lets a gate treat a miss as 'partial' (soft) vs 'absent' (hard).
@@ -94,6 +133,30 @@ const CHECK_KINDS = {
     : ymlHasBlock(c.yml, key)
       ? { state: 'pass', evidence: `blueprint.yml: ${key} present` }
       : { state: 'absent', evidence: `blueprint.yml: no ${key}` },
+
+  // POLICY-AWARE pilot gate (wave 86 — closes the vacuous-pass the audit found:
+  // presence-only checking let a stamped all-empty profile read as pass).
+  // `pilot_profile_policy: required` (stamped on every new non-research
+  // initiative) makes an unfilled profile BLOCK advance: all 7 fields non-empty
+  // + walkthrough_citation resolving to a real file. POLICY-FIELD absence — not
+  // profile absence — is the legacy exception (wave-84 calibration: mature
+  // pre-policy initiatives must not pin to Stage -1), so legacy trees never
+  // block here; pilot-profile-lock-reviewer still owns their substance.
+  'pilot-profile': (_p, c) => {
+    const { policy, present, fields, missing, filled } = readPilotProfile(c.yml);
+    const citation = typeof fields.walkthrough_citation === 'string' ? fields.walkthrough_citation : '';
+    const citationOk = citation && existsSync(isAbsolute(citation) ? citation : join(c.root, citation));
+    if (policy === 'required') {
+      if (!present) return { state: 'absent', evidence: 'policy=required but no pilot_profile block' };
+      if (!filled) return { state: missing.length === 7 ? 'absent' : 'partial', evidence: `policy=required; unfilled: ${missing.join(', ')}` };
+      if (!citationOk) return { state: 'partial', evidence: `policy=required; walkthrough_citation does not resolve: ${citation}` };
+      return { state: 'pass', evidence: 'pilot_profile complete (7/7 fields, citation resolves)' };
+    }
+    if (!present) return { state: 'pass', evidence: 'no pilot_profile (legacy pre-policy initiative — reviewer owns substance)' };
+    return filled
+      ? { state: 'pass', evidence: `pilot_profile present, 7/7 fields filled${citationOk ? ', citation resolves' : ' (citation unresolved — reviewer will flag)'}` }
+      : { state: 'pass', evidence: `pilot_profile present, ${7 - missing.length}/7 fields filled (legacy tolerance — reviewer owns substance)` };
+  },
 
   'dir-md-min': ({ dirs, min }, c) => {
     if (!Array.isArray(dirs) || !dirs.length || typeof min !== 'number') return badParams('dir-md-min', 'need dirs[] + numeric min');
@@ -182,11 +245,12 @@ export const GREENFIELD_MODEL = {
   variant: 'greenfield',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      // pilot_profile is OPTIONAL to the cursor — its Stage 0→1 gate is owned by
-      // pilot-profile-lock-reviewer; many mature initiatives never declared the
-      // field and pinning them to Stage -1 on it is a false negative (calibrated
-      // 2026-07-08). Present → shows a real pass; absent → non-blocking.
-      { id: 'pilot-profile', derivable: true, optional: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      // POLICY-AWARE (wave 86): pilot_profile_policy: required (stamped on new
+      // initiatives) blocks advance until the 7 fields fill + citation resolves;
+      // legacy trees WITHOUT the policy field never block here (wave-84
+      // calibration — mature pre-policy initiatives must not pin to Stage -1).
+      // Substance validation stays with pilot-profile-lock-reviewer.
+      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {} },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'not derivable from disk — requires driving the running app' } },
     ] },
     { id: 1, name: 'Research', gates: [
@@ -228,7 +292,7 @@ export const MIDSTREAM_MODEL = {
   variant: 'midstream',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, optional: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {} },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for midstream — the live touchpoint must be driven/captured' } },
     ] },
     { id: 1, name: 'Targeted Diagnose', gates: [
@@ -267,7 +331,7 @@ export const BROWNFIELD_MODEL = {
   variant: 'brownfield',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, optional: true, kind: 'yml-block', params: { key: 'pilot_profile' } },
+      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {} },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for brownfield — every audit claim grounds in a captured surface' } },
     ] },
     { id: 1, name: 'Diagnose', gates: [
@@ -633,6 +697,28 @@ function selftest() {
       }
     }
   }
+  // pilot-profile policy semantics (wave 86): required+empty blocks, legacy
+  // (no policy field) never blocks, required+complete passes only when the
+  // citation resolves to a real file.
+  {
+    const pp = CHECK_KINDS['pilot-profile'];
+    const tmp = mkdtempSync(join(tmpdir(), 'bp-pilot-'));
+    try {
+      const emptyProfile = 'pilot_profile:\n  slug: ""\n  display_name: ""\n  pain_point: ""\n  monetization_side: ""\n  walkthrough_citation: ""\n  competitors_in_scope: []\n  out_of_scope_pilots: []\n';
+      const fullProfile = 'pilot_profile:\n  slug: "x"\n  display_name: "X"\n  pain_point: "p"\n  monetization_side: "operator"\n  walkthrough_citation: "cite.md"\n  competitors_in_scope: ["a"]\n  out_of_scope_pilots:\n    - "b"\n';
+      const req = 'pilot_profile_policy: required\n';
+      assert(pp({}, { root: tmp, yml: req + emptyProfile }).state !== 'pass', 'policy=required + empty profile blocks');
+      assert(pp({}, { root: tmp, yml: req }).state === 'absent', 'policy=required + no block is absent');
+      assert(pp({}, { root: tmp, yml: '' }).state === 'pass', 'no policy + no profile = legacy pass');
+      assert(pp({}, { root: tmp, yml: emptyProfile }).state === 'pass', 'no policy + empty profile = legacy tolerance');
+      assert(pp({}, { root: tmp, yml: req + fullProfile }).state === 'partial', 'policy=required + filled but citation unresolved = partial');
+      writeFileSync(join(tmp, 'cite.md'), 'walkthrough\n');
+      assert(pp({}, { root: tmp, yml: req + fullProfile }).state === 'pass', 'policy=required + filled + citation resolves = pass');
+      const parsed = readPilotProfile(req + fullProfile);
+      assert(parsed.policy === 'required' && parsed.filled && parsed.fields.out_of_scope_pilots.length === 1, 'readPilotProfile parses block lists + policy');
+    } finally { rmSync(tmp, { recursive: true, force: true }); }
+  }
+
   // any-exists finds a populated dir and is absent on a missing one
   assert(CHECK_KINDS['any-exists']({ dirs: ['research'] }, { root: process.cwd(), yml: '' }).state === 'pass', 'any-exists finds a populated dir');
   assert(CHECK_KINDS['any-exists']({ dirs: ['nope-xyz-123'] }, { root: process.cwd(), yml: '' }).state === 'absent', 'any-exists absent on missing dir');

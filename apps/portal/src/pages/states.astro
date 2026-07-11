@@ -17,7 +17,7 @@ const models = [GREENFIELD_MODEL, MIDSTREAM_MODEL, BROWNFIELD_MODEL, RESEARCH_MO
   stages: m.stages.map((s) => ({
     id: s.id,
     name: s.name,
-    gates: s.gates.map((g) => ({ id: g.id, derivable: g.derivable, optional: !!g.optional, kind: g.kind })),
+    gates: s.gates.map((g) => ({ id: g.id, derivable: g.derivable, optional: 'optional' in g && !!g.optional, kind: g.kind })),
   })),
 }));
 ---

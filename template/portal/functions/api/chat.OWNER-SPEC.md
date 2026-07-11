@@ -1,6 +1,6 @@
 ---
 tool: functions/api/chat.js
-last_attested: 2026-06-11
+last_attested: 2026-07-11
 max_unattested_days: 60
 couples_with:
   - prototype/chat-widget.js (frontend caller)
@@ -38,7 +38,8 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 
 **Writes/returns:**
 - HTTP 200 with `{ reply: string }` on success.
-- HTTP 400 with `{ error }` for missing API key or malformed body.
+- HTTP 400 with `{ error }` for malformed body; HTTP 500 for missing API key.
+- HTTP 403 for cross-origin requests; HTTP 413 for oversized body/messages (wave-86 caps).
 - HTTP 502 with `{ error, detail }` for upstream Anthropic/OpenRouter errors.
 
 **Side effects:**
@@ -48,7 +49,7 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 ## Model + cost
 
 - **Model:** `anthropic/claude-haiku-4.5` via OpenRouter.
-- **Max tokens:** 800 (single-shot response, no streaming).
+- **Max tokens:** 1024, server-selected — the client cannot influence it (single-shot response, no streaming).
 - **System context size:** ~60KB of markdown (8 docs from `_docs/`).
 - **Typical request cost:** ~$0.0008 per call at Haiku pricing (~30K input + 200 output tokens average).
 - **Cold start:** ~500ms (Workers runtime + manifest assembly).
@@ -105,10 +106,21 @@ The chat is the "Ask the substrate" affordance — borrowed from the reference i
 - **Don't add streaming without updating the widget.** Widget expects single-shot JSON.
 - **Don't change the system prompt's voice instructions casually.** They were tuned to match Nino's voice (no hedging, no cheerleading, no emoji). Changes affect every answer.
 
+## Security posture (wave 86) — EXPERIMENTAL, default-off, spend-capped
+
+This surface is **experimental and default-off**: with no `OPENROUTER_API_KEY` secret bound, the endpoint is inert (500, zero spend). Enable it only after setting a **spend cap on the OpenRouter key itself** (openrouter.ai → Keys → credit limit) — that cap is the REQUIRED backstop, not optional hardening.
+
+What the function enforces (partial abuse mitigation, NOT access control):
+- Same-origin check on the `Origin` header — stops casual cross-site browser calls only; direct HTTP clients can spoof it.
+- Request caps before any parse or upstream call: 64KB raw body, 30 messages, 4000 chars/message, 48000 chars total, `max_tokens` fixed server-side at 1024.
+- No per-IP/per-session rate limit — repeated requests within the caps still spend. The key's spend cap is the ceiling.
+
+Real access control (Turnstile challenge + stateful rate limiting) needs consumer-side provisioning (widget creation, KV/DO binding) and is specified in the methodology's wave-87 ADR. Until adopted, treat a public deployment of an enabled chat as spending up to the key's cap.
+
 ## Known limits
 
 - **No conversation history persistence** — each browser session is independent. The widget passes message history within a session but server doesn't store it.
-- **No rate limiting** — function has no per-IP or per-session limit. OpenRouter's account-level limits are the only ceiling.
+- **No per-IP rate limiting** — see Security posture above; the OpenRouter key spend cap is the enforced ceiling.
 - **No content moderation** — function returns whatever Claude returns. Acceptable for an internal-noindexed stakeholder tool; would need a moderation pass for public use.
 - **Cold-start cost** — first request after function idle reads all `_docs/*` from ASSETS (~50ms). Subsequent requests use cached `SYSTEM_CONTEXT`. Acceptable.
 - **No streaming** — bigger answers feel slow because there's no progressive render. Defer until pain felt.
