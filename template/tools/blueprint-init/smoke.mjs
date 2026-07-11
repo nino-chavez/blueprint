@@ -118,8 +118,11 @@ try {
     const conf = doc.checks.filter((c) => c.name === "portal-conformance");
     for (const reviewer of ["portal-chrome-canonical-reviewer", "portal-review-conformance-reviewer"]) {
       const row = conf.find((c) => (c.detail || "").includes(reviewer));
+      // `skip` means the reviewer did NOT execute (file absent from the
+      // methodology home) — the exact silent-green this tripwire guards
+      // against; it must fail here (post-commit review of 5dfee3c).
       if (!row) bad(`doctor ran ${reviewer} on the stamped Pattern B tree`, `portal-conformance rows: ${JSON.stringify(conf.map((c) => c.detail))}`);
-      else if (row.status === "fail") bad(`doctor: ${reviewer} not failing`, row.detail);
+      else if (row.status === "fail" || row.status === "skip") bad(`doctor: ${reviewer} executed and not failing`, `${row.status} — ${row.detail}`);
       else ok(`doctor executed ${reviewer}: ${row.status}`);
     }
     if (doc.checks.some((c) => c.status === "fail")) bad("doctor over stamped Pattern B tree has no fails", doc.checks.filter((c) => c.status === "fail").map((c) => `${c.name}: ${c.detail}`).join(" | "));

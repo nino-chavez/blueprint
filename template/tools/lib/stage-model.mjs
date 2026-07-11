@@ -152,10 +152,15 @@ const CHECK_KINDS = {
       if (!citationOk) return { state: 'partial', evidence: `policy=required; walkthrough_citation does not resolve: ${citation}` };
       return { state: 'pass', evidence: 'pilot_profile complete (7/7 fields, citation resolves)' };
     }
-    if (!present) return { state: 'pass', evidence: 'no pilot_profile (legacy pre-policy initiative — reviewer owns substance)' };
+    // Legacy-tolerance passes are VACUOUS (post-commit review of 5dfee3c):
+    // they satisfy the spine without a real populated artifact, so they must
+    // not count toward stagesComplete coverage — same class as the wave-84
+    // optional-absent exclusion, which this kind bypassed when it dropped the
+    // `optional` flag. A populated profile (either mode) is real progress.
+    if (!present) return { state: 'pass', vacuous: true, evidence: 'no pilot_profile (legacy pre-policy initiative — reviewer owns substance)' };
     return filled
       ? { state: 'pass', evidence: `pilot_profile present, 7/7 fields filled${citationOk ? ', citation resolves' : ' (citation unresolved — reviewer will flag)'}` }
-      : { state: 'pass', evidence: `pilot_profile present, ${7 - missing.length}/7 fields filled (legacy tolerance — reviewer owns substance)` };
+      : { state: 'pass', vacuous: true, evidence: `pilot_profile present, ${7 - missing.length}/7 fields filled (legacy tolerance — reviewer owns substance)` };
   },
 
   'dir-md-min': ({ dirs, min }, c) => {
@@ -716,6 +721,12 @@ function selftest() {
       assert(pp({}, { root: tmp, yml: req + fullProfile }).state === 'pass', 'policy=required + filled + citation resolves = pass');
       const parsed = readPilotProfile(req + fullProfile);
       assert(parsed.policy === 'required' && parsed.filled && parsed.fields.out_of_scope_pilots.length === 1, 'readPilotProfile parses block lists + policy');
+      // legacy-tolerance passes are vacuous (must not count as stagesComplete
+      // coverage — review of 5dfee3c); populated profiles are real progress.
+      assert(pp({}, { root: tmp, yml: '' }).vacuous === true, 'legacy no-profile pass is vacuous');
+      assert(pp({}, { root: tmp, yml: emptyProfile }).vacuous === true, 'legacy empty-profile pass is vacuous');
+      assert(!pp({}, { root: tmp, yml: req + fullProfile }).vacuous, 'required+complete pass is real coverage');
+      assert(!pp({}, { root: tmp, yml: fullProfile }).vacuous, 'no-policy populated profile is real coverage');
     } finally { rmSync(tmp, { recursive: true, force: true }); }
   }
 
