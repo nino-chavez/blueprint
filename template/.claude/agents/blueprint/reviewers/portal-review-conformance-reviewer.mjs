@@ -353,6 +353,56 @@ export default async function review({ targetDir, blueprintYml }) {
     });
   }
 
+  // ── Check 4c: readiness states are VERIFIED, not declared (ADR-0010). ──────
+  // `stakeholder-ready` requires: no placeholder tripwires in the page HTML,
+  // and title/summary/strategy.decision populated. A hand-promoted state that
+  // fails verification is a BLOCK finding, not a state. Declared `shell` is
+  // honest (no finding); an ABSENT readiness field is legacy-undeclared and
+  // tolerated here (the deploy gate lists it at stakeholder intent).
+  const PLACEHOLDER_TRIPWIRES = ['Replace this hero', 'Replace this body', 'REPLACE_FOR_'];
+  const VALID_READINESS = ['shell', 'content-ready', 'stakeholder-ready'];
+  for (const mf of metaJsonFiles) {
+    const text = await read(mf);
+    if (text == null) continue;
+    let meta;
+    try { meta = JSON.parse(text); } catch { continue; } // parse issues already WARNed in 4b
+    const id = baseId(mf);
+    if (meta.readiness === undefined) continue;
+    if (!VALID_READINESS.includes(meta.readiness)) {
+      findings.push({
+        severity: 'BLOCK',
+        location: rel(mf),
+        message: `Invalid readiness '${meta.readiness}' — must be one of ${VALID_READINESS.join(' | ')}.`,
+        remediation: 'Fix the readiness field (CONVENTIONS.md § Page readiness states).',
+        reference: 'ADR-0010',
+      });
+      continue;
+    }
+    if (meta.readiness !== 'stakeholder-ready') continue;
+    const pageHtml = await read(path.join(pagesDir, `${id}.html`));
+    const tripped = pageHtml ? PLACEHOLDER_TRIPWIRES.filter((t) => pageHtml.includes(t)) : [];
+    if (tripped.length) {
+      findings.push({
+        severity: 'BLOCK',
+        location: `pages/${id}.html`,
+        message: `Declared stakeholder-ready but the page still contains placeholder content: ${tripped.map((t) => `"${t}"`).join(', ')}.`,
+        remediation: 'Replace the stamped placeholder content, or demote readiness to shell/content-ready until it is.',
+        reference: 'ADR-0010 § stakeholder-ready is verified, not declared',
+      });
+    }
+    const missingMeta = ['title', 'summary'].filter((k) => !(typeof meta[k] === 'string' && meta[k].trim()))
+      .concat(meta.strategy && typeof meta.strategy.decision === 'string' && meta.strategy.decision.trim() ? [] : ['strategy.decision']);
+    if (missingMeta.length) {
+      findings.push({
+        severity: 'BLOCK',
+        location: rel(mf),
+        message: `Declared stakeholder-ready but required metadata is empty: ${missingMeta.join(', ')}.`,
+        remediation: 'Populate the fields or demote the readiness state.',
+        reference: 'ADR-0010 § stakeholder-ready is verified, not declared',
+      });
+    }
+  }
+
   // destination issues — any missing/invalid BLOCKS (traceability-sweep key).
   if (destIssues.length) {
     findings.push({

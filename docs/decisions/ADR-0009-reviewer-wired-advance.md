@@ -79,6 +79,27 @@ expires — a PASS recorded against artifacts that have since changed remains
    (agent executes, operator steers, program gates) is unchanged — this ADR
    makes the "program gates" leg self-executing instead of remembered.
 
+## Known limits (recorded per the wave-87 post-commit review)
+
+- **Content fingerprints cannot cover history-derived verdicts.** The pilot
+  reviewer's §7 git-recency check reads `git log`; an edit-then-revert leaves
+  the fingerprint matching while a live run could differ. Accepted: the
+  freshness guarantee is scoped to *content* inputs; history-sensitive checks
+  re-run whenever any content input changes, which bounds the staleness window.
+- **Dynamic verdict inputs need the function form.** `inputs` may be
+  `(root) => [paths]` for inputs only knowable at runtime (the pilot reviewer's
+  `walkthrough_citation` target). A throwing `inputs()` degrades to null —
+  always rerun.
+- **Zero-match globs fingerprint as null**, never as a constant "fresh" digest.
+- **The cursor-jump walk**: `advance` verifies mapped reviewers on the frontier
+  AND every stage the confirmed cursor passes through — without that walk, a
+  mapped gate on an already-disk-complete stage would be confirmed with its
+  reviewer never run.
+- **Dry-run executes reviewer code** resolved from home/initiative (canonical
+  wins collisions). "Read-only" is the ADR-0002 reviewer contract, not a
+  sandbox; a malicious org-local reviewer is out of threat scope (it already
+  runs via `blueprint review`).
+
 ## Consequences
 
 The audit's residual finding — "a deterministic core that ignores its blocking

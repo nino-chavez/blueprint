@@ -4,9 +4,10 @@
   "group": "marketing",
   "slice": "example-slice",
   "destination": "product",
-  "surface": "TBD — what production surface does this map to?",
+  "surface": "TBD \u2014 what production surface does this map to?",
   "phase": "Phase 1",
   "route": "/pages/example.html",
+  "readiness": "shell",
   "summary": "One-sentence description used on the portal index card.",
   "strategy": {
     "decision": "What design choice does this page make? (1 sentence)",
@@ -18,7 +19,9 @@
   "currentState": {
     "route": "/path/in/shipped/app",
     "summary": "What exists today in the shipped product.",
-    "sourceFiles": ["src/routes/.../+page.svelte"],
+    "sourceFiles": [
+      "src/routes/.../+page.svelte"
+    ],
     "annotation": "How does the proposed differ from what's there now?"
   }
 }

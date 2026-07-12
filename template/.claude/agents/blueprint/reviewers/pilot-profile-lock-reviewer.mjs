@@ -40,11 +40,23 @@ import path from 'node:path';
 
 const NAME = 'pilot-profile-lock-reviewer';
 
-// ADR-0009 declared input globs — the advance freshness fingerprint hashes
-// ONLY these paths (a README edit must not invalidate a recorded PASS).
-// blueprint.yml holds the profile; research/ holds walkthrough citations;
-// decisions/ holds the ADR-lock this reviewer checks for pilot pivots.
-export const inputs = ['blueprint.yml', 'research/**', 'decisions/**'];
+// ADR-0009 declared inputs — the advance freshness fingerprint hashes ONLY
+// these paths (a README edit must not invalidate a recorded PASS). Function
+// form (review of e81ad3a): the walkthrough_citation target is dynamic — it
+// can point anywhere in the tree — so it must join the fingerprint or a
+// deleted citation would leave a recorded PASS "fresh" while a live run
+// BLOCKs. blueprint/decisions/ is the alternate ADR layout §ADR-lock scans.
+// Known limit (recorded in ADR-0009): the §7 git-recency check reads history,
+// which no content fingerprint can cover.
+export const inputs = (root) => {
+  const base = ['blueprint.yml', 'research/**', 'decisions/**', 'blueprint/decisions/**'];
+  try {
+    const yml = readFileSync(path.join(root, 'blueprint.yml'), 'utf8');
+    const m = yml.match(/^\s*walkthrough_citation:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m);
+    if (m && m[1].trim()) base.push(m[1].trim());
+  } catch { /* no yml → base globs only */ }
+  return base;
+};
 
 // The 7 fields the .md spec (§2) and template/blueprint.yml § pilot_profile declare required.
 const REQUIRED_SCALARS = ['slug', 'display_name', 'pain_point', 'monetization_side', 'walkthrough_citation'];

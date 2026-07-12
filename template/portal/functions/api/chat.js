@@ -95,6 +95,27 @@ export async function onRequestPost(context) {
     });
   }
 
+  // ── Access gate (ADR-0010, wave 88): chat.access in _meta/index.json must
+  // opt in ('open-capped'). Absent/off → 403 even with a key bound, so a
+  // consumer can't be spending on an endpoint the manifest never enabled.
+  // 'turnstile' rejects until its widget half ships (d2) — a mode the client
+  // can't complete must not accept unchallenged requests in the meantime.
+  let chatAccess = 'off';
+  try {
+    const mres = await fetch(new URL('/_meta/index.json', request.url).toString());
+    if (mres.ok) {
+      const m = await mres.json();
+      const a = m && m.chat && m.chat.access;
+      if (a === 'open-capped' || a === 'turnstile') chatAccess = a;
+    }
+  } catch { /* unreadable manifest = off */ }
+  if (chatAccess !== 'open-capped') {
+    return new Response(JSON.stringify({ error: chatAccess === 'turnstile' ? 'chat.access=turnstile is not yet served (ADR-0010 d2 pending) — declare open-capped or off' : 'Chat is disabled (chat.access) for this deployment' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   // ── Abuse mitigation (wave 86) — PARTIAL, not access control. ──────────────
   // This endpoint proxies the operator's OpenRouter key. The checks below bound
   // what one request can cost and reject non-browser cross-origin callers, but

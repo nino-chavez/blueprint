@@ -147,20 +147,28 @@ function walkFiles(dir, acc = []) {
 export function fingerprintInputs(root, globs) {
   if (!Array.isArray(globs) || !globs.length) return null;
   root = resolve(root);
-  const files = [];
+  const pairs = [];
+  // Label = root-relative posix path for in-tree files, the raw path for
+  // absolute out-of-tree entries (an absolute walkthrough_citation is legal;
+  // join-mangling it would silently drop it from the hash).
+  const pushFile = (f) => pairs.push([f.startsWith(root + sep) ? f.slice(root.length + 1).split(sep).join('/') : f, f]);
   for (const g of globs) {
     if (typeof g !== 'string' || !g.trim()) continue;
-    if (g.endsWith('/**')) walkFiles(join(root, g.slice(0, -3)), files);
+    if (g.endsWith('/**')) walkFiles(join(root, g.slice(0, -3))).forEach(pushFile);
     else {
-      const p = join(root, g);
-      try { if (statSync(p).isFile()) files.push(p); } catch { /* absent input = absent from the hash */ }
+      const p = isAbsolute(g) ? g : join(root, g);
+      try { if (statSync(p).isFile()) pushFile(p); } catch { /* absent input = absent from the hash */ }
     }
   }
+  // Zero matched files → null, NOT the constant empty-digest (review of
+  // e81ad3a): a typo'd glob that silently matches nothing would otherwise
+  // produce a permanently-"fresh" fingerprint — the exact false-green class
+  // this mechanism exists to kill. Null forces a rerun every time, same as
+  // having no declared inputs.
+  if (!pairs.length) return null;
   const h = createHash('sha256');
-  const rels = files
-    .map((f) => [f.slice(root.length + 1).split(sep).join('/'), f])
-    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  for (const [rel, f] of rels) h.update(`${rel}\0${fileSha256(f)}\n`);
+  pairs.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  for (const [label, f] of pairs) h.update(`${label}\0${fileSha256(f)}\n`);
   return h.digest('hex');
 }
 
@@ -673,7 +681,13 @@ async function verifyGateReviewer({ root, home, gate, recorded, stamp }) {
   try { mod = await import(pathToFileURL(entry.path).href); }
   catch (e) { return { ok: false, report: { gate: gate.gate, reviewer: name, ran: false, status: 'LOAD-ERROR', note: e.message } }; }
   const reviewerHash = fileSha256(entry.path);
-  const fp = Array.isArray(mod.inputs) ? fingerprintInputs(root, mod.inputs) : null;
+  // `inputs` may be an array OR a function (root) => array — the function form
+  // covers verdict inputs only knowable at runtime (e.g. the pilot reviewer's
+  // walkthrough_citation target, which can point anywhere in the tree; review
+  // of e81ad3a). A throwing inputs() degrades to null → always rerun.
+  let globs = null;
+  try { globs = typeof mod.inputs === 'function' ? mod.inputs(root) : mod.inputs; } catch { globs = null; }
+  const fp = Array.isArray(globs) ? fingerprintInputs(root, globs) : null;
   if (recorded && recorded.status === 'PASS' && recorded.reviewerHash === reviewerHash && fp && recorded.fingerprint === fp) {
     return { ok: true, report: { gate: gate.gate, reviewer: name, ran: false, status: 'PASS', note: 'recorded result fresh (reviewer + inputs unchanged)' }, record: recorded };
   }
@@ -750,12 +764,20 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
   const prevReviews = (prev.reviews && typeof prev.reviews === 'object' && !Array.isArray(prev.reviews)) ? prev.reviews : {};
   const reviews = { ...prevReviews };
   const reviewReports = [];
-  for (const g of target.gates.filter((x) => x.reviewer && x.reviewer.name)) {
-    const v = await verifyGateReviewer({ root, home, gate: g, recorded: prevReviews[g.gate], stamp });
-    reviewReports.push(v.report);
-    if (v.record) reviews[g.gate] = v.record;
-    if (!v.ok) {
-      return { ok: false, target: { id: target.id, name: target.name }, blocking: [], missingAssertions: [], reviewerBlocked: [v.report], reviews: reviewReports, state: prev };
+  // Verify mapped reviewers on the frontier AND on every stage the confirmed
+  // cursor is about to jump past (review of e81ad3a: the cursor "may jump past
+  // already-disk-complete stages" — without this walk, a mapped gate on a
+  // passed-through stage would be confirmed with its reviewer never run, a
+  // silent skip with no UNRESOLVED and no record).
+  const stagesToVerify = withNew.stages.filter((s) => s.id >= frontier.id && s.id <= Math.max(withNew.cursor, frontier.id));
+  for (const st of stagesToVerify) {
+    for (const g of st.gates.filter((x) => x.reviewer && x.reviewer.name)) {
+      const v = await verifyGateReviewer({ root, home, gate: g, recorded: prevReviews[g.gate], stamp });
+      reviewReports.push(v.report);
+      if (v.record) reviews[g.gate] = v.record;
+      if (!v.ok) {
+        return { ok: false, target: { id: st.id, name: st.name }, blocking: [], missingAssertions: [], reviewerBlocked: [v.report], reviews: reviewReports, state: prev };
+      }
     }
   }
 
@@ -846,6 +868,8 @@ async function selftest() {
       assert(fingerprintInputs(tmp, ['blueprint.yml', 'research/**']) !== fp1, 'fingerprint changes with input content');
       assert(fingerprintInputs(tmp, ['research/**']) !== fp1, 'fingerprint scoped to globs');
       assert(fingerprintInputs(tmp, []) === null && fingerprintInputs(tmp, null) === null, 'no declared inputs → null (never reused)');
+      assert(fingerprintInputs(tmp, ['research/*.md']) === null, 'zero-match glob → null, not a constant fresh fingerprint (review of e81ad3a)');
+      assert(fingerprintInputs(tmp, ['nope/**', 'also-missing.md']) === null, 'all-absent inputs → null');
       // state-shape: reviews must be a plain object when present
       assert(isValidStateShape({ assertions: {}, reviews: {} }), 'reviews object accepted');
       assert(!isValidStateShape({ assertions: {}, reviews: [] }), 'reviews array rejected');

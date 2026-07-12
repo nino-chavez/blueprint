@@ -48,7 +48,7 @@ your agents.* The evidence in-tree:
   someone forced the model.
 - **Variant selection** (`greenfield | midstream | brownfield | research`) selects between four stage
   sequences with distinct gates — state-machine *selection* by a config field.
-- Real deterministic guards already execute: `stamp.mjs` mechanicalCheck, `doctor` (12 checks), 17
+- Real deterministic guards already execute: `stamp.mjs` mechanicalCheck, `doctor` (13 checks), 17
   executable reviewers, and the `worktree-guard` / `frontmatter-lint` / `terminology-linter` /
   `cited-url-lint` hooks.
 

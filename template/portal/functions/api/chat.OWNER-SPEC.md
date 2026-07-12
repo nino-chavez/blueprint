@@ -2,6 +2,7 @@
 tool: functions/api/chat.js
 last_attested: 2026-07-11
 max_unattested_days: 60
+spend_cap_attested: none    # set to <YYYY-MM-DD> after capping the OpenRouter key — prep-deploy --intent=stakeholder requires it when chat.access=open-capped (ADR-0010)
 couples_with:
   - prototype/chat-widget.js (frontend caller)
   - prototype/_docs/*.md (system context corpus)

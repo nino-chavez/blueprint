@@ -319,6 +319,29 @@ incident class as the docs-viewer leak (`case-study-v3-portal-css-gap.md`).
 
 ---
 
+## Page readiness states (ADR-0010)
+
+Every page meta (`_meta/<page-id>.json`) declares `readiness`:
+
+- `shell` — as-stamped skeleton (the stamper writes this on every page it creates).
+- `content-ready` — authored, not yet through Stage 4 fact-check.
+- `stakeholder-ready` — fact-checked; **verified, not declared**: the
+  conformance reviewer BLOCKs a stakeholder-ready page whose HTML still
+  contains placeholder tripwires ("Replace this hero", "Replace this body",
+  `REPLACE_FOR_`) or whose title/summary/strategy.decision are empty.
+
+Enforcement is mechanical, intent-scoped, and lives in the tools — this
+section documents it, it is not the enforcement:
+
+- `prep-deploy.sh --intent=preview` (default): shell pages WARN, deploy proceeds.
+- `prep-deploy.sh --intent=stakeholder`: ANY shell page BLOCKS the deploy;
+  content-ready and legacy pages (no readiness field, pre-ADR-0010) are WARN-listed.
+- `blueprint doctor` reports the readiness census on every run.
+
+**Why**: wave 85 defect 7 — a stakeholder met stamped placeholder content
+("five paths") on a deployed portal. A convention alone didn't prevent it;
+the deploy gate does.
+
 ## Chat widget manifest block
 
 `chat-widget.js` derives its header subtitle, greeting, and quick prompts from
@@ -329,9 +352,19 @@ does not exist. Quick prompts come from an optional `chat:` block:
 
 ```json
 "chat": {
+  "access": "off | open-capped | turnstile",
   "suggestions": ["What's the biggest gap?", "Which flows change for coaches?"]
 }
 ```
+
+`access` (ADR-0010, wave 88) controls whether chat exists at all — absent or
+invalid means `off`: the widget does not mount AND `/api/chat` returns 403
+even with a key bound. `open-capped` is the wave-86 posture (caps + origin
+check, spend cap required); a stakeholder-intent deploy additionally requires
+`spend_cap_attested: <date>` in `functions/api/chat.OWNER-SPEC.md`.
+`turnstile` is schema-recognized but its widget half ships in the d2
+follow-up — until then the widget won't mount it, the function rejects it,
+and stakeholder deploys refuse it.
 
 Rules: strings only, max 6 used, entries over 80 chars or empty are dropped.
 Absent/empty block → four neutral defaults (biggest gap / riskiest assumption /
@@ -479,6 +512,8 @@ The `wrangler.toml` at `portal/` root is required so wrangler detects `functions
 ---
 
 ## Versioning
+
+**v9 (2026-07-11, wave 88)** — ADR-0010 lands: page `readiness` states (`shell`/`content-ready`/`stakeholder-ready`; stamper writes `shell`; stakeholder-ready is verified by the conformance reviewer — placeholder tripwires + required metadata) with intent-scoped deploy gating (`prep-deploy.sh --intent=preview|stakeholder`; stakeholder + shell = BLOCK) and a doctor readiness census. `chat.access` manifest field (`off` default — widget unmounted AND `/api/chat` 403s without opt-in; `open-capped` needs a spend-cap attestation for stakeholder deploys; `turnstile` recognized, serving in d2).
 
 **v8 (2026-07-11, wave 86)** — chat honesty + abuse caps: `chat-widget.js` subtitle/greeting/suggestions derive from `_meta/index.json` (new optional `chat.suggestions` block; zero-doc stamps stop claiming a read corpus; source-project prompt residue excised). `/api/chat` gains partial abuse mitigation (same-origin check, 64KB/30-msg/4000-char caps, server-fixed `max_tokens: 1024`) — NOT access control; the OpenRouter key spend cap is the required backstop, per `chat.OWNER-SPEC.md` § Security posture.
 

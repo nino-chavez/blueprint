@@ -20,6 +20,7 @@
  *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present
  *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
  *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
+ *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
  * Exit: 0 = all green; 1 = any failure (each failure printed).
@@ -226,6 +227,47 @@ try {
     else bad("chat copy: custom suggestions filtered + doc count real", JSON.stringify(custom));
   } catch (err) {
     bad("chat-widget copy derivation", err.message);
+  }
+
+  // 10 — readiness states + intent-gated deploy (ADR-0010 rollout e): the
+  // stamped tree deploys as preview (shell WARNs), refuses stakeholder intent
+  // (shell BLOCKs), a hand-promoted placeholder page is caught by the
+  // conformance reviewer, and a genuinely promoted page unblocks the deploy.
+  try {
+    const bPortal = path.join(target, "blueprint", "portal");
+    const exMeta = path.join(bPortal, "_meta", "example.json");
+    const exHtml = path.join(bPortal, "pages", "example.html");
+    const meta0 = JSON.parse(await fs.readFile(exMeta, "utf8"));
+    if (meta0.readiness === "shell") ok("stamped page meta declares readiness: shell");
+    else bad("stamped page meta declares readiness: shell", String(meta0.readiness));
+    const prep = (intent) => execFile("bash", [path.join(bPortal, "scripts", "prep-deploy.sh"), `--intent=${intent}`]);
+    await prep("preview").then(() => ok("prep-deploy --intent=preview proceeds with shell WARN"),
+      (e) => bad("prep-deploy --intent=preview proceeds with shell WARN", (e.stderr || e.message).split("\n").slice(-3).join(" | ")));
+    await prep("stakeholder").then(() => bad("prep-deploy --intent=stakeholder BLOCKS on shell page", "exited 0 — the gate did not refuse"),
+      () => ok("prep-deploy --intent=stakeholder BLOCKS on shell page"));
+    // hand-promote WITHOUT replacing placeholders → reviewer must BLOCK (4c)
+    meta0.readiness = "stakeholder-ready";
+    await fs.writeFile(exMeta, JSON.stringify(meta0, null, 2) + "\n");
+    const rmod = await import(pathToFileURL(path.join(target, ".claude/agents/blueprint/reviewers/portal-review-conformance-reviewer.mjs")).href);
+    const r1 = await rmod.default({ targetDir: target });
+    if (r1.status === "BLOCKED" && r1.findings.some((f) => /placeholder content/.test(f.message))) ok("hand-promoted placeholder page → conformance BLOCK");
+    else bad("hand-promoted placeholder page → conformance BLOCK", `${r1.status} — ${JSON.stringify(r1.findings.slice(0, 2).map((f) => f.message))}`);
+    // genuinely promote: strip tripwires from the page HTML
+    const html = await fs.readFile(exHtml, "utf8");
+    await fs.writeFile(exHtml, html.replace(/Replace this hero/g, "Real hero copy").replace(/Replace this body/g, "Real body copy"));
+    const r2 = await rmod.default({ targetDir: target });
+    if (!r2.findings.some((f) => /placeholder content|stakeholder-ready/.test(f.message) && f.severity === "BLOCK")) ok("promoted page with real content clears readiness verification");
+    else bad("promoted page with real content clears readiness verification", JSON.stringify(r2.findings.filter((f) => f.severity === "BLOCK").map((f) => f.message)));
+    await prep("stakeholder").then(() => ok("prep-deploy --intent=stakeholder passes once no shell pages remain"),
+      (e) => bad("prep-deploy --intent=stakeholder passes once no shell pages remain", (e.stderr || e.message).split("\n").slice(-3).join(" | ")));
+    // chat access mode derivation (widget-side predicate)
+    const { createRequire } = await import("node:module");
+    const req2 = createRequire(import.meta.url);
+    const { chatAccessMode } = req2(path.join(BLUEPRINT_ROOT, "template", "portal", "chat-widget.js"));
+    if (chatAccessMode(null) === "off" && chatAccessMode({ chat: {} }) === "off" && chatAccessMode({ chat: { access: "everyone" } }) === "off" && chatAccessMode({ chat: { access: "open-capped" } }) === "open-capped") ok("chatAccessMode: default-off, opt-in only");
+    else bad("chatAccessMode: default-off, opt-in only", "predicate returned unexpected modes");
+  } catch (err) {
+    bad("readiness/intent gate integration", err.message);
   }
 } finally {
   await fs.rm(tmp, { recursive: true, force: true });

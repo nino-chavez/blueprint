@@ -49,7 +49,16 @@
       ],
     };
   }
-  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') { module.exports = { deriveChatMeta }; }
+  // chatAccessMode (ADR-0010, wave 88): the manifest's chat.access controls
+  // whether the widget mounts at all. Absent/invalid → 'off' — chat is opt-in
+  // per deployment, never on by default. 'turnstile' is schema-recognized but
+  // its widget half ships in the d2 follow-up, so it does NOT mount yet (the
+  // deploy gate refuses stakeholder deploys declaring it).
+  function chatAccessMode(manifest) {
+    const a = manifest && manifest.chat && manifest.chat.access;
+    return a === 'open-capped' || a === 'turnstile' ? a : 'off';
+  }
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') { module.exports = { deriveChatMeta, chatAccessMode }; }
   if (typeof window === 'undefined' || window.PROTO_CHAT_DISABLED) return;
 
   function el(tag, props = {}, ...children) {
@@ -329,10 +338,16 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
+    let manifest = null;
     try {
       const res = await fetch('/_meta/index.json');
-      if (res.ok) chatMeta = deriveChatMeta(await res.json());
-    } catch { /* file:// or missing manifest — deriveChatMeta(null) defaults stand */ }
+      if (res.ok) manifest = await res.json();
+    } catch { /* file:// or missing manifest — defaults stand */ }
+    // ADR-0010: no manifest opt-in (chat.access: open-capped) → no widget.
+    // 'turnstile' declared but its widget half is d2 — don't mount a chat that
+    // would 403 on every send.
+    if (chatAccessMode(manifest) !== 'open-capped') return;
+    chatMeta = deriveChatMeta(manifest);
     buildWindow();
   });
 })();

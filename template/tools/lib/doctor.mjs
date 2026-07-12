@@ -10,7 +10,7 @@
 // (cost-dial, consumers-registry, reviewer-registry) + the conformance reviewer.
 // Never throws; each check degrades to a finding.
 
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -219,6 +219,30 @@ export async function runDoctor({ home, targetDir }) {
             add('portal-conformance', 'fail', `${name} threw: ${e.message}`);
           }
         }
+      }
+
+      // 6c. portal-readiness (ADR-0010, wave 88) — the page-readiness census,
+      //     reported on every run so shell pages are always visible. WARN when
+      //     shell or undeclared (legacy) pages exist; the BLOCK decision is
+      //     deployment-intent-scoped and lives in prep-deploy, not here.
+      try {
+        const metaDir = join(targetDir, patternBRoot, '_meta');
+        const census = { shell: 0, 'content-ready': 0, 'stakeholder-ready': 0, undeclared: 0 };
+        for (const f of readdirSync(metaDir)) {
+          if (!f.endsWith('.json') || f === 'index.json') continue;
+          try {
+            const m = JSON.parse(readFileSync(join(metaDir, f), 'utf8'));
+            if (m.readiness === undefined) census.undeclared += 1;
+            else if (census[m.readiness] !== undefined) census[m.readiness] += 1;
+            else census.undeclared += 1;
+          } catch { census.undeclared += 1; }
+        }
+        const summary = Object.entries(census).map(([k, v]) => `${k}=${v}`).join(' ');
+        if (census.shell > 0) add('portal-readiness', 'warn', `${summary} — shell page(s) present`, 'stakeholder deploys BLOCK on shell pages (prep-deploy --intent=stakeholder); promote or replace them');
+        else if (census.undeclared > 0) add('portal-readiness', 'warn', `${summary} — page(s) without a readiness field (pre-ADR-0010)`, 'declare readiness per CONVENTIONS.md § Page readiness states');
+        else add('portal-readiness', 'pass', summary);
+      } catch (e) {
+        add('portal-readiness', 'skip', `census unreadable: ${e.message}`);
       }
     }
   }
