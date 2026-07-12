@@ -8,6 +8,36 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+## 0.6.0
+
+Minor — **audit-hardened gates: an external audit answered with wiring, plus two ratified ADRs** (waves 85–88). One behavior change for Pattern B consumers running a live chat (migration note below); everything else is additive.
+
+The through-line: an external audit's one correct diagnosis — *mechanical gates must be consistently wired, not merely present* — pointed at Blueprint's own first principle. Doctor skipped Pattern B trees, CI ran doctor only, the pilot gate was vacuously satisfiable on fresh stamps, and the stage machine never consulted the reviewers that own its gates. This release wires them, end to end, with every fix proven by a gate that runs in CI.
+
+### Added
+
+- **Reviewer-wired `stage advance`** (ADR-0009) — gates can map an executable reviewer (`reviewer: {name, onWarn}` in the stage model); `advance` verifies mapped reviewers at the frontier *and* on every stage the confirmed cursor jumps past. A recorded PASS is reused only while the reviewer file's hash and its declared-inputs fingerprint both match (`inputs` may be a function for dynamic targets; zero-match globs never read fresh; a mapped-but-unresolvable reviewer refuses the transition). First wired gate: `pilot-profile`; further mappings expand after fleet calibration.
+- **Pilot-profile policy** — `blueprint init` stamps `pilot_profile_policy: required` plus the empty 7-field profile; `stage advance` blocks until the fields fill and the citation resolves to a real file. The stage gate and `pilot-profile-lock-reviewer` read the same policy source, so the two can never disagree on one tree. Legacy initiatives (no policy field) keep full tolerance.
+- **Page readiness states** (ADR-0010) — `shell` / `content-ready` / `stakeholder-ready` in page metas; promotion to stakeholder-ready is *verified* (placeholder tripwires + required metadata), `prep-deploy.sh --intent=stakeholder` BLOCKs any shell page (preview WARNs and proceeds), and doctor reports the census (its 13th check).
+- **Doctor covers Pattern B** — portal conformance now runs both Review-Portal reviewers on `portal/` / `blueprint/portal/` trees; previously only `apps/portal` was checked, so Pattern B shipped with zero doctor coverage.
+- **CI that gates what ships** — `core-tests` (lib self-tests + the stamp-then-gate smoke), `template-health` (real Pattern A stamp → install → typecheck → build), `portal-health`; npm publish requires the first two via `needs:`. The smoke (wave 85) now runs 10 steps including a real Pattern A stamp, the pilot-gate integration, and the readiness/intent loop.
+- **First-run pointers** — `init` prints variant-aware next steps after a successful stamp; the chat widget's subtitle, greeting, and quick prompts derive from the manifest (no false "Claude has read the docs" on a zero-doc portal, no source-project residue).
+
+### Changed
+
+- **Chat is default-off with partial abuse mitigation** — see Migration. `/api/chat` requires a manifest opt-in and enforces size caps + a same-origin check (documented as browser-only mitigation, not access control); `max_tokens` is server-fixed; the OWNER-SPEC's spend-cap attestation is required for stakeholder-intent deploys. Turnstile mode is schema-recognized; serving lands in a follow-up.
+- **Pattern B stamp path hardened** (wave 85) — nine consumer-reported defects fixed at the root: stamp crash, missing imposition layer, chrome drift, deploy-fatal placeholders, source-content leaks in the front door; all held green by `smoke.mjs`.
+- **Pilot reviewer degrades on shallow clones** — `git log` history checks skip honestly in depth-1 checkouts instead of false-BLOCKing consumer CI (a graft boundary reads as "everything recently edited").
+
+### Migration — Pattern B consumers with a live chat
+
+Chat now requires an explicit opt-in. After restamping chrome (`--mode=audit-chrome`, then `restamp-chrome`):
+
+1. Add `"chat": { "access": "open-capped" }` to `_meta/index.json` — without it the widget doesn't mount and `/api/chat` returns 403 even with the key bound.
+2. Set a credit limit on the OpenRouter key (openrouter.ai → Keys), then record `spend_cap_attested: <YYYY-MM-DD>` in `functions/api/chat.OWNER-SPEC.md`. `prep-deploy.sh --intent=stakeholder` refuses open-capped chat without it.
+
+No other consumer action required: readiness fields, the pilot policy, and the stage-model reviewer mappings are all additive — trees without them derive exactly as before.
+
 ## 0.5.0
 
 Minor — **`blueprint stage`: deterministic stage orchestration** (ADR-0008), rolled up from waves 80–84. Additive; no breaking changes. Consumers gain the command on their next `blueprint upgrade`; nothing in existing initiatives changes.
