@@ -52,13 +52,18 @@ node -e '
   const fs = require("fs"), path = require("path");
   const [portalDir, intent] = process.argv.slice(1);
   const metaDir = path.join(portalDir, "_meta");
-  const census = { shell: [], "content-ready": [], "stakeholder-ready": [], undeclared: [] };
+  const census = { shell: [], "content-ready": [], "stakeholder-ready": [], undeclared: [], invalid: [] };
   for (const f of fs.readdirSync(metaDir)) {
     if (!f.endsWith(".json") || f === "index.json") continue;
     try {
       const m = JSON.parse(fs.readFileSync(path.join(metaDir, f), "utf8"));
+      // invalid (present-but-unknown) is its OWN bucket, never downgraded to
+      // legacy-undeclared — a typo like "stakholder-ready" must not slip a
+      // stakeholder deploy as a WARN while the conformance reviewer BLOCKs the
+      // same tree (review of ab0e084; the wave-86 control-systems-disagree class).
       if (m.readiness === undefined) census.undeclared.push(m.id || f);
-      else (census[m.readiness] || census.undeclared).push(m.id || f);
+      else if (census[m.readiness] !== undefined && m.readiness !== "undeclared" && m.readiness !== "invalid") census[m.readiness].push(m.id || f);
+      else census.invalid.push(`${m.id || f} (${JSON.stringify(m.readiness)})`); // no single quotes here — this whole script is a single-quoted shell arg
     } catch { census.undeclared.push(f + " (unparseable)"); }
   }
   const say = (s) => process.stderr.write(s + "\n");
@@ -68,6 +73,10 @@ node -e '
     if (intent === "stakeholder") { say(`BLOCK: stakeholder deploy with shell page(s): ${census.shell.join(", ")}`); block = true; }
     else say(`warn: shell page(s) will deploy (preview intent): ${census.shell.join(", ")}`);
   }
+  if (census.invalid.length) {
+    if (intent === "stakeholder") { say(`BLOCK: invalid readiness value(s) — fix the field: ${census.invalid.join(", ")}`); block = true; }
+    else say(`warn: invalid readiness value(s): ${census.invalid.join(", ")}`);
+  }
   if (intent === "stakeholder" && census["content-ready"].length) say(`warn: content-ready (not fact-checked) page(s): ${census["content-ready"].join(", ")}`);
   if (intent === "stakeholder" && census.undeclared.length) say(`warn: page(s) with no readiness field (legacy, pre-ADR-0010): ${census.undeclared.join(", ")}`);
   // chat access preconditions (stakeholder intent only)
@@ -76,9 +85,13 @@ node -e '
   if (intent === "stakeholder" && access === "turnstile") { say("BLOCK: chat.access=turnstile — widget half ships in ADR-0010 d2; use open-capped (with spend cap attested) or off"); block = true; }
   if (intent === "stakeholder" && access === "open-capped") {
     let spec = ""; try { spec = fs.readFileSync(path.join(portalDir, "functions", "api", "chat.OWNER-SPEC.md"), "utf8"); } catch {}
+    // strip the inline comment before judging — the template default line is
+    // `spend_cap_attested: none    # set to <YYYY-MM-DD> …` and a greedy
+    // capture read the comment as an attestation (review of ab0e084).
     const att = spec.match(/^spend_cap_attested:\s*(.+)$/m);
-    if (!att || att[1].trim() === "none") { say("BLOCK: chat.access=open-capped on a stakeholder deploy requires a spend-cap attestation — set the OpenRouter key credit limit, then record spend_cap_attested: <date> in functions/api/chat.OWNER-SPEC.md"); block = true; }
-    else say(`chat: open-capped, spend cap attested ${att[1].trim()}`);
+    const attVal = att ? att[1].split("#")[0].trim() : "";
+    if (!attVal || attVal === "none") { say("BLOCK: chat.access=open-capped on a stakeholder deploy requires a spend-cap attestation — set the OpenRouter key credit limit, then record spend_cap_attested: <date> in functions/api/chat.OWNER-SPEC.md"); block = true; }
+    else say(`chat: open-capped, spend cap attested ${attVal}`);
   }
   process.exit(block ? 1 : 0);
 ' "$PORTAL_DIR" "$INTENT" || { echo "error: readiness gate refused --intent=$INTENT deploy (see above)" >&2; exit 1; }

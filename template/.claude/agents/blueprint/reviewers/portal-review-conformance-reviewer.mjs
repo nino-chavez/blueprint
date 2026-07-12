@@ -380,7 +380,20 @@ export default async function review({ targetDir, blueprintYml }) {
     }
     if (meta.readiness !== 'stakeholder-ready') continue;
     const pageHtml = await read(path.join(pagesDir, `${id}.html`));
-    const tripped = pageHtml ? PLACEHOLDER_TRIPWIRES.filter((t) => pageHtml.includes(t)) : [];
+    // A stakeholder-ready meta whose page file is gone must BLOCK — a null
+    // read would otherwise skip the placeholder check entirely and "verified"
+    // degrades to declared (review of ab0e084).
+    if (pageHtml == null) {
+      findings.push({
+        severity: 'BLOCK',
+        location: `pages/${id}.html`,
+        message: `Declared stakeholder-ready but pages/${id}.html does not exist — nothing to verify.`,
+        remediation: 'Restore the page, fix the meta id, or demote the readiness state.',
+        reference: 'ADR-0010 § stakeholder-ready is verified, not declared',
+      });
+      continue;
+    }
+    const tripped = PLACEHOLDER_TRIPWIRES.filter((t) => pageHtml.includes(t));
     if (tripped.length) {
       findings.push({
         severity: 'BLOCK',

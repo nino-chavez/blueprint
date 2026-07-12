@@ -227,18 +227,22 @@ export async function runDoctor({ home, targetDir }) {
       //     deployment-intent-scoped and lives in prep-deploy, not here.
       try {
         const metaDir = join(targetDir, patternBRoot, '_meta');
-        const census = { shell: 0, 'content-ready': 0, 'stakeholder-ready': 0, undeclared: 0 };
+        // invalid (present-but-unknown) counts in its OWN bucket — downgrading
+        // a typo to "legacy undeclared" hides a value the conformance reviewer
+        // BLOCKs (review of ab0e084).
+        const census = { shell: 0, 'content-ready': 0, 'stakeholder-ready': 0, undeclared: 0, invalid: 0 };
         for (const f of readdirSync(metaDir)) {
           if (!f.endsWith('.json') || f === 'index.json') continue;
           try {
             const m = JSON.parse(readFileSync(join(metaDir, f), 'utf8'));
             if (m.readiness === undefined) census.undeclared += 1;
-            else if (census[m.readiness] !== undefined) census[m.readiness] += 1;
-            else census.undeclared += 1;
+            else if (['shell', 'content-ready', 'stakeholder-ready'].includes(m.readiness)) census[m.readiness] += 1;
+            else census.invalid += 1;
           } catch { census.undeclared += 1; }
         }
         const summary = Object.entries(census).map(([k, v]) => `${k}=${v}`).join(' ');
-        if (census.shell > 0) add('portal-readiness', 'warn', `${summary} — shell page(s) present`, 'stakeholder deploys BLOCK on shell pages (prep-deploy --intent=stakeholder); promote or replace them');
+        if (census.invalid > 0) add('portal-readiness', 'warn', `${summary} — INVALID readiness value(s)`, 'fix the readiness field (the conformance reviewer BLOCKs these; stakeholder deploys refuse them)');
+        else if (census.shell > 0) add('portal-readiness', 'warn', `${summary} — shell page(s) present`, 'stakeholder deploys BLOCK on shell pages (prep-deploy --intent=stakeholder); promote or replace them');
         else if (census.undeclared > 0) add('portal-readiness', 'warn', `${summary} — page(s) without a readiness field (pre-ADR-0010)`, 'declare readiness per CONVENTIONS.md § Page readiness states');
         else add('portal-readiness', 'pass', summary);
       } catch (e) {

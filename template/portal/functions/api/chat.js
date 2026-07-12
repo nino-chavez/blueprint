@@ -100,9 +100,14 @@ export async function onRequestPost(context) {
   // consumer can't be spending on an endpoint the manifest never enabled.
   // 'turnstile' rejects until its widget half ships (d2) — a mode the client
   // can't complete must not accept unchallenged requests in the meantime.
+  // ASSETS binding first, plain fetch as the local-dev fallback (same pattern
+  // as loadContext above) — a plain self-fetch behind Cloudflare Access gets
+  // the Access challenge instead of the manifest and would 403 an opted-in
+  // chat (review of ab0e084).
   let chatAccess = 'off';
   try {
-    const mres = await fetch(new URL('/_meta/index.json', request.url).toString());
+    const murl = new URL('/_meta/index.json', request.url).toString();
+    const mres = await (env.ASSETS ? env.ASSETS.fetch(new Request(murl)) : fetch(murl));
     if (mres.ok) {
       const m = await mres.json();
       const a = m && m.chat && m.chat.access;

@@ -266,6 +266,34 @@ try {
     const { chatAccessMode } = req2(path.join(BLUEPRINT_ROOT, "template", "portal", "chat-widget.js"));
     if (chatAccessMode(null) === "off" && chatAccessMode({ chat: {} }) === "off" && chatAccessMode({ chat: { access: "everyone" } }) === "off" && chatAccessMode({ chat: { access: "open-capped" } }) === "open-capped") ok("chatAccessMode: default-off, opt-in only");
     else bad("chatAccessMode: default-off, opt-in only", "predicate returned unexpected modes");
+
+    // 10b — review-of-ab0e084 gaps, each reproduced there before fixing:
+    // open-capped + unattested spend cap must BLOCK a stakeholder deploy (the
+    // template's own commented default line defeated the first cut's regex);
+    // an attested date passes; an invalid readiness value BLOCKs instead of
+    // downgrading to legacy-WARN; a stakeholder-ready meta with a missing page
+    // file BLOCKs in the conformance reviewer.
+    const idxPath = path.join(bPortal, "_meta", "index.json");
+    const idx0 = JSON.parse(await fs.readFile(idxPath, "utf8"));
+    idx0.chat = { ...(idx0.chat || {}), access: "open-capped" };
+    await fs.writeFile(idxPath, JSON.stringify(idx0, null, 2) + "\n");
+    await prep("stakeholder").then(() => bad("open-capped + unattested spend cap BLOCKS stakeholder deploy", "exited 0 — the template's default 'none # comment' line slipped the gate"),
+      () => ok("open-capped + unattested spend cap BLOCKS stakeholder deploy"));
+    const specPath = path.join(bPortal, "functions", "api", "chat.OWNER-SPEC.md");
+    await fs.writeFile(specPath, (await fs.readFile(specPath, "utf8")).replace(/^spend_cap_attested:.*$/m, "spend_cap_attested: 2026-07-11"));
+    await prep("stakeholder").then(() => ok("open-capped + attested spend cap passes stakeholder deploy"),
+      (e) => bad("open-capped + attested spend cap passes stakeholder deploy", (e.stderr || e.message).split("\n").slice(-3).join(" | ")));
+    meta0.readiness = "stakholder-ready"; // deliberate typo
+    await fs.writeFile(exMeta, JSON.stringify(meta0, null, 2) + "\n");
+    await prep("stakeholder").then(() => bad("invalid readiness value BLOCKS stakeholder deploy", "exited 0 — typo downgraded to legacy WARN"),
+      () => ok("invalid readiness value BLOCKS stakeholder deploy"));
+    meta0.readiness = "stakeholder-ready";
+    await fs.writeFile(exMeta, JSON.stringify(meta0, null, 2) + "\n");
+    await fs.rename(exHtml, exHtml + ".gone");
+    const r3 = await rmod.default({ targetDir: target });
+    if (r3.findings.some((f) => f.severity === "BLOCK" && /does not exist — nothing to verify/.test(f.message))) ok("stakeholder-ready meta with missing page file BLOCKS");
+    else bad("stakeholder-ready meta with missing page file BLOCKS", JSON.stringify(r3.findings.filter((f) => f.severity === "BLOCK").map((f) => f.message)));
+    await fs.rename(exHtml + ".gone", exHtml);
   } catch (err) {
     bad("readiness/intent gate integration", err.message);
   }
