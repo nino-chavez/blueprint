@@ -61,8 +61,10 @@ node -e '
       // legacy-undeclared — a typo like "stakholder-ready" must not slip a
       // stakeholder deploy as a WARN while the conformance reviewer BLOCKs the
       // same tree (review of ab0e084; the wave-86 control-systems-disagree class).
+      // allowlist form (mirrors doctor) — a bracket lookup walks the prototype
+      // chain, so readiness: "toString" would throw instead of WARN at preview
       if (m.readiness === undefined) census.undeclared.push(m.id || f);
-      else if (census[m.readiness] !== undefined && m.readiness !== "undeclared" && m.readiness !== "invalid") census[m.readiness].push(m.id || f);
+      else if (["shell", "content-ready", "stakeholder-ready"].includes(m.readiness)) census[m.readiness].push(m.id || f);
       else census.invalid.push(`${m.id || f} (${JSON.stringify(m.readiness)})`); // no single quotes here — this whole script is a single-quoted shell arg
     } catch { census.undeclared.push(f + " (unparseable)"); }
   }
