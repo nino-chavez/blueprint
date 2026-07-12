@@ -238,6 +238,16 @@ function detectRecentPilotEdit(targetDir, days = 14) {
   let recentlyEdited = false;
   let gitAvailable = true;
   try {
+    // SHALLOW CLONES have no usable history: the grafted boundary commit's
+    // diff shows every file as fully added, so `-G pilot_profile` matches and
+    // §7 false-BLOCKs (hit on the wave-88 push — CI's depth-1 checkout).
+    // History-based checks need history; degrade to git-unavailable rather
+    // than fabricate a verdict from the graft artifact.
+    const shallow = execFileSync(
+      'git', ['-C', targetDir, 'rev-parse', '--is-shallow-repository'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+    if (shallow === 'true') throw new Error('shallow clone — no usable history');
     // Lines touching pilot_profile in commits within the window. `-G` greps the
     // diff hunks; we restrict to blueprint.yml. Empty output → no recent edit.
     const out = execFileSync(
