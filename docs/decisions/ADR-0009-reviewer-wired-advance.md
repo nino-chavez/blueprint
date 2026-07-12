@@ -1,10 +1,10 @@
 ---
 canonical: true
 adr: 0009
-status: proposed
+status: accepted
 date: 2026-07-11
 deciders: ["Nino Chavez"]
-ratification: "PROPOSED — drafted wave 86 (2026-07-11) per the ADR-0008 addendum and two external review rounds; awaiting operator ratification before any implementation lands"
+ratification: "explicitly ratified by operator 2026-07-11 ('ratify both'); rollout (a)-(d) shipped wave 87 same day — pilot-profile gate mapped end-to-end (fingerprint helper, inputs export, advance invocation + freshness, smoke); remaining gate mappings expand per-gate after fleet calibration (the wave-84 lesson: strict gates shipped uncalibrated passed 0/7 consumers)"
 scope_ceiling: "A — methodology-native only (reviewers run locally; assertion state stays in .blueprint/stage-state.json)"
 depends_on:
   - ./ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md
@@ -18,7 +18,13 @@ references:
 
 ## Status
 
-Proposed. No implementation until ratified. Wave-86 shipped the narrow precedent
+Accepted (operator: "ratify both", 2026-07-11). Rollout (a)–(d) shipped in wave
+87: the machinery is live end-to-end for the pilot-profile gate (the calibrated
+one); further gate mappings (research-legs → research-completeness-reviewer,
+principles-doc → design-principles/prescription-evidence, portal gates) are
+added per-gate only after running them against the consumer fleet — wave 84
+proved that shipping strict gates without calibration wedges every real
+initiative. Wave-86 shipped the narrow precedent
 (the `pilot-profile` check kind reads the same policy source as
 `pilot-profile-lock-reviewer`, so those two cannot disagree); this ADR generalizes
 that property to every transition that has an executable reviewer.

@@ -178,6 +178,33 @@ try {
     const filled = gateOf(aTarget);
     if (filled.state === "pass") ok("populated profile + citation: pilot-profile gate passes");
     else bad("populated profile + citation: pilot-profile gate passes", `${filled.state} — ${filled.evidence}`);
+
+    // 8b — reviewer-wired advance + freshness (ADR-0009 rollout d): the mapped
+    // pilot reviewer runs at the frontier; a recorded PASS is reused while the
+    // reviewer + its declared inputs are unchanged; mutating an input forces a
+    // rerun. Exercised against the REAL stamped tree and the REAL reviewer.
+    const adv = (extra = {}) => sm.recordAdvance({ root: aTarget, asserts: { "sensor-wired": "smoke drove it" }, home: BLUEPRINT_ROOT, now: "2026-01-01T00:00:00Z", ...extra });
+    const dry1 = await adv();
+    if (dry1.ok && (dry1.reviews || []).some((r) => r.reviewer === "pilot-profile-lock-reviewer" && r.ran === true)) ok("advance runs the mapped pilot reviewer (dry-run)");
+    else bad("advance runs the mapped pilot reviewer (dry-run)", JSON.stringify({ ok: dry1.ok, reviews: dry1.reviews, blocked: dry1.reviewerBlocked }));
+    const exec1 = await adv({ execute: true });
+    const statePath = path.join(aTarget, ".blueprint", "stage-state.json");
+    const state1 = JSON.parse(await fs.readFile(statePath, "utf8"));
+    if (exec1.ok && state1.reviews && state1.reviews["pilot-profile"] && state1.reviews["pilot-profile"].fingerprint) ok("--execute records reviewer result + input fingerprint");
+    else bad("--execute records reviewer result + input fingerprint", JSON.stringify(state1.reviews || null));
+    // rewind the shell assertion so Stage 0 is the frontier again (reviews kept)
+    delete state1.assertions["sensor-wired"];
+    state1.cursor = -1;
+    await fs.writeFile(statePath, JSON.stringify(state1, null, 2) + "\n");
+    const dry2 = await adv();
+    const reused = (dry2.reviews || []).find((r) => r.reviewer === "pilot-profile-lock-reviewer");
+    if (dry2.ok && reused && reused.ran === false) ok("fresh recorded PASS reused (no rerun)");
+    else bad("fresh recorded PASS reused (no rerun)", JSON.stringify(dry2.reviews));
+    await fs.writeFile(path.join(aTarget, "blueprint.yml"), (await fs.readFile(path.join(aTarget, "blueprint.yml"), "utf8")).replace("A concrete failing thing.", "A different failing thing."));
+    const dry3 = await adv();
+    const rerun = (dry3.reviews || []).find((r) => r.reviewer === "pilot-profile-lock-reviewer");
+    if (rerun && rerun.ran === true) ok("stale input fingerprint forces reviewer rerun");
+    else bad("stale input fingerprint forces reviewer rerun", JSON.stringify(dry3.reviews));
   } catch (err) {
     bad("pilot-gate integration", err.message);
   }

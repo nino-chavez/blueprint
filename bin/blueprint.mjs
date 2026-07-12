@@ -584,7 +584,7 @@ async function runStage(stageArgv, home) {
     }
     if (assertErrors.length) { for (const e of assertErrors) console.error(`  ✗ ${e}`); process.exit(2); }
 
-    const res = lib.recordAdvance({ root: targetDir, asserts, execute });
+    const res = await lib.recordAdvance({ root: targetDir, asserts, execute, home });
     if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.ok ? 0 : 1); }
     console.log(`blueprint stage advance${execute ? '' : ' (dry-run)'} — ${targetDir}\n`);
     if (res.corrupt) { console.error(`  ✗ ${res.message}`); process.exit(2); }
@@ -593,9 +593,13 @@ async function runStage(stageArgv, home) {
     if (!res.ok) {
       for (const g of res.blocking || []) console.log(`  ✗ ${g.gate.padEnd(20)} ${g.evidence}  (derivable — fix on disk, cannot assert)`);
       for (const g of res.missingAssertions || []) console.log(`  ~ ${g.gate.padEnd(20)} ${g.evidence}  (assert with --assert-${g.gate}="…")`);
+      for (const rv of res.reviewerBlocked || []) console.log(`  ✗ ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.note ? ` — ${rv.note}` : ''}`);
       console.log(`\n  BLOCKED — entry-guard not satisfied.`);
       process.exit(1);
     }
+    // ADR-0009: mapped reviewers verified at the frontier (fresh recorded
+    // PASSes reused; others ran just now — read-only either way).
+    for (const rv of res.reviews || []) console.log(`  ${rv.status === 'PASS' ? '✓' : '~'} ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.ran ? '' : ' (recorded, fresh)'}${rv.note ? ` — ${rv.note}` : ''}`);
     console.log(`  ✓ entry-guard satisfied — frontier Stage ${res.target.id} completes`);
     if (execute) console.log(`  ✓ recorded → ${res.wrote} (confirmed cursor now Stage ${res.cursor})`);
     else console.log(`  (dry-run — re-run with --execute to record; confirmed cursor would be Stage ${res.cursor})`);

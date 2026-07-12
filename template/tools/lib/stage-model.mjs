@@ -25,8 +25,11 @@
 // block presence); the model shape itself travels as JSON when overridden.
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync, rmSync, mkdtempSync } from 'node:fs';
-import { join, resolve, isAbsolute } from 'node:path';
+import { join, resolve, isAbsolute, sep } from 'node:path';
 import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { resolveReviewer } from './reviewer-registry.mjs';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
@@ -117,6 +120,48 @@ export function readPilotProfile(yml) {
     ...PILOT_LISTS.filter((k) => !(Array.isArray(fields[k]) && fields[k].length)),
   ];
   return { policy, present, fields, missing, filled: missing.length === 0 };
+}
+
+// ── reviewer-freshness fingerprints (ADR-0009) ─────────────────────
+// A reviewer-recorded PASS is reusable only while (a) the reviewer file itself
+// is unchanged (its sha256 is its effective version) and (b) the content the
+// reviewer declared as its inputs is unchanged. Glob dialect is deliberately
+// minimal (documented in ADR-0009 #4): 'dir/**' = every file under dir
+// recursively; anything else = an exact file path. Hidden entries and
+// node_modules are skipped. Fingerprint = sha256 over sorted
+// "relpath\0contentsha\n" lines — stable across platforms.
+export function fileSha256(p) {
+  try { return createHash('sha256').update(readFileSync(p)).digest('hex'); } catch { return null; }
+}
+function walkFiles(dir, acc = []) {
+  let entries;
+  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return acc; }
+  for (const e of entries) {
+    if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+    const p = join(dir, e.name);
+    if (e.isDirectory()) walkFiles(p, acc);
+    else if (e.isFile()) acc.push(p);
+  }
+  return acc;
+}
+export function fingerprintInputs(root, globs) {
+  if (!Array.isArray(globs) || !globs.length) return null;
+  root = resolve(root);
+  const files = [];
+  for (const g of globs) {
+    if (typeof g !== 'string' || !g.trim()) continue;
+    if (g.endsWith('/**')) walkFiles(join(root, g.slice(0, -3)), files);
+    else {
+      const p = join(root, g);
+      try { if (statSync(p).isFile()) files.push(p); } catch { /* absent input = absent from the hash */ }
+    }
+  }
+  const h = createHash('sha256');
+  const rels = files
+    .map((f) => [f.slice(root.length + 1).split(sep).join('/'), f])
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  for (const [rel, f] of rels) h.update(`${rel}\0${fileSha256(f)}\n`);
+  return h.digest('hex');
 }
 
 // ── check-kind registry ────────────────────────────────────────────
@@ -255,7 +300,7 @@ export const GREENFIELD_MODEL = {
       // legacy trees WITHOUT the policy field never block here (wave-84
       // calibration — mature pre-policy initiatives must not pin to Stage -1).
       // Substance validation stays with pilot-profile-lock-reviewer.
-      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {} },
+      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {}, reviewer: { name: 'pilot-profile-lock-reviewer', onWarn: 'pass' } },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'not derivable from disk — requires driving the running app' } },
     ] },
     { id: 1, name: 'Research', gates: [
@@ -297,7 +342,7 @@ export const MIDSTREAM_MODEL = {
   variant: 'midstream',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {} },
+      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {}, reviewer: { name: 'pilot-profile-lock-reviewer', onWarn: 'pass' } },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for midstream — the live touchpoint must be driven/captured' } },
     ] },
     { id: 1, name: 'Targeted Diagnose', gates: [
@@ -336,7 +381,7 @@ export const BROWNFIELD_MODEL = {
   variant: 'brownfield',
   stages: [
     { id: 0, name: 'Application Legibility', gates: [
-      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {} },
+      { id: 'pilot-profile', derivable: true, kind: 'pilot-profile', params: {}, reviewer: { name: 'pilot-profile-lock-reviewer', onWarn: 'pass' } },
       { id: 'sensor-wired', derivable: false, kind: 'manual', params: { evidence: 'mandatory for brownfield — every audit claim grounds in a captured surface' } },
     ] },
     { id: 1, name: 'Diagnose', gates: [
@@ -497,7 +542,7 @@ export function deriveStageStatus({ root, assertions = {} }) {
         r = { ...r, state: 'pass', evidence: `${r.evidence} (optional)` };
         vacuous = true;
       }
-      return { gate: g.id, derivable: g.derivable, kind: g.kind, vacuous, ...r };
+      return { gate: g.id, derivable: g.derivable, kind: g.kind, vacuous, ...(g.reviewer && g.reviewer.name ? { reviewer: g.reviewer } : {}), ...r };
     });
     // Two notions, deliberately distinct:
     //  - artifactPass: all DERIVABLE gates pass — "how far the raw artifacts
@@ -606,7 +651,45 @@ export function isValidStateShape(parsed) {
   // here throws (number) or silently mangles (string spreads to chars); both are
   // the crash/clobber this guard exists to refuse.
   if (parsed.history !== undefined && !Array.isArray(parsed.history)) return false;
+  // reviews (ADR-0009, additive): reviewer-recorded results keyed by gate id.
+  const rv = parsed.reviews;
+  if (rv !== undefined && (rv === null || typeof rv !== 'object' || Array.isArray(rv))) return false;
   return true;
+}
+
+// ── reviewer-wired advance (ADR-0009) ──────────────────────────────
+// Verify ONE mapped gate's reviewer at the frontier: reuse a fresh recorded
+// PASS (reviewer-file hash + input fingerprint both match), otherwise run the
+// reviewer now. A mapped-but-unresolvable reviewer is a HARD stop — a silently
+// skipped reviewer is the wave-55 invocation-gated false green. WARN results
+// are recorded for the audit trail but never reused (advisory findings should
+// re-surface); only PASS earns fingerprint reuse.
+async function verifyGateReviewer({ root, home, gate, recorded, stamp }) {
+  const name = gate.reviewer.name;
+  const onWarn = (gate.reviewer.onWarn === 'pass' || gate.reviewer.onWarn === 'ask') ? gate.reviewer.onWarn : 'block';
+  const { entry } = resolveReviewer(name, { home, targetDir: root });
+  if (!entry) return { ok: false, report: { gate: gate.gate, reviewer: name, ran: false, status: 'UNRESOLVED', note: 'mapped reviewer not found in methodology home or initiative — cannot verify, refusing to advance' } };
+  let mod;
+  try { mod = await import(pathToFileURL(entry.path).href); }
+  catch (e) { return { ok: false, report: { gate: gate.gate, reviewer: name, ran: false, status: 'LOAD-ERROR', note: e.message } }; }
+  const reviewerHash = fileSha256(entry.path);
+  const fp = Array.isArray(mod.inputs) ? fingerprintInputs(root, mod.inputs) : null;
+  if (recorded && recorded.status === 'PASS' && recorded.reviewerHash === reviewerHash && fp && recorded.fingerprint === fp) {
+    return { ok: true, report: { gate: gate.gate, reviewer: name, ran: false, status: 'PASS', note: 'recorded result fresh (reviewer + inputs unchanged)' }, record: recorded };
+  }
+  let r;
+  try { r = await mod.default({ targetDir: root }); }
+  catch (e) { return { ok: false, report: { gate: gate.gate, reviewer: name, ran: true, status: 'THREW', note: e.message } }; }
+  const status = r && r.status;
+  const firstBlock = ((r && r.findings) || []).find((f) => f.severity === 'BLOCK');
+  const record = { reviewer: name, reviewerHash, fingerprint: fp, status, at: stamp };
+  if (status === 'PASS') return { ok: true, report: { gate: gate.gate, reviewer: name, ran: true, status }, record };
+  if (status === 'WARN') {
+    if (onWarn === 'pass') return { ok: true, report: { gate: gate.gate, reviewer: name, ran: true, status: 'WARN', note: 'onWarn=pass — advisory, proceeding' }, record };
+    const hint = onWarn === 'ask' ? ' (onWarn=ask — review the findings, then re-run advance after addressing or accept via the reviewer)' : '';
+    return { ok: false, report: { gate: gate.gate, reviewer: name, ran: true, status: 'WARN', note: `onWarn=${onWarn} — transition refused${hint}` } };
+  }
+  return { ok: false, report: { gate: gate.gate, reviewer: name, ran: true, status: status || 'INVALID-RESULT', note: firstBlock ? firstBlock.message.slice(0, 160) : 'reviewer did not return PASS' } };
 }
 
 export function readStageState(root) {
@@ -628,7 +711,7 @@ export function readStageState(root) {
 // recorded ∪ new assertions. On success the confirmed cursor jumps to wherever
 // disk-complete stages then reach. Dry-run by default; `now` injected for
 // deterministic testing.
-export function recordAdvance({ root, asserts = {}, execute = false, now }) {
+export async function recordAdvance({ root, asserts = {}, execute = false, now, home = null }) {
   root = resolve(root);
   const prev = readStageState(root);
   if (prev.corrupt) {
@@ -659,21 +742,39 @@ export function recordAdvance({ root, asserts = {}, execute = false, now }) {
     };
   }
 
+  // ADR-0009: the frontier's structural gates are satisfied — now VERIFY every
+  // gate that maps an executable reviewer. Fresh recorded PASSes are reused;
+  // stale/absent ones run the reviewer here (read-only, so dry-run runs them
+  // too and reports what --execute would record). Any non-passing reviewer
+  // refuses the transition.
+  const prevReviews = (prev.reviews && typeof prev.reviews === 'object' && !Array.isArray(prev.reviews)) ? prev.reviews : {};
+  const reviews = { ...prevReviews };
+  const reviewReports = [];
+  for (const g of target.gates.filter((x) => x.reviewer && x.reviewer.name)) {
+    const v = await verifyGateReviewer({ root, home, gate: g, recorded: prevReviews[g.gate], stamp });
+    reviewReports.push(v.report);
+    if (v.record) reviews[g.gate] = v.record;
+    if (!v.ok) {
+      return { ok: false, target: { id: target.id, name: target.name }, blocking: [], missingAssertions: [], reviewerBlocked: [v.report], reviews: reviewReports, state: prev };
+    }
+  }
+
   const state = {
     cursor: withNew.cursor,          // may jump past already-disk-complete stages
     advancedTo: withNew.cursorName,
     assertions: merged,
+    ...(Object.keys(reviews).length ? { reviews } : {}),
     history: [...(prev.history || []), { stage: frontier.id, at: stamp }],
   };
   if (execute) {
     mkdirSync(join(root, '.blueprint'), { recursive: true });
     writeFileSync(join(root, STATE_REL), JSON.stringify(state, null, 2) + '\n');
   }
-  return { ok: true, target: { id: frontier.id, name: frontier.name }, cursor: withNew.cursor, wrote: execute ? STATE_REL : null, state };
+  return { ok: true, target: { id: frontier.id, name: frontier.name }, cursor: withNew.cursor, wrote: execute ? STATE_REL : null, reviews: reviewReports, state };
 }
 
 // ── self-test (node stage-model.mjs --selftest) ────────────────────
-function selftest() {
+async function selftest() {
   const assert = (c, m) => { if (!c) { console.error('FAIL:', m); process.exit(1); } };
   const yml = 'project:\n  name: "x"\npilot_profile:\n  slug: "y"\nstage_model: "greenfield"\nempty_key: null\n';
   assert(ymlHasBlock(yml, 'pilot_profile'), 'top-level block detected');
@@ -730,6 +831,27 @@ function selftest() {
     } finally { rmSync(tmp, { recursive: true, force: true }); }
   }
 
+  // reviewer-freshness fingerprints (ADR-0009): deterministic, content- and
+  // reviewer-sensitive, order-independent, minimal glob dialect.
+  {
+    const tmp = mkdtempSync(join(tmpdir(), 'bp-fp-'));
+    try {
+      mkdirSync(join(tmp, 'research'), { recursive: true });
+      writeFileSync(join(tmp, 'blueprint.yml'), 'a: 1\n');
+      writeFileSync(join(tmp, 'research', 'x.md'), 'one\n');
+      const fp1 = fingerprintInputs(tmp, ['blueprint.yml', 'research/**']);
+      const fp2 = fingerprintInputs(tmp, ['blueprint.yml', 'research/**']);
+      assert(fp1 && fp1 === fp2, 'fingerprint deterministic');
+      writeFileSync(join(tmp, 'research', 'x.md'), 'two\n');
+      assert(fingerprintInputs(tmp, ['blueprint.yml', 'research/**']) !== fp1, 'fingerprint changes with input content');
+      assert(fingerprintInputs(tmp, ['research/**']) !== fp1, 'fingerprint scoped to globs');
+      assert(fingerprintInputs(tmp, []) === null && fingerprintInputs(tmp, null) === null, 'no declared inputs → null (never reused)');
+      // state-shape: reviews must be a plain object when present
+      assert(isValidStateShape({ assertions: {}, reviews: {} }), 'reviews object accepted');
+      assert(!isValidStateShape({ assertions: {}, reviews: [] }), 'reviews array rejected');
+    } finally { rmSync(tmp, { recursive: true, force: true }); }
+  }
+
   // any-exists finds a populated dir and is absent on a missing one
   assert(CHECK_KINDS['any-exists']({ dirs: ['research'] }, { root: process.cwd(), yml: '' }).state === 'pass', 'any-exists finds a populated dir');
   assert(CHECK_KINDS['any-exists']({ dirs: ['nope-xyz-123'] }, { root: process.cwd(), yml: '' }).state === 'absent', 'any-exists absent on missing dir');
@@ -762,14 +884,21 @@ function selftest() {
 
   // frontier on this repo is Stage 0 (sensor-wired unasserted) — an assertion
   // gap, not a disk gap; recordAdvance dry-run must not write.
-  const dry = recordAdvance({ root: process.cwd(), execute: false, now: '2026-01-01T00:00:00Z' });
+  const dry = await recordAdvance({ root: process.cwd(), execute: false, now: '2026-01-01T00:00:00Z' });
   assert(dry.ok === false && dry.missingAssertions.some((g) => g.gate === 'sensor-wired'), 'frontier needs the shell assertion');
   assert(!(dry.blocking || []).length, 'no derivable blocker at the Stage-0 frontier here');
   // GREENFIELD SUCCESS PATH (the case finding #1 proved was unreachable):
   // asserting the frontier's shell gate completes it and advances the confirmed
   // cursor past every already-disk-complete stage.
-  const ok = recordAdvance({ root: process.cwd(), asserts: { 'sensor-wired': 'drove it' }, execute: false, now: '2026-01-01T00:00:00Z' });
+  // home = cwd (the methodology repo IS the home in selftest context) so the
+  // pilot gate's mapped reviewer resolves; without home AND without stamped
+  // initiative reviewers, a mapped gate refuses to advance (UNRESOLVED is a
+  // hard stop by design — asserted below).
+  const ok = await recordAdvance({ root: process.cwd(), asserts: { 'sensor-wired': 'drove it' }, execute: false, now: '2026-01-01T00:00:00Z', home: process.cwd() });
   assert(ok.ok === true && ok.cursor >= 1, 'asserting the frontier shell gate advances the confirmed cursor');
+  assert((ok.reviews || []).some((r) => r.reviewer === 'pilot-profile-lock-reviewer' && r.ran === true), 'mapped reviewer ran at the frontier');
+  const unresolved = await recordAdvance({ root: process.cwd(), asserts: { 'sensor-wired': 'drove it' }, execute: false, now: '2026-01-01T00:00:00Z' });
+  assert(unresolved.ok === false && (unresolved.reviewerBlocked || []).some((r) => r.status === 'UNRESOLVED'), 'mapped-but-unresolvable reviewer refuses the transition (never silently skipped)');
   assert(readStageState(process.cwd()).cursor === -1, 'dry-run wrote no state file');
   // corrupt state is flagged, never silently emptied
   assert(readStageState(process.cwd()).corrupt === undefined, 'absent state file is not corrupt');
@@ -824,6 +953,6 @@ function selftest() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  if (process.argv[2] === '--selftest') selftest();
+  if (process.argv[2] === '--selftest') await selftest();
   else console.log(JSON.stringify(deriveStageStatus({ root: process.cwd() }), null, 2));
 }

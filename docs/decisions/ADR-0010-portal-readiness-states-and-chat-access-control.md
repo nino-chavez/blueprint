@@ -1,10 +1,10 @@
 ---
 canonical: true
 adr: 0010
-status: proposed
+status: accepted
 date: 2026-07-11
 deciders: ["Nino Chavez"]
-ratification: "PROPOSED — drafted wave 86 (2026-07-11); split from ADR-0009 per external review (separate architectural decisions); awaiting operator ratification"
+ratification: "explicitly ratified by operator 2026-07-11 ('ratify both'); rollout ships as wave 88 (readiness states + intent-gated deploy + chat.access modes)"
 scope_ceiling: "A — methodology-native + consumer-provisioned CF primitives (Turnstile widget, KV) where the consumer opts in"
 depends_on:
   - ./ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md
@@ -19,9 +19,10 @@ references:
 
 ## Status
 
-Proposed. Two related consumer-protection decisions that share one design
-question — what the methodology may require a consumer to provision — split
-from ADR-0009 per external review.
+Accepted (operator: "ratify both", 2026-07-11); implementation is wave 88. Two
+related consumer-protection decisions that share one design question — what the
+methodology may require a consumer to provision — split from ADR-0009 per
+external review.
 
 ## Context
 

@@ -40,6 +40,12 @@ import path from 'node:path';
 
 const NAME = 'pilot-profile-lock-reviewer';
 
+// ADR-0009 declared input globs — the advance freshness fingerprint hashes
+// ONLY these paths (a README edit must not invalidate a recorded PASS).
+// blueprint.yml holds the profile; research/ holds walkthrough citations;
+// decisions/ holds the ADR-lock this reviewer checks for pilot pivots.
+export const inputs = ['blueprint.yml', 'research/**', 'decisions/**'];
+
 // The 7 fields the .md spec (§2) and template/blueprint.yml § pilot_profile declare required.
 const REQUIRED_SCALARS = ['slug', 'display_name', 'pain_point', 'monetization_side', 'walkthrough_citation'];
 const REQUIRED_LISTS = ['competitors_in_scope', 'out_of_scope_pilots'];
