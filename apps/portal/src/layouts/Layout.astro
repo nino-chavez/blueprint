@@ -110,6 +110,22 @@ const archaeologySuggestions = config.archaeology.suggestions;
             </p>
           )}
         </div>
+        {/* Reference tier — real destinations, but second-visit depth rather
+            than first-visit adoption path (Learn/Try/Demo/Compare/FAQ own the
+            top nav for that). Every page on the site renders this footer, so
+            these are never more than one click away regardless of entry point
+            (IA audit 2026-07-13 — Build/Operate/Roadmap previously had zero
+            inbound links from anywhere in the site). */}
+        <nav
+          aria-label="Reference"
+          class="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-contrast-100 pt-4 font-mono text-[11px] uppercase tracking-wide text-contrast-400"
+        >
+          <a href="/discover" class="hover:text-brand">Strategy</a>
+          <a href="/build" class="hover:text-brand">Build</a>
+          <a href="/operate" class="hover:text-brand">Operate</a>
+          <a href="/inspect" class="hover:text-brand">Inspect</a>
+          <a href="/roadmap" class="hover:text-brand">Roadmap</a>
+        </nav>
       </Shell.Footer>
     </Shell.Root>
     {ARCHAEOLOGY_READY && <ArchaeologyChat client:idle pageContext={currentPath} suggestions={archaeologySuggestions} />}

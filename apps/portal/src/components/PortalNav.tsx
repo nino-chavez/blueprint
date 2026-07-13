@@ -6,17 +6,22 @@ const PROJECT_NAME = 'Blueprint';
 
 // Product nav — a linear adoption path, not an audience-routed lane switcher.
 // Anchors jump to the home sections so the story stays on one page ("don't make
-// people think"); Demo plays the live walkthrough; Strategy opens the strategy
-// excerpts at /discover (labelled "Docs" before — that lied about the content).
+// people think"); Demo plays the live walkthrough; Compare and FAQ are the
+// cold-discovery pages a skeptical evaluator needs (positioning vs. the field,
+// then the honest objections) — previously reachable only by direct URL or a
+// stray cross-link (IA audit 2026-07-13). Strategy/Build/Operate/Inspect/
+// Roadmap moved to the footer reference row: real destinations, but
+// second-visit depth rather than first-visit adoption path. Graph and Machine
+// moved under Inspect's own "go deeper" section — they're methodology-internals
+// facets of Inspect, not peers of Learn/Try/Demo.
 const NAV = [
   { href: '/learn', label: 'Learn' },
   { href: '/try', label: 'Try' },
   { href: '/demo', label: 'Demo' },
+  { href: '/compare', label: 'Compare' },
+  { href: '/faq', label: 'FAQ' },
   { href: '/#commands', label: 'Commands' },
   { href: '/#contribute', label: 'Contribute' },
-  { href: '/discover', label: 'Strategy' },
-  { href: '/graph', label: 'Graph' },
-  { href: '/states', label: 'Machine' },
 ] as const;
 
 const NPM_URL = 'https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli';
