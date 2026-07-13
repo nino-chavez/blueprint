@@ -338,6 +338,20 @@ framework: commands, cognitive personas, modes, MCP integrations.
 - **"Hermes"** — appears in landscape chatter; no substantive repo surfaced.
 - **gstack** (~109k per the community comparison table) — appears in the community
   shortlist; not examined.
+- **mattpocock/skills** (Matt Pocock / AI Hero — Total TypeScript's newer education
+  business) — read as an addendum pass, 2026-07-13, separate from the 2026-06-11
+  batch above. Verified via GitHub API: 168,175 stars, MIT license, pushed same day
+  as this read. Repo structure checked (`scripts/` holds only `link-skills.sh` and
+  `list-skills.sh` — installer plumbing, no gate/verification script found at that
+  level). The ~20-skill roster (from its own README) spans the same lifecycle this
+  landscape covers — research, `to-spec`, `to-tickets`, `implement`, `tdd`,
+  `code-review`, `domain-modeling`, `diagnosing-bugs` — plus a `wayfinder` skill
+  that maps foggy, too-large-for-one-session initiatives as a decision-ticket tree
+  on the issue tracker before detailed specs exist. Individual skill prompt files
+  (e.g. `code-review.md`, `grilling.md`) were NOT source-read this pass, so no gate
+  mechanism is claimed — same caveat as the Superpowers row. What's real and
+  distinctive: AI Hero's paid-course/newsletter audience backs this free repo, a
+  distribution funnel no other row in this table has.
 
 ---
 
@@ -503,12 +517,20 @@ Recorded as decisions-inputs, not decisions. Each traces to the evidence above.
 - Star counts: GitHub API, 2026-06-11 — approximate and perishable.
 - Upvote counts: point-in-time; r/ClaudeCode comment sampling was top-10 per thread.
 - Superpowers, gstack: NOT source-read; star counts only. No gate claims made.
+- mattpocock/skills: addendum pass, 2026-07-13 (not part of the 2026-06-11 batch).
+  Star count/license/repo-structure verified via GitHub API same day; individual
+  skill files NOT source-read. No gate claims made.
 - specdriven.com/landscape returned 403 to direct fetch; existence confirmed via
   search.
 - Corrections welcome: if a claim about your tool is wrong, open an issue on this
   repo.
 
 ## Sources
+
+**Landscape addendum (2026-07-13):**
+- github.com/mattpocock/skills (GitHub API: stargazers_count, license, pushed_at, contents/ and contents/scripts/ listing)
+- aihero.dev/skills-wayfinder
+- aihero.dev
 
 **Landscape (source-level reads, 2026-06-11):**
 - github.com/github/spec-kit (README; scripts/bash/check-prerequisites.sh; src/specify_cli/workflows/steps/gate/__init__.py)
