@@ -1,5 +1,7 @@
 # Blueprint
 
+<img src="assets/readme/hero.svg" alt="Blueprint — a methodology and CLI for running evidence-backed product initiatives with AI agents: agents execute, operators steer, gates verify." width="100%">
+
 **Run a product initiative end-to-end, agent-assisted** — research feeds the strategy documents (business- and product-requirements class — BRD/PRD), the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel) and steer the decisions; an AI agent executes each stage; deterministic gates verify the work before it moves. The output is one portal that serves leadership, engineering, and everyone.
 
 [![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint.ninochavez.co)
@@ -51,11 +53,9 @@ The output is a deployable site that serves three audiences simultaneously:
 
 ## How It Works
 
-```
-You provide context → Agent executes the pipeline → Deployable deliverable package
-```
+<img src="assets/readme/pipeline.svg" alt="The Blueprint pipeline: eight stages (0 Legibility, 1 Research, 2 Design, 3 Prototype, 4 Fact-check, 5 Documents, 6 Deploy, 7 Iterate) on a rail with a deterministic gate between each stage that verifies the work before it advances; prototype through documents are built together and fact-checked against source." width="100%">
 
-The pipeline runs Stage 0 (application legibility — the agent can drive the running app) plus seven stages whose outputs feed each other ([METHODOLOGY.md](METHODOLOGY.md) is the canonical description; this is the sketch):
+You bring context; the agent executes each stage; a deterministic gate verifies the work before it advances. Stage 0 (application legibility — the agent can drive the running app) precedes seven stages whose outputs feed each other ([METHODOLOGY.md](METHODOLOGY.md) is the canonical description):
 
 1. **Research** — competitive analysis, codebase exploration, market comparables
 2. **Design Principles** — codify what the prototype can/can't do before building
@@ -74,7 +74,7 @@ Two key loops: **prototype and documents are built simultaneously** (the prototy
 | **Specchain** | Agent orchestration patterns, execution profiles, governance principles |
 | **Forge Signal** | Content generation, voice taxonomy, quality validation |
 | **Claude Code** | Agent runtime, tool use, codebase analysis |
-| **Vercel** | Prototype deployment |
+| **Vercel / Cloudflare Pages** | Prototype deployment |
 
 ## Project Structure
 

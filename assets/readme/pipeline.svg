@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 230" width="100%" role="img" aria-label="The Blueprint pipeline: eight stages — 0 Legibility, 1 Research, 2 Design, 3 Prototype, 4 Fact-check, 5 Documents, 6 Deploy, 7 Iterate — connected on a rail with a deterministic gate between each stage that verifies the work before it advances. Prototype through Documents are built together and fact-checked against source.">
+  <title>The Blueprint pipeline — deterministic gates between agentic stages</title>
+
+  <rect x="8" y="8" width="1184" height="214" rx="14" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+
+  <text x="44" y="44" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" letter-spacing="1.5" fill="#64748b">THE PIPELINE — DETERMINISTIC GATES BETWEEN AGENTIC STAGES</text>
+
+  <!-- rail -->
+  <line x1="40" y1="120" x2="1160" y2="120" stroke="#e5e7eb" stroke-width="2"/>
+
+  <!-- gates (7), on the rail between stages -->
+  <polygon points="170.5,113 177.5,120 170.5,127 163.5,120" fill="#2563eb"/>
+  <polygon points="313.5,113 320.5,120 313.5,127 306.5,120" fill="#2563eb"/>
+  <polygon points="456.5,113 463.5,120 456.5,127 449.5,120" fill="#2563eb"/>
+  <polygon points="599.5,113 606.5,120 599.5,127 592.5,120" fill="#2563eb"/>
+  <polygon points="742.5,113 749.5,120 742.5,127 735.5,120" fill="#2563eb"/>
+  <polygon points="885.5,113 892.5,120 885.5,127 878.5,120" fill="#2563eb"/>
+  <polygon points="1028.5,113 1035.5,120 1028.5,127 1021.5,120" fill="#2563eb"/>
+
+  <!-- stage chips -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <rect x="40"   y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="99"   y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">0</text>
+    <text x="99"   y="145" text-anchor="middle" font-size="11" fill="#334155">Legibility</text>
+
+    <rect x="183"  y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="242"  y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">1</text>
+    <text x="242"  y="145" text-anchor="middle" font-size="11" fill="#334155">Research</text>
+
+    <rect x="326"  y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="385"  y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">2</text>
+    <text x="385"  y="145" text-anchor="middle" font-size="11" fill="#334155">Design</text>
+
+    <rect x="469"  y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="528"  y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">3</text>
+    <text x="528"  y="145" text-anchor="middle" font-size="11" fill="#334155">Prototype</text>
+
+    <rect x="612"  y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="671"  y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">4</text>
+    <text x="671"  y="145" text-anchor="middle" font-size="11" fill="#334155">Fact-check</text>
+
+    <rect x="755"  y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="814"  y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">5</text>
+    <text x="814"  y="145" text-anchor="middle" font-size="11" fill="#334155">Documents</text>
+
+    <rect x="898"  y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="957"  y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">6</text>
+    <text x="957"  y="145" text-anchor="middle" font-size="11" fill="#334155">Deploy</text>
+
+    <rect x="1041" y="94" width="118" height="52" rx="9" fill="#f8fafc" stroke="#2563eb" stroke-opacity="0.45" stroke-width="1.5"/>
+    <text x="1100" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">7</text>
+    <text x="1100" y="145" text-anchor="middle" font-size="11" fill="#334155">Iterate</text>
+  </g>
+
+  <!-- the built-together loop across Prototype..Documents -->
+  <path d="M528 150 V166 H814 V150" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="671" y="186" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" fill="#475569">prototype &#8646; documents — built together, fact-checked against source</text>
+
+  <!-- legend -->
+  <polygon points="50,206 56,211 50,216 44,211" fill="#2563eb"/>
+  <text x="64" y="215" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" fill="#64748b">deterministic gate — work is verified before it advances</text>
+</svg>
