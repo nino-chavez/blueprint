@@ -12,6 +12,12 @@ const adrCount = loadAdrCount();
 const cfg = portalConfig();
 const features = cfg.features;
 
+// Reader-job views derived from the actor-output manifest (decisions/05).
+// When present they replace the verb lanes + audience switcher — one declared
+// viewer, one order. Card copy beyond the label is the consumer's reshape;
+// the derived card is the honest floor: label + what it presents.
+const views = cfg.views;
+
 // Lanes come from blueprint.yml's portal.home.lanes; normalizeLanes resolves
 // each entry against the canonical verb set + generic defaults and falls back
 // to the full default lane set when none are configured (Tier-0). Resolved here
@@ -57,9 +63,32 @@ const showAudienceNote = features.state || features.board || features.surfaces;
     decisionsDir={cfg.decisions.dir}
   />
 
-  <HomeLanes lanes={lanes} client:load />
+  {views ? (
+    <section class="grid gap-4 md:grid-cols-2" aria-label="Portal views">
+      {views.map((view) => (
+        <a
+          href={view.path}
+          class="group flex flex-col rounded-lg border border-contrast-200 bg-background p-6 transition-colors hover:border-brand"
+        >
+          <h2 class="mb-2 font-heading text-xl font-semibold tracking-tight text-foreground">
+            {view.label}
+          </h2>
+          {view.presents && (
+            <p class="mb-4 flex-1 font-mono text-xs uppercase tracking-wide text-contrast-400">
+              presents: {view.presents}
+            </p>
+          )}
+          <span class="font-mono text-xs text-contrast-400 transition-colors group-hover:text-brand">
+            Open →
+          </span>
+        </a>
+      ))}
+    </section>
+  ) : (
+    <HomeLanes lanes={lanes} client:load />
+  )}
 
-  {showAudienceNote && (
+  {!views && showAudienceNote && (
     <section class="mt-16 rounded-lg border border-contrast-200 bg-contrast-100/30 p-6">
       <h2 class="mb-2 font-heading text-xl font-semibold tracking-tight">Lane order shifts by audience</h2>
       <p class="text-sm leading-relaxed text-contrast-500">

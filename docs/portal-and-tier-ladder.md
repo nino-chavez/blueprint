@@ -17,6 +17,11 @@ canonical: true
 > legal without a divergence ADR when a manifest is declared — the manifest IS
 > the declaration. New stamps carry the intrinsic manifest from birth; existing
 > consumers migrate via the dual-validation shim (`migration: actor-output`).
+> As of wave 90 the Initiative Portal shell is **dual-mode**: when an
+> initiative's manifest declares portal `views:` (build-order step 7,
+> `portal-derive.mjs`), the shell renders the derived reader-job nav and
+> front-door cards and the verb spine + audience switcher do not render; with
+> no derived views the legacy verb shell renders unchanged.
 > This doc remains canonical for the tier ladder and the portal SHELLS as
 > reusable harness — read it for those, not for what gates.
 

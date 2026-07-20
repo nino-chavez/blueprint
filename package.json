@@ -42,7 +42,7 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "node bin/release-if-unpublished.mjs",
-    "test:core": "node template/tools/lib/consumers-registry.mjs --selftest && node template/tools/lib/cost-dial.mjs --selftest && node template/tools/lib/doctor.mjs --selftest && node template/tools/lib/reviewer-registry.mjs --selftest && node template/tools/lib/stage-model.mjs --selftest && node template/tools/lib/telemetry.mjs --selftest && node template/tools/lib/upgrade.mjs --selftest && node template/tools/lib/actor-output.mjs --selftest && node template/tools/lib/account-derive.mjs --selftest && node template/tools/lib/recipient-safety.mjs --selftest && node template/.claude/agents/blueprint/reviewers/pilot-profile-lock-reviewer.mjs --selftest && node template/tools/blueprint-init/smoke.mjs",
+    "test:core": "node template/tools/lib/consumers-registry.mjs --selftest && node template/tools/lib/cost-dial.mjs --selftest && node template/tools/lib/doctor.mjs --selftest && node template/tools/lib/reviewer-registry.mjs --selftest && node template/tools/lib/stage-model.mjs --selftest && node template/tools/lib/telemetry.mjs --selftest && node template/tools/lib/upgrade.mjs --selftest && node template/tools/lib/actor-output.mjs --selftest && node template/tools/lib/account-derive.mjs --selftest && node template/tools/lib/recipient-safety.mjs --selftest && node template/tools/lib/portal-derive.mjs --selftest && node template/.claude/agents/blueprint/reviewers/pilot-profile-lock-reviewer.mjs --selftest && node template/tools/blueprint-init/smoke.mjs",
     "dev": "npm run dev -w apps/portal",
     "build": "npm run build -w apps/portal",
     "typecheck": "npm run typecheck -w apps/portal",

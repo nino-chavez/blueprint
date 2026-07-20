@@ -50,6 +50,7 @@ The Initiative Portal retires; the Review Portal demotes to the `review-context`
 4. **Recipient safety made evidentiary** — selector-level allowlists, required `as_of` + destination policy, executed leakage lint (generalizing the GSI `sanitize.py` mechanism), recorded issuance attestation. "Configured to be checked" ≠ "recipient-safe proven."
 5. **Account projection + intrinsic outputs** — stable machine projection of the account layer; versioned agent boot packet; standing recovery-brief derivation.
 6. **Stamper + docs** — stamp intrinsic-only manifests (~15–20 lines: maintainer + next-agent); retire the 6-verb boilerplate; update `docs/portal-and-tier-ladder.md`; deprecate the portal-type conformance reviewers per the routing shim.
+7. **Portal derivation** *(added wave 90 — promoted from two hand-reshapes, blueprint-self + film-room, per the ≥2-consumer rule; film-room `METHODOLOGY-AMENDMENTS.md` 2026-07-20 is the evidence entry)* — outputs declare `views: [{path, label, presents?}]`; `portal-derive.mjs` validates them (presents resolves to an output id or account key), emits `derived/portal-views.json`, and `--check <dist>` executes the walk (front door + every view populated, no empty-state shell). The template shell is dual-mode: derived views render as the reader-job nav + front-door cards (audience switcher off); no views → legacy verb shell. Intrinsic stamps declare no views and stamp none.
 
 Full acceptance criteria: `research/portal-ia-rederivation/06-validator-run.md` § Production acceptance criteria.
 

@@ -57,7 +57,7 @@ const archaeologySuggestions = config.archaeology.suggestions;
   <body class="min-h-screen bg-background text-foreground antialiased">
     <Shell.Root>
       <Shell.Header>
-        <PortalNav client:load currentPath={currentPath} />
+        <PortalNav client:load currentPath={currentPath} views={config.views} />
       </Shell.Header>
       <Shell.Main>
         <slot />

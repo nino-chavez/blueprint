@@ -70,6 +70,21 @@ export interface GatesConfig {
   gateLabels: string[];
 }
 
+/**
+ * A reader-job portal view derived from the actor-output manifest
+ * (`derived/portal-views.json`, written by tools/lib/portal-derive.mjs —
+ * never hand-edited). When views are present the shell renders THEM as the
+ * nav + front-door cards and the 7-verb spine retires; when absent (legacy
+ * consumers, fresh intrinsic stamps) the verb shell renders as before.
+ */
+export interface PortalView {
+  path: string;
+  label: string;
+  presents?: string;
+  output: string;
+  clearance: string;
+}
+
 export interface PortalConfig {
   repoUrl: string;
   decisions: { dir: string; pattern: RegExp };
@@ -83,6 +98,7 @@ export interface PortalConfig {
   inspect: { docs: any[]; axioms: any[] };
   archaeology: { suggestions: string[] };
   features: Record<FeatureKey, boolean>;
+  views: PortalView[] | null;
 }
 
 // ── Defaults ─────────────────────────────────────────────────────────────────
@@ -287,6 +303,29 @@ export function portalConfig(): PortalConfig {
     inspect,
     archaeology,
     features,
+    views: loadPortalViews(),
   };
   return _cache;
+}
+
+/**
+ * Load reader-job views derived from the actor-output manifest, if the
+ * initiative has adopted the contract (Blueprint decisions/05). Same
+ * degrade-to-null discipline as every other source: a missing, stale, or
+ * malformed derived/portal-views.json means the legacy verb shell renders —
+ * never a crashed build.
+ */
+function loadPortalViews(): PortalView[] | null {
+  try {
+    const file = resolve(REPO_ROOT, 'derived', 'portal-views.json');
+    if (!existsSync(file)) return null;
+    const parsed = JSON.parse(readFileSync(file, 'utf8'));
+    if (parsed?.schema !== 'portal-views/1' || !Array.isArray(parsed.views)) return null;
+    const views = parsed.views.filter(
+      (v: any) => typeof v?.path === 'string' && v.path.startsWith('/') && typeof v?.label === 'string',
+    );
+    return views.length > 0 ? views : null;
+  } catch {
+    return null;
+  }
 }

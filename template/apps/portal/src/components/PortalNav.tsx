@@ -6,10 +6,10 @@ import { AudienceSwitcher, useAudiencePreference } from '@blueprint/ui';
 // Layout uses for <title> / footer so the brand reads consistently.
 const PROJECT_NAME = 'REPLACE_FOR_PROJECT_NAME';
 
-// The 7-verb IA spine. This is the canonical Blueprint information
-// architecture and is always present regardless of which substrate sources
-// a given initiative has wired — empty verbs render their own "not
-// configured" state, they are never hidden from the nav.
+// The legacy 7-verb IA spine — renders only when the initiative has NOT
+// adopted the actor-output contract (Blueprint decisions/05). Once
+// derived/portal-views.json exists, nav entries come from the manifest's
+// declared views (reader-job labels) and this spine retires.
 const VERBS = [
   { href: '/discover', label: 'Discover' },
   { href: '/try',      label: 'Try' },
@@ -22,15 +22,21 @@ const VERBS = [
 
 export interface PortalNavProps {
   currentPath: string;
+  /** Reader-job views from portalConfig().views — null on legacy consumers. */
+  views?: { path: string; label: string }[] | null;
 }
 
 /**
- * Whole nav as a React island. Owns audience preference state; renders
- * brand + verb switcher + audience chip group. The current verb is
- * highlighted from the SSR-passed currentPath.
+ * Whole nav as a React island. Dual-mode: with derived views it renders the
+ * reader-job nav (one declared viewer, one order — no audience switcher);
+ * without them it renders the legacy verb spine + audience chip group. The
+ * current entry is highlighted from the SSR-passed currentPath.
  */
-export function PortalNav({ currentPath }: PortalNavProps) {
+export function PortalNav({ currentPath, views = null }: PortalNavProps) {
   const [audience, setAudience] = useAudiencePreference();
+  const entries = views?.length
+    ? views.map((v) => ({ href: v.path, label: v.label }))
+    : VERBS.map((v) => ({ href: v.href, label: v.label }));
 
   return (
     <NavBar.Root>
@@ -39,21 +45,23 @@ export function PortalNav({ currentPath }: PortalNavProps) {
         <span>{PROJECT_NAME}</span>
       </NavBar.Brand>
       <NavBar.Switcher>
-        {VERBS.map((verb) => (
+        {entries.map((entry) => (
           <NavBar.Item
-            key={verb.href}
-            href={verb.href}
+            key={entry.href}
+            href={entry.href}
             active={
-              currentPath === verb.href || currentPath.startsWith(`${verb.href}/`)
+              currentPath === entry.href || currentPath.startsWith(`${entry.href}/`)
             }
           >
-            {verb.label}
+            {entry.label}
           </NavBar.Item>
         ))}
       </NavBar.Switcher>
-      <NavBar.Actions>
-        <AudienceSwitcher value={audience} onChange={setAudience} />
-      </NavBar.Actions>
+      {!views?.length && (
+        <NavBar.Actions>
+          <AudienceSwitcher value={audience} onChange={setAudience} />
+        </NavBar.Actions>
+      )}
     </NavBar.Root>
   );
 }

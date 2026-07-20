@@ -170,6 +170,19 @@ try {
     bad("actor-output contract from birth", err.message);
   }
 
+  // 7c — portal derivation (decisions/05 step 7, wave 90): an intrinsic fresh
+  // stamp declares no portal views (maintainer + next-agent have no browsable
+  // surface), so portal-derive is a clean no-op — the legacy verb shell renders
+  // until a viewer-serving output declares views.
+  try {
+    const pd = await import(new URL("../lib/portal-derive.mjs", import.meta.url).href);
+    const r = pd.derive(aTarget);
+    if (r.ok && r.views.length === 0 && r.wrote === null) ok("intrinsic stamp: portal-derive is a clean no-op (no views declared)");
+    else bad("intrinsic stamp: portal-derive is a clean no-op (no views declared)", `ok=${r.ok} views=${r.views?.length} wrote=${r.wrote} ${(r.errors ?? []).join(" | ")}`);
+  } catch (err) {
+    bad("portal derivation no-op on intrinsic stamp", err.message);
+  }
+
   // 8 — pilot-gate integration (wave 86): a FRESH stamp must block advance on
   // the empty profile; populating all 7 fields + a real citation file unblocks
   // the gate. This is the required-for-new / legacy-exception contract proven
