@@ -423,6 +423,10 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
     "# review     = Review Portal (static HTML + drawers, brownfield audit/redesign)",
     "# bespoke    = custom portal with mandatory divergence ADR in decisions/",
     `portal_type: ${portalType}`,
+    "# decisions/05 (actor-output contract): actor-output.yml at the root is the",
+    "# live contract; portal_type routes the legacy chrome only. The migration key",
+    "# below sanctions the pair — doctor FAILs portal_type + manifest without it.",
+    "migration: actor-output",
     "",
     "# ──────────────────────────────────────────────────────────────────",
     "# Portal harness config (Initiative Portal). Read by apps/portal/src/lib/portal-config.ts.",
@@ -468,6 +472,91 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
   }
   await fs.writeFile(dst, yml, "utf8");
   log.stamped.push("blueprint.yml");
+}
+
+// writeActorOutputManifest — decisions/05 (wave 89): every stamped initiative
+// starts on the actor-output contract with the intrinsic manifest (maintainer +
+// next-agent, ~18 functional lines) and its two derived outputs materialized,
+// so the fresh stamp's gate verdict is an EARNED PASS, not a promise. External
+// actors get added by the consumer as they become real — with evidence.
+async function writeActorOutputManifest({ target, name, dryRun, log }) {
+  const dst = path.join(target, "actor-output.yml");
+  if (await readMaybe(dst)) {
+    log.skipped.push("actor-output.yml (already exists; preserved)");
+    return;
+  }
+  if (dryRun) {
+    log.skipped.push("actor-output.yml (dry-run; would write)");
+    return;
+  }
+  const yml = [
+    "# actor-output.yml — this initiative's actor-output contract (Blueprint decisions/05).",
+    "# Stamped intrinsic-only: maintainer + next-agent. Add external actors (reviewers,",
+    "# counterparties) WITH evidence as they become real — an assumed actor gates nothing.",
+    "# Validate:  node $BLUEPRINT_HOME/template/tools/lib/actor-output.mjs actor-output.yml --root . --gate",
+    "# Re-derive: node $BLUEPRINT_HOME/template/tools/lib/account-derive.mjs --root .",
+    "",
+    `initiative: ${name}`,
+    "",
+    "account:",
+    "  decisions: decisions/",
+    "  config: blueprint.yml",
+    "",
+    "actors:",
+    "  - id: maintainer",
+    "    kind: human",
+    "    evidence: { status: intrinsic }",
+    "    outcomes:",
+    "      - id: recover-context",
+    "        success:",
+    "          statement: resume work without re-deriving state",
+    "          proof:",
+    "            target: { method: observed-human, signal: operator resumes without re-derivation }",
+    "            interim: { method: cold-agent, signal: cold session resumes from the derived brief alone }",
+    "  - id: next-agent",
+    "    kind: agent",
+    "    evidence: { status: intrinsic }",
+    "    outcomes:",
+    "      - id: bootstrap",
+    "        success:",
+    "          statement: boot with canonical context",
+    "          proof:",
+    "            target: { method: cold-agent, signal: agent cites current state from the boot packet alone }",
+    "",
+    "outputs:",
+    "  - id: recovery-brief",
+    "    type: recovery-brief",
+    "    serves: [maintainer.recover-context]",
+    "    status: ready",
+    "    artifact: derived/recovery-brief.md",
+    "    renderer: derived-markdown",
+    "    clearance: internal",
+    "  - id: boot-packet",
+    "    type: agent-boot-packet",
+    "    serves: [next-agent.bootstrap]",
+    "    status: ready",
+    "    artifact: derived/boot-packet.json",
+    "    renderer: derived-json",
+    "    clearance: internal",
+    "",
+  ].join("\n");
+  await fs.writeFile(dst, yml, "utf8");
+  log.stamped.push("actor-output.yml");
+  // The manifest's account + artifacts must resolve or the fresh stamp reports
+  // BLOCKED about itself: ensure decisions/ exists, then materialize the two
+  // derived outputs. Non-fatal — a derivation failure is reported, not thrown.
+  try {
+    const decisionsDir = path.join(target, "decisions");
+    if (!(await fs.stat(decisionsDir).catch(() => null))) {
+      await fs.mkdir(decisionsDir, { recursive: true });
+      await fs.writeFile(path.join(decisionsDir, ".gitkeep"), "");
+    }
+    const { derive } = await import(new URL("../lib/account-derive.mjs", import.meta.url).href);
+    const { proj } = derive(target);
+    log.stamped.push(`derived/boot-packet.json + derived/recovery-brief.md (verdict ${proj.verdict.state})`);
+  } catch (e) {
+    log.skipped.push(`derived outputs (derivation failed: ${e.message} — run account-derive.mjs manually)`);
+  }
 }
 
 // Substrate de-narration tripwires. These strings are narrative leaks from the
@@ -1130,6 +1219,7 @@ async function main() {
     log.copied.push("tools/run-reviewers.mjs");
     await stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log });
     await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
+    await writeActorOutputManifest({ target, name, dryRun, log });
     if (!dryRun) await mechanicalCheck({ target, name, log });
     printReport(log);
     if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
@@ -1214,6 +1304,7 @@ async function main() {
   await renameLogo(target, dryRun, log);
   if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
   await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
+  await writeActorOutputManifest({ target, name, dryRun, log });
 
   if (!dryRun) await mechanicalCheck({ target, name, log });
   printReport(log);

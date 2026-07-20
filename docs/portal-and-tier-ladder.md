@@ -4,6 +4,22 @@ canonical: true
 
 # Portal Patterns, Shell, and the Tier Ladder
 
+> **SUPERSEDED AS THE CONFORMANCE CONTRACT — decisions/05 (wave 89).** The
+> actor-output contract replaces portal-type conformance: an initiative declares
+> its actors, evidenced outcomes, and outputs in `actor-output.yml`, and the
+> validator/doctor gate on that manifest (`PASS / PENDING / BLOCKED`). What this
+> doc describes survives in demoted roles: the **Initiative Portal's 6-verb IA +
+> audience switcher is retired** as a contract (it was an n=1 extraction whose
+> origin consumer had itself abandoned it — see
+> `research/portal-ia-rederivation/00-evidence-inventory.md`); the **Review
+> Portal survives as the `review-context` output type**, and its chrome
+> reviewers keep running as renderer-conformance receipts; **bespoke** remains
+> legal without a divergence ADR when a manifest is declared — the manifest IS
+> the declaration. New stamps carry the intrinsic manifest from birth; existing
+> consumers migrate via the dual-validation shim (`migration: actor-output`).
+> This doc remains canonical for the tier ladder and the portal SHELLS as
+> reusable harness — read it for those, not for what gates.
+
 Canonical reference for how a Blueprint initiative externalizes itself across audiences, which portal pattern to choose, and how that surface evolves as the initiative matures.
 
 ## Why this exists

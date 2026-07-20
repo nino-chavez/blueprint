@@ -1,0 +1,107 @@
+# INVALID FIXTURE — clearance leak. Expect ERROR R3-clearance (recipient-safe + cite mode).
+# Specimen 1 — film-room (solo operator + counterparty)
+# Facts from wip/film-room: blueprint.yml, decisions/0001..0006, docs/event-day-runbook.md,
+# pipeline/report.py, and the demand-evidence capture (path de-named via roots.local.yml).
+# Root path for mechanical resolution lives in roots.local.yml (gitignored).
+# The seeded failure is now a REAL fixture: fixtures/film-room-clearance-leak.yml.
+
+initiative: film-room
+
+account:
+  # No new files — this names what exists. All paths resolve under root (validator R7).
+  decisions: decisions/                      # 6 ADRs
+  research: research/                        # competitive, current-state, platform-publishing
+  state: data/filmroom.db                    # the substrate; derived, rebuildable
+                                             # (was wrongly declared .sqlite — caught by Codex;
+                                             #  validator R7 now catches this class mechanically)
+  demand: local:demand-evidence
+
+viewers:
+  - id: maintainer                           # operator wearing both hats; one viewer, two outcomes
+    kind: human
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: recover-context
+        success:
+          statement: resume work after weeks away without re-deriving state
+          proof:
+            target: { method: observed-human, signal: operator resumes and reaches "what's next" without re-derivation }
+            interim: { method: cold-agent, signal: a context-free session reaches "what's next" from the brief alone }
+      - id: run-next-event
+        success:
+          statement: deliver the next event end to end from the console, no terminal
+          proof:
+            target: { method: observed-human, signal: event cleared with no /classic fallback (ADR-0004 trigger) }
+  - id: next-agent
+    kind: agent
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: bootstrap
+        success:
+          statement: boot with canonical state + decisions, no re-derivation
+          proof:
+            target: { method: cold-agent, signal: agent cites current state without reading raw substrate }
+  - id: club-director                        # the club — commercial counterparty
+    kind: human
+    evidence: { status: observed, source: local:demand-evidence }
+    outcomes:
+      - id: verify-event-value
+        success:
+          statement: understands and accepts what was delivered for the event
+          proof:
+            target: { method: observed-human, signal: delivery accepted without a clarification round-trip }
+
+outputs:
+  - id: console
+    type: live-surface
+    serves: [maintainer.run-next-event]
+    status: ready                            # live today, launchd-supervised, 127.0.0.1:8765
+    renderer: local-app
+    clearance: internal
+    assurance: { freshness: live, smoke: 10 specs }
+  - id: event-runbook
+    type: runbook
+    serves: [maintainer.run-next-event]
+    status: ready
+    artifact: docs/event-day-runbook.md
+    renderer: markdown
+    clearance: internal
+  - id: recovery-brief
+    type: recovery-brief
+    serves: [maintainer.recover-context]
+    status: planned                          # honest: proposed derivation, not yet produced as a
+    renderer: derived-markdown               # standing artifact (Codex lifecycle finding)
+    clearance: internal
+    assurance: { freshness: per-session }
+  - id: boot-packet
+    type: agent-boot-packet
+    serves: [next-agent.bootstrap]
+    status: planned                          # honest: not yet produced
+    renderer: derived-json
+    clearance: internal
+    assurance: { freshness: per-session }
+  - id: event-delivery-report
+    type: issued-package
+    serves: [club-director.verify-event-value]
+    status: issued                           # events delivered; report is the ONLY club-facing artifact
+    renderer: local-html                     # pipeline/report.py; embeds player frames
+    clearance: recipient-safe
+    projection:
+      mode: allowlist
+      sources: [event-substrate]             # coverage, turnaround, picks — substrate facts only
+      forbidden: [research/, decisions/, pricing, negotiation]
+      as_of: per-event
+    assurance:
+      leakage_lint: required
+      issuance: human                        # operator hands it over; never posted (gitignored)
+      destination: private-handoff
+      human_validation: pending
+  - id: club-season-summary
+    type: view
+    serves: [club-director.verify-event-value]
+    status: ready
+    renderer: static-html
+    clearance: recipient-safe
+    projection:
+      mode: cite                             # VIOLATION: cite-mode may reference anything internal
+      sources: [research/, account]

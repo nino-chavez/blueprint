@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import HarnessNote from '@/components/HarnessNote.astro';
 import { StateMachineView } from '@/components/StateMachineView';
 import {
   GREENFIELD_MODEL,
@@ -25,6 +26,7 @@ const models = [GREENFIELD_MODEL, MIDSTREAM_MODEL, BROWNFIELD_MODEL, RESEARCH_MO
   title="The Machine"
   description="Blueprint's pipeline is a state machine: stages, gates, and who decides them — a program (the deterministic core) or a human assertion (the agentic shell). Rendered from the model itself."
 >
+  <HarnessNote />
   <header class="mb-10 max-w-3xl">
     <p class="mb-2 font-mono text-xs uppercase tracking-wide text-brand">the machine</p>
     <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">

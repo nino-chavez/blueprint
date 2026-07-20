@@ -1,0 +1,104 @@
+# Specimen 2 — Blueprint self-application (orientation / evaluation / contribution)
+# Facts from tools/blueprint: docs/content/validation-script.md (viewer evidence log),
+# feedback/, decisions/02 (bespoke product site), apps/portal/.
+# Root path for mechanical resolution lives in roots.local.yml (gitignored).
+# The seeded failure is now a REAL fixture: fixtures/blueprint-self-grade-upgrade.yml.
+
+initiative: blueprint-self
+
+account:
+  decisions: decisions/
+  platform_decisions: docs/decisions/
+  research: research/
+  demand: docs/content/validation-script.md   # the viewer-evidence ledger IS account content
+  state: WAVE-LOG.md
+  amendments: "consumer METHODOLOGY-AMENDMENTS.md files (fleet-side)"
+
+viewers:
+  - id: maintainer
+    kind: human
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: recover-context
+        success:
+          statement: resume methodology work without re-deriving wave state
+          proof:
+            target: { method: observed-human, signal: operator resumes at the current wave without re-derivation }
+            interim: { method: cold-agent, signal: session reaches current wave + open threads from WAVE-LOG tail }
+  - id: next-agent
+    kind: agent
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: bootstrap
+        success:
+          statement: boot with canonical methodology context
+          proof:
+            target: { method: cold-agent, signal: SessionStart inject suffices without re-reading METHODOLOGY.md }
+  - id: casual-visitor
+    kind: human
+    evidence: { status: observed, source: feedback/2026-06-09-casual-visitor.md }   # first cold walk
+    outcomes:
+      - id: orient
+        success:
+          statement: can say what Blueprint is and whether it's for them, one scroll, sub-60s
+          proof:
+            target: { method: observed-human, signal: cold-open narrate test passes (P4 re-test, pending) }
+            interim: { method: simulated-walk, signal: persona-walk agent orients from the hero alone }
+  - id: evaluating-team-lead
+    kind: human
+    evidence: { status: observed, source: docs/content/validation-script.md }       # Mom-test ledger
+    outcomes:
+      - id: evaluate
+        success:
+          statement: knows what a trial costs, what they keep if they quit, what evidence says it works beyond the author
+          proof:
+            target: { method: observed-human, signal: a commitment-class ask taken (time/reputation per Mom-test ledger) }
+  - id: contributor
+    kind: human
+    evidence: { status: assumed }             # A5: zero external amendments to date — honest status
+    outcomes:
+      - id: engage
+        success:
+          statement: knows where to start and what the contribution loop is
+          proof:
+            target: { method: observed-human, signal: first external amendment or PR filed }
+
+outputs:
+  - id: product-site
+    type: orientation
+    serves: [casual-visitor.orient, evaluating-team-lead.evaluate]
+    status: issued                            # deployed and public — lifecycle state, not quality
+    renderer: astro                           # apps/portal/ — the bespoke product site (decisions/02)
+    clearance: public
+    assurance:
+      freshness: per-wave
+      human_validation: FAILING               # casual-visitor walk standing RED since 2026-06-09
+  - id: docs-corpus
+    type: view
+    serves: [evaluating-team-lead.evaluate]
+    status: issued
+    artifact: METHODOLOGY.md
+    renderer: markdown
+    clearance: public
+  - id: contribute-path
+    type: view
+    serves: [contributor.engage]
+    status: ready
+    artifact: template/docs/methodology/methodology-amendments-convention.md
+    renderer: markdown
+    clearance: public
+    # contributor is ASSUMED → three-tier rule: mechanical receipts gate (build, links,
+    # placeholder marking); reader-success stays unvalidated and is SHOWN as such.
+  - id: boot-packet
+    type: agent-boot-packet
+    serves: [next-agent.bootstrap]
+    status: ready                             # exists today as SessionStart hook side-channel
+    renderer: sessionstart-inject
+    clearance: internal
+  - id: recovery-brief
+    type: recovery-brief
+    serves: [maintainer.recover-context]
+    status: ready                             # WAVE-LOG tail + digest tool exist and work today
+    artifact: WAVE-LOG.md
+    renderer: derived-markdown
+    clearance: internal

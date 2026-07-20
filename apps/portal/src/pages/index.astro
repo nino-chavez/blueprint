@@ -38,7 +38,7 @@ const DEEPER = [
   ['Watch the demo', '35-second sizzle or the step-through walkthrough — real transcripts, real artifacts.', '/demo'],
   ['Methodology', 'The first principles, the seven stages, how variant and tier get picked.', '/inspect'],
   ['Decisions', `${adrCount} architecture decision records — the why behind every primitive.`, '/inspect'],
-  ['The live portal', 'Discover · Try · Build · Operate · Inspect · Roadmap — the deeper reference.', '/discover'],
+  ['The live portal', 'Demos, guides, decisions, roadmap — the deeper reference layer behind this page.', '/discover'],
   ['FAQ — the honest objections', 'The questions a skeptic asks first, answered straight.', '/faq'],
   ['How it compares', "A source-level read of 15 spec-driven tools — what each one's gates actually do.", '/compare'],
   ['Source on GitHub', 'The methodology, the CLI, the template, the reviewer set.', REPO_URL],
@@ -252,7 +252,7 @@ const DEEPER = [
             <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">Set the three things that matter in <code class="font-mono text-[13px]">blueprint.yml</code> — the rest has sane defaults.</p>
             <pre class="overflow-x-auto rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground"><code>variant: brownfield   <span class="text-contrast-500"># greenfield | midstream | brownfield</span>
 tier: 1               <span class="text-contrast-500"># deliverable sophistication 0–2</span>
-portal_pattern: A     <span class="text-contrast-500"># A = platform portal · B = redesign review</span></code></pre>
+portal_type: initiative  <span class="text-contrast-500"># initiative = product front-door · review = redesign review</span></code></pre>
           </div>
         </li>
         <li class="grid grid-cols-[2rem_1fr] gap-4">

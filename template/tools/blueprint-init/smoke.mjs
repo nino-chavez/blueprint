@@ -155,6 +155,21 @@ try {
   if (await fs.stat(path.join(aTarget, "apps", "portal", "package.json")).catch(() => null)) ok("Pattern A portal shell present");
   else bad("Pattern A portal shell present", "apps/portal/package.json missing");
 
+  // 7b — actor-output contract from birth (decisions/05, wave 89): a fresh stamp
+  // carries the intrinsic manifest, its derived outputs exist, the gate verdict
+  // is an EARNED PASS (outcomes served by real artifacts), and the migration key
+  // sanctions portal_type coexisting — doctor would FAIL the pair without it.
+  try {
+    const ao = await import(new URL("../lib/actor-output.mjs", import.meta.url).href);
+    const r = ao.validateManifestFile(path.join(aTarget, "actor-output.yml"), { root: aTarget, gate: true });
+    if (r.route === "actor-output" && r.verdict === "PASS") ok("fresh stamp's actor-output manifest gates PASS (intrinsic outcomes served)");
+    else bad("fresh stamp's actor-output manifest gates PASS (intrinsic outcomes served)", `route=${r.route} verdict=${r.verdict} — ${[...r.errors, ...r.pendings].join(" | ")}`);
+    if (/^migration: actor-output$/m.test(aYml)) ok("stamped blueprint.yml sanctions the dual state (migration: actor-output)");
+    else bad("stamped blueprint.yml sanctions the dual state (migration: actor-output)", "migration key missing — doctor FAILs manifest + portal_type");
+  } catch (err) {
+    bad("actor-output contract from birth", err.message);
+  }
+
   // 8 — pilot-gate integration (wave 86): a FRESH stamp must block advance on
   // the empty profile; populating all 7 fields + a real citation file unblocks
   // the gate. This is the required-for-new / legacy-exception contract proven

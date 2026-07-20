@@ -120,11 +120,13 @@ const archaeologySuggestions = config.archaeology.suggestions;
           aria-label="Reference"
           class="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-contrast-100 pt-4 font-mono text-[11px] uppercase tracking-wide text-contrast-400"
         >
+          {/* Labels are reader-job-first (decisions/05): what you come here to
+              answer, not the builder's verb for the content pile. */}
           <a href="/discover" class="hover:text-brand">Strategy</a>
-          <a href="/build" class="hover:text-brand">Build</a>
-          <a href="/operate" class="hover:text-brand">Operate</a>
-          <a href="/inspect" class="hover:text-brand">Inspect</a>
-          <a href="/roadmap" class="hover:text-brand">Roadmap</a>
+          <a href="/build" class="hover:text-brand">For engineers</a>
+          <a href="/operate" class="hover:text-brand">Running it</a>
+          <a href="/inspect" class="hover:text-brand">Under the hood</a>
+          <a href="/roadmap" class="hover:text-brand">Build log</a>
         </nav>
       </Shell.Footer>
     </Shell.Root>

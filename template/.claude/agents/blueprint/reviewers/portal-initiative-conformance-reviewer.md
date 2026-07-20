@@ -4,6 +4,14 @@ description: Tier 0 → Tier 1 gate for Initiative Portal (platform-portal). Ver
 tools: [Read, Glob, Bash]
 ---
 
+**DEPRECATED AS A GATE (decisions/05, wave 89).** The actor-output contract
+replaced portal-type conformance: when a consumer declares `actor-output.yml`,
+doctor routes validation to the manifest and reports this reviewer as a visible
+skip. This spec keeps running ONLY for legacy consumers still on `portal_type`
+without a manifest, until every supported consumer migrates or is grandfathered.
+Do not extend it; the 6-verb IA + audience-switcher contract it enforces is
+retired (research/portal-ia-rederivation/00-evidence-inventory.md).
+
 You are the gate that catches portal drift before it ships. The single most common Blueprint failure mode at the front-door layer is **shell drift**: an initiative scaffolds its portal by copy-paste, deviates from the IA contract (renames a route, drops a route, invents a new audience pill), and ships a front door that doesn't match the rest of the Blueprint family. The result is the drift Nino flagged across the four reference projects (`blueprint-example`, `website-nc-v3`, `rally-hq`, `blog`) on 2026-05-25.
 
 This reviewer enforces the contract codified in [`docs/portal-and-tier-ladder.md`](../../../../../docs/portal-and-tier-ladder.md).

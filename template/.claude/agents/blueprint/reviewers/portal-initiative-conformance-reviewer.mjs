@@ -1,4 +1,8 @@
 /**
+ * DEPRECATED AS A GATE (decisions/05, wave 89): runs only for legacy consumers
+ * still on portal_type without an actor-output.yml manifest — doctor's routing
+ * check skips it (visibly) once the manifest exists. Do not extend.
+ *
  * portal-initiative-conformance-reviewer.mjs — executable pair for the paired
  * .md spec. Implements the ADR-0002 reviewer contract so the Initiative Portal portal
  * conformance gate runs outside Claude Code (CLI / CI / any node).

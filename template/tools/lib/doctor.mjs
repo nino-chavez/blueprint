@@ -88,6 +88,40 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
+  // 2b. actor-output routing (decisions/05, wave 89) — the dual-validation shim.
+  //     An actor-output.yml manifest at the root routes output validation to the
+  //     new contract (checks 6/6b's legacy conformance then reports a visible
+  //     skip); legacy portal_type alone keeps the existing portal reviewers as
+  //     the gate — doctor RUNS them below, which is the "legacy route invokes
+  //     the legacy reviewers" acceptance criterion. Both declared WITHOUT an
+  //     explicit `migration: actor-output` mode is the ADR's hard error.
+  let actorOutputRoute = false;
+  {
+    const manifestPath = join(targetDir, 'actor-output.yml');
+    if (existsSync(manifestPath)) {
+      let ymlText = '';
+      try { ymlText = hasYml ? readFileSync(ymlPath, 'utf8') : ''; } catch { /* unreadable already reported by check 2 */ }
+      const hasLegacyKey = /^\s*portal_(type|pattern):/m.test(ymlText);
+      const migrationMode = /^migration:\s*actor-output\b/m.test(ymlText);
+      if (hasLegacyKey && !migrationMode) {
+        add('actor-output-routing', 'fail', 'both actor-output.yml and blueprint.yml portal_type declared with no `migration: actor-output` mode — ambiguous authority (decisions/05)', 'add `migration: actor-output` to blueprint.yml while converting, or remove one declaration');
+      } else {
+        try {
+          const ao = await import(libUrl(home, 'actor-output.mjs'));
+          const r = ao.validateManifestFile(manifestPath, { root: targetDir });
+          const map = { PASS: 'pass', PENDING: 'warn', BLOCKED: 'fail' };
+          actorOutputRoute = r.verdict !== 'BLOCKED';
+          add('actor-output-routing', map[r.verdict] || 'fail',
+            `${r.verdict} — ${r.errors.length} error(s), ${r.pendings.length} pending, ${r.warns.length} warn(s)${hasLegacyKey ? '; portal_type shim present (migration mode)' : ''}`,
+            r.verdict === 'PASS' ? undefined : 'run `node <home>/template/tools/lib/actor-output.mjs actor-output.yml --root .` for detail — PENDING is not green');
+        } catch (e) {
+          add('actor-output-routing', 'fail', `actor-output validation threw: ${e.message}`);
+        }
+      }
+    }
+    // no manifest → legacy route; the existing portal checks below own the gate.
+  }
+
   // 3. cost-config — the cost block resolves; flag any below-anchor-unjustified
   //    stage (the step-6 gate would BLOCK it). Reuses cost-dial.
   if (hasYml) {
@@ -162,7 +196,9 @@ export async function runDoctor({ home, targetDir }) {
   //    Automated here on the 2nd bespoke instance (the methodology's own
   //    product-site portal), per the wave-46 "automate on the 2nd instance" trigger.
   if (existsSync(join(targetDir, 'apps', 'portal'))) {
-    if (portalPattern === 'bespoke') {
+    if (actorOutputRoute) {
+      add('portal-conformance', 'skip', 'actor-output route (decisions/05) — the manifest is the contract; legacy portal conformance not applicable');
+    } else if (portalPattern === 'bespoke') {
       const adr = findDivergenceAdr(targetDir);
       if (adr) {
         add('portal-conformance', 'pass', `bespoke portal — divergence recorded in ${adr}; Initiative/Review Portal conformance not applicable`);
@@ -200,7 +236,12 @@ export async function runDoctor({ home, targetDir }) {
       existsSync(join(targetDir, rel, 'index.html')) &&
       (existsSync(join(targetDir, rel, '_meta', 'index.json')) || existsSync(join(targetDir, rel, 'proto-nav.js'))));
     if (patternBRoot) {
-      if (portalPattern === 'bespoke') {
+      // NOT gated on actorOutputRoute: decisions/05 retired the Initiative
+      // Portal IA contract (check 6) but the Review Portal chrome reviewers are
+      // RENDERER conformance — mechanical receipts for the surviving
+      // review-context output type — and renderer conformance stays in the
+      // gate orchestration. (Smoke's wave-86 tripwires caught the over-skip.)
+      if (portalPattern === 'bespoke' && !actorOutputRoute) {
         if (!existsSync(join(targetDir, 'apps', 'portal'))) {
           const adr = findDivergenceAdr(targetDir);
           if (adr) add('portal-conformance', 'pass', `bespoke portal (Pattern B tree) — divergence recorded in ${adr}`);
@@ -412,7 +453,10 @@ export async function runDoctor({ home, targetDir }) {
 }
 
 // ── Self-test (node doctor.mjs --self-test) ──────────────────────────────────
-if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()) && process.argv.includes('--self-test')) {
+// Accepts both flag spellings: test:core invoked `--selftest` for months while
+// this block matched only `--self-test` — the suite green-lit a self-test that
+// never ran (caught wave 89; the false-green class doctor itself polices).
+if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()) && (process.argv.includes('--self-test') || process.argv.includes('--selftest'))) {
   const assert = (cond, msg) => { if (!cond) { console.error(`FAIL: ${msg}`); process.exit(1); } };
 
   // worst() ordering.
@@ -435,5 +479,13 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(Array.isArray(r2.notChecked) && r2.notChecked.length === 2, 'reports its not-checked boundary');
   assert(['pass', 'warn'].includes(r2.status), 'real home is healthy (pass/warn)');
 
-  console.log('doctor self-test: PASS (9 assertions)');
+  // Actor-output routing (decisions/05): the self-app declares the manifest +
+  // migration mode, so the route engages, the manifest reports (PENDING = warn,
+  // never green), and legacy portal conformance is a VISIBLE skip.
+  const aoCheck = r2.checks.find((c) => c.name === 'actor-output-routing');
+  assert(aoCheck && ['pass', 'warn'].includes(aoCheck.status), 'self-app actor-output manifest validates (route engaged)');
+  const pcCheck = r2.checks.find((c) => c.name === 'portal-conformance');
+  assert(pcCheck && pcCheck.status === 'skip' && /actor-output route/.test(pcCheck.detail), 'legacy portal conformance visibly skipped under the actor-output route');
+
+  console.log('doctor self-test: PASS (11 assertions)');
 }

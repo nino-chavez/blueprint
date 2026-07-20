@@ -1,0 +1,147 @@
+# Specimen 4 — bc-subscriptions (READ-ONLY mapping; zero changes proposed to the consumer)
+# Test: the most mature consumer's existing architecture must DESCRIBE cleanly in this
+# schema. If it needs special pleading, the schema is wrong, not the consumer.
+# Facts from the consumer repo: delivery-packaging-blueprint.md, surface-assembly-design.md,
+# portal-ia-audit-2026-06-30.md, gsi-package/, handoff-corpus/.
+# Root path for mechanical resolution lives in roots.local.yml (gitignored).
+# Stakeholder identities de-named to roles (public repo); real identities stay in the
+# consumer's own private repo. The historical unserved-outcome failure is now a REAL
+# fixture: fixtures/bc-subs-unserved-outcome.yml.
+
+initiative: bc-subscriptions
+
+account:
+  # = the "canonical layer" it already ratified: durable-derived + attested
+  decisions: docs/decisions/
+  requirements: [PRD.md, BRD.md]              # 28 epics / 218 stories
+  derived: docs/audits/derived/               # _state, _staleness, _brd-sizing
+  attested: "owner + last_attested fields per the two-axis DoD"
+
+viewers:
+  - id: maintainer
+    kind: human
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: recover-context
+        success:
+          statement: resume across sessions/hive
+          proof:
+            target: { method: observed-human, signal: operator resumes without re-derivation }
+            interim: { method: cold-agent, signal: HANDOFF-driven resume }
+  - id: vp-product                            # momentum proof for the pitch
+    kind: human
+    evidence: { status: observed, source: docs/audits/portal-ia-audit-2026-06-30.md }
+    outcomes:
+      - id: pitch-momentum
+        success:
+          statement: carries current momentum proof into the pitch
+          proof:
+            target: { method: observed-human, signal: momentum artifact used in a real pitch }
+            interim: { method: simulated-walk, signal: reaches /handoff + trajectory in one path }
+  - id: cpo                                   # validate thesis cold
+    kind: human
+    evidence: { status: observed, source: docs/audits/portal-ia-audit-2026-06-30.md }
+    outcomes:
+      - id: validate-thesis
+        success:
+          statement: confirms the product thesis without a guide
+          proof:
+            target: { method: observed-human, signal: thesis confirmed in a cold read }
+            interim: { method: simulated-walk, signal: reaches product scope without landing in activity trackers }
+  - id: cfo-coo                               # THE decision-maker
+    kind: human
+    evidence: { status: observed, source: docs/audits/portal-ia-audit-2026-06-30.md }
+    outcomes:
+      - id: build-hire-buy
+        success:
+          statement: decides build-in-house vs hire-GSI vs buy-commercial on evidence
+          proof:
+            target: { method: observed-human, signal: decision made citing the comparison artifact }
+  - id: eng-directors                          # code-quality sniff test
+    kind: human
+    evidence: { status: observed, source: docs/audits/portal-ia-audit-2026-06-30.md }
+    outcomes:
+      - id: quality-sniff
+        success:
+          statement: judges code quality + platform-architecture comparison
+          proof:
+            target: { method: observed-human, signal: sniff test returns a verdict }
+  - id: gsi-estimator                          # GSI vendors — commercial counterparty
+    kind: human
+    evidence: { status: observed, source: docs/gsi-package/README.md }
+    outcomes:
+      - id: produce-bid
+        success:
+          statement: produces a fixed-scope comparable bid, no billed discovery
+          proof:
+            target: { method: observed-human, signal: responsive bid received in the required format }
+  - id: takeover-recipient                     # colleague/agency/acquirer, cold
+    kind: human
+    evidence: { status: assumed }              # the transfer horizon is real; no named recipient yet
+    outcomes:
+      - id: take-over
+        success:
+          statement: evaluates/extends a capability domain cold
+          proof:
+            target: { method: observed-human, signal: a real recipient takes over a domain }
+            interim: { method: cold-agent, signal: blind-model re-authoring test (already run 2026-07-01) }
+
+outputs:
+  # = what it already ships; names in parens are its own vocabulary
+  - id: audience-lenses                        # (lens layer: /product /engineering /sales /operations …)
+    type: view
+    serves: [vp-product.pitch-momentum, cpo.validate-thesis, eng-directors.quality-sniff]
+    status: issued
+    renderer: astro-islands
+    clearance: internal
+    projection: { mode: cite, sources: [account] }   # lenses cite, never author — its own rule
+  - id: live-demos                             # (/try — Class D)
+    type: live-surface
+    serves: [cpo.validate-thesis, eng-directors.quality-sniff]
+    status: issued
+    renderer: hosted-app
+    clearance: internal
+  - id: handoff-corpus                         # (17 attested domains)
+    type: takeover-corpus
+    serves: [takeover-recipient.take-over]
+    status: issued
+    artifact: docs/handoff-corpus/
+    renderer: generated-markdown
+    clearance: internal
+    assurance: { attestations: [canonical-framing, live-state], as_of_commit: stamped }
+  - id: gsi-bundle                             # (frozen per-vendor zips + gated preview)
+    type: issued-package
+    serves: [gsi-estimator.produce-bid]
+    status: issued
+    renderer: html+csv+md
+    clearance: recipient-safe
+    projection:
+      mode: allowlist
+      sources: ["BRD §9 whitelisted sections"] # story, ACs, UX notes, non-functional, deps
+      forbidden: [codenames, partners, figures, people, internal-URLs, vendor-names, repo-paths]
+      as_of: bd5ab809
+    assurance:
+      leakage_lint: required                   # sanitize.py hard-fails before write
+      issuance: human                          # sharing checklist, operator-gated
+      destination: frozen-zip-per-vendor       # preview URL explicitly never the bid artifact
+  - id: class-h-substrate                      # (de-weighted harness pages behind one nav entry)
+    type: view
+    serves: [maintainer.recover-context]       # honest: its reader is the builder
+    status: issued
+    renderer: astro-islands
+    clearance: internal
+  - id: decision-comparison                    # the CORRECTION of the historical failure:
+    type: view                                 # build vs hire-GSI vs buy three-way comparison.
+    serves: [cfo-coo.build-hire-buy]           # Declared as planned — the outcome is served on
+    status: planned                            # paper only, and the validator reports it as
+    renderer: markdown                         # PENDING (warn), not green. The historical state
+    clearance: internal                        # (no output at all) is the fixture, which ERRORS.
+
+# MAPPING VERDICT: clean. Every existing artifact class lands in the schema without
+# special pleading; the repo's own vocabulary (canonical layer, lens, Class P/H/D,
+# attestation, frozen bundle) maps 1:1 onto account/outputs/projection/receipts.
+# Class-H found its home only by admitting its reader is the maintainer — the
+# de-weighting banner rule follows from that admission instead of being a separate
+# convention. The simulated-walk-only proofs for vp-product/cpo are now modeled as
+# INTERIM grades under an observed-human TARGET (Codex round 4) instead of masquerading
+# as the proof itself.

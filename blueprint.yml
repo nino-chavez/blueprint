@@ -96,7 +96,11 @@ tier: 2
 # bespoke-product-site.md; `blueprint doctor` accepts a bespoke portal IFF that ADR
 # is present (wave 48 automated this — the 2nd bespoke instance, the wave-46 trigger).
 # The generic Initiative Portal reference stays clean in template/apps/portal for consumers.
-portal_type: bespoke
+portal_type: bespoke   # DEPRECATED, mid-migration (decisions/05): the live contract is
+                       # actor-output.yml at the root — `npm run manifest:gate`. This key
+                       # is removed when every consumer has migrated.
+migration: actor-output   # the ADR's explicit mid-migration mode — sanctions portal_type
+                          # coexisting with actor-output.yml; doctor FAILs the pair without it
 
 execution:
   depth: thorough

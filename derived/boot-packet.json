@@ -1,0 +1,182 @@
+{
+  "schema": "actor-output-boot/1",
+  "initiative": "blueprint-self",
+  "generated_at": "2026-07-20T17:30:15.833Z",
+  "as_of": "95b48cf",
+  "recent": [
+    "research(portal-ia): correct SE-Docs-Front-Door dismissal — real initiative, missing archetype",
+    "docs: add hero + pipeline-gates diagram to README",
+    "feat(compare): add mattpocock/skills (AI Hero) to the landscape table",
+    "fix(portal): restructure IA — surface orphaned pages, resolve Inspect overlap",
+    "chore(release): 0.6.0 — audit-hardened gates + ADR-0009/0010 (waves 85-88)"
+  ],
+  "account": {
+    "decisions": [
+      {
+        "path": "decisions/",
+        "exists": true,
+        "entries": 6
+      }
+    ],
+    "platform_decisions": [
+      {
+        "path": "docs/decisions/",
+        "exists": true,
+        "entries": 13
+      }
+    ],
+    "research": [
+      {
+        "path": "research/",
+        "exists": true,
+        "entries": 8
+      }
+    ],
+    "demand": [
+      {
+        "path": "docs/content/validation-script.md",
+        "exists": true
+      }
+    ],
+    "state": [
+      {
+        "path": "WAVE-LOG.md",
+        "exists": true
+      }
+    ],
+    "amendments": [
+      {
+        "value": "consumer METHODOLOGY-AMENDMENTS.md files (fleet-side)",
+        "kind": "note"
+      }
+    ]
+  },
+  "actors": [
+    {
+      "id": "maintainer",
+      "kind": "human",
+      "evidence": "intrinsic",
+      "outcomes": [
+        "recover-context"
+      ]
+    },
+    {
+      "id": "next-agent",
+      "kind": "agent",
+      "evidence": "intrinsic",
+      "outcomes": [
+        "bootstrap"
+      ]
+    },
+    {
+      "id": "casual-visitor",
+      "kind": "human",
+      "evidence": "observed",
+      "outcomes": [
+        "orient"
+      ]
+    },
+    {
+      "id": "evaluating-team-lead",
+      "kind": "human",
+      "evidence": "observed",
+      "outcomes": [
+        "evaluate"
+      ]
+    },
+    {
+      "id": "contributor",
+      "kind": "human",
+      "evidence": "assumed",
+      "outcomes": [
+        "engage"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "id": "product-site",
+      "type": "orientation",
+      "status": "issued",
+      "serves": [
+        "casual-visitor.orient",
+        "evaluating-team-lead.evaluate"
+      ]
+    },
+    {
+      "id": "docs-corpus",
+      "type": "view",
+      "status": "issued",
+      "serves": [
+        "evaluating-team-lead.evaluate"
+      ]
+    },
+    {
+      "id": "contribute-path",
+      "type": "view",
+      "status": "ready",
+      "serves": [
+        "contributor.engage"
+      ]
+    },
+    {
+      "id": "boot-packet",
+      "type": "agent-boot-packet",
+      "status": "ready",
+      "serves": [
+        "next-agent.bootstrap"
+      ]
+    },
+    {
+      "id": "recovery-brief",
+      "type": "recovery-brief",
+      "status": "ready",
+      "serves": [
+        "maintainer.recover-context"
+      ]
+    },
+    {
+      "id": "harness-views",
+      "type": "view",
+      "status": "issued",
+      "serves": [
+        "maintainer.recover-context"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "file": "decisions/00-charter.md",
+      "title": "Charter — Blueprint as a team-adoptable platform"
+    },
+    {
+      "file": "decisions/01-prescription.md",
+      "title": "Prescription — Blueprint platform v1 (methodology-native)"
+    },
+    {
+      "file": "decisions/02-portal-bespoke-product-site.md",
+      "title": "02 — Portal divergence: bespoke product site (neither Pattern A nor B)"
+    },
+    {
+      "file": "decisions/03-portal-type-naming.md",
+      "title": "Decision 03 — Portal Type naming (Initiative Portal / Review Portal)"
+    },
+    {
+      "file": "decisions/04-naming-reconfirmation.md",
+      "title": "Decision 04 — Naming reconfirmation: keep Blueprint (no new information)"
+    },
+    {
+      "file": "decisions/05-actor-output-contract.md",
+      "title": "Decision 05 — Retire the 6-verb portal IA; adopt the actor-output contract (candidate B)"
+    }
+  ],
+  "verdict": {
+    "state": "PENDING",
+    "route": "actor-output",
+    "errors": [],
+    "pendings": [
+      "[R4-receipts] output product-site human_validation is FAILING — outcome success unproven"
+    ],
+    "warns": []
+  }
+}

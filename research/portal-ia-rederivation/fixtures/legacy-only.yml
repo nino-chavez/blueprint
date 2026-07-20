@@ -1,0 +1,4 @@
+# VALID (legacy) FIXTURE — routes to existing portal reviewers with a deprecation warn.
+# Expect PASS with warn R8-routing; none of the new rules run.
+initiative: film-room
+portal_type: initiative

@@ -1,0 +1,12 @@
+# INVALID FIXTURE — both schemas declared. Expect ERROR R8-routing.
+initiative: film-room
+portal_type: initiative          # legacy declaration
+viewers:                         # ...alongside the new schema
+  - id: maintainer
+    kind: human
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: recover-context
+        success:
+          statement: resume
+          proof: { target: { method: observed-human, signal: resumes } }

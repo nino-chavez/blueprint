@@ -1,0 +1,102 @@
+# INVALID FIXTURE — go-live before baseline. Expect ERROR R6-preconds (+ R7 config_source).
+# Specimen 3 — se-docs-frontdoor (configure-first; the product surface is a Slack channel)
+# Facts from wip/se-docs-frontdoor: blueprint.yml, HANDOFF.md, ADR-0001 (configure-first,
+# Claude Tag pilot, read-only v1 hard line). THE test that outputs need not be generated
+# files or hosted apps — the load-bearing surface is externally hosted configuration.
+# Root path for mechanical resolution lives in roots.local.yml (gitignored).
+# The seeded failure is now a REAL fixture: fixtures/se-docs-missing-baseline.yml.
+
+initiative: se-docs-frontdoor
+
+account:
+  decisions: decisions/                       # ADR-0001 configure-first; buy retired
+  research: research/sources/                 # definition + 16-question grill ledger
+  demand: research/sources/definition-and-grill-2026-07-09.md
+  state: HANDOFF.md                           # stage position, gates, gotchas
+
+# Typed precondition — replaces the old open-vocabulary label
+# `freshness: baseline-before-golive`, which no validator could interpret
+# (Codex finding: mechanical assurances require typed assertions).
+preconditions:
+  - id: deflection-baseline
+    artifact: research/pilot/baseline-pings.md   # does not exist yet — deliberately
+    assertion: exists
+    blocks: slack-frontdoor                      # slack-frontdoor may not reach status issued
+                                                 # while this is unmet: the deflection signal
+                                                 # becomes permanently unmeasurable post-launch
+
+viewers:
+  - id: maintainer
+    kind: human
+    evidence: { status: intrinsic }
+    outcomes:
+      - id: recover-context
+        success:
+          statement: resume at the Stage 1→2 boundary without re-deriving the grill
+          proof:
+            target: { method: observed-human, signal: operator resumes at "next - DESIGN.md + pilot protocol" without re-derivation }
+            interim: { method: cold-agent, signal: session reaches the same point from HANDOFF alone }
+  - id: pilot-sponsor                          # SE leadership at the employer org
+    kind: human
+    evidence: { status: observed, source: research/sources/definition-and-grill-2026-07-09.md }
+    outcomes:
+      - id: decide-pilot
+        success:
+          statement: approves the Claude Tag pilot with scope + success metric understood
+          proof:
+            target: { method: observed-human, signal: pilot channel authorized + admin toggles granted }
+  - id: sales-engineer                         # the pilot users, Claude-Enterprise-seated
+    kind: human
+    evidence: { status: observed, source: research/sources/definition-and-grill-2026-07-09.md }
+    outcomes:
+      - id: get-cited-answer
+        success:
+          statement: gets a cited, authority-labeled answer in the channel instead of pinging a senior
+          proof:
+            target: { method: observed-human, signal: senior-SE ping deflection moves vs pre-go-live baseline }
+  - id: senior-se                              # 2-3 deflection champions
+    kind: human
+    evidence: { status: observed, source: research/sources/definition-and-grill-2026-07-09.md }
+    outcomes:
+      - id: redirect-pings
+        success:
+          statement: redirects "quick questions" to the bot with confidence in its answers
+          proof:
+            target: { method: observed-human, signal: champions recruited pre-go-live and using the redirect }
+
+outputs:
+  - id: slack-frontdoor
+    type: configured-surface                   # ← the library extension this specimen forces:
+    serves: [sales-engineer.get-cited-answer, senior-se.redirect-pings]
+    status: issued                             # VIOLATION: went live before the ping baseline —
+    renderer: external                         #   which is WHY config_source may dangle at this
+    config_source: prototype/DESIGN.md         #   status (validator checks it from status draft up)
+    clearance: internal
+    assurance:
+      read_only: hard-line                     # ADR-0001 invariant, checkable in config
+  - id: sponsor-decision-brief
+    type: view
+    serves: [pilot-sponsor.decide-pilot]
+    status: ready
+    artifact: docs/se-team-brief.html          # published artifact, verified on disk
+    renderer: html
+    clearance: internal
+  - id: pilot-protocol
+    type: view
+    serves: [pilot-sponsor.decide-pilot, senior-se.redirect-pings]
+    status: planned                            # three tests + corpus census (Stage 2, pending)
+    renderer: markdown
+    clearance: internal
+  - id: measurement-plan
+    type: view
+    serves: [pilot-sponsor.decide-pilot]
+    status: planned
+    renderer: markdown
+    clearance: internal
+  - id: recovery-brief
+    type: recovery-brief
+    serves: [maintainer.recover-context]
+    status: ready
+    artifact: HANDOFF.md                       # HANDOFF.md already is this
+    renderer: markdown
+    clearance: internal

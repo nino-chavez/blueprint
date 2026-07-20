@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import HarnessNote from '@/components/HarnessNote.astro';
 import { DepGraphView } from '@/components/DepGraphView';
 import { loadDependencyGraph } from '@/lib/derived';
 import { portalConfig } from '@/lib/portal-config';
@@ -14,6 +15,7 @@ const danglingCount = graph?.nodes.filter((n) => n.kind === 'planned').length ??
 const generatedAt = graph?.generatedAt ?? '';
 ---
 <Layout title="Decision graph" description="The why-chain between decisions — ADRs and what they supersede, extend, and inform.">
+  <HarnessNote />
   <header class="mb-10 max-w-3xl">
     <p class="mb-2 font-mono text-xs uppercase tracking-wide text-brand">Decision graph</p>
     <h1 class="mb-3 font-heading text-4xl font-semibold leading-tight tracking-tight">

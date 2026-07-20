@@ -15,3 +15,4 @@ dist/
 .env.*
 feedback/raw/
 consumers.local.yml
+*.local.yml
