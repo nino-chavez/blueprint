@@ -64,7 +64,13 @@ Declare at `blueprint.yml`: `variant: greenfield | midstream | brownfield | rese
 ## The Pipeline (greenfield variant)
 
 ```
-Stage 0: Application Legibility → Research → Design Principles → Prototype → Fact-Check → Documents → Deploy → Iterate
+Stage 0: Application Legibility → Research → Design Principles → Prototype → Fact-Check → Documents → Deploy → Iterate → Handoff*
+
+*Stage 8 (Handoff) is actor-gated (decisions/07): it activates only when the manifest
+ declares a receiving actor (a build team taking the package). Its output is the
+ handoff manifest — per-feature spec refs, acceptance criteria, NFRs, UI-state
+ contract, decision links, owner — see template/docs/methodology/handoff-manifest-convention.md.
+ Initiatives without a receiving actor end at Iterate, and that is a complete run.
 
 Optional capability stages (run alongside, gated by blueprint.yml flags):
    Stage S-A: Archaeology Substrate    (when archaeology.enabled: true)
@@ -359,7 +365,7 @@ cd prototype
 vercel --prod
 ```
 
-The deployed URL is the primary deliverable. Share one link that gives stakeholders access to: the interactive prototype, the strategic documents (linked from the landing page), and the current-state comparison.
+The deployed URL is the stakeholder-alignment deliverable — one link giving access to the interactive prototype, the strategic documents, and the current-state comparison. It is not automatically the *primary* deliverable: the actor-output manifest (decisions/05) determines what each declared reader receives — for a research initiative that's the rendered memo, for a counterparty a recipient-safe package, and for an initiative with a declared receiving team the Stage-8 handoff manifest (decisions/07).
 
 ### Quality gates
 
@@ -384,6 +390,8 @@ The `index.html` landing page should show:
 ## Stage 7: Iterate
 
 ### Feedback loops
+
+Feedback is a contract, not a hope: the steering loop (decisions/06) makes each channel below an explicit output — a steering-packet states the open decisions, the asks, and the reader's authority; contributions land at a declared capture destination (`feedback/`); a disposition-record shows what each contribution changed. Deploying a surface does not by itself produce feedback.
 
 - **Stakeholder feedback on prototype** → update design decisions in strategy panel
 - **Engineering feedback on feasibility** → update technical doc + prototype scope

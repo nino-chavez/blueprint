@@ -1,6 +1,6 @@
 # blueprint-self — recovery brief
 
-Derived 2026-07-20T17:30:15.833Z at commit `95b48cf` — rerun `npm run derive` to refresh; never hand-edit.
+Derived 2026-07-20T20:28:42.497Z at commit `9cff514` — rerun `npm run derive` to refresh; never hand-edit.
 
 ## Where things stand — manifest verdict: PENDING
 
@@ -9,15 +9,19 @@ Open (PENDING is not green):
 
 ## Recent movement (git)
 
+- chore(release): 0.7.0 — actor-output contract + portal derivation (waves 89-90)
+- feat(wave-90): decisions/05 step 7 — manifest-derived portal views + dual-mode shell
+- feat(wave-89): actor-output contract (decisions/05) — full build order, first-wave adoption
 - research(portal-ia): correct SE-Docs-Front-Door dismissal — real initiative, missing archetype
 - docs: add hero + pipeline-gates diagram to README
-- feat(compare): add mattpocock/skills (AI Hero) to the landscape table
-- fix(portal): restructure IA — surface orphaned pages, resolve Inspect overlap
-- chore(release): 0.6.0 — audit-hardened gates + ADR-0009/0010 (waves 85-88)
 
 ## Outputs
 
 - product-site (orientation, issued) → casual-visitor.orient, evaluating-team-lead.evaluate
+- readme-front-door (orientation, issued) → casual-visitor.orient, adopter-operator.adopt-and-run
+- cli-package (distributed-tool, issued) → adopter-operator.adopt-and-run
+- learn-docs (view, issued) → adopter-operator.adopt-and-run
+- reviewer-mirror (view, issued) → external-reviewer.audit
 - docs-corpus (view, issued) → evaluating-team-lead.evaluate
 - contribute-path (view, ready) → contributor.engage
 - boot-packet (agent-boot-packet, ready) → next-agent.bootstrap
@@ -26,7 +30,7 @@ Open (PENDING is not green):
 
 ## The account (canonical truth)
 
-- decisions: `decisions/` (6 entries)
+- decisions: `decisions/` (8 entries)
 - platform_decisions: `docs/decisions/` (13 entries)
 - research: `research/` (8 entries)
 - demand: `docs/content/validation-script.md`
@@ -41,3 +45,5 @@ Open (PENDING is not green):
 - `decisions/03-portal-type-naming.md` — Decision 03 — Portal Type naming (Initiative Portal / Review Portal)
 - `decisions/04-naming-reconfirmation.md` — Decision 04 — Naming reconfirmation: keep Blueprint (no new information)
 - `decisions/05-actor-output-contract.md` — Decision 05 — Retire the 6-verb portal IA; adopt the actor-output contract (candidate B)
+- `decisions/06-steering-loop-contract.md` — decisions/06 — The steering loop: actor communication, contribution, and disposition become contract
+- `decisions/07-handoff-manifest.md` — decisions/07 — Stage 8: the handoff manifest (the pipeline's missing terminal artifact)

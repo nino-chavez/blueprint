@@ -30,6 +30,7 @@ import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { resolveReviewer } from './reviewer-registry.mjs';
+import { parseManifest } from './actor-output.mjs';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
@@ -293,6 +294,26 @@ const CHECK_KINDS = {
     if (legs.length > 0) return { state: 'partial', evidence: `${dir}/: ${legs.length} leg(s) (<${min})` };
     return { state: 'absent', evidence: `${dir}/: no legs` };
   },
+
+  // decisions/07 (wave 93): Stage-8 handoff is ACTOR-GATED — it demands the
+  // handoff manifest only when the initiative declares a receiving actor
+  // (kind: team, or an outcome id like receive-* / build-intake*). Without one
+  // the stage passes as not-applicable: a solo local tool never hands off, so
+  // it never pays this ceremony.
+  'handoff-manifest': (_p, c) => {
+    const mf = join(c.root, 'actor-output.yml');
+    if (!existsSync(mf)) return { state: 'pass', evidence: 'no actor-output.yml — no receiving actor declared (handoff n/a, decisions/07)' };
+    let m;
+    try { m = parseManifest(read(mf)); } catch { return { state: 'partial', evidence: 'actor-output.yml unparseable — cannot determine receiving actor' }; }
+    const actors = m.actors ?? m.viewers ?? [];
+    const receiving = actors.filter((a) => a?.kind === 'team' || (a?.outcomes ?? []).some((o) => /^(receive-|build-intake)/.test(o?.id ?? '')));
+    if (!receiving.length) return { state: 'pass', evidence: 'no receiving actor declared — handoff n/a (decisions/07 actor-gating)' };
+    const hm = (m.outputs ?? []).filter((o) => o?.type === 'handoff-manifest');
+    const serving = hm.filter((o) => ['ready', 'issued'].includes(o?.status));
+    if (serving.length) return { state: 'pass', evidence: `receiving actor ${receiving.map((a) => a.id).join(', ')} served by handoff-manifest ${serving.map((o) => o.id).join(', ')}` };
+    if (hm.length) return { state: 'partial', evidence: `handoff-manifest declared (${hm.map((o) => o.status).join(', ')}) but not ready/issued` };
+    return { state: 'absent', evidence: `receiving actor ${receiving.map((a) => a.id).join(', ')} declared but NO handoff-manifest output — the build contract is missing (decisions/07)` };
+  },
 };
 
 // ── the canonical greenfield model (declarative data) ──────────────
@@ -339,6 +360,9 @@ export const GREENFIELD_MODEL = {
     { id: 7, name: 'Iterate', gates: [
       { id: 'feedback-triaged', derivable: true, kind: 'feedback-triaged', params: { dir: 'feedback' } },
     ] },
+    { id: 8, name: 'Handoff', gates: [
+      { id: 'handoff-manifest', derivable: true, kind: 'handoff-manifest', params: {} },
+    ] },
   ],
 };
 
@@ -377,6 +401,9 @@ export const MIDSTREAM_MODEL = {
     { id: 7, name: 'Deploy + Iterate', gates: [
       { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
       { id: 'live-url', derivable: false, kind: 'manual', params: { evidence: 'not derivable from disk — requires a reachability check' } },
+    ] },
+    { id: 8, name: 'Handoff', gates: [
+      { id: 'handoff-manifest', derivable: true, kind: 'handoff-manifest', params: {} },
     ] },
   ],
 };
@@ -420,6 +447,9 @@ export const BROWNFIELD_MODEL = {
       { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
       { id: 'live-url', derivable: false, kind: 'manual', params: { evidence: 'share-link is the brief if no prototype; the prototype if Stage 4 ran' } },
     ] },
+    { id: 8, name: 'Handoff', gates: [
+      { id: 'handoff-manifest', derivable: true, kind: 'handoff-manifest', params: {} },
+    ] },
   ],
 };
 
@@ -457,6 +487,9 @@ export const RESEARCH_MODEL = {
     ] },
     { id: 7, name: 'Iterate', gates: [
       { id: 'feedback', derivable: true, optional: true, kind: 'feedback-triaged', params: { dir: 'feedback' } },
+    ] },
+    { id: 8, name: 'Handoff', gates: [
+      { id: 'handoff-manifest', derivable: true, kind: 'handoff-manifest', params: {} },
     ] },
   ],
 };
@@ -873,6 +906,21 @@ async function selftest() {
       // state-shape: reviews must be a plain object when present
       assert(isValidStateShape({ assertions: {}, reviews: {} }), 'reviews object accepted');
       assert(!isValidStateShape({ assertions: {}, reviews: [] }), 'reviews array rejected');
+    } finally { rmSync(tmp, { recursive: true, force: true }); }
+  }
+
+  // handoff-manifest gate (decisions/07): actor-gated — n/a passes without a
+  // receiving actor; a declared receiving actor with no handoff output is absent
+  {
+    const tmp = mkdtempSync(join(tmpdir(), 'bp-handoff-'));
+    try {
+      assert(CHECK_KINDS['handoff-manifest']({}, { root: tmp, yml: '' }).state === 'pass', 'handoff: no manifest → n/a pass');
+      writeFileSync(join(tmp, 'actor-output.yml'), 'actors:\n  - id: maintainer\n    kind: human\n    outcomes:\n      - id: recover\n        success: { statement: x }\n');
+      assert(CHECK_KINDS['handoff-manifest']({}, { root: tmp, yml: '' }).state === 'pass', 'handoff: no receiving actor → n/a pass');
+      writeFileSync(join(tmp, 'actor-output.yml'), 'actors:\n  - id: platform-team\n    kind: team\n    outcomes:\n      - id: receive-handoff\n        success: { statement: accepts the package }\n');
+      assert(CHECK_KINDS['handoff-manifest']({}, { root: tmp, yml: '' }).state === 'absent', 'handoff: receiving actor without manifest output → absent');
+      writeFileSync(join(tmp, 'actor-output.yml'), 'actors:\n  - id: platform-team\n    kind: team\n    outcomes:\n      - id: receive-handoff\n        success: { statement: accepts the package }\noutputs:\n  - id: build-contract\n    type: handoff-manifest\n    serves: [platform-team.receive-handoff]\n    status: ready\n    artifact: docs/handoff.md\n');
+      assert(CHECK_KINDS['handoff-manifest']({}, { root: tmp, yml: '' }).state === 'pass', 'handoff: serving handoff-manifest → pass');
     } finally { rmSync(tmp, { recursive: true, force: true }); }
   }
 

@@ -1,21 +1,21 @@
 {
   "schema": "actor-output-boot/1",
   "initiative": "blueprint-self",
-  "generated_at": "2026-07-20T17:30:15.833Z",
-  "as_of": "95b48cf",
+  "generated_at": "2026-07-20T20:28:42.497Z",
+  "as_of": "9cff514",
   "recent": [
+    "chore(release): 0.7.0 — actor-output contract + portal derivation (waves 89-90)",
+    "feat(wave-90): decisions/05 step 7 — manifest-derived portal views + dual-mode shell",
+    "feat(wave-89): actor-output contract (decisions/05) — full build order, first-wave adoption",
     "research(portal-ia): correct SE-Docs-Front-Door dismissal — real initiative, missing archetype",
-    "docs: add hero + pipeline-gates diagram to README",
-    "feat(compare): add mattpocock/skills (AI Hero) to the landscape table",
-    "fix(portal): restructure IA — surface orphaned pages, resolve Inspect overlap",
-    "chore(release): 0.6.0 — audit-hardened gates + ADR-0009/0010 (waves 85-88)"
+    "docs: add hero + pipeline-gates diagram to README"
   ],
   "account": {
     "decisions": [
       {
         "path": "decisions/",
         "exists": true,
-        "entries": 6
+        "entries": 8
       }
     ],
     "platform_decisions": [
@@ -85,6 +85,22 @@
       ]
     },
     {
+      "id": "adopter-operator",
+      "kind": "human",
+      "evidence": "observed",
+      "outcomes": [
+        "adopt-and-run"
+      ]
+    },
+    {
+      "id": "external-reviewer",
+      "kind": "agent",
+      "evidence": "observed",
+      "outcomes": [
+        "audit"
+      ]
+    },
+    {
       "id": "contributor",
       "kind": "human",
       "evidence": "assumed",
@@ -101,6 +117,39 @@
       "serves": [
         "casual-visitor.orient",
         "evaluating-team-lead.evaluate"
+      ]
+    },
+    {
+      "id": "readme-front-door",
+      "type": "orientation",
+      "status": "issued",
+      "serves": [
+        "casual-visitor.orient",
+        "adopter-operator.adopt-and-run"
+      ]
+    },
+    {
+      "id": "cli-package",
+      "type": "distributed-tool",
+      "status": "issued",
+      "serves": [
+        "adopter-operator.adopt-and-run"
+      ]
+    },
+    {
+      "id": "learn-docs",
+      "type": "view",
+      "status": "issued",
+      "serves": [
+        "adopter-operator.adopt-and-run"
+      ]
+    },
+    {
+      "id": "reviewer-mirror",
+      "type": "view",
+      "status": "issued",
+      "serves": [
+        "external-reviewer.audit"
       ]
     },
     {
@@ -168,6 +217,14 @@
     {
       "file": "decisions/05-actor-output-contract.md",
       "title": "Decision 05 — Retire the 6-verb portal IA; adopt the actor-output contract (candidate B)"
+    },
+    {
+      "file": "decisions/06-steering-loop-contract.md",
+      "title": "decisions/06 — The steering loop: actor communication, contribution, and disposition become contract"
+    },
+    {
+      "file": "decisions/07-handoff-manifest.md",
+      "title": "decisions/07 — Stage 8: the handoff manifest (the pipeline's missing terminal artifact)"
     }
   ],
   "verdict": {

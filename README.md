@@ -2,7 +2,7 @@
 
 <img src="assets/readme/hero.svg" alt="Blueprint — a methodology and CLI for running evidence-backed product initiatives with AI agents: agents execute, operators steer, gates verify." width="100%">
 
-**Run a product initiative end-to-end, agent-assisted** — research feeds the strategy documents (business- and product-requirements class — BRD/PRD), the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel) and steer the decisions; an AI agent executes each stage; deterministic gates verify the work before it moves. The output is one portal that serves leadership, engineering, and everyone.
+**Run a product initiative end-to-end, agent-assisted** — research feeds the strategy documents (business- and product-requirements class — BRD/PRD), the docs plan the prototype, the prototype validates the plan, and the fact-checked package hands off to build. You bring the context (screenshots, existing requirements, codebase, competitive intel) and steer the decisions; an AI agent executes each stage; deterministic gates verify the work before it moves. The output is the set of artifacts each of your real readers actually needs — declared per actor in the initiative's manifest (decisions/05), from a two-page client memo to a full portal, never one site for everyone.
 
 [![npm](https://img.shields.io/npm/v/@nino-chavez-labs/blueprint-cli?color=2563eb&label=npm)](https://www.npmjs.com/package/@nino-chavez-labs/blueprint-cli) · MIT · [Live demo →](https://blueprint.ninochavez.co)
 

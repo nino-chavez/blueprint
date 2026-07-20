@@ -25,7 +25,7 @@
 // block/inline lists, inline flow maps, quoted scalars, comments). Not a YAML
 // implementation; parse failures on exotic YAML are BLOCKs, by design.
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, mkdtempSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, mkdtempSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -172,7 +172,7 @@ export function validateManifest(m, opts = {}) {
   for (const a of actors ?? []) {
     if (actorIds.has(a.id)) E('R1-refs', `duplicate actor id ${a.id}`);
     actorIds.add(a.id);
-    if (!['human', 'agent'].includes(a.kind)) E('R1-refs', `actor ${a.id} kind must be human|agent, got "${a.kind}"`);
+    if (!['human', 'agent', 'team'].includes(a.kind)) E('R1-refs', `actor ${a.id} kind must be human|agent|team, got "${a.kind}"`);
     if (a.evidence?.status === 'observed' && !a.evidence?.source) E('R1-refs', `actor ${a.id} is observed but cites no source`);
     if (a.evidence?.source) checkPath('R7-paths', `actor ${a.id} evidence source`, a.evidence.source);
     for (const o of a.outcomes ?? []) {
@@ -183,8 +183,8 @@ export function validateManifest(m, opts = {}) {
       const target = proof.target ?? (proof.method ? proof : null);
       if (!target?.method) { E('R5-proof', `outcome ${a.id}.${o.id} proof has no target method`); continue; }
       if (!GRADES.includes(target.method)) E('R5-proof', `outcome ${a.id}.${o.id} target method "${target.method}" is not a known evidence grade`);
-      if (a.kind === 'human' && target.method !== 'observed-human')
-        E('R5-proof', `human outcome ${a.id}.${o.id} has target proof "${target.method}" — agent/simulated proof can never establish "reader served"; declare it as interim under an observed-human target`);
+      if ((a.kind === 'human' || a.kind === 'team') && target.method !== 'observed-human')
+        E('R5-proof', `${a.kind} outcome ${a.id}.${o.id} has target proof "${target.method}" — agent/simulated proof can never establish "reader served"; declare it as interim under an observed-human target`);
       if (a.kind === 'agent' && target.method === 'observed-human')
         W('R5-proof', `agent outcome ${a.id}.${o.id} targets observed-human — unusual; confirm intended`);
     }
@@ -219,6 +219,33 @@ export function validateManifest(m, opts = {}) {
       if (o.assurance?.destination == null)
         E('R3-clearance', `output ${o.id} is recipient-safe without a destination policy (frozen bundle vs gated preview vs public)`);
     }
+
+    // R3 extension (decisions/06) — the projection-tension rule: a decision-class
+    // output whose projection withholds content must NAME the omission, because a
+    // silently-removed axis corrupts the decision it serves (film-room director
+    // walk: scope decidable in kind, not in size — cost absent without saying so).
+    const servesDecision = (o.serves ?? []).some((ref) => /^(decide|steer)-/.test(ref.split('.')[1] ?? ''));
+    if (servesDecision && Array.isArray(o.projection?.forbidden) && o.projection.forbidden.length > 0) {
+      const omissions = o.omissions ?? o.projection?.omissions;
+      if (!Array.isArray(omissions) || omissions.length === 0)
+        E('R3-clearance', `output ${o.id} serves a decision-class outcome with forbidden classes but no omissions: field — a withheld axis must be named ("X is deliberately absent; resolved at Y"), never silent`);
+    }
+
+    // R3 extension (decisions/06) — a steering-packet must carry its loop fields:
+    // the asks, the reader's authority, and where contributions land.
+    if (o.type === 'steering-packet') {
+      if (!Array.isArray(o.asks) || o.asks.length === 0) E('R3-clearance', `steering-packet ${o.id} declares no asks: — steering without explicit asks is a portal deploy, not a loop`);
+      if (typeof o.authority !== 'string' || !o.authority) E('R3-clearance', `steering-packet ${o.id} declares no authority: — the reader must know which decisions are theirs to influence`);
+      if (typeof o.capture !== 'string' || !o.capture) E('R3-clearance', `steering-packet ${o.id} declares no capture: destination — contributions with nowhere to land are lost`);
+      else checkPath('R7-paths', `steering-packet ${o.id} capture destination`, o.capture);
+    }
+
+    // R2 extension (decisions/06) — a serving output must name its artifact.
+    // (film-room's scope aid reached issued with no artifact: field and nothing
+    // noticed.) live-surface outputs are exempt: their artifact is a running
+    // process, not a file.
+    if (SERVING.includes(status) && !o.artifact && o.type !== 'live-surface')
+      E('R2-lifecycle', `output ${o.id} is ${status} with no artifact: — a serving output must name what it serves (live-surface exempt)`);
 
     // R4 — receipts are structured records; grade never inferred from strings.
     if (o.assurance?.validated_by != null)
@@ -273,15 +300,41 @@ export function validateManifest(m, opts = {}) {
     for (const item of Array.isArray(v) ? v : [v])
       if (typeof item === 'string') checkPath('R7-paths', `account.${k}`, item);
 
+  // R7 extension (decisions/06) — citation existence: every decision-record
+  // reference in the manifest's raw text must resolve to a real file. (film-room
+  // shipped "(ADR-0003: ...)" comments citing a record that said the opposite;
+  // existence is the mechanical half — "authorizes what the citation implies"
+  // stays a reviewer's job.) Runs only when raw text + root are available.
+  if (opts.rawText && root) {
+    const decisionDirs = [];
+    for (const v of Object.values(m.account ?? {}))
+      for (const item of Array.isArray(v) ? v : [v])
+        if (typeof item === 'string' && !/\s/.test(item) && existsSync(resolve(root, item)) && statSync(resolve(root, item)).isDirectory())
+          decisionDirs.push(item);
+    if (existsSync(resolve(root, 'decisions')) && !decisionDirs.includes('decisions/') && !decisionDirs.includes('decisions')) decisionDirs.push('decisions');
+    const listing = new Map(decisionDirs.map((d) => [d, readdirSync(resolve(root, d))]));
+    const numbered = (num) => [...listing.values()].some((files) => files.some((f) => new RegExp(`^(ADR-)?0*${num}[-.]`).test(f)));
+    // Only unambiguous citation forms are checked: full .md paths and ADR-NNNN ids.
+    // Bare "decisions/NN" refs are skipped — consumers legitimately cite the
+    // METHODOLOGY's decision records that way (e.g. "Blueprint decisions/05"),
+    // which are not consumer-local files (smoke caught the false BLOCK on fresh stamps).
+    const cites = new Set((opts.rawText.match(/(?:decisions\/[\w-]*\d[\w-]*\.md|ADR-\d{1,4})/g) ?? []));
+    for (const cite of cites) {
+      if (cite.endsWith('.md')) { if (!existsSync(resolve(root, cite))) E('R7-paths', `citation "${cite}" resolves to no file`); continue; }
+      const num = parseInt(cite.replace(/\D/g, ''), 10);
+      if (!numbered(num)) E('R7-paths', `citation "${cite}" resolves to no decision record in ${decisionDirs.join(', ') || 'decisions/'}`);
+    }
+  }
+
   return report('actor-output');
 }
 
 // Convenience: parse + validate a manifest file.
 export function validateManifestFile(file, opts = {}) {
-  let m;
-  try { m = parseManifest(readFileSync(file, 'utf8')); }
+  let m, raw;
+  try { raw = readFileSync(file, 'utf8'); m = parseManifest(raw); }
   catch (e) { return { route: 'unparseable', verdict: 'BLOCKED', errors: [`[parse] ${e.message}`], warns: [], pendings: [] }; }
-  return validateManifest(m, opts);
+  return validateManifest(m, { rawText: raw, ...opts });
 }
 
 // ── CLI + self-test ────────────────────────────────────────────────
@@ -328,6 +381,7 @@ outputs:
     type: issued-package
     serves: [reviewer.verify]
     status: issued
+    artifact: HANDOFF.md
     clearance: recipient-safe
     projection:
       mode: allowlist
@@ -408,8 +462,39 @@ outputs:
   writeFileSync(badFile, 'actors:\n  - id: x\n    outcomes: [}{');
   ok(validateManifestFile(badFile, opts).verdict === 'BLOCKED', 'unparseable manifest BLOCKs');
 
+  // 13. decisions/06 — serving output without artifact BLOCKs; live-surface exempt
+  const noArt = parseManifest(BASE.replace('    artifact: HANDOFF.md\n    clearance: recipient-safe', '    clearance: recipient-safe'));
+  ok(validateManifest(noArt, opts).errors.some((e) => e.includes('no artifact:')), 'serving output without artifact BLOCKs');
+  const live = parseManifest(BASE.replace('type: issued-package', 'type: live-surface').replace('    artifact: HANDOFF.md\n    clearance: recipient-safe', '    clearance: recipient-safe'));
+  ok(!validateManifest(live, opts).errors.some((e) => e.includes('no artifact:')), 'live-surface without artifact is exempt');
+
+  // 14. decisions/06 — projection-tension: decision-class outcome + forbidden classes require omissions
+  const DECIDE = BASE.replace('- id: verify', '- id: decide-scope').replace('serves: [reviewer.verify]', 'serves: [reviewer.decide-scope]');
+  ok(validateManifest(parseManifest(DECIDE), opts).errors.some((e) => e.includes('omissions')), 'decision-class + forbidden without omissions BLOCKs');
+  const named = parseManifest(DECIDE.replace('      as_of: abc123', '      as_of: abc123\n      omissions: [cost is deliberately absent — resolved at the meeting]'));
+  ok(!validateManifest(named, opts).errors.some((e) => e.includes('omissions')), 'named omissions clears the tension rule');
+
+  // 15. decisions/06 — steering-packet loop fields required
+  const SP = DECIDE.replace('type: issued-package', 'type: steering-packet');
+  const rsp = validateManifest(parseManifest(SP), opts);
+  ok(rsp.errors.some((e) => e.includes('no asks:')) && rsp.errors.some((e) => e.includes('no authority:')) && rsp.errors.some((e) => e.includes('no capture:')), 'steering-packet missing loop fields BLOCKs');
+
+  // 16. decisions/06 — citation existence via rawText (validateManifestFile path)
+  writeFileSync(join(fx, 'decisions', '0001-real.md'), '# real');
+  const citeGood = BASE + '# see decisions/0001-real.md and ADR-0001\n';
+  writeFileSync(join(fx, 'cite.yml'), citeGood);
+  ok(!validateManifestFile(join(fx, 'cite.yml'), opts).errors.some((e) => e.includes('citation')), 'existing citations pass');
+  writeFileSync(join(fx, 'cite-bad.yml'), BASE + '# authorized by ADR-0099\n');
+  ok(validateManifestFile(join(fx, 'cite-bad.yml'), opts).errors.some((e) => e.includes('ADR-0099')), 'citation to nonexistent record BLOCKs');
+
+  // 17. decisions/07 — team actor kind accepted, held to observed-human targets
+  const TEAM = BASE.replace('- id: reviewer\n    kind: human', '- id: reviewer\n    kind: team');
+  ok(validateManifest(parseManifest(TEAM), opts).verdict === 'PASS', 'team actor kind accepted');
+  const teamAgentProof = parseManifest(TEAM.replace('target: { method: observed-human, signal: accepted without round-trip }', 'target: { method: cold-agent, signal: agent check }'));
+  ok(validateManifest(teamAgentProof, opts).errors.some((e) => e.includes('team outcome')), 'team outcome held to observed-human target');
+
   rmSync(fx, { recursive: true, force: true });
-  console.log(`selftest OK (${n} assertions; 8 rule families, 3-state verdict)`);
+  console.log(`selftest OK (${n} assertions; 8 rule families + decisions/06-07 extensions, 3-state verdict)`);
 }
 
 // Entry-module guard: without it, a PARENT process invoked with --selftest that

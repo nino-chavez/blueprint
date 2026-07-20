@@ -1,0 +1,37 @@
+{
+  "schema": "portal-views/1",
+  "initiative": "blueprint-self",
+  "as_of": "9cff514",
+  "views": [
+    {
+      "path": "/learn",
+      "label": "Learn",
+      "output": "product-site",
+      "clearance": "public"
+    },
+    {
+      "path": "/try",
+      "label": "Try",
+      "output": "product-site",
+      "clearance": "public"
+    },
+    {
+      "path": "/demo",
+      "label": "Demo",
+      "output": "product-site",
+      "clearance": "public"
+    },
+    {
+      "path": "/compare",
+      "label": "Compare",
+      "output": "product-site",
+      "clearance": "public"
+    },
+    {
+      "path": "/faq",
+      "label": "FAQ",
+      "output": "product-site",
+      "clearance": "public"
+    }
+  ]
+}

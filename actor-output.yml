@@ -54,6 +54,25 @@ actors:
           statement: knows what a trial costs, what they keep if they quit, what evidence says it works beyond the author
           proof:
             target: { method: observed-human, signal: a commitment-class ask taken (time/reputation per Mom-test ledger) }
+  - id: adopter-operator                      # wave 91 (red-team V1): adopted it, now running it —
+    kind: human                               # the actor the npm CLI + learn docs + README quickstart
+    evidence: { status: observed, source: consumers.yml }   # external-a/media-toolkit + the hive engagement
+    outcomes:
+      - id: adopt-and-run
+        success:
+          statement: stamp an initiative and run it end to end without the author in the loop
+          proof:
+            target: { method: observed-human, signal: an external consumer registers and reaches a gated stage without author intervention }
+            interim: { method: simulated-walk, signal: a cold walk of getting-started reaches a stamped green initiative }
+  - id: external-reviewer                     # wave 91 (red-team V3): Codex — four review rounds on
+    kind: agent                               # the rederivation alone; AGENTS.md is its context mirror
+    evidence: { status: observed, source: research/portal-ia-rederivation/06-validator-run.md }
+    outcomes:
+      - id: audit
+        success:
+          statement: verify or refute methodology claims against canonical sources from the mirror alone
+          proof:
+            target: { method: cold-agent, signal: reviewer cites the canonical file for every verdict without operator curation }
   - id: contributor
     kind: human
     evidence: { status: assumed }             # A5: zero external amendments to date — honest status
@@ -71,9 +90,44 @@ outputs:
     status: issued                            # deployed and public — lifecycle state, not quality
     renderer: astro                           # apps/portal/ — the bespoke product site (decisions/02)
     clearance: public
+    artifact: apps/portal
+    views:                                    # page-level accountability (wave 91, red-team V5); nav
+      - { path: /learn, label: Learn }        #   stays bespoke per decisions/02 — views feed the walk
+      - { path: /try, label: Try }
+      - { path: /demo, label: Demo }
+      - { path: /compare, label: Compare }
+      - { path: /faq, label: FAQ }
     assurance:
       freshness: per-wave
       human_validation: FAILING               # casual-visitor walk standing RED since 2026-06-09
+  - id: readme-front-door
+    type: orientation
+    serves: [casual-visitor.orient, adopter-operator.adopt-and-run]
+    status: issued                            # the GitHub landing — distinct renderer/URL from product-site
+    artifact: README.md
+    renderer: markdown
+    clearance: public
+  - id: cli-package
+    type: distributed-tool
+    serves: [adopter-operator.adopt-and-run]
+    status: issued                            # @nino-chavez-labs/blueprint-cli on npm (0.7.0)
+    artifact: bin/blueprint.mjs
+    renderer: npm-package
+    clearance: public
+  - id: learn-docs
+    type: view
+    serves: [adopter-operator.adopt-and-run]
+    status: issued
+    artifact: apps/portal/src/pages/learn
+    renderer: markdown
+    clearance: public
+  - id: reviewer-mirror
+    type: view
+    serves: [external-reviewer.audit]
+    status: issued
+    artifact: AGENTS.md
+    renderer: markdown
+    clearance: public
   - id: docs-corpus
     type: view
     serves: [evaluating-team-lead.evaluate]
@@ -94,6 +148,7 @@ outputs:
     type: agent-boot-packet
     serves: [next-agent.bootstrap]
     status: ready                             # exists today as SessionStart hook side-channel
+    artifact: template/.claude/hooks/blueprint-session-start.py   # the injecting mechanism
     renderer: sessionstart-inject
     clearance: internal
   - id: recovery-brief
@@ -107,5 +162,6 @@ outputs:
     type: view
     serves: [maintainer.recover-context]      # honest: the reader is the builder (Class-H rule) —
     status: issued                            # /states + /graph render the working machinery,
+    artifact: apps/portal/src/pages/states.astro
     renderer: astro                           # de-weighted with the HarnessNote banner on-page
     clearance: public
