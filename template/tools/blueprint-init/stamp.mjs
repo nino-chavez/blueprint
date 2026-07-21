@@ -474,6 +474,77 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
   log.stamped.push("blueprint.yml");
 }
 
+// Reader contract — copy is a product input, including when it lives in config.
+// New initiatives start with an explicit reader/job/source map so a later
+// plain-language pass can audit the built encounter instead of grepping only
+// component prose. Consumers may split this into multiple surfaces as their
+// audiences diverge.
+async function writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log }) {
+  const dst = path.join(target, "reader-contract.json");
+  if (await readMaybe(dst)) {
+    log.skipped.push("reader-contract.json (already exists; preserved)");
+    return;
+  }
+  if (dryRun) {
+    log.skipped.push("reader-contract.json (dry-run; would write)");
+    return;
+  }
+
+  let surface;
+  let defaults;
+  if (variant === "research") {
+    defaults = {
+      reader: `A decision maker reviewing ${displayName}`,
+      job: "Understand the evidence, the decision it supports, and the next action",
+      assumedKnowledge: [],
+      plainness: "practitioner",
+      precisionLocks: ["citations", "numbers", "evidence classes"],
+    };
+    surface = {
+      name: "decision memo",
+      renderedRoots: ["docs/decision-memo.md"],
+      sourceRoots: ["research", "blueprint.yml"],
+      allowTerms: [],
+      denyTerms: [],
+    };
+  } else if (portalType === "review") {
+    const reviewRoot = await fs.stat(path.join(target, "blueprint", "portal")).then(() => "blueprint/portal", () => "portal");
+    defaults = {
+      reader: `A stakeholder reviewing ${displayName}`,
+      job: "Understand what changes, why it matters, and what decision or feedback is needed",
+      assumedKnowledge: [],
+      plainness: "lay",
+      precisionLocks: ["facts", "numbers", "citations", "decision status"],
+    };
+    surface = {
+      name: "review portal",
+      renderedRoots: [reviewRoot],
+      sourceRoots: [reviewRoot, "blueprint.yml"],
+      allowTerms: [],
+      denyTerms: [],
+    };
+  } else {
+    defaults = {
+      reader: `A stakeholder evaluating ${displayName}`,
+      job: "Understand what the initiative changes, why it matters, and what to do next",
+      assumedKnowledge: [],
+      plainness: "lay",
+      precisionLocks: ["facts", "numbers", "citations", "decision status"],
+    };
+    surface = {
+      name: "initiative portal",
+      renderedRoots: ["apps/portal/dist"],
+      sourceRoots: ["blueprint.yml", "apps/portal/src"],
+      allowTerms: [],
+      denyTerms: [],
+    };
+  }
+
+  const contract = { version: 1, project: name, defaults, surfaces: [surface] };
+  await fs.writeFile(dst, JSON.stringify(contract, null, 2) + "\n", "utf8");
+  log.stamped.push("reader-contract.json");
+}
+
 // writeActorOutputManifest — decisions/05 (wave 89): every stamped initiative
 // starts on the actor-output contract with the intrinsic manifest (maintainer +
 // next-agent, ~18 functional lines) and its two derived outputs materialized,
@@ -1219,6 +1290,7 @@ async function main() {
     log.copied.push("tools/run-reviewers.mjs");
     await stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log });
     await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
+    await writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log });
     await writeActorOutputManifest({ target, name, dryRun, log });
     if (!dryRun) await mechanicalCheck({ target, name, log });
     printReport(log);
@@ -1304,6 +1376,7 @@ async function main() {
   await renameLogo(target, dryRun, log);
   if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
   await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
+  await writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log });
   await writeActorOutputManifest({ target, name, dryRun, log });
 
   if (!dryRun) await mechanicalCheck({ target, name, log });

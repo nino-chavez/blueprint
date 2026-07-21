@@ -13,7 +13,7 @@ You are the terminology gate for a Blueprint initiative. Your job is to catch in
    - The `prototype/DESIGN.md` "User terminology" section
    - Inferred from `research/current-state/` (the existing product's vocabulary)
 
-   If no glossary exists and the initiative has been running for more than 3 days, flag this as a missing artifact and recommend creating one.
+   If no glossary exists and the initiative has been running for more than 3 days, read `blueprint.yml` `terminology.glossary` first. When it is `none`, inline first-use definitions are the declared policy and the missing glossary is not a finding. Otherwise flag the missing controlled vocabulary artifact.
 
 2. **Scan user-facing copy** (scan set covers both portal patterns + the repo front door, wave 60):
    - Every HTML page in `prototype/` or `portal/` (excluding strategy panels, which are stakeholder-facing — different rules)
@@ -63,4 +63,4 @@ User-facing copy that uses internal vocabulary tells stakeholders the team hasn'
 
 ## Remediation
 
-Detecting leakage is this gate's job; rewriting the copy is a separate, reusable procedure — `template/docs/methodology/plain-language-pass.md`. Run it when this gate BLOCKS. It calibrates the plainness bar to each surface's reader (a subscriber portal and a developer handoff get different bars), kills incidental jargon while KEEPING load-bearing domain terms — defined on first use, never in a `docs/terminology.md` glossary (the standing no-glossary rule) — and re-shapes each page to one Diátaxis purpose. That inline-definition remedy is the one to use, not the "create a glossary" reflex.
+Detecting leakage is this gate's job; rewriting the copy is a separate, reusable procedure — `template/docs/methodology/plain-language-pass.md`. Run it when this gate BLOCKS. It calibrates the plainness bar to each surface's reader, kills incidental jargon while keeping load-bearing domain terms, and applies Diátaxis only to documentation. Define terms inline by default; preserve a controlled glossary when the initiative explicitly declares one. After rewriting, run `encounter-audit-reviewer` against the rendered output.

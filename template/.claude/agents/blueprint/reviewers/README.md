@@ -21,6 +21,7 @@ Canonical reference: `tools/blueprint/docs/variant-selection.md`.
 | `fact-check-loop-reviewer` | Stage 4 convergence orchestrator | All |
 | `doc-quality-auditor` | Stage 5 → Stage 6 | All |
 | `terminology-linter` | Stage 5 → Stage 6 (parallel with doc-quality-auditor) | All |
+| `encounter-audit-reviewer` | Any user-facing surface declared ready; rerun after copy-bearing config or generator changes | All |
 | `prototype-smoke-runner` | Stage 6 ship gate | Greenfield, Midstream, Brownfield-if-prototype |
 | `defrag-reviewer` | Cadence pass (per wave / pre-release) — NOT a stage gate; never blocks | All |
 | `doc-currency-reviewer` | Continuous — runs inside `blueprint doctor`; also Stage 5 → Stage 6 alongside doc-quality-auditor | All |
@@ -51,6 +52,7 @@ Run order: `portal-pattern-b-conformance-reviewer` first (shape), then `portal-c
 - **Flag only correctness-or-requirement gaps.** A reviewer told to find gaps will manufacture them even when the work is sound — that is what it was asked to do. A BLOCKED verdict is reserved for findings that violate a stated requirement, a JTBD trace, an invariant, or factual accuracy. Stylistic preferences, speculative hardening, and "could also" suggestions are NON-blocking: list them as optional and PASS. Chasing every reviewer finding is how a sound deliverable accretes defensive scope, extra abstraction, and tests for cases that can't happen.
 - **Convergence cap.** `fact-check-loop-reviewer` caps at 5 iterations before escalating to the operator. Persistent failure after 5 loops is a signal that the underlying claims are unsupportable, not that more loops will help.
 - **Visual gates beat protocol gates.** `prototype-smoke-runner` requires viewport screenshots + CSS-coverage checks alongside the `@smoke` Playwright run. A 200 response from curl is not enough; a green `@smoke` is not enough. Both are blind to unstyled chrome (see `docs/case-studies/case-study-v3-portal-css-gap.md`).
+- **Encounter gates beat source-only copy claims.** `terminology-linter` inspects authoring sources; `encounter-audit-reviewer` reads `reader-contract.json`, verifies the source map, and audits rendered output. A source rewrite is not complete until the copy survives the generator and makes sense on the surface a reader actually meets.
 
 ## Location convention
 

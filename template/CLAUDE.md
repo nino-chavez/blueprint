@@ -114,7 +114,8 @@ This table is prose documentation; the machine-readable mapping lives in the sta
 | Stage 3 completion (Review Portal) + any `portal/` or `blueprint/portal/` commit | `portal-review-conformance-reviewer` + `portal-chrome-canonical-reviewer` |
 | Stage 4 convergence | `fact-check-loop-reviewer` (orchestrator) |
 | Stage 5 → 6 | `doc-quality-auditor` + `terminology-linter` (parallel) |
-| Stage 6 ship | `prototype-smoke-runner` |
+| Any user-facing surface declared ready | `encounter-audit-reviewer` (rendered copy + source map) |
+| Stage 6 ship | `prototype-smoke-runner` + `encounter-audit-reviewer` |
 
 Run exactly one of the two portal-conformance reviewers per initiative — pick by portal type (`initiative` or `review`) per `docs/portal-and-tier-ladder.md`. If the initiative's archetype fits neither type (e.g. an operator-facing process console), run neither conformance reviewer — but a divergence ADR is mandatory; its absence is the violation (see `docs/portal-and-tier-ladder.md` § "When neither portal type fits the archetype").
 

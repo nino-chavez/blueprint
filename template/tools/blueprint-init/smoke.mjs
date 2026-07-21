@@ -170,6 +170,18 @@ try {
     bad("actor-output contract from birth", err.message);
   }
 
+  // 7c — reader contract from birth (wave 96): the copy source map must be
+  // valid even before the portal is built. Missing dist is an honest WARN, not
+  // a false PASS or a BLOCK on a fresh scaffold.
+  try {
+    const encounter = await import(new URL("../lib/encounter-audit.mjs", import.meta.url).href);
+    const r = await encounter.auditReaderContract({ targetDir: aTarget });
+    if (r.status !== "BLOCKED" && r.metadata.surfaces === 1) ok("fresh stamp has a valid reader contract + copy source map");
+    else bad("fresh stamp has a valid reader contract + copy source map", `${r.status}: ${r.findings.map((f) => f.message).join(" | ")}`);
+  } catch (err) {
+    bad("reader contract from birth", err.message);
+  }
+
   // 7c — portal derivation (decisions/05 step 7, wave 90): an intrinsic fresh
   // stamp declares no portal views (maintainer + next-agent have no browsable
   // surface), so portal-derive is a clean no-op — the legacy verb shell renders

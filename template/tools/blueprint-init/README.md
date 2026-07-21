@@ -208,7 +208,10 @@ header, so a scaffold never carries a value the operator didn't see.
     ui/                     # copied from template/packages/ui/ with substitutions
     design-tokens/          # copied from template/packages/design-tokens/ with substitutions
   blueprint.yml             # variant + tier + pattern written; rest stays default
+  reader-contract.json      # reader job + rendered encounter → copy source map
 ```
+
+Both Pattern A and Pattern B stamps write `reader-contract.json` unless the target already has one. The default is deliberately small: it names the likely reader and job, points at the stamped portal output and its copy-bearing sources, and leaves project-specific allowed or denied terms empty. Refine it when the first real surface replaces the scaffold. `blueprint doctor` validates the contract and inspects available rendered HTML; a missing render warns, while a missing declared source or an explicitly denied rendered term blocks.
 
 ## Substitution table
 

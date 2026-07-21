@@ -368,7 +368,26 @@ export async function runDoctor({ home, targetDir }) {
     add('terminology', 'fail', `terminology-linter threw: ${e.message}`);
   }
 
-  // 11. lint-jurisdiction — the union of the drift lints' declared scan sets,
+  // 11. reader encounter — a declared reader contract maps the real reader,
+  //     job, rendered output, and every copy-bearing source. Unlike terminology,
+  //     this check intentionally scans build output. Missing contract is visible
+  //     but advisory during fleet migration; once present, explicit deny terms
+  //     and missing sources are gates.
+  try {
+    const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', 'encounter-audit-reviewer.mjs');
+    if (existsSync(reviewerPath)) {
+      const fn = (await import(pathToFileURL(reviewerPath).href)).default;
+      const res = await fn({ targetDir, blueprintYml: null, methodologyHome: home });
+      const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
+      add('reader-encounter', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''}`, res.status !== 'PASS' ? 'run `blueprint review encounter-audit-reviewer` for details' : undefined);
+    } else {
+      add('reader-encounter', 'skip', 'encounter-audit reviewer not present in this methodology home');
+    }
+  } catch (e) {
+    add('reader-encounter', 'fail', `encounter-audit reviewer threw: ${e.message}`);
+  }
+
+  // 12. lint-jurisdiction — the union of the drift lints' declared scan sets,
   //     diffed against the tree's actual prose surfaces (wave 77, from the
   //     2026-07-02 jurisdiction audit). Informational by design: uncovered
   //     surfaces WARN, never fail — the check's job is to make a new surface

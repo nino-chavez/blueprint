@@ -2,15 +2,16 @@
 canonical: true
 ---
 
-# Plain-Language & Diátaxis Pass — Methodology Pattern
+# Reader-Clarity & Diátaxis Pass — Methodology Pattern
 
 A reusable audit-and-revision procedure for reader-facing copy. It makes a
-surface's prose as plain as its reader needs, and organizes each page around a
-single purpose (the Diátaxis model). Run it on any consumer's reader-facing
-surfaces — a portal, a docs site, a knowledge base, a handoff package — new or
-existing. This is the remediation the `terminology-linter` gate lacks: the
-linter DETECTS internal jargon leaking into copy; this pass REWRITES the copy
-plain and re-shapes it by purpose, without a glossary artifact.
+surface as clear as its reader needs without erasing technical precision or
+deliberate voice. Run it on any consumer's reader-facing surfaces — a portal, a
+docs site, a knowledge base, a handoff package, generated copy, or UI — new or
+existing. Diátaxis applies to documentation structure; it is not a universal
+shape for controls, captions, essays, or chat answers. This is the remediation
+the `terminology-linter` gate lacks: the linter detects lexical leakage; this
+pass repairs the reader's actual encounter.
 
 This procedure is written to be executed directly. When you dispatch it, inline
 this text into the agent's instructions — do not tell the agent to "go read the
@@ -22,11 +23,12 @@ On 2026-07-21 the `film-room` consumer's portal copy was a wall of insider
 vocabulary: "provenance portal," "the adjudicated mock," "substrate,"
 "harness-views," "portability boundaries," "headless CLI," "reader-job." Every
 word was accurate to the operator; none of it landed for the person the portal
-was actually for. The operator's instruction was blunt: "simplify all language
-to the Diátaxis model, and to a person like they're a child or have a
-concussion." The rewrite that followed — short sentences, jargon killed or
-translated, each page written to one job — is the reference instance this
-pattern is distilled from. It was then validated on `bc-subscriptions`
+was actually for. The operator repeatedly asked for explanations that would
+still work with very little available working memory. Treat that as a severity
+signal, not a literal voice: low cognitive load must remain respectful. The
+rewrite that followed — answer first, short sentences, jargon killed or
+translated, each documentation page written to one job — is the reference
+instance this pattern is distilled from. It was then validated on `bc-subscriptions`
 (2026-07-21): a four-site run across a real commerce project — internal
 stakeholder portal, merchant guides, a vendor RFP package, and the developer +
 handoff + spec canon — where the Step-1 reader-calibration split proved
@@ -41,6 +43,19 @@ written for the author's mental model instead of the reader's, and pages that
 try to do four jobs at once.** Both make a reader work harder than the content
 requires.
 
+## Step 0 — Map the encounter and its owning sources
+
+Before reading authoring files, identify what the reader actually receives:
+rendered HTML, a live UI, generated Markdown, a document export, or a caption
+payload. Build or regenerate it when possible.
+
+Then trace every visible text path back to its owner. Copy often lives in
+`blueprint.yml`, JSON, content collections, prompt templates, or database-backed
+records rather than the component that renders it. Record the map in
+`reader-contract.json` when the repository has more than one copy-bearing
+surface. A source-only pass is incomplete until the rendered encounter has been
+opened and checked.
+
 ## Step 1 — Name the reader, set the plainness bar (do this FIRST)
 
 This is the step the naive version skips, and skipping it is how a rewrite
@@ -52,9 +67,9 @@ what do they already know?** Then set the bar from the table:
 
 | Reader | Examples | Bar | Domain vocabulary |
 |---|---|---|---|
-| **Lay** | end subscriber, a merchant with no technical background, a club director | Grade ~5–7. Explain like to a sharp friend who knows nothing about the domain. | Kill nearly all of it. Translate every technical term into plain words. |
-| **Practitioner** | merchant admin, ops user, operator | Grade ~7–9. Plain connective prose; keep the product's own nouns. | Keep the product's nouns (subscription, plan, dunning, invoice). Define each on first use, inline. |
-| **Developer / integrator** | GSI package reader, integration engineer, the team receiving a handoff | Clarity and structure, NOT a lower reading level. | KEEP full technical precision. "webhook," "idempotency," "proration," "entitlement," "endpoint" are the correct register — stripping them destroys meaning. |
+| **Lay** | end subscriber, a merchant new to the domain, a club director | Ordinary connective language and enough context to act without project history. | Replace internal vocabulary. Keep a necessary public term only when the reader needs it, and define it nearby. |
+| **Practitioner** | merchant admin, ops user, operator | Plain connective prose; assume the work, not the implementation. | Keep the product's useful nouns (subscription, plan, dunning, invoice). Define an unfamiliar one on first use. |
+| **Specialist / integrator** | GSI package reader, integration engineer, the team receiving a handoff | Clear structure with full technical precision. | Keep exact terms such as webhook, idempotency, proration, entitlement, and endpoint. Stripping them destroys meaning. |
 
 The split that governs the whole pass:
 
@@ -63,9 +78,9 @@ The split that governs the whole pass:
   "surface" as a verb). This is noise for every reader. **Kill it or rewrite it
   plain.**
 - **Load-bearing domain vocabulary** — the precise term the reader needs and, at
-  the developer bar, already knows. **Keep it. Define it on first use if the
-  reader might not know it. Never move it to a glossary** (glossaries are
-  banned — define inline, in a clause, or not at all).
+  the developer bar, already knows. **Keep it.** Define it on first use if the
+  reader might not know it. Define inline by default. Use a glossary only when
+  the repository's declared terminology policy requires controlled vocabulary.
 
 If a surface's reader is developer-facing, say so out loud before rewriting, and
 confirm the intent is "clearer structure, keep the technical terms" — not
@@ -88,9 +103,9 @@ Read the surface as its reader. Inventory, per page:
 
 ## Step 3 — Revise (rewrite plain, to the bar from Step 1)
 
-- **Short sentences.** One idea each. Aim 8–18 words at the lay/practitioner
-  bar; up to ~25 is fine for reference or developer prose where precision needs
-  the room.
+- **One main idea per sentence when the material is difficult.** Treat sentence
+  length as a review signal, not a grade-level target; precise reference or
+  specialist prose may need more room.
 - **Common words for the connective tissue.** The verbs and glue should be
   ordinary even when the nouns are technical.
 - **Active voice, concrete subject.** "The tool saves your files," not "Files
@@ -105,35 +120,39 @@ Read the surface as its reader. Inventory, per page:
 - **Keep a calm, respectful tone.** Plain is not baby-talk and not
   condescension.
 
-## Step 4 — Organize by Diátaxis (one job per page)
+## Step 4 — For documentation, organize by Diátaxis (one job per page)
 
-Diátaxis says every documentation page serves exactly one of four purposes.
-Mixing them is what makes docs tiring. The four, in words:
+Use Diátaxis to give each documentation page one primary purpose. Secondary
+material is fine when it directly supports that job; unbounded mixing is what
+makes docs tiring. The four, in words:
 
 - **Tutorial — learning by doing.** A guided first run for a beginner: "do
   these steps with me and you will have done X." Success is the reader finishing
   with a working result, not understanding every why.
 - **How-to — a task recipe.** Ordered steps to reach one specific goal, for
-  someone who already knows what they want. No teaching, no theory — just the
-  path to the outcome.
+  someone who already knows what they want. Include only the context needed to
+  follow the path safely; move broader teaching or theory elsewhere.
 - **Reference — look it up.** Dry, accurate, complete description of how a thing
   is: screens, fields, endpoints, config, limits. Optimized for scanning and
   trust, not for narrative.
 - **Explanation — the why.** Background, trade-offs, decisions, context. Answers
   "why is it built this way," not "how do I do it."
 
-Assign each page ONE purpose. Then move mismatched content to the page whose
-purpose it fits: a how-to that keeps explaining loses the doer; a reference that
-tells a story loses the scanner. Where it fits an existing text slot, a one-line
-signpost naming the page's kind helps the reader (do not add new components or
-sections to force it).
+Assign each documentation page ONE primary purpose. A how-to that keeps
+explaining loses the doer; a reference that tells a story loses the scanner. If
+the authorized scope includes information architecture, move mismatched content
+to the page whose purpose it fits. If the scope is prose-only, record the
+required move as a finding instead of violating the scope or pretending wording
+alone fixed the page.
 
 ## Hard constraints (do not cross these)
 
-- **Change only human-readable prose** — titles, headings, paragraphs, list
-  text, card/label copy, `description=` and meta text. Never touch imports,
-  components, props, data-loading, routes, CSS classes, structure, config
-  values, IDs, frontmatter keys, or file names.
+- **Change only copy-bearing values unless structural work was authorized** —
+  titles, headings, paragraphs, list text, card/label copy, `description=` and
+  meta text, including those values when they live in config or data files.
+  Never change imports, components, data-loading behavior, routes, CSS classes,
+  behavioral config, IDs, frontmatter keys, or file names during a prose-only
+  pass.
 - **API/contract examples are load-bearing.** Do not reword field names, code
   fences, request/response payloads, CLI flags, or example values. Their wording
   is the contract.
@@ -151,13 +170,13 @@ sections to force it).
 
 ## Step 5 — Verify
 
-1. **Build or regenerate** the surface; confirm it still builds. For derived
-   surfaces, run the generator and confirm the rewritten copy reached the
-   output.
-2. **Jargon check** — the incidental terms are gone; every kept domain term is
+1. **Build or regenerate** every affected surface; confirm it still builds.
+2. **Open the rendered encounter** — confirm the rewritten copy reached the
+   output and makes sense in its real navigation, control, and help context.
+3. **Jargon check** — the incidental terms are gone; every kept domain term is
    defined on first use.
-3. **Fact check** — every number and claim survived unchanged.
-4. **Run the project's own doc gates** if it has them (e.g. a docs audit,
+4. **Fact check** — every number and claim survived unchanged.
+5. **Run the project's own gates** if it has them (e.g. `encounter-audit-reviewer`, a docs audit,
    doc-redteam, handoff-lint, or the `terminology-linter`). The pass must not
    fight the project's existing checks — read any project glossary first so you
    do not simplify away a term the project treats as canonical.
@@ -179,13 +198,15 @@ sections to force it).
 
 `terminology-linter` (Stage 5 → 6 gate) answers *is internal jargon leaking?* —
 a binary check that BLOCKS. This pass answers *rewrite it plain, for this
-reader, organized by purpose.* The linter finds; this pass fixes and reshapes.
-Both obey the no-glossary rule: the remedy is a rewrite or an inline first-use
-definition, never a `docs/terminology.md` artifact.
+reader, organized by purpose.* `encounter-audit-reviewer` answers *did the fix
+reach the built thing, and can the reader use it there?* The terminology posture
+is local: inline definition is the default; a controlled glossary remains valid
+when `blueprint.yml` or the product's own contract calls for one.
 
 ## Cross-references
 
 - Detection gate: `template/.claude/agents/blueprint/reviewers/terminology-linter.md`
+- Rendered encounter gate: `template/.claude/agents/blueprint/reviewers/encounter-audit-reviewer.md`
 - Doc quality gate: `template/.claude/agents/blueprint/reviewers/doc-quality-auditor.md`
 - Reference instance: `film-room` portal rewrite, 2026-07-21 (five pages: home
   as orientation, console as reference, running-it as how-to, under-the-hood and
