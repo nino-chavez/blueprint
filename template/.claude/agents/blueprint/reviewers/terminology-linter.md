@@ -60,3 +60,7 @@ If VIOLATIONS > 0, STATUS=BLOCKED. The agent MUST resolve them before Stage 6.
 ## Why this gate exists
 
 User-facing copy that uses internal vocabulary tells stakeholders the team hasn't grounded the work in the product itself. The fix is cheap (find-replace per term); the gate's job is to enforce that the cheap fix actually happens.
+
+## Remediation
+
+Detecting leakage is this gate's job; rewriting the copy is a separate, reusable procedure — `template/docs/methodology/plain-language-pass.md`. Run it when this gate BLOCKS. It calibrates the plainness bar to each surface's reader (a subscriber portal and a developer handoff get different bars), kills incidental jargon while KEEPING load-bearing domain terms — defined on first use, never in a `docs/terminology.md` glossary (the standing no-glossary rule) — and re-shapes each page to one Diátaxis purpose. That inline-definition remedy is the one to use, not the "create a glossary" reflex.
