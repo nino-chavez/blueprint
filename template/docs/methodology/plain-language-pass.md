@@ -26,9 +26,15 @@ was actually for. The operator's instruction was blunt: "simplify all language
 to the Diátaxis model, and to a person like they're a child or have a
 concussion." The rewrite that followed — short sentences, jargon killed or
 translated, each page written to one job — is the reference instance this
-pattern is distilled from. Validated on `bc-subscriptions` next; write any
-promotion of this doc as "distilled from film-room, validated on
-bc-subscriptions," not as battle-tested canon until a third consumer runs it.
+pattern is distilled from. It was then validated on `bc-subscriptions`
+(2026-07-21): a four-site run across a real commerce project — internal
+stakeholder portal, merchant guides, a vendor RFP package, and the developer +
+handoff + spec canon — where the Step-1 reader-calibration split proved
+load-bearing (the merchant guides got full plain-language while the vendor
+contract and ADR-cited handoff invariants were held verbatim, 2 edits and 3
+edits respectively). Two consumers have now run it, so treat the
+plainness-calibration + Diátaxis procedure as canonical; keep refining it as
+more consumers apply it.
 
 The failure it prevents is subtler than "there is jargon." It is: **copy
 written for the author's mental model instead of the reader's, and pages that
