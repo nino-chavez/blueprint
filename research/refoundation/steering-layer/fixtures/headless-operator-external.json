@@ -1,0 +1,61 @@
+{
+  "schema": "blueprint-steering/1",
+  "initiative": "headless-external-encounter",
+  "as_of": "2026-07-23T22:05:00Z",
+  "current_revision": "routing-v1",
+  "outcome": "The operator observes the exact sandbox installation boundary.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "install-checklist-ready",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "routing-v1",
+      "needs": []
+    },
+    {
+      "id": "operator-observes-sandbox-install",
+      "state": "open",
+      "kind": "human",
+      "active": true,
+      "revision": "routing-v1",
+      "needs": [
+        "install-checklist-ready"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "sandbox-install",
+      "outcome_claim": "operator-observes-sandbox-install",
+      "steps": [
+        "install-checklist-ready",
+        "operator-observes-sandbox-install"
+      ],
+      "human_claims": [
+        "operator-observes-sandbox-install"
+      ],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [],
+  "execution_routes": [
+    {
+      "claim": "operator-observes-sandbox-install",
+      "mode": "operator-external",
+      "owner": "operator",
+      "authority": "install the bounded test app in the named sandbox",
+      "venue": "BigCommerce sandbox control panel",
+      "action": "Install the prepared app and report whether the permission screen matches the checklist.",
+      "artifact": "docs/sandbox-install-checklist.md",
+      "capture": "feedback/sandbox-install-result.md",
+      "resume_when": "the install result is captured at the exact candidate revision",
+      "blocking": true
+    }
+  ]
+}

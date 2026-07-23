@@ -43,5 +43,21 @@
       "state-register-current",
       "scenario-results-present"
     ]
+  },
+  "headless-machine.json": {
+    "recipe": "implement-or-verify",
+    "active_claims": 1,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
+  },
+  "headless-operator-external.json": {
+    "recipe": "run-bounded-encounter",
+    "active_claims": 2,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
   }
 }

@@ -8,7 +8,7 @@ import {
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SCHEMA = 'blueprint-steering/0';
+const SCHEMAS = new Set(['blueprint-steering/0', 'blueprint-steering/1']);
 const CLAIM_STATES = new Set([
   'satisfied',
   'open',
@@ -18,6 +18,21 @@ const CLAIM_STATES = new Set([
   'invalidated',
 ]);
 const CLAIM_KINDS = new Set(['machine', 'human', 'decision']);
+const EXECUTION_MODES = new Set([
+  'agent-autonomous',
+  'operator-inline',
+  'operator-external',
+  'external-actor',
+]);
+const EXECUTION_ROUTE_STRING_FIELDS = [
+  'owner',
+  'authority',
+  'venue',
+  'action',
+  'artifact',
+  'capture',
+  'resume_when',
+];
 const COMPLETED_DISPOSITIONS = new Set(['accepted', 'completed']);
 const ABSOLUTE_USER_PATH = /(?:\/Users\/|\/home\/|[A-Za-z]:\\Users\\)/;
 
@@ -63,6 +78,15 @@ function duplicateIds(items) {
   return [...counts.entries()].filter(([, count]) => count > 1).map(([id]) => id);
 }
 
+function duplicateValues(items, field) {
+  const counts = new Map();
+  for (const item of items) {
+    if (!isObject(item) || typeof item[field] !== 'string') continue;
+    counts.set(item[field], (counts.get(item[field]) ?? 0) + 1);
+  }
+  return [...counts.entries()].filter(([, count]) => count > 1).map(([value]) => value);
+}
+
 function detectDependencyCycle(claimsById) {
   const visiting = new Set();
   const visited = new Set();
@@ -99,8 +123,8 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
     return errors;
   }
 
-  if (packet.schema !== SCHEMA) {
-    add('"schema"', `unsupported schema ${String(packet.schema)}; expected ${SCHEMA}`);
+  if (!SCHEMAS.has(packet.schema)) {
+    add('"schema"', `unsupported schema ${String(packet.schema)}; expected blueprint-steering/0 or blueprint-steering/1`);
   }
   for (const field of ['initiative', 'as_of', 'current_revision', 'outcome']) {
     if (typeof packet[field] !== 'string' || !packet[field].trim()) {
@@ -114,7 +138,9 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
     add('"operator_touch_budget"', 'operator_touch_budget.max must be a non-negative integer');
   }
 
-  for (const field of ['claims', 'journeys', 'incidents', 'dispositions', 'operator_touches']) {
+  const requiredArrays = ['claims', 'journeys', 'incidents', 'dispositions', 'operator_touches'];
+  if (packet.schema === 'blueprint-steering/1') requiredArrays.push('execution_routes');
+  for (const field of requiredArrays) {
     if (!Array.isArray(packet[field])) add(`"${field}"`, `${field} must be an array`);
   }
   if (errors.length > 0) return errors;
@@ -173,6 +199,41 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
   }
   const cycle = detectDependencyCycle(claimsById);
   if (cycle) add(`"id": "${cycle}"`, `claim dependency cycle includes ${cycle}`);
+
+  if (packet.schema === 'blueprint-steering/1') {
+    for (const claimId of duplicateValues(packet.execution_routes, 'claim')) {
+      add(`"claim": "${claimId}"`, `duplicate execution route for claim ${claimId}`, 2);
+    }
+
+    const routesByClaim = new Map();
+    for (const route of packet.execution_routes) {
+      if (!isObject(route) || typeof route.claim !== 'string' || !route.claim) {
+        add('"execution_routes"', 'every execution route requires a non-empty claim');
+        continue;
+      }
+      if (!routesByClaim.has(route.claim)) routesByClaim.set(route.claim, route);
+      if (!claimsById.has(route.claim)) {
+        add(`"claim": "${route.claim}"`, `execution route references unknown claim ${route.claim}`);
+      }
+      if (!EXECUTION_MODES.has(route.mode)) {
+        add(`"claim": "${route.claim}"`, `execution route ${route.claim} has unsupported mode ${String(route.mode)}`);
+      }
+      for (const field of EXECUTION_ROUTE_STRING_FIELDS) {
+        if (typeof route[field] !== 'string' || !route[field].trim()) {
+          add(`"claim": "${route.claim}"`, `execution route ${route.claim} requires ${field}`);
+        }
+      }
+      if (typeof route.blocking !== 'boolean') {
+        add(`"claim": "${route.claim}"`, `execution route ${route.claim} blocking must be boolean`);
+      }
+    }
+
+    for (const claim of packet.claims) {
+      if (claim.active && ['human', 'decision'].includes(claim.kind) && !routesByClaim.has(claim.id)) {
+        add(`"id": "${claim.id}"`, `active ${claim.kind} claim ${claim.id} requires an execution route`);
+      }
+    }
+  }
 
   const journeysById = new Map();
   for (const journey of packet.journeys) {
@@ -395,7 +456,7 @@ function deriveLongitudinal(packet, clusters, touchBudget) {
   };
 }
 
-function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
+function selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, touchBudget) {
   const active = packet.claims.filter((claim) => claim.active);
   const unresolvedClusters = clusters.filter((cluster) => cluster.unresolved);
   if (unresolvedClusters.length > 0) {
@@ -439,18 +500,21 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
   }
 
   const readyHuman = unresolvedHumanReadiness.filter((item) => item.ready);
-  if (readyHuman.length > 0 && touchBudget.exhausted) {
+  const blockingReadyHuman = readyHuman.filter((item) => (
+    routesByClaim.get(item.claim)?.blocking ?? true
+  ));
+  if (blockingReadyHuman.length > 0 && touchBudget.exhausted) {
     return {
       id: 'request-budget-disposition',
       reason: 'The human encounter is ready, but the declared operator-touch budget is exhausted.',
-      targets: readyHuman.map((item) => item.claim),
+      targets: blockingReadyHuman.map((item) => item.claim),
     };
   }
-  if (readyHuman.length > 0) {
+  if (blockingReadyHuman.length > 0) {
     return {
       id: 'run-bounded-encounter',
-      reason: 'Deterministic prerequisites are satisfied and the human outcome is within its touch budget.',
-      targets: readyHuman.map((item) => item.claim),
+      reason: 'Deterministic prerequisites are satisfied and a blocking human outcome is within its touch budget.',
+      targets: blockingReadyHuman.map((item) => item.claim),
     };
   }
 
@@ -487,6 +551,24 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
     };
   }
 
+  const nonBlockingReadyHuman = readyHuman.filter((item) => (
+    routesByClaim.get(item.claim)?.blocking === false
+  ));
+  if (nonBlockingReadyHuman.length > 0 && touchBudget.exhausted) {
+    return {
+      id: 'request-budget-disposition',
+      reason: 'No autonomous work remains and the ready non-blocking human encounter has exhausted its touch budget.',
+      targets: nonBlockingReadyHuman.map((item) => item.claim),
+    };
+  }
+  if (nonBlockingReadyHuman.length > 0) {
+    return {
+      id: 'run-bounded-encounter',
+      reason: 'No autonomous work remains; the ready non-blocking human outcome can now be collected.',
+      targets: nonBlockingReadyHuman.map((item) => item.claim),
+    };
+  }
+
   const unresolved = active.filter((claim) => claim.state !== 'satisfied');
   if (unresolved.length > 0) {
     return {
@@ -503,26 +585,85 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
   };
 }
 
+function defaultExecutionRoute(target, claim, recipe) {
+  if (!claim || claim.kind === 'machine') {
+    return {
+      target,
+      mode: 'agent-autonomous',
+      owner: 'agent',
+      authority: 'authored initiative scope',
+      venue: 'current-harness',
+      action: `Execute ${recipe.id} for ${target} and update its authored evidence.`,
+      artifact: `authored evidence for ${target}`,
+      capture: 'initiative repository',
+      resume_when: 'the target state is updated and the steering packet is re-evaluated',
+      blocking: false,
+      handoff_required: false,
+      route_source: 'default-machine',
+    };
+  }
+
+  return {
+    target,
+    mode: 'operator-inline',
+    owner: 'operator',
+    authority: 'unspecified in version-0 packet',
+    venue: 'current task',
+    action: `Resolve ${recipe.id} for ${target}.`,
+    artifact: 'unspecified in version-0 packet',
+    capture: 'unspecified in version-0 packet',
+    resume_when: 'the operator response is captured in the authored packet',
+    blocking: true,
+    handoff_required: true,
+    route_source: 'legacy-unspecified',
+  };
+}
+
+function deriveNextActions(packet, recipe, claimsById, routesByClaim) {
+  return recipe.targets.map((target) => {
+    const route = routesByClaim.get(target);
+    if (!route) return defaultExecutionRoute(target, claimsById.get(target), recipe);
+    return {
+      target,
+      mode: route.mode,
+      owner: route.owner,
+      authority: route.authority,
+      venue: route.venue,
+      action: route.action,
+      artifact: route.artifact,
+      capture: route.capture,
+      resume_when: route.resume_when,
+      blocking: route.blocking,
+      handoff_required: route.mode !== 'agent-autonomous',
+      route_source: 'authored',
+    };
+  });
+}
+
 export function evaluatePacket(packet, context = {}) {
   const errors = validatePacket(packet, context);
   if (errors.length > 0) throw new SteeringPacketError(errors);
 
   const claimsById = new Map(packet.claims.map((claim) => [claim.id, claim]));
+  const routesByClaim = new Map((packet.execution_routes ?? []).map((route) => [route.claim, route]));
   const readiness = deriveReadiness(packet, claimsById);
   const clusters = deriveClusters(packet);
   const touchBudget = deriveTouchBudget(packet);
   const activeProjection = deriveActiveProjection(packet);
-  const recipe = selectRecipe(packet, claimsById, readiness, clusters, touchBudget);
+  const recipe = selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, touchBudget);
+  const nextActions = deriveNextActions(packet, recipe, claimsById, routesByClaim);
   const longitudinal = deriveLongitudinal(packet, clusters, touchBudget);
 
   return {
-    schema: 'blueprint-steering-result/0',
+    schema: 'blueprint-steering-result/1',
+    packet_schema: packet.schema,
     initiative: packet.initiative,
     as_of: packet.as_of,
     current_revision: packet.current_revision,
     outcome: packet.outcome,
     status: 'VALID',
     next_recipe: recipe,
+    next_actions: nextActions,
     encounter_readiness: readiness,
     incident_clusters: clusters,
     operator_touch_budget: touchBudget,
@@ -565,11 +706,38 @@ export function resultMarkdown(result) {
     '',
     `Targets: ${result.next_recipe.targets.length > 0 ? result.next_recipe.targets.map((item) => `\`${item}\``).join(', ') : 'none'}`,
     '',
+    '## Execution boundary',
+    '',
+  ];
+
+  if (result.next_actions.length === 0) {
+    lines.push('No action is currently selected; no handoff is required.');
+  } else {
+    for (const action of result.next_actions) {
+      lines.push(
+        `### \`${action.target}\``,
+        '',
+        `- Owner: ${action.owner}`,
+        `- Mode: \`${action.mode}\``,
+        `- Authority: ${action.authority}`,
+        `- Venue: ${action.venue}`,
+        `- Current task must pause: ${action.handoff_required && action.blocking ? 'yes' : 'no'}`,
+        `- Action: ${action.action}`,
+        `- Artifact: ${action.artifact}`,
+        `- Capture: ${action.capture}`,
+        `- Resume when: ${action.resume_when}`,
+        `- Route source: \`${action.route_source}\``,
+        '',
+      );
+    }
+  }
+
+  lines.push(
     '## Encounter readiness',
     '',
     '| Journey | Human claim | Ready | Blockers |',
     '|---|---|---:|---|',
-  ];
+  );
 
   if (result.encounter_readiness.length === 0) {
     lines.push('| — | — | — | none |');
@@ -648,10 +816,13 @@ async function main() {
   const result = evaluateFile(options.input);
   if (options.json) writeOutput(options.json, resultJson(result));
   if (options.markdown) writeOutput(options.markdown, resultMarkdown(result));
+  const owners = [...new Set(result.next_actions.map((action) => action.owner))];
+  const handoff = result.next_actions.some((action) => action.handoff_required && action.blocking);
   process.stdout.write(
     `${result.initiative}: ${result.status}; next=${result.next_recipe.id}; `
     + `active=${result.longitudinal.active_claims}; historical=${result.longitudinal.historical_claims}; `
-    + `clusters=${result.longitudinal.unresolved_clusters}; touches=${result.operator_touch_budget.used}/${result.operator_touch_budget.max}\n`,
+    + `clusters=${result.longitudinal.unresolved_clusters}; touches=${result.operator_touch_budget.used}/${result.operator_touch_budget.max}; `
+    + `handoff=${handoff ? 'yes' : 'no'}; owners=${owners.length > 0 ? owners.join(',') : 'none'}\n`,
   );
 }
 

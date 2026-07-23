@@ -1,0 +1,50 @@
+{
+  "schema": "blueprint-steering/1",
+  "initiative": "duplicate-route",
+  "as_of": "2026-07-23T22:15:00Z",
+  "current_revision": "routing-v1",
+  "outcome": "Each claim has one execution route.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "human-outcome",
+      "state": "open",
+      "kind": "human",
+      "active": true,
+      "revision": "routing-v1",
+      "needs": []
+    }
+  ],
+  "journeys": [],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [],
+  "execution_routes": [
+    {
+      "claim": "human-outcome",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "respond to the bounded question",
+      "venue": "current task",
+      "action": "Respond to the bounded question.",
+      "artifact": "research/question.md",
+      "capture": "feedback/answer.md",
+      "resume_when": "the response is captured",
+      "blocking": true
+    },
+    {
+      "claim": "human-outcome",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "respond to the bounded question",
+      "venue": "current task",
+      "action": "Respond to the bounded question.",
+      "artifact": "research/question.md",
+      "capture": "feedback/answer.md",
+      "resume_when": "the response is captured",
+      "blocking": true
+    }
+  ]
+}
