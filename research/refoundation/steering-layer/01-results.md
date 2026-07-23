@@ -40,6 +40,11 @@ already-known evidence.
 5. The complete self-dogfood packet selected `record-disposition`. This file
    and the root recommendation record that disposition without asserting
    public readiness.
+6. A final state-completeness audit found that stale, unobservable,
+   invalidated, or unusual unresolved active states could otherwise fall
+   through to `hold`. The evaluator now handles those states explicitly and
+   the harness proves that `hold` is reserved for an all-satisfied active
+   projection.
 
 No deferred Film Room operator feedback and no later Film Room candidate were
 used to change the frozen packets or expected results.
