@@ -415,17 +415,21 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
     };
   }
 
-  const contradicted = active.filter((claim) => claim.state === 'contradicted');
+  const contradicted = active.filter((claim) => (
+    claim.state === 'contradicted' || claim.state === 'invalidated'
+  ));
   if (contradicted.length > 0) {
     return {
       id: 'repair-or-revise',
-      reason: 'An active prerequisite or outcome is contradicted and requires an explicit repair, revision, waiver, or re-charter.',
+      reason: 'An active prerequisite or outcome is contradicted or invalidated and requires an explicit repair, revision, waiver, or re-charter.',
       targets: contradicted.map((claim) => claim.id),
     };
   }
 
-  const openHumanReadiness = readiness.filter((item) => claimsById.get(item.claim)?.state === 'open');
-  const blockedHuman = openHumanReadiness.filter((item) => !item.ready);
+  const unresolvedHumanReadiness = readiness.filter((item) => (
+    ['open', 'stale', 'unobservable'].includes(claimsById.get(item.claim)?.state)
+  ));
+  const blockedHuman = unresolvedHumanReadiness.filter((item) => !item.ready);
   if (blockedHuman.length > 0) {
     return {
       id: 'implement-or-verify',
@@ -434,7 +438,7 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
     };
   }
 
-  const readyHuman = openHumanReadiness.filter((item) => item.ready);
+  const readyHuman = unresolvedHumanReadiness.filter((item) => item.ready);
   if (readyHuman.length > 0 && touchBudget.exhausted) {
     return {
       id: 'request-budget-disposition',
@@ -450,7 +454,9 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
     };
   }
 
-  const openMachine = active.filter((claim) => claim.kind === 'machine' && claim.state === 'open');
+  const openMachine = active.filter((claim) => (
+    claim.kind === 'machine' && ['open', 'unobservable'].includes(claim.state)
+  ));
   if (openMachine.length > 0) {
     return {
       id: 'implement-or-verify',
@@ -478,6 +484,15 @@ function selectRecipe(packet, claimsById, readiness, clusters, touchBudget) {
       id: 'implement-or-verify',
       reason: 'A decision remains open behind unsatisfied prerequisites.',
       targets: [...new Set(blockedDecision.flatMap((claim) => dependencyBlockers(claim, claimsById)))],
+    };
+  }
+
+  const unresolved = active.filter((claim) => claim.state !== 'satisfied');
+  if (unresolved.length > 0) {
+    return {
+      id: 'repair-or-revise',
+      reason: 'Active claims remain unresolved in a state that requires an explicit revision or disposition.',
+      targets: unresolved.map((claim) => claim.id),
     };
   }
 

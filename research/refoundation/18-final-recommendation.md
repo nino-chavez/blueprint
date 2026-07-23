@@ -48,7 +48,7 @@ that the evaluator compiles correctly.
 A pre-registered root-only experiment now provides the first bounded evidence
 for that recipe layer. Five fixture-scale packets selected the expected
 implementation, holistic-audit, repair, refresh, and disposition recipes, and
-the adversarial harness passed 69 assertions. This supports continued dogfood;
+the adversarial harness passed 74 assertions. This supports continued dogfood;
 it does not cross the distribution threshold because only Blueprint's own
 implementation was prospective and the three consumer comparisons were frozen
 retrospective packets.
@@ -161,7 +161,7 @@ capability, and migrate one consumer boundary at a time.
 | Film Room UX-closure observation | product `acbc2d0`; semantic tip `9c22428`; package satisfied; native/founder open; operator feedback deferred |
 | Film Room longitudinal method audit | evidence-control kernel validated; full steering method and sustained low burden unproven |
 | BC Phase 5 readiness | refreshed read-only shadow valid; behavior checkpoint contradicted; handoff acceptance open; live migration not earned |
-| root steering-layer experiment | 5/5 pre-registered recipes matched; 69 assertions passed; root research only |
+| root steering-layer experiment | 5/5 pre-registered recipes matched; 74 assertions passed; root research only |
 | Film Room legacy actor-output view | contradicted; three clean-clone path errors plus three human pendings accepted |
 | consumer registry | Fleet added; 15 consumers visible |
 
