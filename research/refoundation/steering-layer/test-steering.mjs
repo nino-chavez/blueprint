@@ -46,6 +46,10 @@ function readinessFor(result, claim) {
   return result.encounter_readiness.find((item) => item.claim === claim);
 }
 
+function actionFor(result, target) {
+  return result.next_actions.find((item) => item.target === target);
+}
+
 const validResults = new Map();
 for (const [fixture, wanted] of Object.entries(expected)) {
   const result = evaluateFile(join(fixtureDir, fixture));
@@ -82,12 +86,62 @@ check(
   Object.keys(validResults.get('film-room-longitudinal.json').active_projection.history_summary.by_revision).length === 3,
   'active projection retains Film Room historical revisions',
 );
+equal(
+  actionFor(validResults.get('headless-machine.json'), 'local-feasibility-evidence')?.mode,
+  'agent-autonomous',
+  'headless machine work defaults to agent-autonomous',
+);
+equal(
+  actionFor(validResults.get('headless-machine.json'), 'local-feasibility-evidence')?.venue,
+  'current-harness',
+  'headless machine work remains in the current harness',
+);
+equal(
+  actionFor(validResults.get('headless-machine.json'), 'local-feasibility-evidence')?.handoff_required,
+  false,
+  'headless machine work requires no handoff',
+);
+equal(
+  actionFor(
+    validResults.get('headless-operator-external.json'),
+    'operator-observes-sandbox-install',
+  )?.venue,
+  'BigCommerce sandbox control panel',
+  'external operator route names its exact venue',
+);
+equal(
+  actionFor(
+    validResults.get('headless-operator-external.json'),
+    'operator-observes-sandbox-install',
+  )?.handoff_required,
+  true,
+  'external operator route requires a handoff',
+);
+equal(
+  actionFor(
+    validResults.get('headless-operator-external.json'),
+    'operator-observes-sandbox-install',
+  )?.capture,
+  'feedback/sandbox-install-result.md',
+  'external operator route names its capture destination',
+);
+equal(
+  actionFor(
+    validResults.get('headless-operator-external.json'),
+    'operator-observes-sandbox-install',
+  )?.resume_when,
+  'the install result is captured at the exact candidate revision',
+  'external operator route names its resume condition',
+);
 
 const invalidExpectations = {
   'duplicate-claim.json': 'duplicate claim id same',
   'unknown-dependency.json': 'depends on unknown claim missing',
   'unknown-journey.json': 'references unknown journey missing',
   'negative-budget.json': 'operator_touch_budget.max must be a non-negative integer',
+  'missing-execution-route.json': 'active human claim human-outcome requires an execution route',
+  'duplicate-execution-route.json': 'duplicate execution route for claim human-outcome',
+  'unsupported-execution-mode.json': 'execution route human-outcome has unsupported mode telepathy',
 };
 for (const [fixture, message] of Object.entries(invalidExpectations)) {
   const path = join(fixtureDir, 'invalid', fixture);
@@ -159,6 +213,41 @@ equal(
   evaluatePacket(readyHumanPacket({ max: 1, touches: [] })).next_recipe.id,
   'run-bounded-encounter',
   'ready human claim within budget selects bounded encounter',
+);
+equal(
+  actionFor(evaluatePacket(readyHumanPacket({ max: 1, touches: [] })), 'human-outcome')?.route_source,
+  'legacy-unspecified',
+  'version-0 human work remains valid but exposes its unspecified legacy route',
+);
+
+const nonBlockingHumanPacket = readyHumanPacket({ max: 1, touches: [] });
+nonBlockingHumanPacket.schema = 'blueprint-steering/1';
+nonBlockingHumanPacket.claims.splice(1, 0, {
+  id: 'local-machine-work',
+  state: 'open',
+  kind: 'machine',
+  active: true,
+  revision: 'one',
+  needs: [],
+});
+nonBlockingHumanPacket.execution_routes = [
+  {
+    claim: 'human-outcome',
+    mode: 'operator-external',
+    owner: 'operator',
+    authority: 'perform the bounded observation',
+    venue: 'named external system',
+    action: 'Perform the bounded observation.',
+    artifact: 'research/encounter.md',
+    capture: 'feedback/encounter.md',
+    resume_when: 'the observation is captured',
+    blocking: false,
+  },
+];
+equal(
+  evaluatePacket(nonBlockingHumanPacket).next_recipe.targets,
+  ['local-machine-work'],
+  'ready non-blocking human work does not interrupt remaining autonomous work',
 );
 
 const hiddenDependencyPacket = readyHumanPacket({ max: 1, touches: [] });

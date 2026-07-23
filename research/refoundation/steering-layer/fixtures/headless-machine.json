@@ -1,0 +1,25 @@
+{
+  "schema": "blueprint-steering/1",
+  "initiative": "headless-machine-work",
+  "as_of": "2026-07-23T22:00:00Z",
+  "current_revision": "routing-v1",
+  "outcome": "Local reversible evidence is produced without manufacturing an operator gate.",
+  "operator_touch_budget": {
+    "max": 0
+  },
+  "claims": [
+    {
+      "id": "local-feasibility-evidence",
+      "state": "open",
+      "kind": "machine",
+      "active": true,
+      "revision": "routing-v1",
+      "needs": []
+    }
+  ],
+  "journeys": [],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [],
+  "execution_routes": []
+}
