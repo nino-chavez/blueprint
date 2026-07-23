@@ -196,6 +196,55 @@ equal(
   'ready human claim at budget limit requests disposition',
 );
 
+const staleHumanPacket = readyHumanPacket({ max: 1, touches: [] });
+staleHumanPacket.claims.find((claim) => claim.id === 'human-outcome').state = 'stale';
+equal(
+  evaluatePacket(staleHumanPacket).next_recipe.id,
+  'run-bounded-encounter',
+  'ready stale human evidence selects a bounded re-observation instead of hold',
+);
+
+const unresolvedMachinePacket = readyHumanPacket({ max: 1, touches: [] });
+unresolvedMachinePacket.claims = [{
+  id: 'machine-ready',
+  state: 'unobservable',
+  kind: 'machine',
+  active: true,
+  revision: 'one',
+  needs: [],
+}];
+unresolvedMachinePacket.journeys = [];
+equal(
+  evaluatePacket(unresolvedMachinePacket).next_recipe.id,
+  'implement-or-verify',
+  'unobservable active machine claim selects implementation or verification instead of hold',
+);
+
+const invalidatedMachinePacket = structuredClone(unresolvedMachinePacket);
+invalidatedMachinePacket.claims[0].state = 'invalidated';
+equal(
+  evaluatePacket(invalidatedMachinePacket).next_recipe.id,
+  'repair-or-revise',
+  'invalidated active claim selects repair or revision instead of hold',
+);
+
+const unusualDecisionPacket = structuredClone(unresolvedMachinePacket);
+unusualDecisionPacket.claims[0].kind = 'decision';
+unusualDecisionPacket.claims[0].state = 'stale';
+equal(
+  evaluatePacket(unusualDecisionPacket).next_recipe.id,
+  'repair-or-revise',
+  'unmapped unresolved active state falls back to repair or revision instead of hold',
+);
+
+const satisfiedPacket = structuredClone(unresolvedMachinePacket);
+satisfiedPacket.claims[0].state = 'satisfied';
+equal(
+  evaluatePacket(satisfiedPacket).next_recipe.id,
+  'hold',
+  'hold is selected only when no active claim is unresolved',
+);
+
 const unsafePacket = readyHumanPacket({ max: 1, touches: [] });
 unsafePacket.outcome = 'Read /Users/example/private.txt';
 let unsafeError = null;

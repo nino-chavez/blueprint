@@ -46,7 +46,7 @@ installed by the public CLI, or represented as generated truth.
 ## Evidence
 
 The pre-registered experiment matched all five valid packet outcomes and passed
-69 assertions, including four fixed invalid fixtures and additional
+74 assertions, including four fixed invalid fixtures and additional
 programmatic adversarial paths. It selected:
 
 - machine work before human involvement for initial self-dogfood;

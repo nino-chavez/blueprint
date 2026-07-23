@@ -60,7 +60,7 @@ screen small by erasing the failure sequence.
 
 ## Adversarial and mechanical evidence
 
-`test-steering.mjs` passes 69 assertions:
+`test-steering.mjs` passes 74 assertions:
 
 - all five valid packets match their recipes and secondary expectations;
 - duplicate claim identifiers, unknown dependencies, unknown journeys, and a
@@ -71,6 +71,8 @@ screen small by erasing the failure sequence.
   reveals the next contradicted prerequisite;
 - both within-budget encounter and exhausted-budget disposition paths are
   exercised;
+- stale human evidence, unobservable machine evidence, invalidation, and
+  unusual unresolved states cannot fall through to a false `hold`;
 - absolute user paths are rejected;
 - evaluator source contains no Film Room, Fleet, BC, Claude, or Codex rule;
 - JSON is byte-deterministic across repeated evaluation and deleted-output
