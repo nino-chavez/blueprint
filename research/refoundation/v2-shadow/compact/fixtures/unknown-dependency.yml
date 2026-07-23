@@ -1,0 +1,17 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: unknown-dependency-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+charter:
+  revision: 1
+  intent: Reject a claim dependency that does not resolve.
+  scope: {environment: fixture}
+actors:
+  - {id: operator, profile: operator-builder}
+claims:
+  - id: dependent-operation
+    says: The operation depends on a missing prerequisite.
+    actor: operator
+    evidence: observed-task
+    needs: [missing-prerequisite]

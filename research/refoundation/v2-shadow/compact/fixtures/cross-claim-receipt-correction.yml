@@ -1,0 +1,48 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: cross-claim-correction-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+charter:
+  revision: 1
+  intent: Reject receipt correction that substitutes evidence for a different claim.
+  scope: {environment: fixture}
+actors:
+  - {id: operator, profile: operator-builder, add_authority: [correct-receipt]}
+claims:
+  - id: behavior-a
+    says: The operator observes behavior A succeeding.
+    actor: operator
+    evidence: observed-task
+    scope: {behavior: a}
+  - id: behavior-b
+    says: The operator observes behavior B succeeding.
+    actor: operator
+    evidence: observed-task
+    scope: {behavior: b}
+receipts:
+  - id: receipt-a
+    claim: behavior-a
+    result: supports
+    via: observed-task-run
+    observer: operator
+    role: operator
+    at: 2026-07-22T11:00:00Z
+    observation: Observation for behavior A.
+    source: fixture
+  - id: receipt-b
+    claim: behavior-b
+    result: supports
+    via: observed-task-run
+    observer: operator
+    role: operator
+    at: 2026-07-22T11:00:00Z
+    observation: Observation for behavior B.
+    source: fixture
+corrections:
+  - id: cross-claim-correction
+    by: operator
+    receipt: receipt-a
+    replacements: [receipt-b]
+    rationale: This must fail because a receipt for behavior B cannot replace one for behavior A.
+    at: 2026-07-22T11:05:00Z

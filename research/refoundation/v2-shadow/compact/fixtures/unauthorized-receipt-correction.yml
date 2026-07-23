@@ -1,0 +1,42 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: unauthorized-correction-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: builder
+charter:
+  revision: 1
+  intent: Reject a receipt correction by an actor without explicit correction authority.
+  scope: {environment: fixture}
+actors:
+  - {id: builder, profile: operator-builder}
+claims:
+  - id: behavior-observed
+    says: The builder observes the declared behavior succeeding.
+    actor: builder
+    evidence: observed-task
+receipts:
+  - id: original
+    claim: behavior-observed
+    result: supports
+    via: observed-task-run
+    observer: builder
+    role: operator
+    at: 2026-07-22T11:00:00Z
+    observation: Original observation.
+    source: fixture
+  - id: replacement
+    claim: behavior-observed
+    result: contradicts
+    via: observed-task-run
+    observer: builder
+    role: operator
+    at: 2026-07-22T11:00:00Z
+    observation: Replacement observation.
+    source: fixture
+corrections:
+  - id: unauthorized-correction
+    by: builder
+    receipt: original
+    replacements: [replacement]
+    rationale: This must fail because the builder lacks correction authority.
+    at: 2026-07-22T11:05:00Z

@@ -1,0 +1,156 @@
+{
+  "initiative": "se-docs-frontdoor",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Configure a canonical documentation front door and test whether a sales engineer can use it to find the next reliable answer.",
+      "scope": {
+        "change_mode": "configure-first",
+        "environment": "pilot-tenant"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "configurator"],
+          "authority": ["authorize-work", "disposition-transition", "change-intent"]
+        },
+        {
+          "id": "sponsor",
+          "kinds": ["stakeholder"],
+          "authority": ["accept-pilot"]
+        },
+        {
+          "id": "sales-engineer",
+          "kinds": ["pilot-user"],
+          "authority": ["issue-own-outcome-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "source-baseline-bounded",
+      "statement": "The pilot's canonical source set and freshness boundary are recorded before the front-door configuration is evaluated.",
+      "charter_revision": 1,
+      "scope": {
+        "source_set": "pilot-canonical-docs",
+        "environment": "pilot-tenant"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "source-baseline-check",
+        "observer": {
+          "actor": "operator",
+          "role": "configurator"
+        }
+      }
+    },
+    {
+      "id": "frontdoor-configuration-live",
+      "statement": "The pilot tenant exposes the declared canonical entry points and routing configuration.",
+      "charter_revision": 1,
+      "scope": {
+        "surface": "documentation-frontdoor",
+        "environment": "pilot-tenant"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "platform-query",
+        "observer": {
+          "actor": "operator",
+          "role": "configurator"
+        },
+        "freshness": {
+          "source_version": "pilot-config-4"
+        }
+      }
+    },
+    {
+      "id": "sales-engineer-finds-next-answer",
+      "statement": "A sales engineer enters through the configured front door and identifies the next reliable answer during an observed task.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "sales-engineer",
+        "surface": "documentation-frontdoor",
+        "environment": "pilot-tenant"
+      },
+      "owner": "operator",
+      "depends_on": ["source-baseline-bounded", "frontdoor-configuration-live"],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "sales-engineer",
+          "role": "pilot-user",
+          "independence": "not-builder"
+        },
+        "freshness": {
+          "source_version": "pilot-config-4"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "platform-query-config-4",
+      "claim": "frontdoor-configuration-live",
+      "result": "supports",
+      "observation": "The pilot tenant returned each declared entry point and routing value.",
+      "object": "live-behavior",
+      "oracle": {
+        "method": "platform-query",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "configurator"
+      },
+      "scope": {
+        "surface": "documentation-frontdoor",
+        "environment": "pilot-tenant"
+      },
+      "source_version": "pilot-config-4",
+      "observed_at": "2026-07-21T15:00:00Z",
+      "source": "research fixture: platform query"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [
+    {
+      "id": "pilot-observation-ready",
+      "requires": ["source-baseline-bounded", "frontdoor-configuration-live"]
+    },
+    {
+      "id": "pilot-outcome-observed",
+      "requires": ["sales-engineer-finds-next-answer"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "external-system-contract",
+      "activation_claims": ["frontdoor-configuration-live"]
+    },
+    {
+      "id": "human-surface-design",
+      "activation_claims": ["sales-engineer-finds-next-answer"],
+      "requires_actor_kind": "pilot-user"
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "source-baseline-bounded": "open",
+      "frontdoor-configuration-live": "satisfied",
+      "sales-engineer-finds-next-answer": "open"
+    },
+    "checkpoints": {
+      "pilot-observation-ready": "open",
+      "pilot-outcome-observed": "open"
+    }
+  }
+}

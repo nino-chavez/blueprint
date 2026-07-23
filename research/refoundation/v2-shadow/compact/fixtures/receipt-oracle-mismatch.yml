@@ -1,0 +1,26 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: receipt-oracle-mismatch-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+charter:
+  revision: 1
+  intent: Reject a native receipt whose oracle differs from its claim contract.
+  scope: {environment: fixture}
+actors:
+  - {id: operator, profile: operator-builder}
+claims:
+  - id: observed-operation
+    says: The operator completes an observed task.
+    actor: operator
+    evidence: observed-task
+receipts:
+  - id: wrong-oracle-receipt
+    claim: observed-operation
+    result: supports
+    via: simulated-walk
+    observer: operator
+    role: operator
+    at: 2026-07-22T11:00:00Z
+    observation: A simulated walk was incorrectly offered as observed-task evidence.
+    source: de-identified negative fixture

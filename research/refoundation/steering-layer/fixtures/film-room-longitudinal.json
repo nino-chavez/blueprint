@@ -1,0 +1,161 @@
+{
+  "schema": "blueprint-steering/0",
+  "initiative": "film-room",
+  "as_of": "2026-07-23T09:42:51Z",
+  "current_revision": "5496edd",
+  "outcome": "The founder completes a real event from launch through export without terminal intervention.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "entry-contract",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "5496edd",
+      "needs": []
+    },
+    {
+      "id": "native-folder-picker",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "5496edd",
+      "needs": ["entry-contract"]
+    },
+    {
+      "id": "operator-config-in-app",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "5496edd",
+      "needs": ["native-folder-picker"]
+    },
+    {
+      "id": "settings-return-visible",
+      "state": "contradicted",
+      "kind": "machine",
+      "active": true,
+      "revision": "5496edd",
+      "needs": ["operator-config-in-app"]
+    },
+    {
+      "id": "founder-live-workflow",
+      "state": "open",
+      "kind": "human",
+      "active": true,
+      "revision": "5496edd",
+      "needs": ["settings-return-visible"]
+    },
+    {
+      "id": "founder-live-workflow-83d",
+      "state": "contradicted",
+      "kind": "human",
+      "active": false,
+      "revision": "83d85fc",
+      "needs": []
+    },
+    {
+      "id": "founder-live-workflow-e1c",
+      "state": "contradicted",
+      "kind": "human",
+      "active": false,
+      "revision": "e1c21d9",
+      "needs": []
+    },
+    {
+      "id": "founder-live-workflow-5cc",
+      "state": "contradicted",
+      "kind": "human",
+      "active": false,
+      "revision": "5cc4fd2",
+      "needs": []
+    }
+  ],
+  "journeys": [
+    {
+      "id": "founder-event",
+      "outcome_claim": "founder-live-workflow",
+      "steps": [
+        "entry-contract",
+        "native-folder-picker",
+        "operator-config-in-app",
+        "settings-return-visible",
+        "founder-live-workflow"
+      ],
+      "human_claims": ["founder-live-workflow"],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [
+    {
+      "id": "footage-entry-blocked",
+      "journey": "founder-event",
+      "claim": "founder-live-workflow-83d",
+      "boundary": "first-run-footage-entry",
+      "classification": "product-defect",
+      "revision": "83d85fc"
+    },
+    {
+      "id": "native-ingest-blocked",
+      "journey": "founder-event",
+      "claim": "founder-live-workflow-e1c",
+      "boundary": "default-route-and-folder-picker",
+      "classification": "product-defect",
+      "revision": "e1c21d9"
+    },
+    {
+      "id": "operator-config-blocked",
+      "journey": "founder-event",
+      "claim": "founder-live-workflow-5cc",
+      "boundary": "operator-configuration",
+      "classification": "product-defect",
+      "revision": "5cc4fd2"
+    },
+    {
+      "id": "settings-return-blocked",
+      "journey": "founder-event",
+      "claim": "founder-live-workflow",
+      "boundary": "settings-return-and-continuity",
+      "classification": "product-defect",
+      "revision": "5496edd"
+    }
+  ],
+  "dispositions": [],
+  "operator_touches": [
+    {
+      "id": "founder-encounter-1",
+      "journey": "founder-event",
+      "purpose": "attempt-real-event",
+      "required_claim": "founder-live-workflow-83d",
+      "result": "blocked"
+    },
+    {
+      "id": "founder-encounter-2",
+      "journey": "founder-event",
+      "purpose": "retry-repaired-entry",
+      "required_claim": "founder-live-workflow-e1c",
+      "result": "blocked"
+    },
+    {
+      "id": "founder-encounter-3",
+      "journey": "founder-event",
+      "purpose": "retry-native-ingest",
+      "required_claim": "founder-live-workflow-5cc",
+      "result": "blocked"
+    },
+    {
+      "id": "founder-encounter-4",
+      "journey": "founder-event",
+      "purpose": "retry-operator-onboarding",
+      "required_claim": "founder-live-workflow",
+      "result": "blocked"
+    }
+  ],
+  "source_metrics": {
+    "baseline_lines": 164,
+    "current_lines": 523,
+    "decision_count": 4
+  }
+}

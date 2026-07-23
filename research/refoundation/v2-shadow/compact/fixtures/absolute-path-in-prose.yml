@@ -1,0 +1,16 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: absolute-path-in-prose-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+charter:
+  revision: 1
+  intent: Reject private machine paths anywhere in compiled public research output.
+  scope: {environment: fixture}
+actors:
+  - {id: operator, profile: operator-builder}
+claims:
+  - id: private-path-claim
+    says: The result is stored under /Users/example/private-result.
+    actor: operator
+    evidence: observed-task

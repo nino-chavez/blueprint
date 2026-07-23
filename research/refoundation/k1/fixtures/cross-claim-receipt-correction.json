@@ -1,0 +1,85 @@
+{
+  "initiative": "cross-claim-receipt-correction",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Reject correction that launders evidence between claims.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator"],
+          "authority": ["correct-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-a",
+      "statement": "Behavior A was observed.",
+      "charter_revision": 1,
+      "scope": {"behavior": "a"},
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "observe-a",
+        "observer": {"actor": "operator", "role": "operator"}
+      }
+    },
+    {
+      "id": "claim-b",
+      "statement": "Behavior B was observed.",
+      "charter_revision": 1,
+      "scope": {"behavior": "b"},
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "observe-b",
+        "observer": {"actor": "operator", "role": "operator"}
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "receipt-a",
+      "claim": "claim-a",
+      "result": "supports",
+      "object": "live-behavior",
+      "oracle": {"method": "observe-a", "executed": true},
+      "observer": {"actor": "operator", "role_during_observation": "operator"},
+      "scope": {"behavior": "a"},
+      "observed_at": "2026-07-22T10:00:00Z"
+    },
+    {
+      "id": "receipt-b",
+      "claim": "claim-b",
+      "result": "supports",
+      "object": "live-behavior",
+      "oracle": {"method": "observe-b", "executed": true},
+      "observer": {"actor": "operator", "role_during_observation": "operator"},
+      "scope": {"behavior": "b"},
+      "observed_at": "2026-07-22T10:00:00Z"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "cross-claim-correction",
+      "action": "correct-receipt",
+      "decided_by": "operator",
+      "authority": "correct-receipt",
+      "changes": {
+        "retracts_receipts": ["receipt-a"],
+        "replacement_receipts": ["receipt-b"]
+      },
+      "rationale": "This incorrectly attempts to replace evidence for claim A with evidence for claim B.",
+      "decided_at": "2026-07-22T10:05:00Z"
+    }
+  ],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {}
+}

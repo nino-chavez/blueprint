@@ -1,0 +1,61 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: cold-author-reporter
+as_of: 2026-07-22T16:00:00Z
+operator: operator
+
+charter:
+  revision: 1
+  intent: The cold-author-reporter provides its intrinsic operator with a repository-local inventory report through manual operation and a daily scheduled delivery.
+  scope: {product_mode: intrinsic-operator-tool, environment: cold-author-fixture}
+
+actors:
+  - {id: operator, profile: operator-builder}
+
+claims:
+  - id: reporter-artifact-present
+    says: The declared reporter implementation artifact exists at research/refoundation/cold-author/fixture/reporter.mjs in the current checkout.
+    evidence: file
+    source: research/refoundation/cold-author/fixture/reporter.mjs
+  - id: manual-report-observed
+    says: The intrinsic operator runs the reporter manually and observes the declared inventory output in the cold-author fixture environment.
+    actor: operator
+    evidence: observed-task
+    fresh: current
+    needs: [reporter-artifact-present]
+  - id: scheduled-report-arrives
+    says: The intrinsic operator receives the inventory report in the daily delivery window in the cold-author fixture environment.
+    actor: operator
+    evidence: live-scheduled-run
+    fresh: current
+    scope: {schedule: daily-window}
+    needs: [manual-report-observed]
+
+receipts:
+  - id: manual-report-observed-20260722
+    claim: manual-report-observed
+    result: supports
+    via: observed-task-run
+    observer: operator
+    role: operator
+    source_version: current
+    at: 2026-07-22T15:00:00Z
+    observation: The operator manually ran the declared reporter against the current checkout and observed {"inventory_items":3,"status":"fixture"}.
+    source: de-identified manual encounter record
+  - id: scheduled-report-unobserved-20260722
+    claim: scheduled-report-arrives
+    result: could-not-observe
+    via: observed-scheduled-run
+    observer: operator
+    role: operator
+    source_version: current
+    at: 2026-07-22T15:10:00Z
+    observation: The scheduled run could not be executed or observed because the fixture had no scheduler credentials.
+    source: de-identified scheduled encounter record
+
+checkpoints:
+  - {id: manual-operation-proven, requires: [reporter-artifact-present, manual-report-observed]}
+  - {id: scheduled-operation-proven, requires: [scheduled-report-arrives]}
+
+modules:
+  - {id: ongoing-operation, claims: [scheduled-report-arrives]}

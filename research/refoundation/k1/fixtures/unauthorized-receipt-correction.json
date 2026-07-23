@@ -1,0 +1,72 @@
+{
+  "initiative": "unauthorized-receipt-correction",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Reject receipt correction by an actor without explicit authority.",
+      "actors": [
+        {
+          "id": "builder",
+          "kinds": ["builder"],
+          "authority": ["authorize-work"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "behavior-observed",
+      "statement": "The declared behavior was observed.",
+      "charter_revision": 1,
+      "scope": {"environment": "test"},
+      "owner": "builder",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "observed-test",
+        "observer": {"actor": "builder", "role": "builder"}
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "original",
+      "claim": "behavior-observed",
+      "result": "supports",
+      "object": "live-behavior",
+      "oracle": {"method": "observed-test", "executed": true},
+      "observer": {"actor": "builder", "role_during_observation": "builder"},
+      "scope": {"environment": "test"},
+      "observed_at": "2026-07-22T10:00:00Z"
+    },
+    {
+      "id": "replacement",
+      "claim": "behavior-observed",
+      "result": "contradicts",
+      "object": "live-behavior",
+      "oracle": {"method": "observed-test", "executed": true},
+      "observer": {"actor": "builder", "role_during_observation": "builder"},
+      "scope": {"environment": "test"},
+      "observed_at": "2026-07-22T10:00:00Z"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "builder-corrects",
+      "action": "correct-receipt",
+      "decided_by": "builder",
+      "authority": "correct-receipt",
+      "changes": {
+        "retracts_receipts": ["original"],
+        "replacement_receipts": ["replacement"]
+      },
+      "rationale": "The builder attempts to correct its own receipt without charter authority.",
+      "decided_at": "2026-07-22T10:05:00Z"
+    }
+  ],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {}
+}

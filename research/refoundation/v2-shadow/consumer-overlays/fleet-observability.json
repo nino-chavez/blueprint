@@ -1,0 +1,165 @@
+{
+  "schema": "blueprint-v2-consumer-shadow-overlay/1",
+  "initiative": "fleet-observability",
+  "as_of": "2026-07-22T12:00:00Z",
+  "mode": "native",
+  "actor_aliases": {},
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Let the intrinsic operator receive a scheduled health report for the managed deployment fleet and use it during routine operation.",
+      "scope": {
+        "product_mode": "intrinsic-operator-tool",
+        "environment": "operator-controlled"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["human", "operator", "builder", "pilot-user"],
+          "authority": ["authorize-work", "change-intent", "disposition-transition", "observe-own-operational-outcome"]
+        },
+        {
+          "id": "shadow-evaluator",
+          "kinds": ["agent", "reviewer"],
+          "authority": ["issue-tool-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "pilot-incident-source-present",
+      "statement": "The current checkout contains the two first-party records that bound the solo-operator fleet incident used to charter the initiative.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "fleet-observability",
+        "boundary": "pilot-incident-source"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-presence",
+        "oracle": "all-files-exist",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "scheduled-operation-implementation-present",
+      "statement": "The current checkout contains the declared worker entry point, evaluation, report, and schedule configuration artifacts.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "fleet-observability",
+        "boundary": "scheduled-operation-implementation"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-presence",
+        "oracle": "all-files-exist",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "scheduled-health-report-arrives",
+      "statement": "The intrinsic operator receives the scheduled fleet health report in the declared operating window.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "operator",
+        "environment": "operator-controlled",
+        "schedule": "daily-window"
+      },
+      "owner": "operator",
+      "depends_on": ["scheduled-operation-implementation-present"],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "observed-scheduled-run",
+        "observer": {
+          "actor": "operator",
+          "role": "operator"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "doctor-completes-without-failing-result",
+      "statement": "The current Blueprint doctor executes its declared checks for this checkout without a failing result inside its explicitly stated verification boundary.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "fleet-observability",
+        "contract": "blueprint-doctor"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "contract-validation",
+        "oracle": "blueprint-doctor",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [
+    {
+      "id": "structural-snapshot-resolves",
+      "requires": ["pilot-incident-source-present", "scheduled-operation-implementation-present", "doctor-completes-without-failing-result"]
+    },
+    {
+      "id": "solo-operation-observed",
+      "requires": ["scheduled-health-report-arrives"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "ongoing-operation",
+      "activation_claims": ["scheduled-health-report-arrives"]
+    }
+  ],
+  "evidence_adapters": [
+    {
+      "id": "fleet-pilot-incident-files",
+      "type": "all-files-exist",
+      "claim": "pilot-incident-source-present",
+      "paths": [
+        "research/sources/session-extract-2026-07-12-rally-hq.md",
+        "research/sources/walkthrough-2026-07-12-rally-hq-dead-deployments.md"
+      ]
+    },
+    {
+      "id": "fleet-scheduled-operation-files",
+      "type": "all-files-exist",
+      "claim": "scheduled-operation-implementation-present",
+      "paths": [
+        "apps/worker/src/index.ts",
+        "apps/worker/src/evaluate.ts",
+        "apps/worker/src/report.ts",
+        "apps/worker/wrangler.jsonc"
+      ]
+    },
+    {
+      "id": "fleet-doctor",
+      "type": "blueprint-doctor",
+      "claim": "doctor-completes-without-failing-result"
+    }
+  ]
+}

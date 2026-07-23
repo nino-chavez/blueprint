@@ -1,0 +1,46 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: blueprint-self
+as_of: 2026-07-22T12:00:00Z
+operator: maintainer
+
+charter:
+  revision: 1
+  intent: Enable an operator or adopting team to run evidence-gated product initiatives through a model-neutral methodology distributed through git and npm.
+  scope: {product_mode: methodology-platform, distribution: git-and-npm, runtime_contract: model-neutral-with-runtime-adapters, hosted_control_plane: none}
+
+actors:
+  - {id: maintainer, profile: operator-builder, remove_kinds: [pilot-user], remove_authority: [observe-own-operational-outcome], add_authority: [correct-receipt]}
+  - {id: next-agent, profile: agent-worker}
+  - {id: casual-visitor, profile: pilot-operator, remove_kinds: [operator]}
+  - {id: evaluating-team-lead, profile: decision-maker, remove_kinds: [pilot-user], add_kinds: [stakeholder], remove_authority: [decide-counterparty-scope], add_authority: [accept-trial]}
+  - {id: adopter-operator, profile: pilot-operator}
+  - {id: external-reviewer, profile: agent-worker, add_kinds: [reviewer], remove_authority: [execute-authorized-work, issue-tool-receipt, propose-disposition], add_authority: [issue-review-receipt]}
+  - {id: contributor, profile: decision-maker, remove_kinds: [decision-maker, pilot-user], add_kinds: [contributor], remove_authority: [decide-counterparty-scope], add_authority: [propose-amendment]}
+
+imports:
+  actor_output: actor-output.yml
+  actor_output_observer: actor
+  actor_output_freshness: none
+
+claims:
+  - id: actor-output-contract-has-no-blocking-error
+    says: The current actor-output gate resolves the root contract and artifacts without a blocking structural error while preserving pending outcome evidence.
+    evidence: actor-output-gate
+    scope_exact: true
+    scope: {repository: blueprint-root}
+  - id: doctor-completes-without-blocking-result
+    says: The current Blueprint doctor executes its declared root checks without a blocking result inside its explicitly stated verification boundary.
+    evidence: doctor
+    scope_exact: true
+    scope: {repository: blueprint-root}
+
+checkpoints:
+  - {id: current-integrity-tools-execute, requires: [actor-output-contract-has-no-blocking-error, doctor-completes-without-blocking-result]}
+  - {id: public-orientation-observed, requires: [outcome:casual-visitor.orient]}
+  - {id: external-adoption-observed, requires: [outcome:adopter-operator.adopt-and-run]}
+
+modules:
+  - {id: ongoing-operation, claims: [outcome:maintainer.recover-context]}
+  - {id: human-surface-design, claims: [outcome:casual-visitor.orient, outcome:evaluating-team-lead.evaluate], actor_kind: pilot-user}
+  - {id: distribution, claims: [outcome:adopter-operator.adopt-and-run], actor_kind: operator}

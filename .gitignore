@@ -16,3 +16,7 @@ dist/
 feedback/raw/
 consumers.local.yml
 *.local.yml
+
+# Re-foundation prototypes rebuild these views from authored contracts.
+research/refoundation/v2-shadow/generated/
+research/refoundation/steering-layer/generated/

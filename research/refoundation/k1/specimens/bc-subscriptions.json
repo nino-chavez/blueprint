@@ -1,0 +1,195 @@
+{
+  "initiative": "bc-subscriptions",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Implement and deliver the scoped subscription behavior with traceable evidence for its receiving actor.",
+      "scope": {
+        "environment": "initiative-repository",
+        "delivery_mode": "recipient-safe"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder"],
+          "authority": ["authorize-work", "disposition-transition", "change-intent"]
+        },
+        {
+          "id": "recipient",
+          "kinds": ["recipient"],
+          "authority": ["accept-delivery"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "subscription-contract-specified",
+      "statement": "The scoped subscription behavior is represented by a machine-readable contract with traceable acceptance scenarios.",
+      "charter_revision": 1,
+      "scope": {
+        "feature": "subscription-flow",
+        "environment": "initiative-repository"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "schema-lint",
+        "observer": {
+          "actor": "operator",
+          "role": "builder"
+        },
+        "freshness": {
+          "source_version": "contract-17"
+        }
+      }
+    },
+    {
+      "id": "implementation-artifacts-present",
+      "statement": "The declared implementation artifacts for the subscription flow are present at the contract's traced locations.",
+      "charter_revision": 1,
+      "scope": {
+        "feature": "subscription-flow",
+        "environment": "initiative-repository"
+      },
+      "owner": "operator",
+      "depends_on": ["subscription-contract-specified"],
+      "evidence_requirement": {
+        "object": "artifact-presence",
+        "oracle": "static-scan",
+        "observer": {
+          "actor": "operator",
+          "role": "builder"
+        },
+        "freshness": {
+          "source_version": "implementation-31"
+        }
+      }
+    },
+    {
+      "id": "subscription-scenarios-pass",
+      "statement": "The subscription flow passes its traced behavioral scenarios in the declared test environment.",
+      "charter_revision": 1,
+      "scope": {
+        "feature": "subscription-flow",
+        "environment": "declared-test-environment"
+      },
+      "owner": "operator",
+      "depends_on": ["implementation-artifacts-present"],
+      "evidence_requirement": {
+        "object": "behavior",
+        "oracle": "test-run",
+        "observer": {
+          "actor": "operator",
+          "role": "builder"
+        },
+        "freshness": {
+          "source_version": "implementation-31"
+        }
+      }
+    },
+    {
+      "id": "recipient-accepts-delivery",
+      "statement": "The named recipient receives the allowlisted output and explicitly accepts it for the scoped delivery.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "recipient",
+        "delivery_mode": "recipient-safe"
+      },
+      "owner": "operator",
+      "depends_on": ["subscription-scenarios-pass"],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-handoff",
+        "observer": {
+          "actor": "recipient",
+          "role": "recipient",
+          "independence": "not-builder"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "contract-lint-17",
+      "claim": "subscription-contract-specified",
+      "result": "supports",
+      "observation": "The contract parsed and each scenario resolved to a declared trace target.",
+      "object": "artifact-content",
+      "oracle": {
+        "method": "schema-lint",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "builder"
+      },
+      "scope": {
+        "feature": "subscription-flow",
+        "environment": "initiative-repository"
+      },
+      "source_version": "contract-17",
+      "observed_at": "2026-07-21T10:00:00Z",
+      "source": "research fixture: contract lint"
+    },
+    {
+      "id": "artifact-scan-31",
+      "claim": "implementation-artifacts-present",
+      "result": "supports",
+      "observation": "All traced implementation paths existed.",
+      "object": "artifact-presence",
+      "oracle": {
+        "method": "static-scan",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "builder"
+      },
+      "scope": {
+        "feature": "subscription-flow",
+        "environment": "initiative-repository"
+      },
+      "source_version": "implementation-31",
+      "observed_at": "2026-07-21T10:05:00Z",
+      "source": "research fixture: artifact scan"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [
+    {
+      "id": "behavior-verified",
+      "requires": ["subscription-scenarios-pass"]
+    },
+    {
+      "id": "recipient-delivery-complete",
+      "requires": ["subscription-scenarios-pass", "recipient-accepts-delivery"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "implementation",
+      "activation_claims": ["subscription-scenarios-pass"]
+    },
+    {
+      "id": "recipient-safe-delivery",
+      "activation_claims": ["recipient-accepts-delivery"],
+      "requires_actor_kind": "recipient"
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "subscription-contract-specified": "satisfied",
+      "implementation-artifacts-present": "satisfied",
+      "subscription-scenarios-pass": "open",
+      "recipient-accepts-delivery": "open"
+    },
+    "checkpoints": {
+      "behavior-verified": "open",
+      "recipient-delivery-complete": "open"
+    }
+  }
+}

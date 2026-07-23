@@ -1,0 +1,146 @@
+{
+  "initiative": "rally-hq",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Let an external reader orient in the portal and identify the next useful action.",
+      "scope": {
+        "surface": "portal",
+        "environment": "local-source-snapshot"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder"],
+          "authority": ["authorize-work", "disposition-transition", "change-intent"]
+        },
+        {
+          "id": "external-reader",
+          "kinds": ["pilot-user"],
+          "authority": ["issue-own-outcome-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "portal-structure-present",
+      "statement": "The portal source contains the declared orientation path and next-action affordance.",
+      "charter_revision": 1,
+      "scope": {
+        "surface": "portal",
+        "environment": "local-source-snapshot"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "source-structure-scan",
+        "observer": {
+          "actor": "operator",
+          "role": "builder"
+        },
+        "freshness": {
+          "source_version": "portal-9"
+        }
+      }
+    },
+    {
+      "id": "external-reader-orients",
+      "statement": "An external reader identifies the portal's purpose and the next useful action in an observed task run.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "external-reader",
+        "surface": "portal",
+        "environment": "runnable-portal"
+      },
+      "owner": "operator",
+      "depends_on": ["portal-structure-present"],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "external-reader",
+          "role": "pilot-user",
+          "independence": "not-builder"
+        },
+        "freshness": {
+          "source_version": "portal-9"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "portal-source-scan-9",
+      "claim": "portal-structure-present",
+      "result": "supports",
+      "observation": "The source scan found the declared orientation path and action affordance.",
+      "object": "artifact-content",
+      "oracle": {
+        "method": "source-structure-scan",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "builder"
+      },
+      "scope": {
+        "surface": "portal",
+        "environment": "local-source-snapshot"
+      },
+      "source_version": "portal-9",
+      "observed_at": "2026-07-20T14:00:00Z",
+      "source": "research fixture: source scan"
+    },
+    {
+      "id": "reader-run-attempt-9",
+      "claim": "external-reader-orients",
+      "result": "could-not-observe",
+      "observation": "The required task run could not start because the captured environment did not include a runnable test surface.",
+      "object": "actor-outcome",
+      "oracle": {
+        "method": "observed-task-run",
+        "executed": false
+      },
+      "observer": {
+        "actor": "external-reader",
+        "role_during_observation": "pilot-user",
+        "independence": "not-builder"
+      },
+      "scope": {
+        "actor": "external-reader",
+        "surface": "portal",
+        "environment": "runnable-portal"
+      },
+      "source_version": "portal-9",
+      "observed_at": "2026-07-20T14:10:00Z",
+      "source": "research fixture: observation-attempt log"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [
+    {
+      "id": "external-reader-orientation-observed",
+      "requires": ["portal-structure-present", "external-reader-orients"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "human-surface-design",
+      "activation_claims": ["external-reader-orients"],
+      "requires_actor_kind": "pilot-user"
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "portal-structure-present": "satisfied",
+      "external-reader-orients": "unobservable"
+    },
+    "checkpoints": {
+      "external-reader-orientation-observed": "unobservable"
+    }
+  }
+}

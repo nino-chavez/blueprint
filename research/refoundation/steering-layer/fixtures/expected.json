@@ -1,0 +1,47 @@
+{
+  "self-dogfood-initial.json": {
+    "recipe": "implement-or-verify",
+    "active_claims": 5,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
+  },
+  "self-dogfood-complete.json": {
+    "recipe": "record-disposition",
+    "active_claims": 5,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
+  },
+  "film-room-longitudinal.json": {
+    "recipe": "holistic-audit",
+    "active_claims": 5,
+    "historical_claims": 3,
+    "touches_used": 4,
+    "touch_budget_exceeded": true,
+    "unresolved_clusters": 1,
+    "founder_blockers": ["settings-return-visible"]
+  },
+  "fleet-operation.json": {
+    "recipe": "repair-or-revise",
+    "active_claims": 4,
+    "historical_claims": 0,
+    "touches_used": 1,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
+  },
+  "bc-readiness.json": {
+    "recipe": "refresh-evidence",
+    "active_claims": 4,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0,
+    "receiver_blockers": [
+      "state-register-current",
+      "scenario-results-present"
+    ]
+  }
+}

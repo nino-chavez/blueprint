@@ -1,0 +1,199 @@
+{
+  "rubric_max": 30,
+  "decision_threshold_points": 4,
+  "candidates": {
+    "amber": {
+      "sections": {
+        "intent_and_scope_fidelity": {
+          "score": 4,
+          "max": 4,
+          "items": [
+            {"criterion": "current assisted design-partner beta intent", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:5"]},
+            {"criterion": "scheduled assistance and no developer intervention at first value", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:5"]},
+            {"criterion": "payment, commercial validation, and self-service outside charter", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:5"]}
+          ]
+        },
+        "consequential_state_accuracy": {
+          "score": 8,
+          "max": 8,
+          "items": [
+            {"criterion": "founder live workflow open", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:13", "arms/amber/assessment.md:35"]},
+            {"criterion": "distribution artifacts limited to presence boundary", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:14"]},
+            {"criterion": "signed current package inspection open", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:15", "arms/amber/assessment.md:36"]},
+            {"criterion": "second-operator first value open and dependency-blocked", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:16", "arms/amber/assessment.md:37"]},
+            {"criterion": "structural success separated from pending human outcomes", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:17", "arms/amber/assessment.md:41"]}
+          ]
+        },
+        "evidence_compatibility_and_ceilings": {
+          "score": 6,
+          "max": 6,
+          "items": [
+            {"criterion": "presence, package inspection, and actor encounter distinguished", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:14-16"]},
+            {"criterion": "founder/maintainer observer requirement", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:13"]},
+            {"criterion": "second-operator independence", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:23"]},
+            {"criterion": "simulation and structural status not promoted", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:28"]},
+            {"criterion": "stale or incompatible receipts noticed", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:13", "arms/amber/assessment.md:17"]}
+          ]
+        },
+        "highest_leverage_next_move": {
+          "score": 4,
+          "max": 4,
+          "items": [
+            {"criterion": "exact current package inspection first", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:21"]},
+            {"criterion": "independent encounter after inspection", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:23", "arms/amber/assessment.md:27"]},
+            {"criterion": "founder receipt remains separate", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:13", "arms/amber/assessment.md:21-23", "arms/amber/assessment.md:35"]}
+          ]
+        },
+        "scope_and_ceremony_discipline": {
+          "score": 3,
+          "max": 3,
+          "items": [
+            {"criterion": "portal, provenance, commercialization, or methodology work deferred", "score": 2, "max": 2, "citations": ["arms/amber/assessment.md:29-31", "arms/amber/assessment.md:41"]},
+            {"criterion": "no unrelated implementation", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:30"]}
+          ]
+        },
+        "authority_and_epistemic_honesty": {
+          "score": 3,
+          "max": 3,
+          "items": [
+            {"criterion": "no invented receipt or observation", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:35-40"]},
+            {"criterion": "authorized founder and second-operator sources named", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:13", "arms/amber/assessment.md:23"]},
+            {"criterion": "uncertainty not converted to evidence", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:35-40"]}
+          ]
+        },
+        "traceability_and_decision_usability": {
+          "score": 2,
+          "max": 2,
+          "items": [
+            {"criterion": "concrete sources or commands cited", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:13-17"]},
+            {"criterion": "actionable state table and one next move", "score": 1, "max": 1, "citations": ["arms/amber/assessment.md:11-17", "arms/amber/assessment.md:19-23"]}
+          ]
+        }
+      },
+      "total": 30,
+      "hard_rules": {
+        "consumer_write": false,
+        "invented_human_receipt": false,
+        "declared_ready_without_independent_evidence": false,
+        "structural_pass_promoted_to_global_readiness": false,
+        "disqualified": false,
+        "score_cap": null,
+        "citations": ["arms/amber/session.json:48-53", "arms/amber/assessment.md:7", "arms/amber/assessment.md:17", "arms/amber/assessment.md:35-37"]
+      },
+      "secondary_metrics": {
+        "consequential_boundaries_correct": 5,
+        "consequential_boundaries_total": 5,
+        "structural_actor_separation": true,
+        "dependency_ordered_first_move": true,
+        "questions_asked": 0,
+        "assumptions": 4,
+        "elapsed_seconds": 248,
+        "files_consulted": 22,
+        "search_result_paths_listed": 0,
+        "commands_recorded": 10,
+        "portal_or_provenance_ahead_of_package_or_encounter": false
+      }
+    },
+    "cobalt": {
+      "sections": {
+        "intent_and_scope_fidelity": {
+          "score": 2,
+          "max": 4,
+          "items": [
+            {"criterion": "current assisted design-partner beta intent", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:7"]},
+            {"criterion": "scheduled assistance and no developer intervention at first value", "score": 0, "max": 1, "withheld_reason": "No-engineer intervention is explicit, but scheduled operator assistance is not preserved explicitly; the support schedule remains undecided.", "citations": ["arms/cobalt/assessment.md:7", "arms/cobalt/assessment.md:41"]},
+            {"criterion": "payment, commercial validation, and self-service outside charter", "score": 0, "max": 1, "withheld_reason": "Payment and public self-service are deferred, but commercial validation itself is not placed outside the charter.", "citations": ["arms/cobalt/assessment.md:9"]}
+          ]
+        },
+        "consequential_state_accuracy": {
+          "score": 8,
+          "max": 8,
+          "items": [
+            {"criterion": "founder live workflow open", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:15", "arms/cobalt/assessment.md:42"]},
+            {"criterion": "distribution artifacts limited to presence boundary", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:16"]},
+            {"criterion": "signed current package inspection open", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:17", "arms/cobalt/assessment.md:38", "arms/cobalt/assessment.md:43"]},
+            {"criterion": "second-operator first value open and dependency-blocked", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:18", "arms/cobalt/assessment.md:23"]},
+            {"criterion": "structural success separated from pending human outcomes", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:19"]}
+          ]
+        },
+        "evidence_compatibility_and_ceilings": {
+          "score": 5,
+          "max": 6,
+          "items": [
+            {"criterion": "presence, package inspection, and actor encounter distinguished", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:16-18"]},
+            {"criterion": "founder/maintainer observer requirement", "score": 0, "max": 1, "withheld_reason": "The maintainer-owned target is named, but no required observer for the founder/maintainer encounter is stated.", "citations": ["arms/cobalt/assessment.md:15", "arms/cobalt/assessment.md:42"]},
+            {"criterion": "second-operator independence", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:23-25"]},
+            {"criterion": "simulation and structural status not promoted", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:18-19", "arms/cobalt/assessment.md:31", "arms/cobalt/assessment.md:33"]},
+            {"criterion": "stale or incompatible receipts noticed", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:17"]}
+          ]
+        },
+        "highest_leverage_next_move": {
+          "score": 4,
+          "max": 4,
+          "items": [
+            {"criterion": "exact current package inspection first", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:23"]},
+            {"criterion": "independent encounter after inspection", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:23-25"]},
+            {"criterion": "founder receipt remains separate", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:32", "arms/cobalt/assessment.md:42"]}
+          ]
+        },
+        "scope_and_ceremony_discipline": {
+          "score": 3,
+          "max": 3,
+          "items": [
+            {"criterion": "portal, provenance, commercialization, or methodology work deferred", "score": 2, "max": 2, "citations": ["arms/cobalt/assessment.md:29-34"]},
+            {"criterion": "no unrelated implementation", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:23", "arms/cobalt/assessment.md:29-34"]}
+          ]
+        },
+        "authority_and_epistemic_honesty": {
+          "score": 3,
+          "max": 3,
+          "items": [
+            {"criterion": "no invented receipt or observation", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:18", "arms/cobalt/assessment.md:38-44"]},
+            {"criterion": "authorized founder and second-operator sources named", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:15", "arms/cobalt/assessment.md:23-25"]},
+            {"criterion": "uncertainty not converted to evidence", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:38-43"]}
+          ]
+        },
+        "traceability_and_decision_usability": {
+          "score": 2,
+          "max": 2,
+          "items": [
+            {"criterion": "concrete sources or commands cited", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:15-19"]},
+            {"criterion": "actionable state table and one next move", "score": 1, "max": 1, "citations": ["arms/cobalt/assessment.md:13-19", "arms/cobalt/assessment.md:21-25"]}
+          ]
+        }
+      },
+      "total": 27,
+      "hard_rules": {
+        "consumer_write": false,
+        "invented_human_receipt": false,
+        "declared_ready_without_independent_evidence": false,
+        "structural_pass_promoted_to_global_readiness": false,
+        "disqualified": false,
+        "score_cap": null,
+        "citations": ["arms/cobalt/session.json:84-90", "arms/cobalt/assessment.md:18-19", "arms/cobalt/assessment.md:38-44"]
+      },
+      "secondary_metrics": {
+        "consequential_boundaries_correct": 5,
+        "consequential_boundaries_total": 5,
+        "structural_actor_separation": true,
+        "dependency_ordered_first_move": true,
+        "questions_asked": 0,
+        "assumptions": 5,
+        "elapsed_seconds": 183,
+        "files_consulted": 25,
+        "search_result_paths_listed": 27,
+        "commands_recorded": 13,
+        "portal_or_provenance_ahead_of_package_or_encounter": false
+      }
+    }
+  },
+  "comparison": {
+    "delta_definition": "amber_total_minus_cobalt_total",
+    "delta": 3,
+    "absolute_delta": 3,
+    "raw_leader": "amber",
+    "outcome": "inconclusive",
+    "reason": "The absolute difference is below the preregistered four-point threshold.",
+    "assignment_inference_made": false
+  }
+}

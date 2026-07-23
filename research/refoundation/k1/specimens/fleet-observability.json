@@ -1,0 +1,93 @@
+{
+  "initiative": "fleet-observability",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Let the intrinsic operator receive a scheduled health report for the managed fleet and use it in routine operation.",
+      "scope": {
+        "product_mode": "intrinsic-operator-tool",
+        "environment": "operator-controlled"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder", "pilot-user"],
+          "authority": ["authorize-work", "disposition-transition", "change-intent", "observe-own-operational-outcome"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scheduled-health-report-arrives",
+      "statement": "The intrinsic operator receives the scheduled fleet health report in the declared operating window.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "operator",
+        "environment": "operator-controlled",
+        "schedule": "daily-window"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "observed-scheduled-run",
+        "observer": {
+          "actor": "operator",
+          "role": "operator"
+        },
+        "freshness": {
+          "source_version": "reporter-12"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "scheduled-report-2026-07-22",
+      "claim": "scheduled-health-report-arrives",
+      "result": "supports",
+      "observation": "The daily report arrived within the declared window and contained the managed fleet health rows.",
+      "object": "live-behavior",
+      "oracle": {
+        "method": "observed-scheduled-run",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "operator"
+      },
+      "scope": {
+        "actor": "operator",
+        "environment": "operator-controlled",
+        "schedule": "daily-window"
+      },
+      "source_version": "reporter-12",
+      "observed_at": "2026-07-22T11:00:00Z",
+      "source": "research fixture: scheduled-run log"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [
+    {
+      "id": "solo-operation-observed",
+      "requires": ["scheduled-health-report-arrives"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "ongoing-operation",
+      "activation_claims": ["scheduled-health-report-arrives"]
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "scheduled-health-report-arrives": "satisfied"
+    },
+    "checkpoints": {
+      "solo-operation-observed": "satisfied"
+    }
+  }
+}

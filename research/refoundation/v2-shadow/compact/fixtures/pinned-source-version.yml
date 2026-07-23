@@ -1,0 +1,40 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: pinned-source-version-fixture
+as_of: 2026-07-23T04:20:00Z
+operator: operator
+
+charter:
+  revision: 1
+  intent: Keep evidence from an older product candidate visible but stale after the claim advances to a new exact candidate.
+  scope: {product_mode: packaged-application, environment: fixture-checkout}
+
+actors:
+  - {id: operator, profile: operator-builder}
+  - {id: release-agent, profile: agent-worker}
+
+claims:
+  - id: current-package-inspects-cleanly
+    says: The explicitly named current fixture candidate passes its package-boundary inspection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: candidate-v2
+    scope: {artifact: fixture-package, trust: unsigned}
+
+receipts:
+  - id: older-package-inspection
+    claim: current-package-inspects-cleanly
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: candidate-v1
+    at: 2026-07-23T04:00:00Z
+    observation: The older fixture candidate passed its inspection before the claim advanced to candidate v2.
+    source: de-identified historical fixture package audit
+
+checkpoints:
+  - {id: current-package-observed, requires: [current-package-inspects-cleanly]}
+
+modules:
+  - {id: package-distribution, claims: [current-package-inspects-cleanly]}

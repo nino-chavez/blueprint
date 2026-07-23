@@ -1,0 +1,206 @@
+{
+  "schema": "blueprint-v2-consumer-shadow-overlay/1",
+  "initiative": "bc-subscriptions",
+  "as_of": "2026-07-22T12:00:00Z",
+  "mode": "native",
+  "actor_aliases": {},
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Maintain an evidence-bounded implementation and behavior account, then transfer the resulting product corpus to a receiving team without treating artifact presence as receiving-team acceptance.",
+      "scope": {
+        "product_mode": "brownfield-implementation-and-handoff",
+        "environment": "repository-checkout"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["human", "operator", "builder"],
+          "authority": ["authorize-work", "change-intent", "disposition-transition", "accept-risk"]
+        },
+        {
+          "id": "receiving-team",
+          "kinds": ["team", "pilot-user"],
+          "authority": ["issue-own-outcome-receipt", "accept-handoff"]
+        },
+        {
+          "id": "shadow-evaluator",
+          "kinds": ["agent", "reviewer"],
+          "authority": ["issue-tool-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "implementation-register-current",
+      "statement": "The recorded implementation-state register reflects the current checkout at its declared derivation boundary.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "bc-subscriptions",
+        "artifact": "docs/audits/derived/_state.json"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "implementation-state-register",
+        "oracle": "recorded-state-derive",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "behavior-register-current",
+      "statement": "The behavior-gate subset of the recorded state register reflects the current checkout at its declared derivation boundary.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "bc-subscriptions",
+        "artifact": "docs/audits/derived/_state.json",
+        "category": "behavior-gate"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "behavior-state-register",
+        "oracle": "recorded-state-derive",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "normalized-scenario-results-present",
+      "statement": "The current checkout contains the normalized scenario-result artifact required to rederive scenario-backed behavior state.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "bc-subscriptions",
+        "artifact": "docs/audits/derived/_scenario-results.json"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-presence",
+        "oracle": "file-exists",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "handoff-corpus-present",
+      "statement": "The current checkout contains the handoff corpus index and representative product-area packets.",
+      "charter_revision": 1,
+      "scope": {
+        "repository": "bc-subscriptions",
+        "boundary": "handoff-corpus"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-presence",
+        "oracle": "all-files-exist",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "receiving-team-accepts-handoff",
+      "statement": "The receiving team uses the corpus to orient, identifies the next owned action, and records acceptance of the transfer boundary.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "receiving-team",
+        "environment": "receiving-team-workflow"
+      },
+      "owner": "operator",
+      "depends_on": ["handoff-corpus-present"],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-handoff-run",
+        "observer": {
+          "actor": "receiving-team",
+          "role": "team",
+          "independence": "not-builder"
+        }
+      }
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [
+    {
+      "id": "current-behavior-evidence-rederivable",
+      "requires": ["behavior-register-current", "normalized-scenario-results-present"]
+    },
+    {
+      "id": "handoff-accepted",
+      "requires": ["handoff-corpus-present", "receiving-team-accepts-handoff"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "implementation-accounting",
+      "activation_claims": ["implementation-register-current"]
+    },
+    {
+      "id": "behavior-evidence",
+      "activation_claims": ["behavior-register-current", "normalized-scenario-results-present"]
+    },
+    {
+      "id": "handoff",
+      "activation_claims": ["receiving-team-accepts-handoff"],
+      "requires_actor_kind": "team"
+    }
+  ],
+  "evidence_adapters": [
+    {
+      "id": "bc-implementation-state",
+      "type": "state-summary",
+      "claim": "implementation-register-current",
+      "path": "docs/audits/derived/_state.json",
+      "source_version_field": "as_of_commit"
+    },
+    {
+      "id": "bc-behavior-state",
+      "type": "state-summary",
+      "claim": "behavior-register-current",
+      "path": "docs/audits/derived/_state.json",
+      "source_version_field": "as_of_commit",
+      "category": "behavior-gate"
+    },
+    {
+      "id": "bc-scenario-results",
+      "type": "file-exists",
+      "claim": "normalized-scenario-results-present",
+      "path": "docs/audits/derived/_scenario-results.json"
+    },
+    {
+      "id": "bc-handoff-corpus",
+      "type": "all-files-exist",
+      "claim": "handoff-corpus-present",
+      "paths": [
+        "docs/handoff-corpus/README.md",
+        "docs/handoff-corpus/catalog-and-plans.md",
+        "docs/handoff-corpus/dunning.md",
+        "docs/handoff-corpus/webhooks-and-integrations.md"
+      ]
+    }
+  ]
+}

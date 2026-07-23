@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-07-22T22:52:51Z",
+  "finished_at": "2026-07-22T22:53:47Z",
+  "attempts": 2,
+  "questions_asked": [],
+  "assumptions": [
+    "The declared inventory output is the exact JSON object printed by the allowed reporter fixture.",
+    "A could-not-observe scheduled receipt is compatible with the scheduled claim but does not support it.",
+    "The file evidence profile establishes artifact presence without an encounter receipt."
+  ],
+  "methodology_creator_interventions": 0
+}

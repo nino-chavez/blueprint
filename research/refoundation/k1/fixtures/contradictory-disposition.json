@@ -1,0 +1,70 @@
+{
+  "initiative": "contradictory-disposition",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Test an initial actor outcome.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator"],
+          "authority": ["change-intent"]
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "intent": "Test a replacement actor outcome.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator"],
+          "authority": ["change-intent"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "old-outcome",
+      "statement": "The initial actor produces the declared outcome.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "initial-actor"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "operator",
+          "role": "operator"
+        }
+      }
+    }
+  ],
+  "receipts": [],
+  "dispositions": [
+    {
+      "id": "ambiguous-recharter",
+      "action": "re-charter",
+      "proposed_by": "operator",
+      "decided_by": "operator",
+      "authority": "change-intent",
+      "basis": ["scope-change"],
+      "changes": {
+        "charter_revision": 2,
+        "retains_claims": ["old-outcome"],
+        "invalidates_claims": ["old-outcome"]
+      },
+      "rationale": "The disposition contains irreconcilable instructions for the old claim.",
+      "decided_at": "2026-07-21T09:00:00Z"
+    }
+  ],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {}
+}

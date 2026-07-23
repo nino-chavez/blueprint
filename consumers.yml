@@ -104,7 +104,8 @@ consumers:
     pattern: A                        #   consumers.local.yml (gitignored). The code-shipping
     methodology_version: null         #   flagship (116k LOC shipped). Consumes the methodology via
     owner: nino-chavez                #   METHODOLOGY.md/BRD + the ai-hive substrate. The ONLY full `.hive/` consumer.
-    synced_at: "2026-06-06"
+    synced_at: "2026-07-20"           # reconciled: unpinned by design (origin of the actor-output
+                                       #   contract, decisions/05) — still no blueprint.yml, still no drift.
 
   # Operator-declared, NOT locally verified on THIS machine (the registry is machine-local).
   # Confirm repo / pattern / pin before relying on these for fleet/upgrade.
@@ -138,3 +139,15 @@ consumers:
     methodology_version: null
     owner: external-a                 # external operator (A.)
     synced_at: "2026-06-06"
+
+  - repo: nino-chavez/film-room       # local-only initiative at ~/Workspace/dev/wip/film-room (no remote yet);
+    pattern: null                     #   portal_type: initiative (Initiative Portal harness, not pattern A/B)
+    methodology_version: "0.6.0"      # pinned at init-day 2026-07-16 via `blueprint upgrade --apply`
+    owner: nino-chavez
+    synced_at: "2026-07-16"
+
+  - repo: nino-chavez/fleet-observability # first native-contract pilot on codex/blueprint-v2-pilot (609edb8)
+    pattern: null                         # legacy portal_type: initiative; native contract is portal-independent
+    methodology_version: null             # legacy blueprint.yml remains unpinned; native profiles pin k1-research-0
+    owner: nino-chavez
+    synced_at: "2026-07-22"

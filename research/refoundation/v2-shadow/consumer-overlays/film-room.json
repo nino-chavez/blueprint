@@ -1,0 +1,271 @@
+{
+  "schema": "blueprint-v2-consumer-shadow-overlay/1",
+  "initiative": "film-room",
+  "as_of": "2026-07-22T12:00:00Z",
+  "mode": "actor-output",
+  "actor_aliases": {
+    "club-director": "counterparty-director"
+  },
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Let the intrinsic operator complete real event work end to end from the local product without terminal intervention.",
+      "scope": {
+        "product_mode": "founder-operated",
+        "environment": "origin-workstation",
+        "distribution": "none-required"
+      },
+      "actors": [
+        {
+          "id": "maintainer",
+          "kinds": ["human", "operator", "builder", "pilot-user"],
+          "authority": ["authorize-work", "change-intent", "disposition-transition", "observe-own-operational-outcome"]
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "intent": "Prepare an assisted design-partner beta in which a second operator can install the signed package and reach first value without developer intervention; payment and self-service distribution remain outside the charter.",
+      "scope": {
+        "product_mode": "assisted-design-partner-beta",
+        "environment": "supported-clean-workstation",
+        "assistance": "scheduled-operator-support",
+        "self_serve": false,
+        "commercial_validation": false
+      },
+      "actors": [
+        {
+          "id": "maintainer",
+          "kinds": ["human", "operator", "builder", "pilot-user"],
+          "authority": ["authorize-work", "change-intent", "disposition-transition", "accept-risk", "observe-own-operational-outcome"]
+        },
+        {
+          "id": "next-agent",
+          "kinds": ["agent"],
+          "authority": ["execute-authorized-work", "issue-tool-receipt", "propose-disposition"]
+        },
+        {
+          "id": "counterparty-director",
+          "kinds": ["human", "decision-maker", "pilot-user"],
+          "authority": ["issue-own-outcome-receipt", "decide-counterparty-scope"]
+        },
+        {
+          "id": "second-operator",
+          "kinds": ["human", "operator", "pilot-user"],
+          "authority": ["issue-own-outcome-receipt"]
+        },
+        {
+          "id": "shadow-evaluator",
+          "kinds": ["agent", "reviewer"],
+          "authority": ["issue-tool-receipt"]
+        }
+      ]
+    }
+  ],
+  "actor_output": {
+    "path": "actor-output.yml",
+    "claim_revision": 2,
+    "default_owner": "maintainer",
+    "proof_methods": {
+      "observed-human": {
+        "object": "actor-outcome",
+        "oracle": "observed-human-encounter",
+        "observer_role": "human"
+      },
+      "cold-agent": {
+        "object": "agent-outcome",
+        "oracle": "cold-agent-run",
+        "observer_role": "agent"
+      },
+      "simulated-walk": {
+        "object": "simulated-actor-outcome",
+        "oracle": "simulated-walk",
+        "observer_role": "agent"
+      },
+      "mechanical": {
+        "object": "contract-validation",
+        "oracle": "mechanical-check",
+        "observer_role": "agent"
+      }
+    }
+  },
+  "claims": [
+    {
+      "id": "founder-live-workflow",
+      "statement": "The intrinsic operator completes a real event from launch through export without terminal intervention.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "maintainer",
+        "environment": "origin-workstation",
+        "assistance": "self"
+      },
+      "owner": "maintainer",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "maintainer",
+          "role": "operator"
+        }
+      }
+    },
+    {
+      "id": "distribution-artifacts-present",
+      "statement": "The current checkout contains the declared assisted-beta release profile and package build, signing, and boundary-inspection programs.",
+      "charter_revision": 2,
+      "scope": {
+        "repository": "film-room",
+        "boundary": "assisted-beta-distribution-artifacts"
+      },
+      "owner": "maintainer",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-presence",
+        "oracle": "all-files-exist",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "signed-package-inspects-cleanly",
+      "statement": "A current assisted-beta application package exists, is signed, and passes the declared package-boundary inspection.",
+      "charter_revision": 2,
+      "scope": {
+        "repository": "film-room",
+        "environment": "supported-clean-workstation",
+        "boundary": "assisted-beta-package"
+      },
+      "owner": "maintainer",
+      "depends_on": ["distribution-artifacts-present"],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "package-inspection",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "second-operator-first-value",
+      "statement": "A second operator installs the signed package and reaches first sample output during an assisted run without developer intervention.",
+      "charter_revision": 2,
+      "scope": {
+        "actor": "second-operator",
+        "environment": "supported-clean-workstation",
+        "assistance": "scheduled-operator-support"
+      },
+      "owner": "maintainer",
+      "depends_on": ["signed-package-inspects-cleanly"],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "second-operator",
+          "role": "pilot-user",
+          "independence": "not-builder"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    },
+    {
+      "id": "actor-output-contract-has-no-blocking-error",
+      "statement": "The current actor-output gate resolves the consumer contract and declared artifacts without a blocking structural error while preserving pending outcome evidence.",
+      "charter_revision": 2,
+      "scope": {
+        "repository": "film-room",
+        "contract": "actor-output"
+      },
+      "owner": "maintainer",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "contract-validation",
+        "oracle": "actor-output-gate",
+        "observer": {
+          "actor": "shadow-evaluator",
+          "role": "agent"
+        },
+        "freshness": {
+          "source_version": "$CURRENT_SOURCE_VERSION"
+        }
+      }
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "adopt-assisted-beta-charter",
+      "action": "re-charter",
+      "proposed_by": "maintainer",
+      "decided_by": "maintainer",
+      "authority": "change-intent",
+      "basis": ["operator-accepted-distribution-intent"],
+      "changes": {
+        "charter_revision": 2,
+        "retains_claims": ["founder-live-workflow"],
+        "invalidates_claims": []
+      },
+      "rationale": "The founder-operated result remains a separate claim; assisted distribution creates new package and second-operator obligations without silently asserting commercial or self-service readiness.",
+      "decided_at": "2026-07-21T20:00:00Z"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "founder-operated-ready",
+      "requires": ["founder-live-workflow"]
+    },
+    {
+      "id": "assisted-beta-ready",
+      "requires": ["distribution-artifacts-present", "signed-package-inspects-cleanly", "second-operator-first-value"]
+    },
+    {
+      "id": "current-actor-output-contract-resolves",
+      "requires": ["actor-output-contract-has-no-blocking-error"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "ongoing-operation",
+      "activation_claims": ["founder-live-workflow"]
+    },
+    {
+      "id": "distribution",
+      "activation_claims": ["second-operator-first-value"],
+      "requires_actor_kind": "pilot-user"
+    },
+    {
+      "id": "steering",
+      "activation_claims": ["outcome:counterparty-director.decide-scope"],
+      "requires_actor_kind": "decision-maker"
+    }
+  ],
+  "evidence_adapters": [
+    {
+      "id": "film-room-distribution-files",
+      "type": "all-files-exist",
+      "claim": "distribution-artifacts-present",
+      "paths": [
+        "apps/shell/release-profile.yml",
+        "apps/shell/scripts/build-release.sh",
+        "apps/shell/scripts/sign-notarize.sh",
+        "apps/shell/scripts/verify-bundle.py"
+      ]
+    },
+    {
+      "id": "film-room-actor-output-gate",
+      "type": "actor-output-gate",
+      "claim": "actor-output-contract-has-no-blocking-error"
+    }
+  ]
+}

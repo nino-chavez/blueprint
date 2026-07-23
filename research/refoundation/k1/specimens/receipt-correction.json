@@ -1,0 +1,116 @@
+{
+  "initiative": "receipt-correction",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Preserve observation history while allowing an authorized operator to correct an erroneous receipt.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "pilot-user"],
+          "authority": ["correct-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "operation-observed",
+      "statement": "The operator observed the declared operation succeeding.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "operator",
+        "environment": "pilot"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "observed-operation",
+        "observer": {
+          "actor": "operator",
+          "role": "operator"
+        },
+        "freshness": {
+          "source_version": "operation-7"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "mistaken-support",
+      "claim": "operation-observed",
+      "result": "supports",
+      "observation": "This receipt was entered with the wrong result and remains as append-only history.",
+      "object": "live-behavior",
+      "oracle": {
+        "method": "observed-operation",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "operator"
+      },
+      "scope": {
+        "actor": "operator",
+        "environment": "pilot"
+      },
+      "source_version": "operation-7",
+      "observed_at": "2026-07-22T10:00:00Z"
+    },
+    {
+      "id": "corrected-contradiction",
+      "claim": "operation-observed",
+      "result": "contradicts",
+      "observation": "The operation failed; this is the corrected result for the same observation contract.",
+      "object": "live-behavior",
+      "oracle": {
+        "method": "observed-operation",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "operator"
+      },
+      "scope": {
+        "actor": "operator",
+        "environment": "pilot"
+      },
+      "source_version": "operation-7",
+      "observed_at": "2026-07-22T10:00:00Z"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "correct-mistaken-support",
+      "action": "correct-receipt",
+      "decided_by": "operator",
+      "authority": "correct-receipt",
+      "changes": {
+        "retracts_receipts": ["mistaken-support"],
+        "replacement_receipts": ["corrected-contradiction"],
+        "invalidates_claims": []
+      },
+      "rationale": "The original receipt encoded the observed failure as support; retain it as history but exclude it from current evaluation.",
+      "decided_at": "2026-07-22T10:05:00Z"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "operation-gate",
+      "requires": ["operation-observed"]
+    }
+  ],
+  "modules": [],
+  "assertions": {
+    "claims": {
+      "operation-observed": "contradicted"
+    },
+    "checkpoints": {
+      "operation-gate": "contradicted"
+    }
+  }
+}

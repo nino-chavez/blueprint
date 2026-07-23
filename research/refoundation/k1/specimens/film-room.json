@@ -1,0 +1,207 @@
+{
+  "initiative": "film-room",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Let the intrinsic operator run the film workflow on the originating machine without returning to the terminal.",
+      "scope": {
+        "product_mode": "founder-operated",
+        "environment": "origin-mac",
+        "commercial": "none"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder", "pilot-user"],
+          "authority": ["change-intent", "authorize-work", "disposition-transition", "observe-own-operational-outcome"]
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "intent": "Enable a second solo operator to install a signed package and reach first sample output during an assisted beta without developer intervention.",
+      "scope": {
+        "product_mode": "assisted-beta",
+        "environment": "supported-clean-mac",
+        "commercial": "no-paid-or-self-serve-claim"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder", "support-owner"],
+          "authority": ["change-intent", "authorize-work", "disposition-transition"]
+        },
+        {
+          "id": "second-operator",
+          "kinds": ["pilot-user"],
+          "authority": ["issue-own-outcome-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "founder-live-workflow",
+      "statement": "The intrinsic operator completes a real film event on the originating Mac without returning to the terminal.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "operator",
+        "environment": "origin-mac",
+        "assistance": "self"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "operator",
+          "role": "pilot-user"
+        },
+        "freshness": {
+          "source_version": "0.1.4"
+        }
+      }
+    },
+    {
+      "id": "signed-package-inspects-cleanly",
+      "statement": "The assisted-beta release is a signed application package whose declared boundary passes package inspection.",
+      "charter_revision": 2,
+      "scope": {
+        "environment": "supported-clean-mac",
+        "release": "0.2.0"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "package-inspection",
+        "observer": {
+          "actor": "operator",
+          "role": "builder"
+        },
+        "freshness": {
+          "source_version": "0.2.0"
+        }
+      }
+    },
+    {
+      "id": "second-operator-first-value",
+      "statement": "A second operator installs the signed package and reaches first sample output during an assisted run without developer intervention.",
+      "charter_revision": 2,
+      "scope": {
+        "actor": "second-operator",
+        "environment": "supported-clean-mac",
+        "assistance": "scheduled-operator-support"
+      },
+      "owner": "operator",
+      "depends_on": ["signed-package-inspects-cleanly"],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "second-operator",
+          "role": "pilot-user",
+          "independence": "not-builder"
+        },
+        "freshness": {
+          "source_version": "0.2.0"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "founder-live-event-004",
+      "claim": "founder-live-workflow",
+      "result": "supports",
+      "observation": "The intrinsic operator completed a real event from launch through export without terminal intervention.",
+      "object": "actor-outcome",
+      "oracle": {
+        "method": "observed-task-run",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "pilot-user"
+      },
+      "scope": {
+        "actor": "operator",
+        "environment": "origin-mac",
+        "assistance": "self"
+      },
+      "source_version": "0.1.4",
+      "observed_at": "2026-07-20T18:00:00Z",
+      "source": "de-identified live-event record"
+    },
+    {
+      "id": "package-inspection-020",
+      "claim": "signed-package-inspects-cleanly",
+      "result": "supports",
+      "observation": "The 0.2.0 release passed signature and package-boundary inspection.",
+      "object": "artifact-content",
+      "oracle": {
+        "method": "package-inspection",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "builder"
+      },
+      "scope": {
+        "environment": "supported-clean-mac",
+        "release": "0.2.0"
+      },
+      "source_version": "0.2.0",
+      "observed_at": "2026-07-21T15:00:00Z",
+      "source": "research fixture: package-inspection output"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "adopt-assisted-beta-charter",
+      "action": "re-charter",
+      "proposed_by": "operator",
+      "decided_by": "operator",
+      "authority": "change-intent",
+      "basis": ["founder-live-event-004", "external-interest-observation"],
+      "changes": {
+        "charter_revision": 2,
+        "retains_claims": ["founder-live-workflow"],
+        "invalidates_claims": []
+      },
+      "rationale": "The founder workflow remains proven, while accepted distribution intent creates separate second-operator claims; payment and self-serve remain outside the charter.",
+      "decided_at": "2026-07-21T20:00:00Z"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "founder-operated-ready",
+      "requires": ["founder-live-workflow"]
+    },
+    {
+      "id": "assisted-beta-ready",
+      "requires": ["signed-package-inspects-cleanly", "second-operator-first-value"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "distribution",
+      "activation_claims": ["second-operator-first-value"],
+      "requires_actor_kind": "pilot-user"
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "founder-live-workflow": "satisfied",
+      "signed-package-inspects-cleanly": "satisfied",
+      "second-operator-first-value": "open"
+    },
+    "checkpoints": {
+      "founder-operated-ready": "satisfied",
+      "assisted-beta-ready": "open"
+    }
+  }
+}
