@@ -85,7 +85,7 @@ existing distribution capability.
 
 The disadvantage is now explicit: the method requires another authored packet,
 projection, validator, compatibility story, and support surface. The prototype
-is 648 lines of evaluator code plus a 234-line harness before packaging,
+is 663 lines of evaluator code plus a 283-line harness before packaging,
 authoring UX, upgrade behavior, or support is addressed. First principles
 removed historical ceremony from the kernel; it did not remove the cost of
 building a reliable steering product.
