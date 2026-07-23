@@ -1,0 +1,130 @@
+{
+  "initiative": "quantifai",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Run an enterprise-owner pilot and observe whether the workflow changes a real owner decision.",
+      "scope": {
+        "product_mode": "enterprise-owner-pilot",
+        "environment": "owner-controlled"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder"],
+          "authority": ["authorize-work", "disposition-transition", "change-intent"]
+        },
+        {
+          "id": "enterprise-owner",
+          "kinds": ["decision-maker", "pilot-user"],
+          "authority": ["issue-own-outcome-receipt", "accept-pilot"]
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "intent": "Use solo operator dogfood to discover whether the workflow changes the operator's own decision before seeking another owner pilot.",
+      "scope": {
+        "product_mode": "solo-dogfood",
+        "environment": "operator-controlled"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder", "pilot-user"],
+          "authority": ["authorize-work", "disposition-transition", "change-intent", "observe-own-operational-outcome"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "enterprise-owner-decision-changes",
+      "statement": "The named enterprise owner uses the workflow and changes a real owner-controlled decision during the pilot.",
+      "charter_revision": 1,
+      "scope": {
+        "actor": "enterprise-owner",
+        "environment": "owner-controlled"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-decision-run",
+        "observer": {
+          "actor": "enterprise-owner",
+          "role": "decision-maker",
+          "independence": "not-builder"
+        }
+      }
+    },
+    {
+      "id": "solo-dogfood-changes-decision",
+      "statement": "The intrinsic operator uses the workflow on a real decision and records what changed because of it.",
+      "charter_revision": 2,
+      "scope": {
+        "actor": "operator",
+        "environment": "operator-controlled"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "decision-diff",
+        "observer": {
+          "actor": "operator",
+          "role": "pilot-user"
+        },
+        "freshness": {
+          "source_version": "solo-probe-1"
+        }
+      }
+    }
+  ],
+  "receipts": [],
+  "dispositions": [
+    {
+      "id": "replace-unavailable-owner-pilot",
+      "action": "re-charter",
+      "proposed_by": "operator",
+      "decided_by": "operator",
+      "authority": "change-intent",
+      "basis": ["enterprise-owner-access-lost"],
+      "changes": {
+        "charter_revision": 2,
+        "retains_claims": [],
+        "invalidates_claims": ["enterprise-owner-decision-changes"]
+      },
+      "rationale": "The required enterprise-owner actor and environment were no longer available, so enterprise-pilot progress could not govern solo dogfood work.",
+      "decided_at": "2026-07-18T17:00:00Z"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "enterprise-owner-pilot-observed",
+      "requires": ["enterprise-owner-decision-changes"]
+    },
+    {
+      "id": "solo-dogfood-observed",
+      "requires": ["solo-dogfood-changes-decision"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "discovery-research",
+      "activation_claims": ["solo-dogfood-changes-decision"]
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "enterprise-owner-decision-changes": "invalidated",
+      "solo-dogfood-changes-decision": "open"
+    },
+    "checkpoints": {
+      "enterprise-owner-pilot-observed": "invalidated",
+      "solo-dogfood-observed": "open"
+    }
+  }
+}

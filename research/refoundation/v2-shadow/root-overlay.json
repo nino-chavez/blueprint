@@ -1,0 +1,116 @@
+{
+  "schema": "blueprint-v2-shadow-overlay/1",
+  "as_of": "2026-07-22T12:00:00Z",
+  "charter": {
+    "revision": 1,
+    "intent": "Enable an operator or adopting team to run evidence-gated product initiatives through a model-neutral methodology distributed through git and npm.",
+    "scope": {
+      "product_mode": "methodology-platform",
+      "distribution": "git-and-npm",
+      "runtime_contract": "model-neutral-with-runtime-adapters",
+      "hosted_control_plane": "none"
+    },
+    "actor_overrides": {
+      "maintainer": {
+        "kinds": ["human", "operator", "builder"],
+        "authority": ["change-intent", "authorize-work", "disposition-transition", "accept-risk", "correct-receipt"]
+      },
+      "next-agent": {
+        "kinds": ["agent"],
+        "authority": ["execute-authorized-work", "issue-tool-receipt", "propose-disposition"]
+      },
+      "casual-visitor": {
+        "kinds": ["human", "pilot-user"],
+        "authority": ["issue-own-outcome-receipt"]
+      },
+      "evaluating-team-lead": {
+        "kinds": ["human", "stakeholder", "decision-maker"],
+        "authority": ["issue-own-outcome-receipt", "accept-trial"]
+      },
+      "adopter-operator": {
+        "kinds": ["human", "operator", "pilot-user"],
+        "authority": ["issue-own-outcome-receipt"]
+      },
+      "external-reviewer": {
+        "kinds": ["agent", "reviewer"],
+        "authority": ["issue-review-receipt"]
+      },
+      "contributor": {
+        "kinds": ["human", "contributor"],
+        "authority": ["propose-amendment", "issue-own-outcome-receipt"]
+      }
+    },
+    "additional_actors": [
+      {
+        "id": "shadow-evaluator",
+        "kinds": ["agent", "reviewer"],
+        "authority": ["issue-tool-receipt"]
+      }
+    ]
+  },
+  "mapping": {
+    "default_claim_owner": "maintainer",
+    "proof_methods": {
+      "observed-human": {
+        "object": "actor-outcome",
+        "oracle": "observed-human-encounter"
+      },
+      "cold-agent": {
+        "object": "agent-outcome",
+        "oracle": "cold-agent-run"
+      },
+      "simulated-walk": {
+        "object": "simulated-actor-outcome",
+        "oracle": "simulated-walk"
+      },
+      "mechanical": {
+        "object": "contract-validation",
+        "oracle": "mechanical-check"
+      }
+    }
+  },
+  "tool_claims": [
+    {
+      "id": "actor-output-contract-has-no-blocking-error",
+      "statement": "The current actor-output gate resolves the root contract and artifacts without a blocking structural error while preserving pending outcome evidence.",
+      "object": "contract-validation",
+      "oracle": "actor-output-gate"
+    },
+    {
+      "id": "doctor-completes-without-blocking-result",
+      "statement": "The current Blueprint doctor executes its declared root checks without a blocking result inside its explicitly stated verification boundary.",
+      "object": "contract-validation",
+      "oracle": "blueprint-doctor"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "current-integrity-tools-execute",
+      "requires": ["actor-output-contract-has-no-blocking-error", "doctor-completes-without-blocking-result"]
+    },
+    {
+      "id": "public-orientation-observed",
+      "requires": ["outcome:casual-visitor.orient"]
+    },
+    {
+      "id": "external-adoption-observed",
+      "requires": ["outcome:adopter-operator.adopt-and-run"]
+    }
+  ],
+  "modules": [
+    {
+      "id": "ongoing-operation",
+      "activation_claims": ["outcome:maintainer.recover-context"]
+    },
+    {
+      "id": "human-surface-design",
+      "activation_claims": ["outcome:casual-visitor.orient", "outcome:evaluating-team-lead.evaluate"],
+      "requires_actor_kind": "pilot-user"
+    },
+    {
+      "id": "distribution",
+      "activation_claims": ["outcome:adopter-operator.adopt-and-run"],
+      "requires_actor_kind": "operator"
+    }
+  ]
+}

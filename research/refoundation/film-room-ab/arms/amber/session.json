@@ -1,0 +1,55 @@
+{
+  "started_at": "2026-07-22T23:24:03Z",
+  "finished_at": "2026-07-22T23:28:11Z",
+  "questions_asked": [],
+  "assumptions": [
+    "The supplied initiative contract is governing when a legacy readiness label uses a weaker evidence standard.",
+    "The four distribution artifacts named by role in the contract are the release profile plus the build, sign/notarize, and bundle-verification programs checked in this session.",
+    "Absence conclusions are scoped to the frozen dirty worktree, the receipt inventory, and targeted content searches; ignored local build products were not treated as admissible because the frozen dirty fingerprint does not identify their bytes.",
+    "A package-inspection receipt must identify and inspect the exact current Developer-ID-signed assisted-beta candidate; an unsigned app, audit app, or staged browser output is not compatible evidence."
+  ],
+  "files_consulted": [
+    "<blueprint-checkout>/research/refoundation/film-room-ab/01-common-task.md",
+    "<blueprint-checkout>/research/refoundation/film-room-ab/arms/amber/CONTRACT.md",
+    "<film-room-checkout>/blueprint.yml",
+    "<film-room-checkout>/actor-output.yml",
+    "<film-room-checkout>/launch-contract.yml",
+    "<film-room-checkout>/package.json",
+    "<film-room-checkout>/apps/shell/release-profile.yml",
+    "<film-room-checkout>/apps/shell/scripts/build-release.sh",
+    "<film-room-checkout>/apps/shell/scripts/sign-notarize.sh",
+    "<film-room-checkout>/apps/shell/scripts/verify-bundle.py",
+    "<film-room-checkout>/docs/distribution-runbook.md",
+    "<film-room-checkout>/docs/event-day-runbook.md",
+    "<film-room-checkout>/docs/launch/cold-install-receipt.md",
+    "<film-room-checkout>/docs/launch/known-issues-0.1.md",
+    "<film-room-checkout>/docs/launch/readiness-plan.md",
+    "<film-room-checkout>/docs/launch/receipts/distribution/2026-07-22-audit-app.md",
+    "<film-room-checkout>/docs/launch/receipts/distribution/2026-07-22-unsigned-sample-package.md",
+    "<film-room-checkout>/docs/launch/receipts/visual-system/2026-07-22-release-transform.md",
+    "<film-room-checkout>/tests/visual/receipts/first-run-sample.json",
+    "<film-room-checkout>/research/current-state/2026-07-21-letspepper-workflow-encounter.md",
+    "<film-room-checkout>/derived/boot-packet.json",
+    "<film-room-checkout>/derived/portal-views.json"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' research/refoundation/film-room-ab/01-common-task.md; sed -n '1,260p' research/refoundation/film-room-ab/arms/amber/CONTRACT.md",
+    "date -u +%Y-%m-%dT%H:%M:%SZ; GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> rev-parse HEAD; GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> status --porcelain=v1 | shasum -a 256; rg --files <film-room-checkout>",
+    "sed -n '1,280p' <film-room-checkout>/blueprint.yml; sed -n '1,320p' <film-room-checkout>/actor-output.yml; sed -n '1,320p' <film-room-checkout>/launch-contract.yml; sed -n '1,260p' <film-room-checkout>/apps/shell/release-profile.yml; GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> status --porcelain=v1",
+    "rg --files <film-room-checkout>/docs/launch <film-room-checkout>/tests/visual/receipts | sort; rg -n 'manifest:(check|gate)|actor-output|account-derive|portal-views' <film-room-checkout>/package.json <film-room-checkout>/packages <film-room-checkout>/tools --glob '!**/node_modules/**'; rg -n -i 'observed-task-run|package-inspection|second[- ]operator|clean workstation|clean-macos|signed package|notari|gatekeeper|receipt|founder live|founder-live|first value|first useful output' <film-room-checkout>/docs/launch <film-room-checkout>/docs/distribution-runbook.md <film-room-checkout>/docs/event-day-runbook.md <film-room-checkout>/tests/visual/receipts <film-room-checkout>/actor-output.yml <film-room-checkout>/launch-contract.yml <film-room-checkout>/blueprint.yml",
+    "sed -n '1,240p' docs/distribution-runbook.md; sed -n '1,220p' docs/launch/cold-install-receipt.md; sed -n '1,220p' docs/launch/receipts/distribution/2026-07-22-unsigned-sample-package.md; sed -n '1,180p' docs/launch/receipts/distribution/2026-07-22-audit-app.md; sed -n '1,180p' docs/launch/known-issues-0.1.md (all paths under <film-room-checkout>)",
+    "sed -n '1,280p' research/current-state/2026-07-21-letspepper-workflow-encounter.md; sed -n '1,260p' docs/event-day-runbook.md; sed -n '1,260p' derived/boot-packet.json; sed -n '1,300p' derived/portal-views.json (all paths under <film-room-checkout>)",
+    "Check byte sizes for apps/shell/release-profile.yml, apps/shell/scripts/build-release.sh, apps/shell/scripts/sign-notarize.sh, and apps/shell/scripts/verify-bundle.py; read those three programs with sed; run npm run manifest:gate from <film-room-checkout>",
+    "sed -n '1,180p' docs/launch/readiness-plan.md; sed -n '200,230p' docs/launch/readiness-plan.md; sed -n '1,170p' docs/launch/receipts/visual-system/2026-07-22-release-transform.md; sed -n '1,180p' tests/visual/receipts/first-run-sample.json (all paths under <film-room-checkout>)",
+    "GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> rev-parse HEAD; GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> status --porcelain=v1 | shasum -a 256; date -u +%Y-%m-%dT%H:%M:%SZ",
+    "jq empty research/refoundation/film-room-ab/arms/amber/session.json; git diff --check -- research/refoundation/film-room-ab/arms/amber/assessment.md research/refoundation/film-room-ab/arms/amber/session.json; rg -n '^## ' research/refoundation/film-room-ab/arms/amber/assessment.md; GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> rev-parse HEAD; GIT_OPTIONAL_LOCKS=0 git -C <film-room-checkout> status --porcelain=v1 | shasum -a 256; date -u +%Y-%m-%dT%H:%M:%SZ"
+  ],
+  "recommended_next_move": "The maintainer/release owner should build, Developer-ID sign, notarize, staple, and post-sign inspect one exact current sample-inclusive app and DMG, then record their hashes plus codesign, notary, stapler, Gatekeeper, payload, source-evidence, and sample checks in a dated package-inspection receipt before scheduling the independent second-operator encounter.",
+  "consumer_writes": 0,
+  "snapshot": {
+    "head": "7ed37ae6bb49f72233aacbf16c078c60915b3d85",
+    "initial_dirty_fingerprint": "bd71e8c69200d1446e3a63aef29ddbbac068e8c00f8a96675a91916f3e8c77bf",
+    "final_dirty_fingerprint": "bd71e8c69200d1446e3a63aef29ddbbac068e8c00f8a96675a91916f3e8c77bf",
+    "assessment_valid": true
+  }
+}

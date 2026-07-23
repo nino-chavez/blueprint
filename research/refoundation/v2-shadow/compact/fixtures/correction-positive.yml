@@ -1,0 +1,57 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: compact-correction-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+
+charter:
+  revision: 1
+  intent: Preserve append-only receipt history while an authorized operator corrects an erroneous observation result.
+  scope: {environment: fixture-checkout}
+
+actors:
+  - {id: operator, profile: operator-builder, add_authority: [correct-receipt]}
+
+claims:
+  - id: operation-observed
+    says: The operator observes the declared operation succeeding.
+    actor: operator
+    evidence: observed-task
+    fresh: current
+    scope: {environment: fixture-checkout}
+
+receipts:
+  - id: mistaken-support
+    claim: operation-observed
+    result: supports
+    via: observed-task-run
+    observer: operator
+    role: operator
+    source_version: current
+    at: 2026-07-22T11:30:00Z
+    observation: This append-only receipt encoded the observed failure as support.
+    source: de-identified fixture encounter record
+  - id: corrected-contradiction
+    claim: operation-observed
+    result: contradicts
+    via: observed-task-run
+    observer: operator
+    role: operator
+    source_version: current
+    at: 2026-07-22T11:30:00Z
+    observation: The operation failed; this receipt records the corrected result for the same observation.
+    source: de-identified fixture encounter record
+
+corrections:
+  - id: correct-mistaken-support
+    by: operator
+    receipt: mistaken-support
+    replacements: [corrected-contradiction]
+    rationale: Retain the mistaken receipt as history but exclude it from current evaluation in favor of the corrected observation.
+    at: 2026-07-22T11:35:00Z
+
+checkpoints:
+  - {id: operation-gate, requires: [operation-observed]}
+
+modules:
+  - {id: ongoing-operation, claims: [operation-observed]}

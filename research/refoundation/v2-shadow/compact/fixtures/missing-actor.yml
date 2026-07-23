@@ -1,0 +1,16 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: missing-actor-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+charter:
+  revision: 1
+  intent: Reject a claim whose actor is not chartered.
+  scope: {environment: fixture}
+actors:
+  - {id: operator, profile: operator-builder}
+claims:
+  - id: ghost-operation
+    says: An undeclared actor completes an operation.
+    actor: ghost-operator
+    evidence: observed-task

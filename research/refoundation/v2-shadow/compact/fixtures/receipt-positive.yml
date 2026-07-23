@@ -1,0 +1,39 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: compact-receipt-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+
+charter:
+  revision: 1
+  intent: Let a solo operator record a current observed operation without editing normalized kernel JSON.
+  scope: {product_mode: solo-operation, environment: fixture-checkout}
+
+actors:
+  - {id: operator, profile: operator-builder, remove_authority: [accept-risk]}
+
+claims:
+  - id: solo-operation-observed
+    says: The intrinsic operator completes the declared operation and records the observed result.
+    actor: operator
+    evidence: observed-task
+    fresh: current
+    scope: {environment: fixture-checkout}
+
+receipts:
+  - id: solo-operation-receipt-1
+    claim: solo-operation-observed
+    result: supports
+    via: observed-task-run
+    observer: operator
+    role: operator
+    source_version: current
+    at: 2026-07-22T11:30:00Z
+    observation: The operator completed the declared fixture operation and recorded its result.
+    source: de-identified fixture encounter record
+
+checkpoints:
+  - {id: solo-operation-ready, requires: [solo-operation-observed]}
+
+modules:
+  - {id: ongoing-operation, claims: [solo-operation-observed]}

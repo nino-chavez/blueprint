@@ -1,0 +1,76 @@
+{
+  "initiative": "film-room-scope-launder",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 2,
+      "intent": "Prove that a second operator reaches first value on a clean machine.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder", "pilot-user"],
+          "authority": ["authorize-work"]
+        },
+        {
+          "id": "second-operator",
+          "kinds": ["pilot-user"],
+          "authority": ["issue-own-outcome-receipt"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "second-operator-first-value",
+      "statement": "A second operator installs the release and reaches first value on a clean machine without developer intervention.",
+      "charter_revision": 2,
+      "scope": {
+        "actor": "second-operator",
+        "environment": "clean-mac"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "second-operator",
+          "role": "pilot-user",
+          "independence": "not-builder"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "founder-live-run",
+      "claim": "second-operator-first-value",
+      "result": "supports",
+      "observation": "The founder completed the workflow on the originating machine.",
+      "object": "actor-outcome",
+      "oracle": {
+        "method": "observed-task-run",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "pilot-user"
+      },
+      "scope": {
+        "actor": "operator",
+        "environment": "origin-mac"
+      },
+      "observed_at": "2026-07-20T10:00:00Z",
+      "source": "negative fixture"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {
+    "claims": {
+      "second-operator-first-value": "satisfied"
+    }
+  }
+}

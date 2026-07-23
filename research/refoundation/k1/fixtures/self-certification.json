@@ -1,0 +1,70 @@
+{
+  "initiative": "self-certification",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Obtain independent review of a consequential builder judgment.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder"],
+          "authority": ["authorize-work"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "boundary-independently-reviewed",
+      "statement": "A non-builder reviewer verifies that the declared distribution boundary excludes internal material.",
+      "charter_revision": 1,
+      "scope": {
+        "boundary": "distribution-package"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "boundary-review",
+        "observer": {
+          "actor": "operator",
+          "role": "reviewer",
+          "independence": "not-builder"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "builder-reviews-own-boundary",
+      "claim": "boundary-independently-reviewed",
+      "result": "supports",
+      "observation": "The builder reviewed the package they assembled.",
+      "object": "artifact-content",
+      "oracle": {
+        "method": "boundary-review",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "reviewer",
+        "independence": "not-builder"
+      },
+      "scope": {
+        "boundary": "distribution-package"
+      },
+      "observed_at": "2026-07-21T09:00:00Z",
+      "source": "negative fixture"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {
+    "claims": {
+      "boundary-independently-reviewed": "satisfied"
+    }
+  }
+}

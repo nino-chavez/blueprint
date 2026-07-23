@@ -1,0 +1,49 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: bc-subscriptions
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+
+charter:
+  revision: 1
+  intent: Maintain an evidence-bounded implementation and behavior account, then transfer the resulting product corpus to a receiving team without treating artifact presence as receiving-team acceptance.
+  scope: {product_mode: brownfield-implementation-and-handoff, environment: repository-checkout}
+
+actors:
+  - {id: operator, profile: operator-builder, remove_kinds: [pilot-user], remove_authority: [observe-own-operational-outcome]}
+  - {id: receiving-team, profile: receiving-team}
+
+claims:
+  - id: implementation-register-current
+    says: The recorded implementation-state register reflects the current checkout at its declared derivation boundary.
+    evidence: state
+    source: docs/audits/derived/_state.json
+  - id: behavior-register-current
+    says: The behavior-gate subset of the recorded state register reflects the current checkout at its declared derivation boundary.
+    evidence: state
+    source: docs/audits/derived/_state.json
+    category: behavior-gate
+  - id: normalized-scenario-results-present
+    says: The current checkout contains the normalized scenario-result artifact required to rederive scenario-backed behavior state.
+    evidence: file
+    source: docs/audits/derived/_scenario-results.json
+  - id: handoff-corpus-present
+    says: The current checkout contains the handoff corpus index and representative product-area packets.
+    evidence: files
+    paths: [docs/handoff-corpus/README.md, docs/handoff-corpus/catalog-and-plans.md, docs/handoff-corpus/dunning.md, docs/handoff-corpus/webhooks-and-integrations.md]
+    scope: {boundary: handoff-corpus}
+  - id: receiving-team-accepts-handoff
+    says: The receiving team uses the corpus to orient, identifies the next owned action, and records acceptance of the transfer boundary.
+    actor: receiving-team
+    evidence: handoff-run
+    needs: [handoff-corpus-present]
+    scope: {environment: receiving-team-workflow}
+
+checkpoints:
+  - {id: current-behavior-evidence-rederivable, requires: [behavior-register-current, normalized-scenario-results-present]}
+  - {id: handoff-accepted, requires: [handoff-corpus-present, receiving-team-accepts-handoff]}
+
+modules:
+  - {id: implementation-accounting, claims: [implementation-register-current]}
+  - {id: behavior-evidence, claims: [behavior-register-current, normalized-scenario-results-present]}
+  - {id: handoff, claims: [receiving-team-accepts-handoff], actor_kind: team}

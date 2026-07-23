@@ -1,0 +1,75 @@
+{
+  "schema": "blueprint-steering/0",
+  "initiative": "blueprint-steering-layer",
+  "as_of": "2026-07-23T23:00:00Z",
+  "current_revision": "experiment-complete",
+  "outcome": "A cold agent can select the next bounded work from kernel state without spending human attention on deterministic prerequisites.",
+  "operator_touch_budget": {
+    "max": 0
+  },
+  "claims": [
+    {
+      "id": "experiment-preregistered",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "experiment-complete",
+      "needs": []
+    },
+    {
+      "id": "steering-evaluator-implemented",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "experiment-complete",
+      "needs": ["experiment-preregistered"]
+    },
+    {
+      "id": "adversarial-suite-passes",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "experiment-complete",
+      "needs": ["steering-evaluator-implemented"]
+    },
+    {
+      "id": "prospective-comparison-passes",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "experiment-complete",
+      "needs": ["adversarial-suite-passes"]
+    },
+    {
+      "id": "experimental-disposition-recorded",
+      "state": "open",
+      "kind": "decision",
+      "active": true,
+      "revision": "experiment-complete",
+      "needs": ["prospective-comparison-passes"]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "steering-layer-build",
+      "outcome_claim": "experimental-disposition-recorded",
+      "steps": [
+        "experiment-preregistered",
+        "steering-evaluator-implemented",
+        "adversarial-suite-passes",
+        "prospective-comparison-passes",
+        "experimental-disposition-recorded"
+      ],
+      "human_claims": [],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [],
+  "source_metrics": {
+    "baseline_lines": 0,
+    "current_lines": 0,
+    "decision_count": 1
+  }
+}

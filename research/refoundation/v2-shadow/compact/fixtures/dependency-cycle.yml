@@ -1,0 +1,22 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: dependency-cycle-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: operator
+charter:
+  revision: 1
+  intent: Reject cyclic claim prerequisites before generating an overlay.
+  scope: {environment: fixture}
+actors:
+  - {id: operator, profile: operator-builder}
+claims:
+  - id: operation-a
+    says: Operation A depends on operation B.
+    actor: operator
+    evidence: observed-task
+    needs: [operation-b]
+  - id: operation-b
+    says: Operation B depends on operation A.
+    actor: operator
+    evidence: observed-task
+    needs: [operation-a]

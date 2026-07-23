@@ -1,0 +1,24 @@
+{
+  "schema": "blueprint-steering/0",
+  "initiative": "invalid-journey",
+  "as_of": "2026-07-23T20:00:00Z",
+  "current_revision": "one",
+  "outcome": "Reject unknown incident journeys.",
+  "operator_touch_budget": {"max": 0},
+  "claims": [
+    {"id": "claim-a", "state": "contradicted", "kind": "machine", "active": true, "revision": "one", "needs": []}
+  ],
+  "journeys": [],
+  "incidents": [
+    {
+      "id": "incident-a",
+      "journey": "missing",
+      "claim": "claim-a",
+      "boundary": "test",
+      "classification": "test",
+      "revision": "one"
+    }
+  ],
+  "dispositions": [],
+  "operator_touches": []
+}

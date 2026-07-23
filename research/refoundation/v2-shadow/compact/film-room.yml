@@ -1,0 +1,71 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: film-room
+as_of: 2026-07-22T12:00:00Z
+operator: maintainer
+
+charter:
+  revision: 2
+  intent: Prepare an assisted design-partner beta in which a second operator can install the signed package and reach first value without developer intervention; payment and self-service distribution remain outside the charter.
+  scope: {product_mode: assisted-design-partner-beta, environment: supported-clean-workstation, assistance: scheduled-operator-support, self_serve: false, commercial_validation: false}
+
+actors:
+  - {id: maintainer, profile: operator-builder}
+  - {id: next-agent, profile: agent-worker}
+  - {id: counterparty-director, profile: decision-maker}
+  - {id: second-operator, profile: pilot-operator}
+
+history:
+  - revision: 1
+    intent: Let the intrinsic operator complete real event work end to end from the local product without terminal intervention.
+    scope: {product_mode: founder-operated, environment: origin-workstation, distribution: none-required}
+    actors: [{id: maintainer, remove_authority: [accept-risk]}]
+
+recharter:
+  id: adopt-assisted-beta-charter
+  by: maintainer
+  basis: [operator-accepted-distribution-intent]
+  retains: [founder-live-workflow]
+  rationale: The founder-operated result remains a separate claim; assisted distribution creates new package and second-operator obligations without silently asserting commercial or self-service readiness.
+  at: 2026-07-21T20:00:00Z
+
+imports:
+  actor_output: actor-output.yml
+  actor_aliases: {club-director: counterparty-director}
+
+claims:
+  - id: founder-live-workflow
+    says: The intrinsic operator completes a real event from launch through export without terminal intervention.
+    charter: 1
+    actor: maintainer
+    evidence: observed-task
+    scope: {environment: origin-workstation, assistance: self}
+  - id: distribution-artifacts-present
+    says: The current checkout contains the declared assisted-beta release profile and package build, signing, and boundary-inspection programs.
+    evidence: files
+    paths: [apps/shell/release-profile.yml, apps/shell/scripts/build-release.sh, apps/shell/scripts/sign-notarize.sh, apps/shell/scripts/verify-bundle.py]
+    scope: {boundary: assisted-beta-distribution-artifacts}
+  - id: signed-package-inspects-cleanly
+    says: A current assisted-beta application package exists, is signed, and passes the declared package-boundary inspection.
+    evidence: package-inspection
+    needs: [distribution-artifacts-present]
+    scope: {environment: supported-clean-workstation, boundary: assisted-beta-package}
+  - id: second-operator-first-value
+    says: A second operator installs the signed package and reaches first sample output during an assisted run without developer intervention.
+    actor: second-operator
+    evidence: pilot-task
+    needs: [signed-package-inspects-cleanly]
+    scope: {environment: supported-clean-workstation, assistance: scheduled-operator-support}
+  - id: actor-output-contract-has-no-blocking-error
+    says: The current actor-output gate resolves the consumer contract and declared artifacts without a blocking structural error while preserving pending outcome evidence.
+    evidence: actor-output-gate
+
+checkpoints:
+  - {id: founder-operated-ready, requires: [founder-live-workflow]}
+  - {id: assisted-beta-ready, requires: [distribution-artifacts-present, signed-package-inspects-cleanly, second-operator-first-value]}
+  - {id: current-actor-output-contract-resolves, requires: [actor-output-contract-has-no-blocking-error]}
+
+modules:
+  - {id: ongoing-operation, claims: [founder-live-workflow]}
+  - {id: distribution, claims: [second-operator-first-value], actor_kind: pilot-user}
+  - {id: steering, claims: [outcome:counterparty-director.decide-scope], actor_kind: decision-maker}

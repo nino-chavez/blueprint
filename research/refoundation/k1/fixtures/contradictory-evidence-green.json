@@ -1,0 +1,91 @@
+{
+  "initiative": "contradictory-evidence-green",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 1,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Verify a scoped behavioral scenario.",
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": ["operator", "builder"],
+          "authority": ["authorize-work"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scenario-passes",
+      "statement": "The current build passes the scoped behavioral scenario in the test environment.",
+      "charter_revision": 1,
+      "scope": {
+        "environment": "test",
+        "build": "31"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "behavior",
+        "oracle": "test-run",
+        "observer": {
+          "actor": "operator",
+          "role": "builder"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "passing-run",
+      "claim": "scenario-passes",
+      "result": "supports",
+      "observation": "One run passed.",
+      "object": "behavior",
+      "oracle": {
+        "method": "test-run",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "builder"
+      },
+      "scope": {
+        "environment": "test",
+        "build": "31"
+      },
+      "observed_at": "2026-07-21T09:00:00Z",
+      "source": "negative fixture"
+    },
+    {
+      "id": "failing-run",
+      "claim": "scenario-passes",
+      "result": "contradicts",
+      "observation": "A repeated run failed the same scenario.",
+      "object": "behavior",
+      "oracle": {
+        "method": "test-run",
+        "executed": true
+      },
+      "observer": {
+        "actor": "operator",
+        "role_during_observation": "builder"
+      },
+      "scope": {
+        "environment": "test",
+        "build": "31"
+      },
+      "observed_at": "2026-07-21T09:05:00Z",
+      "source": "negative fixture"
+    }
+  ],
+  "dispositions": [],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {
+    "claims": {
+      "scenario-passes": "satisfied"
+    }
+  }
+}

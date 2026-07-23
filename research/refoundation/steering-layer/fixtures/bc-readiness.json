@@ -1,0 +1,70 @@
+{
+  "schema": "blueprint-steering/0",
+  "initiative": "bc-subscriptions",
+  "as_of": "2026-07-23T20:00:00Z",
+  "current_revision": "df7fe076+dirty-a60938c",
+  "outcome": "The current behavior account is rederivable and a receiving team accepts the handoff boundary.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "state-register-current",
+      "state": "stale",
+      "kind": "machine",
+      "active": true,
+      "revision": "df7fe076+dirty-a60938c",
+      "needs": []
+    },
+    {
+      "id": "scenario-results-present",
+      "state": "contradicted",
+      "kind": "machine",
+      "active": true,
+      "revision": "df7fe076+dirty-a60938c",
+      "needs": []
+    },
+    {
+      "id": "handoff-corpus-present",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "df7fe076+dirty-a60938c",
+      "needs": []
+    },
+    {
+      "id": "receiving-team-accepts",
+      "state": "open",
+      "kind": "human",
+      "active": true,
+      "revision": "df7fe076+dirty-a60938c",
+      "needs": [
+        "state-register-current",
+        "scenario-results-present",
+        "handoff-corpus-present"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "brownfield-handoff",
+      "outcome_claim": "receiving-team-accepts",
+      "steps": [
+        "state-register-current",
+        "scenario-results-present",
+        "handoff-corpus-present",
+        "receiving-team-accepts"
+      ],
+      "human_claims": ["receiving-team-accepts"],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [],
+  "source_metrics": {
+    "baseline_lines": 44,
+    "current_lines": 44,
+    "decision_count": 0
+  }
+}

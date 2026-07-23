@@ -1,0 +1,27 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: unauthorized-recharter-fixture
+as_of: 2026-07-22T12:00:00Z
+operator: agent
+charter:
+  revision: 2
+  intent: Reject re-chartering by an actor without change-intent authority.
+  scope: {environment: fixture}
+actors:
+  - {id: agent, profile: agent-worker}
+history:
+  - revision: 1
+    intent: Original fixture intent.
+    scope: {environment: fixture}
+    actors: [agent]
+claims:
+  - id: agent-task
+    says: The agent completes the declared fixture task.
+    actor: agent
+    evidence: observed-task
+recharter:
+  id: unauthorized-change
+  by: agent
+  retains: [agent-task]
+  rationale: This must fail because execution authority is not change-intent authority.
+  at: 2026-07-22T11:00:00Z

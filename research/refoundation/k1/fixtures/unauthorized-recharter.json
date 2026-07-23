@@ -1,0 +1,70 @@
+{
+  "initiative": "unauthorized-recharter",
+  "as_of": "2026-07-22T12:00:00Z",
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Serve the intrinsic operator.",
+      "actors": [
+        {
+          "id": "agent",
+          "kinds": ["builder-agent"],
+          "authority": ["authorize-work"]
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "intent": "Serve a new external operator selected by the agent.",
+      "actors": [
+        {
+          "id": "agent",
+          "kinds": ["builder-agent"],
+          "authority": ["authorize-work"]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "new-scope-declared",
+      "statement": "The second charter names the external-operator product scope.",
+      "charter_revision": 2,
+      "scope": {
+        "product_mode": "external-operator"
+      },
+      "owner": "agent",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "schema-lint",
+        "observer": {
+          "actor": "agent",
+          "role": "builder-agent"
+        }
+      }
+    }
+  ],
+  "receipts": [],
+  "dispositions": [
+    {
+      "id": "agent-expands-scope",
+      "action": "re-charter",
+      "proposed_by": "agent",
+      "decided_by": "agent",
+      "authority": "change-intent",
+      "basis": ["agent-inference"],
+      "changes": {
+        "charter_revision": 2,
+        "retains_claims": [],
+        "invalidates_claims": []
+      },
+      "rationale": "The agent inferred that an external operator would be more valuable.",
+      "decided_at": "2026-07-21T09:00:00Z"
+    }
+  ],
+  "checkpoints": [],
+  "modules": [],
+  "assertions": {}
+}

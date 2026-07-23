@@ -1,0 +1,644 @@
+schema: blueprint-compact/0
+profiles: k1-research-0
+initiative: film-room
+as_of: 2026-07-23T19:38:11Z
+operator: maintainer
+
+charter:
+  revision: 2
+  intent: Prepare an assisted design-partner beta in which a second operator can install the signed package and reach first value without developer intervention; payment and self-service distribution remain outside the charter.
+  scope: {product_mode: assisted-design-partner-beta, environment: supported-clean-workstation, assistance: scheduled-operator-support, self_serve: false, commercial_validation: false}
+
+actors:
+  - {id: maintainer, profile: operator-builder, add_authority: [correct-receipt]}
+  - {id: release-agent, profile: agent-worker}
+  - {id: next-agent, profile: agent-worker}
+  - {id: counterparty-director, profile: decision-maker}
+  - {id: second-operator, profile: pilot-operator}
+
+history:
+  - revision: 1
+    intent: Let the intrinsic operator complete real event work end to end from the local product without terminal intervention.
+    scope: {product_mode: founder-operated, environment: origin-workstation, distribution: none-required}
+    actors: [{id: maintainer, remove_authority: [accept-risk]}]
+
+recharter:
+  id: adopt-assisted-beta-charter
+  by: maintainer
+  basis: [operator-accepted-distribution-intent]
+  retains: [founder-live-workflow]
+  rationale: The founder-operated result remains a separate claim; assisted distribution creates package, support, and second-operator obligations without silently asserting commercial or self-service readiness.
+  at: 2026-07-21T20:00:00Z
+
+imports:
+  actor_output: actor-output.yml
+  actor_output_observer: actor
+  actor_output_freshness: none
+  actor_aliases: {club-director: counterparty-director}
+
+claims:
+  - id: distribution-programs-present
+    says: The current checkout contains the declared assisted-beta release profile and package build, signing, bundle-inspection, and launch-information gate programs.
+    evidence: files
+    paths: [apps/shell/release-profile.yml, apps/shell/scripts/build-release.sh, apps/shell/scripts/sign-notarize.sh, apps/shell/scripts/verify-bundle.py, tests/test_launch_information.py]
+    scope: {boundary: assisted-beta-distribution-programs}
+  - id: exact-merged-unsigned-package-inspects-cleanly
+    says: The unsigned application built from the exact integrated product boundary passes the declared release-stage, runtime, bundle, and unsigned package inspections.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    scope: {product_revision: 83d85fc92edcae2de323c5e7575cbd5acd0e385e, artifact: macos-arm64-app, trust: unsigned}
+  - id: exact-merged-package-process-starts
+    says: The exact integrated unsigned package starts its bundled service from packaged resources, reports first-run and media tools healthy, and removes its listener on termination.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    needs: [exact-merged-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 83d85fc92edcae2de323c5e7575cbd5acd0e385e, boundary: packaged-process, trust: unsigned}
+  - id: exact-merged-native-window-observed
+    says: The exact integrated package is observed at the native application-window boundary through first launch and recovery.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    needs: [exact-merged-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 83d85fc92edcae2de323c5e7575cbd5acd0e385e, boundary: native-window, trust: unsigned}
+  - id: full-current-candidate-state-matrix-recorded
+    says: Every required D-series visual state is recaptured from the current integrated candidate rather than inherited from a historical behavioral baseline.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    scope: {product_revision: 83d85fc92edcae2de323c5e7575cbd5acd0e385e, boundary: deterministic-visual-state-matrix}
+  - id: launch-information-complete-for-candidate
+    says: Final candidate notes, package receipt, compatibility and privacy evidence, and a real monitored support contact and schedule are complete and mutually consistent.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    scope: {product_revision: 83d85fc92edcae2de323c5e7575cbd5acd0e385e, boundary: assisted-beta-launch-information}
+  - id: signed-notarized-dmg-inspects-cleanly
+    says: A current assisted-beta DMG is Developer-ID signed, notarized, stapled, Gatekeeper accepted, and passes the declared package-boundary inspection.
+    actor: release-agent
+    evidence: package-inspection
+    needs: [exact-merged-unsigned-package-inspects-cleanly]
+    scope: {environment: supported-clean-workstation, boundary: assisted-beta-signed-dmg}
+  - id: support-contact-and-schedule-designated
+    says: The maintainer designates a real monitored support contact and the days and hours available for the assisted beta.
+    actor: maintainer
+    evidence: observed-task
+    fresh: current
+    scope: {assistance: scheduled-operator-support}
+  - id: founder-live-workflow
+    says: The intrinsic operator completes a real event from launch through export without terminal intervention on the current product.
+    charter: 1
+    actor: maintainer
+    evidence: observed-task
+    fresh: current
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    scope: {environment: origin-workstation, assistance: self}
+  - id: repaired-candidate-entry-contract-passes
+    says: The exact repaired candidate exposes an operable pre-setup real-footage action, guides setup visibly, and routes a separately verified ready state to Ingest.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, boundary: first-run-real-footage-entry, trust: unsigned}
+  - id: repaired-candidate-unsigned-package-inspects-cleanly
+    says: The unsigned application built from the exact repaired product revision passes the declared release-stage, runtime, bundle, and unsigned package inspections.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    needs: [repaired-candidate-entry-contract-passes]
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, artifact: macos-arm64-app, trust: unsigned}
+  - id: repaired-candidate-package-process-starts
+    says: The exact repaired unsigned package starts its bundled service from packaged resources, reports first-run and media tools healthy, and removes its listener on termination.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    needs: [repaired-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, boundary: packaged-process, trust: unsigned}
+  - id: repaired-candidate-native-window-observed
+    says: The exact repaired unsigned package is observed at the native application-window boundary through first launch and the real-footage entry action.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    needs: [repaired-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, boundary: native-window, trust: unsigned}
+  - id: repaired-candidate-full-state-matrix-recorded
+    says: Every required D-series visual state is recaptured from the exact repaired candidate rather than inherited from the earlier integrated revision.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, boundary: deterministic-visual-state-matrix}
+  - id: repaired-candidate-launch-information-complete
+    says: Final candidate notes, package receipt, compatibility and privacy evidence, and a real monitored support contact and schedule are complete and mutually consistent for the exact repaired candidate.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, boundary: assisted-beta-launch-information}
+  - id: repaired-candidate-founder-live-workflow
+    says: The intrinsic operator completes a real event from launch through export without terminal intervention on the exact repaired product candidate.
+    charter: 1
+    actor: maintainer
+    evidence: observed-task
+    fresh: current
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, environment: origin-workstation, assistance: self}
+  - id: repaired-candidate-signed-notarized-dmg-inspects-cleanly
+    says: A DMG for the exact repaired candidate is Developer-ID signed, notarized, stapled, Gatekeeper accepted, and passes the declared package-boundary inspection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    needs: [repaired-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, environment: supported-clean-workstation, boundary: assisted-beta-signed-dmg}
+  - id: repaired-candidate-second-operator-first-value
+    says: A second operator installs the signed exact repaired candidate and reaches first sample output during an assisted run without developer intervention.
+    actor: second-operator
+    evidence: pilot-task
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    needs: [repaired-candidate-signed-notarized-dmg-inspects-cleanly, support-contact-and-schedule-designated, repaired-candidate-native-window-observed, repaired-candidate-full-state-matrix-recorded, repaired-candidate-launch-information-complete]
+    scope: {product_revision: e1c21d98cded8e9acd7688ad4b6794a25bc0479c, environment: supported-clean-workstation, assistance: scheduled-operator-support}
+  - id: native-ingest-candidate-entry-contract-passes
+    says: The exact native-Ingest candidate starts normal founder launches in Ingest, preserves explicit sample and Review routes, authorizes the native folder dialog on dynamic loopback origins, and visibly recovers from picker rejection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, boundary: native-ingest-folder-entry, trust: unsigned}
+  - id: native-ingest-candidate-unsigned-package-inspects-cleanly
+    says: The unsigned application built from the exact native-Ingest product revision passes the declared release-stage, runtime, bundle, and unsigned package inspections.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    needs: [native-ingest-candidate-entry-contract-passes]
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, artifact: macos-arm64-app, trust: unsigned}
+  - id: native-ingest-candidate-package-process-starts
+    says: The exact native-Ingest unsigned package starts its bundled service from packaged resources, reports healthy media tools, runs the focused folder-entry encounter, and removes its listener on termination.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    needs: [native-ingest-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, boundary: packaged-process, trust: unsigned}
+  - id: native-ingest-candidate-native-window-observed
+    says: The exact native-Ingest unsigned package is observed at the native application-window boundary through launch, the real macOS folder panel, and path selection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    needs: [native-ingest-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, boundary: native-window-folder-panel, trust: unsigned}
+  - id: native-ingest-candidate-full-state-matrix-recorded
+    says: Every required D-series visual state is recaptured from the exact native-Ingest candidate rather than inherited from either earlier product revision.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, boundary: deterministic-visual-state-matrix}
+  - id: native-ingest-candidate-launch-information-complete
+    says: Final candidate notes, package receipt, compatibility and privacy evidence, and a real monitored support contact and schedule are complete and mutually consistent for the exact native-Ingest candidate.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, boundary: assisted-beta-launch-information}
+  - id: native-ingest-candidate-founder-live-workflow
+    says: The intrinsic operator completes a real event from native launch through folder selection, analysis, review, and export without terminal intervention on the exact native-Ingest candidate.
+    charter: 1
+    actor: maintainer
+    evidence: observed-task
+    fresh: current
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, environment: origin-workstation, assistance: self}
+  - id: native-ingest-candidate-signed-notarized-dmg-inspects-cleanly
+    says: A DMG for the exact native-Ingest candidate is Developer-ID signed, notarized, stapled, Gatekeeper accepted, and passes the declared package-boundary inspection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    needs: [native-ingest-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, environment: supported-clean-workstation, boundary: assisted-beta-signed-dmg}
+  - id: native-ingest-candidate-second-operator-first-value
+    says: A second operator installs the signed exact native-Ingest candidate and reaches first sample output during an assisted run without developer intervention.
+    actor: second-operator
+    evidence: pilot-task
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    needs: [native-ingest-candidate-signed-notarized-dmg-inspects-cleanly, support-contact-and-schedule-designated, native-ingest-candidate-native-window-observed, native-ingest-candidate-full-state-matrix-recorded, native-ingest-candidate-launch-information-complete]
+    scope: {product_revision: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02, environment: supported-clean-workstation, assistance: scheduled-operator-support}
+  - id: operator-onboarding-candidate-entry-contract-passes
+    says: The exact operator-onboarding candidate separates practice-library state from real-footage readiness, preserves Ingest drafts through focused Settings recovery, provisions valid operator choices atomically in-app, and accepts the retried Analyze request without manual JSON.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, boundary: in-app-operator-config-onboarding, trust: unsigned}
+  - id: operator-onboarding-candidate-unsigned-package-inspects-cleanly
+    says: The unsigned application built from the exact operator-onboarding product revision passes the declared release-stage, runtime, bundle, and unsigned package inspections.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    needs: [operator-onboarding-candidate-entry-contract-passes]
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, artifact: macos-arm64-app, trust: unsigned}
+  - id: operator-onboarding-candidate-package-process-starts
+    says: The exact operator-onboarding unsigned package starts its bundled service, completes the disposable in-app setup recovery, progresses the retried Analyze request beyond the setup gate, reports healthy runtime boundaries, and removes its listener on termination.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    needs: [operator-onboarding-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, boundary: packaged-process, trust: unsigned}
+  - id: operator-onboarding-candidate-native-window-observed
+    says: The exact operator-onboarding unsigned package is observed at the native application-window boundary through folder selection, setup-required recovery, in-app configuration, and retried Analyze.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    needs: [operator-onboarding-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, boundary: native-window-operator-onboarding, trust: unsigned}
+  - id: operator-onboarding-candidate-full-state-matrix-recorded
+    says: Every required D-series visual state is recaptured from the exact operator-onboarding candidate rather than inherited from any earlier product revision.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, boundary: deterministic-visual-state-matrix}
+  - id: operator-onboarding-candidate-launch-information-complete
+    says: Final candidate notes, package receipt, compatibility and privacy evidence, and a real monitored support contact and schedule are complete and mutually consistent for the exact operator-onboarding candidate.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, boundary: assisted-beta-launch-information}
+  - id: operator-onboarding-candidate-founder-live-workflow
+    says: The intrinsic operator completes a real event from native launch through folder selection, in-app setup if required, analysis, review, and export without terminal intervention on the exact operator-onboarding candidate.
+    charter: 1
+    actor: maintainer
+    evidence: observed-task
+    fresh: current
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, environment: origin-workstation, assistance: self}
+  - id: operator-onboarding-candidate-signed-notarized-dmg-inspects-cleanly
+    says: A DMG for the exact operator-onboarding candidate is Developer-ID signed, notarized, stapled, Gatekeeper accepted, and passes the declared package-boundary inspection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    needs: [operator-onboarding-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, environment: supported-clean-workstation, boundary: assisted-beta-signed-dmg}
+  - id: operator-onboarding-candidate-second-operator-first-value
+    says: A second operator installs the signed exact operator-onboarding candidate and reaches first sample output during an assisted run without developer intervention.
+    actor: second-operator
+    evidence: pilot-task
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    needs: [operator-onboarding-candidate-signed-notarized-dmg-inspects-cleanly, support-contact-and-schedule-designated, operator-onboarding-candidate-native-window-observed, operator-onboarding-candidate-full-state-matrix-recorded, operator-onboarding-candidate-launch-information-complete]
+    scope: {product_revision: 5496edd401ee52346150aab61a7e72ca1b9a8edd, environment: supported-clean-workstation, assistance: scheduled-operator-support}
+  - id: ux-closure-candidate-contract-passes
+    says: The exact UX-closure candidate passes its declared semantic task-context, workflow hierarchy, design-token, responsive-layout, current-capture, packaged-sample, onboarding, accessibility-proxy, and focused regression contracts.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, boundary: ux-closure-product-contract, trust: unsigned}
+  - id: ux-closure-candidate-unsigned-package-inspects-cleanly
+    says: The unsigned application built from the exact UX-closure product revision passes the declared release-stage, runtime, bundle, FFmpeg-source, and unsigned package inspections.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    needs: [ux-closure-candidate-contract-passes]
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, artifact: macos-arm64-app, trust: unsigned}
+  - id: ux-closure-candidate-package-process-starts
+    says: The exact UX-closure unsigned package starts its bundled service in a disposable profile, reports healthy first-run and media-tool boundaries, serves packaged resources, and removes its listener on termination.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    needs: [ux-closure-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, boundary: packaged-process, trust: unsigned}
+  - id: ux-closure-candidate-native-window-observed
+    says: The exact UX-closure unsigned package is observed at the native application-window boundary through launch, constrained layout, real folder selection, and the recovery path needed to begin Analyze.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    needs: [ux-closure-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, boundary: native-window-founder-entry, trust: unsigned}
+  - id: ux-closure-candidate-full-state-matrix-recorded
+    says: Every required workflow and D-series visual state is captured from the exact UX-closure candidate rather than inherited from an earlier revision or represented only by a static fixture.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, boundary: deterministic-visual-state-matrix}
+  - id: ux-closure-candidate-launch-information-complete
+    says: Final candidate notes, package receipt, compatibility and privacy evidence, public install identity, and a real monitored support contact and schedule are complete and mutually consistent for the exact UX-closure candidate.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, boundary: assisted-beta-launch-information}
+  - id: ux-closure-candidate-founder-live-workflow
+    says: The intrinsic operator completes a real event from exact native launch through footage selection, setup or recovery, analysis, review, and export without terminal intervention on the UX-closure candidate.
+    charter: 1
+    actor: maintainer
+    evidence: observed-task
+    fresh: current
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, environment: origin-workstation, assistance: self}
+  - id: ux-closure-candidate-signed-notarized-dmg-inspects-cleanly
+    says: A DMG for the exact UX-closure candidate is Developer-ID signed, notarized, stapled, Gatekeeper accepted, and passes the declared package-boundary inspection.
+    actor: release-agent
+    evidence: package-inspection
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    needs: [ux-closure-candidate-unsigned-package-inspects-cleanly]
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, environment: supported-clean-workstation, boundary: assisted-beta-signed-dmg}
+  - id: ux-closure-candidate-second-operator-first-value
+    says: A second operator installs the signed exact UX-closure candidate and reaches first sample output during an assisted run without developer intervention.
+    actor: second-operator
+    evidence: pilot-task
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    needs: [ux-closure-candidate-signed-notarized-dmg-inspects-cleanly, support-contact-and-schedule-designated, ux-closure-candidate-native-window-observed, ux-closure-candidate-full-state-matrix-recorded, ux-closure-candidate-launch-information-complete]
+    scope: {product_revision: acbc2d024e875143b4afc0bc593615c490419535, environment: supported-clean-workstation, assistance: scheduled-operator-support}
+  - id: second-operator-first-value
+    says: A second operator installs the signed package and reaches first sample output during an assisted run without developer intervention.
+    actor: second-operator
+    evidence: pilot-task
+    needs: [signed-notarized-dmg-inspects-cleanly, support-contact-and-schedule-designated, exact-merged-native-window-observed, full-current-candidate-state-matrix-recorded, launch-information-complete-for-candidate]
+    scope: {environment: supported-clean-workstation, assistance: scheduled-operator-support}
+  - id: legacy-actor-output-contract-has-no-blocking-error
+    says: The current actor-output gate resolves the consumer contract and declared artifacts from a clean checkout without a blocking structural error while preserving pending outcome evidence.
+    evidence: actor-output-gate
+
+receipts:
+  - id: exact-merged-unsigned-package-inspection-20260722
+    claim: exact-merged-unsigned-package-inspects-cleanly
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    at: 2026-07-23T02:30:00Z
+    observation: The integration verifier built the actual unsigned application from the two-parent merge, verified 34 release-stage files and five jobs, bundled Python and FFmpeg resources, Rust checks, and the complete bundle with no refreshed golden baseline.
+    source: de-identified integration verification record for merge 83d85fc
+  - id: exact-merged-package-process-start-20260722
+    claim: exact-merged-package-process-starts
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    at: 2026-07-23T02:30:00Z
+    observation: A disposable profile started the exact package child from bundled Python on a dynamic loopback port; the doctor endpoint reported first-run plus FFmpeg and FFprobe healthy, and termination removed the listener.
+    source: de-identified integration verification record for merge 83d85fc
+  - id: exact-merged-native-window-unobservable-20260722
+    claim: exact-merged-native-window-observed
+    result: could-not-observe
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    at: 2026-07-23T02:30:00Z
+    observation: The Mac was locked, so the verifier could not obtain a window-level native receipt for the exact merged package; process startup evidence does not substitute for the application-window boundary.
+    source: de-identified integration verification record for merge 83d85fc
+  - id: full-current-candidate-state-matrix-incomplete-20260722
+    claim: full-current-candidate-state-matrix-recorded
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    at: 2026-07-23T02:30:00Z
+    observation: Six current-candidate browser captures are recorded; the remaining deterministic state-matrix images are explicitly historical behavioral references rather than current D-series evidence.
+    source: tests/visual/manifest.yml and de-identified integration verification record
+  - id: launch-information-incomplete-20260722
+    claim: launch-information-complete-for-candidate
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    at: 2026-07-23T02:30:00Z
+    observation: The launch-information gate remains blocked on final candidate notes and package receipt plus a real monitored support contact and schedule.
+    source: launch-information gate result and de-identified integration verification record
+  - id: founder-live-workflow-blocked-at-footage-entry-20260723
+    claim: founder-live-workflow
+    result: contradicts
+    via: observed-task-run
+    observer: maintainer
+    role: operator
+    source_version: 83d85fc92edcae2de323c5e7575cbd5acd0e385e
+    at: 2026-07-23T04:02:27Z
+    observation: During the first current native founder encounter, the maintainer attempted to use the Use my footage control and could not select footage. The control was a disabled setup precondition link rather than a footage picker, so the operator did not reach Ingest or complete the real-event workflow.
+    source: maintainer statement during the observed Phase 4 native encounter, corroborated by the current setup UI and source contract
+  - id: repaired-candidate-entry-contract-inspection-20260723
+    claim: repaired-candidate-entry-contract-passes
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    at: 2026-07-23T08:35:25Z
+    observation: Exact staged keyboard encounters proved that the enabled Set up for my footage action scrolls and visibly focuses Archive with a live next-step announcement, while a separately loaded valid setup relabels the action Use my footage and routes keyboard activation to Ingest; the full intended Playwright suite passed 13 of 13.
+    source: tests/run_first_run_entry.py, tests/capture_first_run_entry.cjs, and the exact e1c21d9 release verification record
+  - id: repaired-candidate-unsigned-package-inspection-20260723
+    claim: repaired-candidate-unsigned-package-inspects-cleanly
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    at: 2026-07-23T08:35:25Z
+    observation: The declared release build from exact e1c21d9 passed staging, runtime, source-compliance, Rust, Tauri assembly, manifest, and final bundle verification for the 1.2 GiB unsigned arm64 application; source, staged, and packaged setup.html were byte-identical at SHA-256 38da710a9302150bd024e0c01f833ff76f6db47b7079f1a74aab2871fc8f7a3c.
+    source: exact e1c21d9 release build and bundle verification record; app tree digest 5b97353b676a22900a9f8d42a193e6e99cef6f9c68b91b1465636d212cc5ce22
+  - id: repaired-candidate-package-process-start-20260723
+    claim: repaired-candidate-package-process-starts
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    at: 2026-07-23T08:35:25Z
+    observation: A disposable profile started the exact repaired package child from bundled Python on dynamic loopback port 51476; the doctor endpoint reported first-run plus FFmpeg and FFprobe healthy, and termination removed the process and listener.
+    source: exact e1c21d9 packaged-child verification record; doctor response SHA-256 487f7c47e6e1284f1049c2365472a4656ccea873fa0926b5f651292db80cc18a
+  - id: repaired-candidate-state-matrix-incomplete-20260723
+    claim: repaired-candidate-full-state-matrix-recorded
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    at: 2026-07-23T08:35:25Z
+    observation: The two affected first-run states were recaptured from exact e1c21d9 and the downstream Review images remained byte-identical, but the complete D-series state matrix was not recaptured from this exact revision.
+    source: exact e1c21d9 visual manifest and release verification record
+  - id: repaired-candidate-founder-live-workflow-blocked-at-native-ingest-entry-20260723
+    claim: repaired-candidate-founder-live-workflow
+    result: contradicts
+    via: observed-task-run
+    observer: maintainer
+    role: operator
+    source_version: e1c21d98cded8e9acd7688ad4b6794a25bc0479c
+    at: 2026-07-23T13:17:18Z
+    observation: The exact repaired app launched the maintainer into Review rather than Ingest. After switching to Ingest, the visible camera-card Choose control produced no folder picker or visible result, so the maintainer could not select footage or continue the real event.
+    source: maintainer statement during the restarted Phase 4 native encounter, corroborated by the current native-window screenshot and read-only source diagnosis
+  - id: native-ingest-candidate-entry-contract-inspection-20260723
+    claim: native-ingest-candidate-entry-contract-passes
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    at: 2026-07-23T13:37:03Z
+    observation: Exact staged encounters proved that a saved setup with the installed sample starts normal launch in Ingest, preserves sample-tour and explicit Review routes, fills the camera-card path after a successful mocked native dialog, and shows actionable focused drag-or-paste recovery after rejection on both Ingest and Setup.
+    source: exact 5cc4fd2 focused native-Ingest browser encounter and source-contract verification record
+  - id: native-ingest-candidate-unsigned-package-inspection-20260723
+    claim: native-ingest-candidate-unsigned-package-inspects-cleanly
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    at: 2026-07-23T13:37:03Z
+    observation: The declared release build from exact 5cc4fd2 passed 34-file staging, five core jobs, vendor and FFmpeg evidence, Rust and Tauri compilation, dynamic-loopback capability parsing, manifest verification, and final bundle inspection for the unsigned arm64 application.
+    source: exact 5cc4fd2 release build and bundle verification record; app tree digest 591655ab44daf2d7cf579761b96efa43c978de69085a921d6fcc457e0bf9e5c9
+  - id: native-ingest-candidate-package-process-start-20260723
+    claim: native-ingest-candidate-package-process-starts
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    at: 2026-07-23T13:37:03Z
+    observation: Bundled Python served exact packaged resources on dynamic loopback port 59870; the focused folder-entry success and rejection encounter passed, the doctor response was healthy, and termination removed the process and listener.
+    source: exact 5cc4fd2 packaged-child verification record; doctor response SHA-256 a8d2509fa30e2a71f6175e70178d03f3188a921c86f34391f1ca70d71c79d46f
+  - id: native-ingest-candidate-state-matrix-incomplete-20260723
+    claim: native-ingest-candidate-full-state-matrix-recorded
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    at: 2026-07-23T13:37:03Z
+    observation: The focused source and browser encounters cover the changed native-Ingest entry boundary, but no screenshot was refreshed; the visual manifest correctly classifies all prior images as historical for exact 5cc4fd2.
+    source: exact 5cc4fd2 visual manifest and release verification record
+  - id: native-ingest-candidate-native-window-folder-selection-observed-20260723
+    claim: native-ingest-candidate-native-window-observed
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    at: 2026-07-23T13:51:53Z
+    observation: Computer Use opened the exact rebuilt unsigned app directly in Ingest on its dynamic loopback origin. The maintainer then used the real macOS folder panel, and the chosen camera-card path populated the native window with event name jpo.
+    source: exact 5cc4fd2 native-window observation plus maintainer screenshot after real folder selection
+  - id: native-ingest-candidate-founder-live-workflow-blocked-at-operator-config-20260723
+    claim: native-ingest-candidate-founder-live-workflow
+    result: contradicts
+    via: observed-task-run
+    observer: maintainer
+    role: operator
+    source_version: 5cc4fd26cd627a8941f3b15ca9fae0ca8273ee02
+    at: 2026-07-23T13:51:53Z
+    observation: After native launch and real folder selection succeeded, the maintainer started Analyze. Film Room aborted before analysis because config/operator.json was missing and instructed the maintainer to copy and manually fill operator.example.json in application support, so the real event could not proceed without developer-file intervention.
+    source: maintainer screenshot from the exact 5cc4fd2 Phase 4 encounter showing the selected path and operator-config failure
+  - id: operator-onboarding-candidate-entry-contract-inspection-20260723
+    claim: operator-onboarding-candidate-entry-contract-passes
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    at: 2026-07-23T14:18:42Z
+    observation: Exact source, staged, and packaged encounters proved that practice-library state cannot satisfy real-footage setup, absent setup returns structured recovery, selected event details survive the Settings round trip, valid in-app choices save atomically, and retried Analyze is accepted without terminal, file-copy, or manual-JSON intervention.
+    source: exact 5496edd operator-onboarding source, browser, backend, and packaged encounter record
+  - id: operator-onboarding-candidate-unsigned-package-inspection-20260723
+    claim: operator-onboarding-candidate-unsigned-package-inspects-cleanly
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    at: 2026-07-23T14:18:42Z
+    observation: The declared release build from exact 5496edd passed 34-file staging, five core jobs, runtime, vendor and FFmpeg evidence, Rust and Tauri compilation, path and secret checks, manifest verification, and final bundle inspection for the unsigned arm64 application.
+    source: exact 5496edd release build and bundle verification record; app tree digest d52eb836e4df2c550d437ab738759fb1c4943483b4241917d5a82aacc9f2abbc
+  - id: operator-onboarding-candidate-package-process-start-20260723
+    claim: operator-onboarding-candidate-package-process-starts
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    at: 2026-07-23T14:18:42Z
+    observation: The exact packaged disposable encounter completed absent-config recovery and in-app provisioning, then the backend accepted Analyze beyond the setup gate; lifecycle, startup, doctor, and listener-cleanup checks passed without accessing maintainer footage.
+    source: exact 5496edd packaged operator-onboarding and lifecycle verification record
+  - id: operator-onboarding-candidate-state-matrix-incomplete-20260723
+    claim: operator-onboarding-candidate-full-state-matrix-recorded
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    at: 2026-07-23T14:18:42Z
+    observation: Focused source and browser encounters cover the changed setup-required recovery boundary, but the complete visual matrix was not recaptured from exact 5496edd; the manifest keeps prior images historical.
+    source: exact 5496edd visual manifest and release verification record
+  - id: operator-onboarding-candidate-native-window-recovery-observed-20260723
+    claim: operator-onboarding-candidate-native-window-observed
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: 5496edd401ee52346150aab61a7e72ca1b9a8edd
+    at: 2026-07-23T14:41:17Z
+    observation: The exact rebuilt app opened in Ingest and the maintainer reached Settings recovery, entered valid operator choices, and saved successfully. Although no visible return action was present and the confirmation copy referenced an off-screen first move, keyboard Back restored the preserved Ingest event and the retried Analyze request began running.
+    source: exact 5496edd Computer Use launch plus maintainer screenshot and follow-up statement during the live recovery encounter
+  - id: ux-closure-candidate-contract-inspection-20260723
+    claim: ux-closure-candidate-contract-passes
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    at: 2026-07-23T19:38:11Z
+    observation: Exact acbc2d0 passed semantic task-context and look-and-feel source contracts, thirteen inspected current captures, staged visual verification, first-run and onboarding flows at wide and constrained layouts, Playwright 14 of 14, portal type/build/copy checks, and the focused release, lifecycle, startup, CSP, window, launch, sample, Rust, and upgrade regressions.
+    source: Decisions 0015–0018 and the exact acbc2d0 UX-closure verification record
+  - id: ux-closure-candidate-unsigned-package-inspection-20260723
+    claim: ux-closure-candidate-unsigned-package-inspects-cleanly
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    at: 2026-07-23T19:38:11Z
+    observation: The exact acbc2d0 release build passed 34-file staging, five core jobs, runtime, vendor and FFmpeg-source evidence, manifest and bundle verification for the unsigned arm64 application; its deterministic file-set content hash is fd51f38a7abbea6f34e7e0456965295ea5936d2912dd7619895b05e82437320e.
+    source: exact acbc2d0 release and bundle verification record
+  - id: ux-closure-candidate-package-process-start-20260723
+    claim: ux-closure-candidate-package-process-starts
+    result: supports
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    at: 2026-07-23T19:38:11Z
+    observation: A fresh disposable profile started the exact packaged candidate, rendered initial and constrained layouts, returned a healthy doctor result with required media tools, and left no listener after termination.
+    source: exact acbc2d0 packaged-process and teardown verification record
+  - id: ux-closure-candidate-state-matrix-incomplete-20260723
+    claim: ux-closure-candidate-full-state-matrix-recorded
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    at: 2026-07-23T19:38:11Z
+    observation: Thirteen current candidate captures were recaptured and inspected, but required real dynamic Ingest, Publish, and Handoff states plus older D-series matrix states remain historical or fixture-only rather than current exact-candidate evidence.
+    source: exact acbc2d0 visual manifest, look-and-feel closure, and open-gate record
+  - id: ux-closure-candidate-launch-information-incomplete-20260723
+    claim: ux-closure-candidate-launch-information-complete
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    at: 2026-07-23T19:38:11Z
+    observation: The shipment gate remains blocked on final candidate notes and package receipt plus a real monitored support contact and schedule; public marketing and install identity are also undeclared.
+    source: exact acbc2d0 launch-information gate and open-gate record
+  - id: ux-closure-candidate-signing-preflight-blocked-20260723
+    claim: ux-closure-candidate-signed-notarized-dmg-inspects-cleanly
+    result: contradicts
+    via: package-inspection
+    observer: release-agent
+    role: agent
+    source_version: acbc2d024e875143b4afc0bc593615c490419535
+    at: 2026-07-23T19:38:11Z
+    observation: The exact candidate is ad-hoc signed with no Developer ID Application identity, sealed-resource verification, notarization, stapling, or Gatekeeper acceptance, so it is not a signed distribution artifact.
+    source: exact acbc2d0 signing preflight and package trust inspection
+
+checkpoints:
+  - {id: native-migration-boundary-present, requires: [distribution-programs-present]}
+  - {id: legacy-actor-output-view, requires: [legacy-actor-output-contract-has-no-blocking-error]}
+  - {id: exact-unsigned-package-inspected, requires: [ux-closure-candidate-contract-passes, ux-closure-candidate-unsigned-package-inspects-cleanly, ux-closure-candidate-package-process-starts]}
+  - {id: founder-operated-ready, requires: [ux-closure-candidate-founder-live-workflow]}
+  - {id: assisted-beta-ready, requires: [ux-closure-candidate-native-window-observed, ux-closure-candidate-full-state-matrix-recorded, ux-closure-candidate-launch-information-complete, ux-closure-candidate-signed-notarized-dmg-inspects-cleanly, support-contact-and-schedule-designated, ux-closure-candidate-second-operator-first-value]}
+
+modules:
+  - {id: ongoing-operation, claims: [ux-closure-candidate-founder-live-workflow]}
+  - {id: package-distribution, claims: [ux-closure-candidate-contract-passes, ux-closure-candidate-unsigned-package-inspects-cleanly, ux-closure-candidate-package-process-starts, ux-closure-candidate-native-window-observed, ux-closure-candidate-full-state-matrix-recorded, ux-closure-candidate-launch-information-complete, ux-closure-candidate-signed-notarized-dmg-inspects-cleanly]}
+  - {id: assisted-pilot, claims: [ux-closure-candidate-second-operator-first-value], actor_kind: pilot-user}
+  - {id: steering, claims: [outcome:counterparty-director.decide-scope], actor_kind: decision-maker}

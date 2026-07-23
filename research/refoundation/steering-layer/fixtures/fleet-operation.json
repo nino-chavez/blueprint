@@ -1,0 +1,87 @@
+{
+  "schema": "blueprint-steering/0",
+  "initiative": "fleet-observability",
+  "as_of": "2026-07-22T22:00:00Z",
+  "current_revision": "7274d30",
+  "outcome": "The scheduled report arrives and is used by the intrinsic operator.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "implementation-present",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "7274d30",
+      "needs": []
+    },
+    {
+      "id": "report-arrives",
+      "state": "satisfied",
+      "kind": "human",
+      "active": true,
+      "revision": "7274d30",
+      "needs": ["implementation-present"]
+    },
+    {
+      "id": "report-used",
+      "state": "contradicted",
+      "kind": "human",
+      "active": true,
+      "revision": "7274d30",
+      "needs": ["report-arrives"]
+    },
+    {
+      "id": "solo-operation-observed",
+      "state": "contradicted",
+      "kind": "human",
+      "active": true,
+      "revision": "7274d30",
+      "needs": ["report-arrives", "report-used"]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "scheduled-operation",
+      "outcome_claim": "solo-operation-observed",
+      "steps": [
+        "implementation-present",
+        "report-arrives",
+        "report-used",
+        "solo-operation-observed"
+      ],
+      "human_claims": [
+        "report-arrives",
+        "report-used",
+        "solo-operation-observed"
+      ],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [
+    {
+      "id": "report-not-used",
+      "journey": "scheduled-operation",
+      "claim": "report-used",
+      "boundary": "operator-use",
+      "classification": "outcome-contradiction",
+      "revision": "7274d30"
+    }
+  ],
+  "dispositions": [],
+  "operator_touches": [
+    {
+      "id": "operation-encounter-1",
+      "journey": "scheduled-operation",
+      "purpose": "confirm-arrival-and-use",
+      "required_claim": "solo-operation-observed",
+      "result": "contradicted"
+    }
+  ],
+  "source_metrics": {
+    "baseline_lines": 36,
+    "current_lines": 62,
+    "decision_count": 2
+  }
+}
