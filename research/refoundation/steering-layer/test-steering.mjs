@@ -250,6 +250,119 @@ equal(
   'ready non-blocking human work does not interrupt remaining autonomous work',
 );
 
+function nestedHumanBoundaryPacket() {
+  return {
+    schema: 'blueprint-steering/1',
+    initiative: 'nested-human-boundary',
+    as_of: '2026-07-23T22:40:35Z',
+    current_revision: 'frontier-v1',
+    outcome: 'The final decision follows an exact sandbox observation.',
+    operator_touch_budget: { max: 2 },
+    claims: [
+      {
+        id: 'local-proof',
+        state: 'satisfied',
+        kind: 'machine',
+        active: true,
+        revision: 'frontier-v1',
+        needs: [],
+      },
+      {
+        id: 'sandbox-auth',
+        state: 'open',
+        kind: 'human',
+        active: true,
+        revision: 'frontier-v1',
+        needs: ['local-proof'],
+      },
+      {
+        id: 'sandbox-inspection',
+        state: 'open',
+        kind: 'machine',
+        active: true,
+        revision: 'frontier-v1',
+        needs: ['sandbox-auth'],
+      },
+      {
+        id: 'final-acceptance',
+        state: 'open',
+        kind: 'human',
+        active: true,
+        revision: 'frontier-v1',
+        needs: ['sandbox-inspection'],
+      },
+    ],
+    journeys: [
+      {
+        id: 'sandbox-to-decision',
+        outcome_claim: 'final-acceptance',
+        steps: [
+          'local-proof',
+          'sandbox-auth',
+          'sandbox-inspection',
+          'final-acceptance',
+        ],
+        human_claims: ['sandbox-auth', 'final-acceptance'],
+        cluster_threshold: 2,
+      },
+    ],
+    incidents: [],
+    dispositions: [],
+    operator_touches: [],
+    execution_routes: [
+      {
+        claim: 'sandbox-auth',
+        mode: 'operator-external',
+        owner: 'operator',
+        authority: 'authenticate to the bounded sandbox',
+        venue: 'named sandbox',
+        action: 'Authenticate and return.',
+        artifact: 'docs/sandbox.md',
+        capture: 'research/sandbox.md',
+        resume_when: 'the authenticated context is available',
+        blocking: true,
+      },
+      {
+        claim: 'final-acceptance',
+        mode: 'operator-inline',
+        owner: 'operator',
+        authority: 'accept or reject the exact evidence',
+        venue: 'current task',
+        action: 'Review the exact evidence.',
+        artifact: 'docs/decision.md',
+        capture: 'decisions/disposition.md',
+        resume_when: 'the disposition is captured',
+        blocking: true,
+      },
+    ],
+  };
+}
+
+const nestedHumanResult = evaluatePacket(nestedHumanBoundaryPacket());
+equal(
+  nestedHumanResult.next_recipe.id,
+  'run-bounded-encounter',
+  'ready nested human boundary selects bounded encounter',
+);
+equal(
+  nestedHumanResult.next_recipe.targets,
+  ['sandbox-auth'],
+  'nested boundary targets only the current actionable human claim',
+);
+equal(
+  nestedHumanResult.next_actions.map((action) => action.mode),
+  ['operator-external'],
+  'nested boundary emits only the authored external route',
+);
+
+const postAuthenticationPacket = nestedHumanBoundaryPacket();
+postAuthenticationPacket.claims.find((claim) => claim.id === 'sandbox-auth').state = 'satisfied';
+equal(
+  evaluatePacket(postAuthenticationPacket).next_recipe.targets,
+  ['sandbox-inspection'],
+  'satisfied nested human boundary reveals only the next machine frontier',
+);
+
 const hiddenDependencyPacket = readyHumanPacket({ max: 1, touches: [] });
 hiddenDependencyPacket.claims.splice(1, 0, {
   id: 'machine-not-shown-in-journey',

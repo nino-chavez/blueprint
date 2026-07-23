@@ -57,5 +57,7 @@ execution-boundary follow-up was separately frozen in
 
 The original fixture-scale results are recorded in `01-results.md`; the
 headless execution follow-up is recorded in
-`03-headless-execution-results.md`. Generated files remain disposable; neither
-the results nor the evaluator are part of the stampable methodology.
+`03-headless-execution-results.md`; and the one-boundary-at-a-time follow-up is
+recorded in `05-actionable-frontier-results.md`. Generated files remain
+disposable; neither the results nor the evaluator are part of the stampable
+methodology.

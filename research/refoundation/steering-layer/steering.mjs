@@ -335,6 +335,31 @@ function dependencyBlockers(claim, claimsById) {
   return (claim.needs ?? []).filter((id) => claimsById.get(id)?.state !== 'satisfied');
 }
 
+function dependencyFrontier(ids, claimsById) {
+  const frontier = [];
+  const selected = new Set();
+  const visited = new Set();
+
+  function visit(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    const claim = claimsById.get(id);
+    if (!claim || claim.state === 'satisfied') return;
+    const blockers = dependencyBlockers(claim, claimsById);
+    if (blockers.length === 0) {
+      if (!selected.has(id)) {
+        selected.add(id);
+        frontier.push(id);
+      }
+      return;
+    }
+    blockers.forEach(visit);
+  }
+
+  ids.forEach(visit);
+  return frontier;
+}
+
 function deriveReadiness(packet, claimsById) {
   const readiness = [];
   for (const journey of packet.journeys) {
@@ -491,14 +516,6 @@ function selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, to
     ['open', 'stale', 'unobservable'].includes(claimsById.get(item.claim)?.state)
   ));
   const blockedHuman = unresolvedHumanReadiness.filter((item) => !item.ready);
-  if (blockedHuman.length > 0) {
-    return {
-      id: 'implement-or-verify',
-      reason: 'A human outcome is open, but deterministic prerequisites are not satisfied.',
-      targets: [...new Set(blockedHuman.flatMap((item) => item.blockers))],
-    };
-  }
-
   const readyHuman = unresolvedHumanReadiness.filter((item) => item.ready);
   const blockingReadyHuman = readyHuman.filter((item) => (
     routesByClaim.get(item.claim)?.blocking ?? true
@@ -517,15 +534,38 @@ function selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, to
       targets: blockingReadyHuman.map((item) => item.claim),
     };
   }
+  if (blockedHuman.length > 0) {
+    return {
+      id: 'implement-or-verify',
+      reason: 'A human outcome is open, but its actionable prerequisites are not satisfied.',
+      targets: dependencyFrontier(
+        blockedHuman.flatMap((item) => item.blockers),
+        claimsById,
+      ),
+    };
+  }
 
-  const openMachine = active.filter((claim) => (
+  const allOpenMachine = active.filter((claim) => (
     claim.kind === 'machine' && ['open', 'unobservable'].includes(claim.state)
+  ));
+  const openMachine = allOpenMachine.filter((claim) => (
+    dependencyBlockers(claim, claimsById).length === 0
   ));
   if (openMachine.length > 0) {
     return {
       id: 'implement-or-verify',
       reason: 'Active machine-checkable claims remain open.',
       targets: openMachine.map((claim) => claim.id),
+    };
+  }
+  if (allOpenMachine.length > 0) {
+    return {
+      id: 'implement-or-verify',
+      reason: 'Active machine-checkable claims remain open behind unresolved prerequisites.',
+      targets: dependencyFrontier(
+        allOpenMachine.map((claim) => claim.id),
+        claimsById,
+      ),
     };
   }
 
@@ -547,7 +587,10 @@ function selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, to
     return {
       id: 'implement-or-verify',
       reason: 'A decision remains open behind unsatisfied prerequisites.',
-      targets: [...new Set(blockedDecision.flatMap((claim) => dependencyBlockers(claim, claimsById)))],
+      targets: dependencyFrontier(
+        blockedDecision.flatMap((claim) => dependencyBlockers(claim, claimsById)),
+        claimsById,
+      ),
     };
   }
 
