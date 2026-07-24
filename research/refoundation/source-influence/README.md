@@ -3,6 +3,12 @@
 This root-only experiment makes a source's permitted influence explicit. It is
 not part of `template/`, the public CLI, or the semantic kernel.
 
+The contract was preregistered in
+`research/refoundation/23-adaptive-pilot-promotion-preregistration.md`,
+evaluated in
+`research/refoundation/24-adaptive-pilot-promotion-results.md`, and retained as
+root research by Decision 09.
+
 `blueprint-source-influence/0` defines four roles:
 
 | Role | May influence |

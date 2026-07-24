@@ -63,6 +63,7 @@ The original fixture-scale results are recorded in `01-results.md`; the
 headless execution follow-up is recorded in
 `03-headless-execution-results.md`; and the one-boundary-at-a-time follow-up is
 recorded in `05-actionable-frontier-results.md`. Version 2 is preregistered in
-the root `23-adaptive-pilot-promotion-preregistration.md`. Generated files
-remain disposable; neither the results nor the evaluator are part of the
-stampable methodology.
+the root `23-adaptive-pilot-promotion-preregistration.md` and evaluated in
+`24-adaptive-pilot-promotion-results.md`. Decision 09 retains it as root
+research while holding public promotion. Generated files remain disposable;
+neither the results nor the evaluator are part of the stampable methodology.
