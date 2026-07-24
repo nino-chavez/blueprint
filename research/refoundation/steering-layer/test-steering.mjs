@@ -134,6 +134,174 @@ equal(
   'external operator route names its resume condition',
 );
 
+function caughtPacketError(packet, label) {
+  let caught = null;
+  try {
+    evaluatePacket(packet, {
+      source: JSON.stringify(packet, null, 2),
+      path: join(fixtureDir, label),
+    });
+  } catch (error) {
+    caught = error;
+  }
+  return caught;
+}
+
+const delegatedPacket = JSON.parse(
+  readFileSync(join(fixtureDir, 'delegated-local-decision.json'), 'utf8'),
+);
+const delegatedResult = evaluatePacket(delegatedPacket);
+equal(
+  delegatedResult.next_recipe.id,
+  'record-disposition',
+  'covered delegated decision selects record-disposition',
+);
+equal(
+  actionFor(delegatedResult, 'local-product-disposition')?.mode,
+  'agent-autonomous',
+  'covered delegated decision uses the authored autonomous route',
+);
+equal(
+  actionFor(delegatedResult, 'local-product-disposition')?.delegation,
+  'local-disposition',
+  'autonomous decision result identifies its exact delegation',
+);
+equal(
+  actionFor(delegatedResult, 'local-product-disposition')?.route_source,
+  'authored-delegation',
+  'autonomous decision route is labeled as an authored delegation',
+);
+equal(
+  delegatedPacket.claims.find((claim) => claim.id === 'operator-accepts-product-thesis')?.state,
+  'open',
+  'delegation does not satisfy the separate human product-acceptance claim',
+);
+
+const completedDelegatedPacket = structuredClone(delegatedPacket);
+completedDelegatedPacket.claims.find(
+  (claim) => claim.id === 'local-product-disposition',
+).state = 'satisfied';
+completedDelegatedPacket.dispositions.push({
+  id: 'local-product-direction-selected',
+  kind: 'product-disposition',
+  status: 'accepted',
+  journey: 'local-build-decision',
+  covers_incidents: [],
+  delegation: 'local-disposition',
+  decision_claim: 'local-product-disposition',
+  effects: ['record-local-decision', 'revise-local-plan'],
+  exercise_receipt: 'research/steering/local-disposition-receipt.md',
+});
+equal(
+  evaluatePacket(completedDelegatedPacket).next_recipe.id,
+  'hold',
+  'completed delegated decision with a matching receipt can close',
+);
+
+const missingDelegationPacket = structuredClone(delegatedPacket);
+missingDelegationPacket.decision_delegations = [];
+const missingDelegationError = caughtPacketError(
+  missingDelegationPacket,
+  'missing-authored-delegation.json',
+);
+check(
+  missingDelegationError instanceof SteeringPacketError,
+  'autonomous decision without authored delegation is rejected',
+);
+check(
+  missingDelegationError?.message.includes('requires an authored decision delegation'),
+  'missing delegation is not inferred from an autonomous route',
+);
+
+const nonDelegatedOperatorDecision = structuredClone(delegatedPacket);
+nonDelegatedOperatorDecision.decision_delegations = [];
+const operatorDecisionRoute = nonDelegatedOperatorDecision.execution_routes.find(
+  (route) => route.claim === 'local-product-disposition',
+);
+operatorDecisionRoute.mode = 'operator-inline';
+operatorDecisionRoute.owner = 'operator';
+operatorDecisionRoute.authority = 'retain the undelegated product choice';
+operatorDecisionRoute.venue = 'current task';
+operatorDecisionRoute.blocking = true;
+delete operatorDecisionRoute.delegation;
+equal(
+  actionFor(
+    evaluatePacket(nonDelegatedOperatorDecision),
+    'local-product-disposition',
+  )?.mode,
+  'operator-inline',
+  'version-2 decision without delegation retains its authored operator route',
+);
+
+const humanAsAgentPacket = structuredClone(delegatedPacket);
+const humanRoute = humanAsAgentPacket.execution_routes.find(
+  (route) => route.claim === 'operator-delegates-local-disposition',
+);
+humanRoute.mode = 'agent-autonomous';
+humanRoute.owner = 'blueprint-agent';
+humanRoute.blocking = false;
+const humanAsAgentError = caughtPacketError(
+  humanAsAgentPacket,
+  'human-claim-as-agent.json',
+);
+check(
+  humanAsAgentError?.message.includes('human claim operator-delegates-local-disposition may not use an agent-autonomous route'),
+  'delegation policy cannot convert a human authorization claim into agent evidence',
+);
+
+const prohibitedEffectPacket = structuredClone(delegatedPacket);
+prohibitedEffectPacket.claims.find(
+  (claim) => claim.id === 'local-product-disposition',
+).effects.push('mutate-external-system');
+const prohibitedEffectError = caughtPacketError(
+  prohibitedEffectPacket,
+  'prohibited-delegated-effect.json',
+);
+check(
+  prohibitedEffectError?.message.includes('prohibits effect mutate-external-system'),
+  'prohibited external effect wins over delegated autonomy',
+);
+
+const wrongDecisionClassPacket = structuredClone(delegatedPacket);
+wrongDecisionClassPacket.claims.find(
+  (claim) => claim.id === 'local-product-disposition',
+).decision_class = 'irreversible-marketplace-publication';
+const wrongDecisionClassError = caughtPacketError(
+  wrongDecisionClassPacket,
+  'wrong-delegated-class.json',
+);
+check(
+  wrongDecisionClassError?.message.includes('does not cover decision class irreversible-marketplace-publication'),
+  'delegation cannot cover an undeclared decision class',
+);
+
+const wrongDecisionRecordPacket = structuredClone(delegatedPacket);
+wrongDecisionRecordPacket.execution_routes.find(
+  (route) => route.claim === 'local-product-disposition',
+).capture = 'decisions/different-record.md';
+check(
+  caughtPacketError(
+    wrongDecisionRecordPacket,
+    'wrong-decision-record.json',
+  )?.message.includes('capture must match delegation local-disposition decision_record'),
+  'delegated route is pinned to its exact decision record',
+);
+
+const missingExerciseReceiptPacket = structuredClone(completedDelegatedPacket);
+delete missingExerciseReceiptPacket.dispositions[0].exercise_receipt;
+const missingExerciseReceiptError = caughtPacketError(
+  missingExerciseReceiptPacket,
+  'missing-delegation-receipt.json',
+);
+check(
+  missingExerciseReceiptError?.message.includes('requires exercise_receipt'),
+  'completed delegated disposition requires an exercise receipt',
+);
+check(
+  missingExerciseReceiptError?.message.includes('requires a matching completed disposition and exercise receipt'),
+  'satisfied delegated decision cannot close without its exact receipt',
+);
+
 const invalidExpectations = {
   'duplicate-claim.json': 'duplicate claim id same',
   'unknown-dependency.json': 'depends on unknown claim missing',
