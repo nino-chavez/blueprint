@@ -1,0 +1,22 @@
+{
+  "schema_version": "blueprint-review-disposition/1",
+  "id": "review-2026-07-23-001-disposition",
+  "contract_id": "north-star-direction-review",
+  "submission_id": "review-2026-07-23-001",
+  "candidate_revision": "0123456789abcdef",
+  "state": "answered",
+  "rationale": "Rejected content remains draft and the original template is preserved.",
+  "decided_by": "product-operator",
+  "consequences": [
+    {
+      "type": "answer",
+      "ref": "feedback/answers/rejected-content.md"
+    }
+  ],
+  "return_to_reader": {
+    "status": "sent",
+    "at": "2026-07-23T14:00:00Z",
+    "via": "web-form",
+    "receipt": "feedback/returns/review-2026-07-23-001.json"
+  }
+}

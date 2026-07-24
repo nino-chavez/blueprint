@@ -1,0 +1,49 @@
+{
+  "schema_version": "blueprint-review-loop/1",
+  "id": "adaptive-concept-team-review",
+  "status": "issued",
+  "initiative": "adaptive-commerce-content",
+  "candidate": {
+    "revision": "166d11f7987cb88211c3a27e3d0e826221a34690",
+    "artifact": "https://adaptive-commerce-content.nino-chavez.chatgpt.site",
+    "issued_at": "2026-07-23T21:36:52Z"
+  },
+  "reader": {
+    "actor": "concept-review-team",
+    "outcome": "review-direction",
+    "identity": "mediated"
+  },
+  "targets": [
+    {
+      "id": "direction",
+      "kind": "decision",
+      "ref": "decisions/0006-north-star-review-artifact.md",
+      "ask": "Is the governed content-system direction stronger than the original single-banner proposal?",
+      "authority": "advise"
+    },
+    {
+      "id": "wedge",
+      "kind": "screen",
+      "ref": "apps/review-site/app/components/ReviewPrototype.tsx",
+      "ask": "Is the template-native email wedge credible enough to explore with merchants?",
+      "authority": "advise"
+    }
+  ],
+  "capture": {
+    "mode": "mediated",
+    "adapter": "meeting-or-slack",
+    "destination": "feedback/submissions",
+    "mediated_by": "initiative-operator",
+    "reason": "The deployed review site currently presents questions but has no authenticated submission path."
+  },
+  "disposition": {
+    "owner": "initiative-operator",
+    "destination": "feedback/dispositions",
+    "return_to_reader": "required",
+    "automation": {
+      "classify": "agent-autonomous",
+      "propose": "agent-autonomous",
+      "apply": "human-authorized"
+    }
+  }
+}

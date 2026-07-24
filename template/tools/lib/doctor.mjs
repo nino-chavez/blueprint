@@ -122,6 +122,30 @@ export async function runDoctor({ home, targetDir }) {
     // no manifest → legacy route; the existing portal checks below own the gate.
   }
 
+  // 2c. review/disposition loop (wave 97) — optional until an initiative
+  //     declares a reader review. Once review-contract.json exists, its exact
+  //     candidate, adapter, submissions, dispositions, and return path are all
+  //     first-class health state. PENDING is visible but not a structural fail;
+  //     `blueprint feedback --gate` owns the closure gate.
+  {
+    const reviewContractPath = join(targetDir, 'review-contract.json');
+    if (existsSync(reviewContractPath)) {
+      try {
+        const reviewLoop = await import(libUrl(home, 'review-loop.mjs'));
+        const r = reviewLoop.evaluateReviewLoop({ root: targetDir });
+        const map = { PASS: 'pass', PENDING: 'warn', BLOCKED: 'fail' };
+        add(
+          'review-loop',
+          map[r.verdict] || 'fail',
+          `${r.verdict} — ${r.counts.submissions} submission(s), ${r.counts.dispositions} disposition(s), ${r.counts.open} open`,
+          r.verdict === 'PASS' ? undefined : 'run `blueprint feedback` for detail; use `blueprint feedback --gate` when review closure is required'
+        );
+      } catch (e) {
+        add('review-loop', 'fail', `review-loop validation threw: ${e.message}`);
+      }
+    }
+  }
+
   // 3. cost-config — the cost block resolves; flag any below-anchor-unjustified
   //    stage (the step-6 gate would BLOCK it). Reuses cost-dial.
   if (hasYml) {
@@ -506,5 +530,93 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   const pcCheck = r2.checks.find((c) => c.name === 'portal-conformance');
   assert(pcCheck && pcCheck.status === 'skip' && /actor-output route/.test(pcCheck.detail), 'legacy portal conformance visibly skipped under the actor-output route');
 
-  console.log('doctor self-test: PASS (11 assertions)');
+  // Review-loop route is optional, then authoritative once declared. Keep the
+  // fixture local to this lib so the published package's self-test does not
+  // depend on source-only research/.
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const reviewFixture = fs.mkdtempSync(path.join(os.tmpdir(), 'blueprint-doctor-review-'));
+  fs.mkdirSync(path.join(reviewFixture, 'feedback', 'submissions'), { recursive: true });
+  fs.mkdirSync(path.join(reviewFixture, 'feedback', 'dispositions'), { recursive: true });
+  const contract = {
+    schema_version: 'blueprint-review-loop/1',
+    id: 'doctor-review',
+    status: 'issued',
+    initiative: 'fixture',
+    candidate: {
+      revision: 'abc123456789',
+      artifact: 'https://example.test/review',
+      issued_at: '2026-07-23T12:00:00Z',
+    },
+    reader: {
+      actor: 'reviewer',
+      outcome: 'review-direction',
+      identity: 'authenticated',
+    },
+    targets: [{
+      id: 'direction',
+      kind: 'decision',
+      ref: 'decisions/0001.md',
+      ask: 'Should this proceed?',
+      authority: 'advise',
+    }],
+    capture: {
+      mode: 'self-service',
+      adapter: 'web-form',
+      artifact: '/review#feedback',
+      destination: 'feedback/submissions',
+    },
+    disposition: {
+      owner: 'operator',
+      destination: 'feedback/dispositions',
+      return_to_reader: 'required',
+      automation: {
+        classify: 'agent-autonomous',
+        propose: 'agent-autonomous',
+        apply: 'human-authorized',
+      },
+    },
+  };
+  const submission = {
+    schema_version: 'blueprint-review-submission/1',
+    id: 'review-1',
+    contract_id: 'doctor-review',
+    candidate_revision: 'abc123456789',
+    reader_actor: 'reviewer',
+    target_id: 'direction',
+    category: 'question',
+    body: 'How does fallback work?',
+    submitted_at: '2026-07-23T13:00:00Z',
+    source: { adapter: 'web-form' },
+  };
+  const disposition = {
+    schema_version: 'blueprint-review-disposition/1',
+    id: 'review-1-disposition',
+    contract_id: 'doctor-review',
+    submission_id: 'review-1',
+    candidate_revision: 'abc123456789',
+    state: 'answered',
+    rationale: 'The fallback is documented.',
+    decided_by: 'operator',
+    consequences: [{ type: 'answer', ref: 'feedback/answers/review-1.md' }],
+    return_to_reader: {
+      status: 'sent',
+      at: '2026-07-23T14:00:00Z',
+      via: 'web-form',
+      receipt: 'feedback/returns/review-1.json',
+    },
+  };
+  fs.writeFileSync(path.join(reviewFixture, 'review-contract.json'), `${JSON.stringify(contract, null, 2)}\n`);
+  fs.writeFileSync(path.join(reviewFixture, 'feedback', 'submissions', 'review-1.json'), `${JSON.stringify(submission, null, 2)}\n`);
+  fs.writeFileSync(path.join(reviewFixture, 'feedback', 'dispositions', 'review-1.json'), `${JSON.stringify(disposition, null, 2)}\n`);
+  const closed = await runDoctor({ home, targetDir: reviewFixture });
+  assert(closed.checks.find((c) => c.name === 'review-loop')?.status === 'pass', 'closed review loop reports doctor pass');
+  contract.status = 'ready';
+  delete contract.candidate.issued_at;
+  fs.writeFileSync(path.join(reviewFixture, 'review-contract.json'), `${JSON.stringify(contract, null, 2)}\n`);
+  const ready = await runDoctor({ home, targetDir: reviewFixture });
+  assert(ready.checks.find((c) => c.name === 'review-loop')?.status === 'warn', 'unissued review loop reports doctor warn');
+  fs.rmSync(reviewFixture, { recursive: true, force: true });
+
+  console.log('doctor self-test: PASS (13 assertions)');
 }

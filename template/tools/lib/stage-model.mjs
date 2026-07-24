@@ -31,6 +31,7 @@ import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { resolveReviewer } from './reviewer-registry.mjs';
 import { parseManifest } from './actor-output.mjs';
+import { evaluateReviewLoop } from './review-loop.mjs';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
@@ -256,11 +257,29 @@ const CHECK_KINDS = {
 
   'feedback-triaged': ({ dir }, c) => {
     if (!dir) return badParams('feedback-triaged', 'missing dir');
+    // A declared review loop owns this gate. Presence of one JSON file in each
+    // directory is not enough: the exact-candidate, authority, disposition,
+    // and return-to-reader checks must agree before Stage 7 can read green.
+    if (existsSync(join(c.root, 'review-contract.json'))) {
+      const review = evaluateReviewLoop({ root: c.root });
+      const summary = `review-loop/1 ${review.verdict}: ${review.counts.submissions} submission(s), ${review.counts.dispositions} disposition(s), ${review.counts.open} open`;
+      if (review.verdict === 'PASS' && review.counts.submissions > 0)
+        return { state: 'pass', evidence: summary };
+      if (review.verdict === 'BLOCKED')
+        return { state: 'absent', evidence: `${summary}; ${review.errors[0] ?? 'invalid contract'}` };
+      return {
+        state: 'partial',
+        evidence: `${summary}; ${review.pendings[0] ?? 'no observed feedback'}`,
+      };
+    }
     const f = ls(join(c.root, dir));
-    const cap = f.some((x) => x.endsWith('.md') && !/triage|kudos/i.test(x));
-    const tri = f.some((x) => /triage/i.test(x));
-    if (cap && tri) return { state: 'pass', evidence: `${dir}: captures + triage present` };
-    if (cap || tri) return { state: 'partial', evidence: `${dir}: partial (capture or triage, not both)` };
+    // Legacy loop: capture + *triage.md at feedback/ root.
+    const legacyCapture = f.some((x) => x.endsWith('.md') && !/triage|kudos/i.test(x));
+    const legacyDisposition = f.some((x) => /triage/i.test(x));
+    const cap = legacyCapture;
+    const tri = legacyDisposition;
+    if (cap && tri) return { state: 'pass', evidence: `${dir}: captures + dispositions present` };
+    if (cap || tri) return { state: 'partial', evidence: `${dir}: partial (capture or disposition, not both)` };
     return { state: 'absent', evidence: `${dir}: none` };
   },
 
@@ -1017,6 +1036,87 @@ async function selftest() {
     mk('blueprint.yml', 'variant: brownfield\n');
     s = deriveStageStatus({ root: fx });
     assert(!s.stagesComplete.includes(4), 'optional-only Stage 4 not counted as coverage on an empty repo');
+
+    // Review-loop/1 must be semantically closed; directory presence alone is
+    // deliberately insufficient.
+    rmSync(fx, { recursive: true, force: true });
+    const contract = {
+      schema_version: 'blueprint-review-loop/1',
+      id: 'stage-fixture',
+      status: 'issued',
+      initiative: 'fixture',
+      candidate: {
+        revision: 'abc123456789',
+        artifact: 'https://example.test/review',
+        issued_at: '2026-07-23T12:00:00Z',
+      },
+      reader: {
+        actor: 'reviewer',
+        outcome: 'review-direction',
+        identity: 'authenticated',
+      },
+      targets: [{
+        id: 'direction',
+        kind: 'decision',
+        ref: 'decisions/0001.md',
+        ask: 'Should this proceed?',
+        authority: 'advise',
+      }],
+      capture: {
+        mode: 'self-service',
+        adapter: 'web-form',
+        artifact: '/review#feedback',
+        destination: 'feedback/submissions',
+      },
+      disposition: {
+        owner: 'operator',
+        destination: 'feedback/dispositions',
+        return_to_reader: 'required',
+        automation: {
+          classify: 'agent-autonomous',
+          propose: 'agent-autonomous',
+          apply: 'human-authorized',
+        },
+      },
+    };
+    mk('review-contract.json', `${JSON.stringify(contract, null, 2)}\n`);
+    let feedback = CHECK_KINDS['feedback-triaged']({ dir: 'feedback' }, { root: fx, yml: '' });
+    assert(feedback.state === 'partial' && feedback.evidence.includes('no observed'), 'issued structured loop without a submission is partial');
+    const submission = {
+      schema_version: 'blueprint-review-submission/1',
+      id: 'review-1',
+      contract_id: 'stage-fixture',
+      candidate_revision: 'abc123456789',
+      reader_actor: 'reviewer',
+      target_id: 'direction',
+      category: 'question',
+      body: 'How does the fallback work?',
+      submitted_at: '2026-07-23T13:00:00Z',
+      source: { adapter: 'web-form' },
+    };
+    mk('feedback/submissions/review-1.json', `${JSON.stringify(submission, null, 2)}\n`);
+    feedback = CHECK_KINDS['feedback-triaged']({ dir: 'feedback' }, { root: fx, yml: '' });
+    assert(feedback.state === 'partial' && feedback.evidence.includes('1 open'), 'structured submission without disposition is partial');
+    const disposition = {
+      schema_version: 'blueprint-review-disposition/1',
+      id: 'review-1-disposition',
+      contract_id: 'stage-fixture',
+      submission_id: 'review-1',
+      candidate_revision: 'abc123456789',
+      state: 'answered',
+      rationale: 'The fallback is documented.',
+      decided_by: 'operator',
+      consequences: [{ type: 'answer', ref: 'feedback/answers/review-1.md' }],
+      return_to_reader: {
+        status: 'sent',
+        at: '2026-07-23T14:00:00Z',
+        via: 'web-form',
+        receipt: 'feedback/returns/review-1.json',
+      },
+    };
+    mk('feedback/dispositions/review-1.json', `${JSON.stringify(disposition, null, 2)}\n`);
+    feedback = CHECK_KINDS['feedback-triaged']({ dir: 'feedback' }, { root: fx, yml: '' });
+    assert(feedback.state === 'pass' && feedback.evidence.includes('review-loop/1'), 'structured submission + disposition pass feedback gate');
   } finally {
     rmSync(fx, { recursive: true, force: true });
   }

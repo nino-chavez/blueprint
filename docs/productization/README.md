@@ -32,9 +32,11 @@ instead of a control plane).
 ## What was built (the output, in the source)
 
 A thin, dependency-free CLI (`@nino-chavez-labs/blueprint-cli`) — `init / review /
-cost / fleet / upgrade / doctor`, all real — over six self-tested libs under
-`template/tools/lib/`, plus governance + distribution artifacts. The build order
-(steps 0–13) is complete.
+cost / fleet / upgrade / doctor / hive / stage / feedback`, all real — over
+thirteen self-tested libs under `template/tools/lib/`, plus governance +
+distribution artifacts. The build order (steps 0–13) is complete; later waves
+have added methodology-native capabilities without introducing a required
+hosted control plane.
 
 ## The decisions (the why) — ADR → feature → wave
 

@@ -1,0 +1,22 @@
+{
+  "schema_version": "blueprint-review-disposition/1",
+  "id": "founder-settings-return-disposition",
+  "contract_id": "film-room-founder-ux-review",
+  "submission_id": "founder-settings-return",
+  "candidate_revision": "5496edd401ee52346150aab61a7e72ca1b9a8edd",
+  "state": "scoped-in",
+  "rationale": "The encounter exposed a product-level recovery and copy failure, not a preference. It became an input to the bounded UX audit and Decision 0015 candidate.",
+  "decided_by": "founder-operator",
+  "consequences": [
+    {
+      "type": "work-item",
+      "ref": "film-room@4aa74a5ed17110c53fc0acc0f67c746003550729"
+    }
+  ],
+  "return_to_reader": {
+    "status": "sent",
+    "at": "2026-07-23T15:00:00Z",
+    "via": "codex-conversation",
+    "receipt": "codex-task:019f8a48-64b5-7800-8921-885414707bc4"
+  }
+}

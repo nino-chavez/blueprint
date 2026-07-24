@@ -14,7 +14,7 @@
  *   doctor   conformance / health check (the false-green guard) (real — step 12)
  *   hive     stand up the team coordination substrate (hive setup --slug=<x>)
  *   stage    derive pipeline position from artifacts-on-disk (stage status — ADR-0008)
-
+ *   feedback validate a review/disposition loop pinned to an exact candidate
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
  */
@@ -62,6 +62,8 @@ Commands:
   stage      Derive/advance the initiative's pipeline position (blueprint stage <status|advance> [--target=<dir>] [--json])
              deterministic-core view (ADR-0008): status marks derivable vs. assertion-only gates; advance gates the next transition
              advance is dry-run by default; --execute records to .blueprint/stage-state.json; --assert-<gate>="…" confirms a shell gate
+  feedback   Validate the reader review/disposition loop (blueprint feedback [--target=<dir>] [--json] [--gate])
+             exact candidate + asks + authority + capture adapter + submissions + dispositions + return-to-reader
 
 Global:
   -h, --help       Show help
@@ -628,6 +630,48 @@ async function runStage(stageArgv, home) {
   process.exit(0);
 }
 
+// feedback [--target=<dir>] [--json] [--gate] — validate the optional
+// renderer-independent review loop. The reader may contribute through a
+// bespoke site, portal, native app, Slack, meeting, or an Atelier-style
+// annotation substrate; the on-disk contract is identical. Default mode exits
+// nonzero only for structural/authority errors. --gate additionally requires
+// an issued loop to be closed and returned to the reader.
+async function runFeedback(feedbackArgv, home) {
+  const { flags } = parseArgs(feedbackArgv);
+  if (flags.help || flags.h) {
+    console.log(`Usage: blueprint feedback [--target=<dir>] [--json] [--gate]
+
+Validate review-contract.json plus candidate-pinned submissions, dispositions,
+and return-to-reader receipts.
+
+  --target=<dir>  Initiative root (default: current directory)
+  --json          Machine-readable result
+  --gate          Require PASS; default mode exits nonzero only on BLOCKED
+`);
+    return;
+  }
+  const targetDir = resolve(flags.target || process.cwd());
+  let lib;
+  try {
+    lib = await import(pathToFileURL(join(home, 'template', 'tools', 'lib', 'review-loop.mjs')).href);
+  } catch (e) {
+    console.error(`blueprint feedback: failed to load review-loop lib — ${e.message}`);
+    process.exit(2);
+  }
+  const result = lib.evaluateReviewLoop({ root: targetDir });
+  if (flags.json) {
+    console.log(JSON.stringify({ target: targetDir, ...result }, null, 2));
+  } else {
+    console.log(`blueprint feedback — ${result.verdict}  (${targetDir})`);
+    console.log(`  targets=${result.counts.targets} submissions=${result.counts.submissions} dispositions=${result.counts.dispositions} open=${result.counts.open}`);
+    for (const error of result.errors) console.log(`  ERROR ${error}`);
+    for (const pending of result.pendings) console.log(`  PEND  ${pending}`);
+    for (const warn of result.warns) console.log(`  warn  ${warn}`);
+  }
+  const gate = !!flags.gate;
+  process.exit(result.verdict === 'BLOCKED' || (gate && result.verdict !== 'PASS') ? 1 : 0);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positionals } = parseArgs(argv);
@@ -692,6 +736,11 @@ async function main() {
 
   if (cmd === 'stage') {
     await runStage(argv.slice(argv.indexOf('stage') + 1), home);
+    return;
+  }
+
+  if (cmd === 'feedback') {
+    await runFeedback(argv.slice(argv.indexOf('feedback') + 1), home);
     return;
   }
 

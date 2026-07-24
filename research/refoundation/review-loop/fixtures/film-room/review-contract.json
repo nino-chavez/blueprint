@@ -1,0 +1,42 @@
+{
+  "schema_version": "blueprint-review-loop/1",
+  "id": "film-room-founder-ux-review",
+  "status": "issued",
+  "initiative": "film-room",
+  "candidate": {
+    "revision": "5496edd401ee52346150aab61a7e72ca1b9a8edd",
+    "artifact": "Film Room.app@5496edd401ee52346150aab61a7e72ca1b9a8edd",
+    "issued_at": "2026-07-23T14:30:00Z"
+  },
+  "reader": {
+    "actor": "founder-operator",
+    "outcome": "complete-real-event",
+    "identity": "mediated"
+  },
+  "targets": [
+    {
+      "id": "settings-return",
+      "kind": "screen",
+      "ref": "pipeline/setup.html",
+      "ask": "Can the founder complete setup and return to the event without hidden navigation?",
+      "authority": "decide"
+    }
+  ],
+  "capture": {
+    "mode": "mediated",
+    "adapter": "codex-conversation",
+    "destination": "feedback/submissions",
+    "mediated_by": "blueprint-audit-session",
+    "reason": "The native candidate had no embedded feedback adapter; the operator reported the exact encounter in Codex."
+  },
+  "disposition": {
+    "owner": "founder-operator",
+    "destination": "feedback/dispositions",
+    "return_to_reader": "required",
+    "automation": {
+      "classify": "agent-autonomous",
+      "propose": "agent-autonomous",
+      "apply": "human-authorized"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "blueprint-review-submission/1",
+  "id": "founder-settings-return",
+  "contract_id": "film-room-founder-ux-review",
+  "candidate_revision": "5496edd401ee52346150aab61a7e72ca1b9a8edd",
+  "reader_actor": "founder-operator",
+  "target_id": "settings-return",
+  "category": "bug",
+  "body": "The Settings screen had no visible way back to the main UI, and the success message referred to a first move that was not present on screen.",
+  "submitted_at": "2026-07-23T14:39:20Z",
+  "source": {
+    "adapter": "codex-conversation"
+  }
+}
