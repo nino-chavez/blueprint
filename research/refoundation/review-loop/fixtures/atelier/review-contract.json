@@ -1,0 +1,40 @@
+{
+  "schema_version": "blueprint-review-loop/1",
+  "id": "atelier-prototype-harness-review",
+  "status": "ready",
+  "initiative": "atelier",
+  "candidate": {
+    "revision": "d1aec33114abe330422b25e9c3addd10f83f45ba",
+    "artifact": "https://github.com/nino-chavez/atelier/tree/d1aec33114abe330422b25e9c3addd10f83f45ba/prototype/src/app/prototype"
+  },
+  "reader": {
+    "actor": "prototype-reviewer",
+    "outcome": "review-mounted-surface",
+    "identity": "authenticated"
+  },
+  "targets": [
+    {
+      "id": "mounted-surface",
+      "kind": "screen",
+      "ref": "prototype/src/app/prototype/[project]",
+      "ask": "Inspect the mounted prototype and annotate a concrete region.",
+      "authority": "advise"
+    }
+  ],
+  "capture": {
+    "mode": "self-service",
+    "adapter": "atelier-annotation-overlay",
+    "artifact": "/prototype/<project_id>",
+    "destination": "feedback/submissions"
+  },
+  "disposition": {
+    "owner": "project-owner",
+    "destination": "feedback/dispositions",
+    "return_to_reader": "required",
+    "automation": {
+      "classify": "agent-autonomous",
+      "propose": "agent-autonomous",
+      "apply": "human-authorized"
+    }
+  }
+}

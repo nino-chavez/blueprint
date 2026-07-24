@@ -75,6 +75,7 @@ try {
     ".claude/agents/blueprint/reviewers/portal-review-conformance-reviewer.mjs",
     ".claude/agents/lib/initiative-root.mjs",
     "tools/lib/cost-dial.mjs",
+    "tools/lib/review-loop.mjs",
     "tools/run-reviewers.mjs",
   ]) {
     if (await fs.stat(path.join(target, rel)).catch(() => null)) ok(`stamped: ${rel}`);

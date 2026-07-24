@@ -2,11 +2,38 @@
 
 The Blueprint methodology distribution. Versions follow [semver](https://semver.org).
 
-Entries are authored via [Changesets](https://github.com/changesets/changesets): every consumer-affecting change adds a `.changeset/*.md` describing intent, and breaking changes carry a hand-written migration note (per ADR-0007 — the changelog is a stakeholder-facing migration guide, not a commit dump).
+ADR-0007 originally selected
+[Changesets](https://github.com/changesets/changesets), but the wave-45
+workspace fold made the publishable package the monorepo root, which Changesets
+does not include in its workspace package set. Root releases are therefore
+versioned by hand, recorded here, and published idempotently by
+`bin/release-if-unpublished.mjs` (the established 0.2.0–0.7.0 path). Breaking
+changes still carry a hand-written migration note: this changelog is a
+stakeholder-facing migration guide, not a commit dump.
 
 Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LOG.md](./WAVE-LOG.md).
 
 ## Unreleased
+
+### Added
+
+- **Review and disposition loop** (wave 97) — `review-contract.json` binds a
+  human/team review to an exact candidate, reader, asks, authority, capture
+  adapter, automation boundary, disposition owner, and return path.
+  `blueprint feedback` validates the contract plus candidate-pinned submissions
+  and dispositions; `--gate` requires a real closed loop and durable
+  return-to-reader receipt.
+- **Renderer-independent examples and guidance** — the capability works with a
+  Blueprint portal, bespoke site, native product, document, meeting, Slack, or
+  an Atelier-style annotation substrate. Blueprint does not add a required
+  hosted feedback service.
+
+### Changed
+
+- `blueprint doctor` validates a review loop when a consumer declares one.
+  Stage feedback gates delegate to the same semantic validator; JSON directory
+  presence alone cannot produce green. Existing Markdown capture/triage and
+  consumers without `review-contract.json` are unchanged.
 
 ## 0.6.0
 

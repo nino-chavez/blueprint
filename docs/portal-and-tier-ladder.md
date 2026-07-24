@@ -25,7 +25,8 @@ canonical: true
 > This doc remains canonical for the tier ladder and the portal SHELLS as
 > reusable harness — read it for those, not for what gates.
 
-Canonical reference for how a Blueprint initiative externalizes itself across audiences, which portal pattern to choose, and how that surface evolves as the initiative matures.
+Canonical reference for the surviving portal shells and tier ladder. The
+actor-output manifest decides whether a reader needs either shell.
 
 ## Why this exists
 
@@ -33,17 +34,43 @@ The first generation of Blueprint shipped a static-HTML "portal" template. It wa
 
 The subscriptions initiative built a *different* portal — Astro 5 + React 19 + Tailwind 3 consuming `@blueprint/ui` and `@blueprint/design-tokens` as workspace packages — with a 6-verb IA and audience switcher.
 
-**Both are canonical.** They are two patterns for two different use cases, not two generations of one pattern. The drift between the four projects was real, but the fix isn't to collapse them into one shape. The fix is to name the two patterns explicitly and let each project pick the one that fits.
+**Both shells remain canonical renderer options.** They are two patterns for
+two different use cases, not two generations of one pattern. Neither is the
+methodology's required presentation. The drift between the four projects was
+real, but the fix is not to collapse every initiative into one shape: declare
+the reader job first, then select, adapt, or omit a shell.
 
 | Concept | What it is | Lives where |
 |---|---|---|
 | **Blueprint** | Methodology: research → prototype → docs → ship, with variant-aware stages and reviewer-agent gates | `METHODOLOGY.md`, `template/.claude/agents/blueprint/` |
-| **Initiative Portal** (platform-portal) | IA contract for the unified front door over a multi-audience product family | `template/apps/portal/` |
-| **Review Portal** (redesign-review-portal) | Strategy + current-state drawer + comparison-toggle shell for brownfield-audit review | `template/portal/` |
+| **Initiative Portal** (platform-portal) | Reusable front-door shell for a multi-surface product family; its former 6-verb IA is legacy-only | `template/apps/portal/` |
+| **Review Portal** (redesign-review-portal) | Reusable strategy + current-state + comparison shell for brownfield review | `template/portal/` |
 | **Shell** (Initiative Portal) | `@blueprint/ui` + `@blueprint/design-tokens` workspace packages | `template/packages/` |
 | **Shell** (Review Portal) | Static HTML + `_portal-shell.js` + `shared.css` + Cloudflare Pages Functions | `template/portal/` |
 
-Blueprint is methodology. Portal is information architecture. Shell is the component kit. There are two portals because there are two distinct audience-and-artifact shapes; each needs its own canonical shell.
+Blueprint is methodology. A presentation is an actor-specific output. A portal
+is one possible presentation, and a shell is reusable implementation substrate.
+
+## Presentation and feedback are separate decisions
+
+A portal or bespoke site can explain an initiative without capturing a single
+reader response. Conversely, a review can happen in Slack, a meeting, a native
+application, or an Atelier-style annotation harness without using either
+Blueprint portal shell.
+
+When a reader is asked to influence live work:
+
+1. declare the reader-facing artifact in `actor-output.yml`;
+2. choose the presentation that best serves that reader;
+3. author `review-contract.json` to bind the exact candidate, asks, authority,
+   capture adapter, disposition owner, and return path; and
+4. run `blueprint feedback --gate` when a closed loop is required.
+
+See
+[`template/docs/methodology/review-disposition-loop.md`](../template/docs/methodology/review-disposition-loop.md).
+Atelier validates one possible substrate boundary—identity, presence,
+annotation, transport, and queues—but Blueprint owns the portable semantic
+contract. A hosted feedback service is not required.
 
 ## Variant × Tier matrix (read this before scaffolding)
 

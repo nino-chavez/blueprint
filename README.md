@@ -26,7 +26,15 @@ npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 npx @nino-chavez-labs/blueprint-cli doctor
 ```
 
-Eight commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` · `doctor` · `hive` · `stage`. (`fleet` reports how far each project running Blueprint has fallen behind the current methodology; `hive` sets up multi-agent coordination — see the Hive note below; `stage` derives an initiative's position in the pipeline from artifacts on disk — see [ADR-0008](docs/decisions/ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md).) Pull non-breaking updates with `blueprint upgrade`; file fixes and requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Nine commands, all real: `init` · `review` · `cost` · `fleet` · `upgrade` ·
+`doctor` · `hive` · `stage` · `feedback`. (`fleet` reports how far each project
+running Blueprint has fallen behind the current methodology; `hive` sets up
+multi-agent coordination — see the Hive note below; `stage` derives an
+initiative's position in the pipeline from artifacts on disk — see
+[ADR-0008](docs/decisions/ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md);
+`feedback` validates an exact-candidate reader review through disposition and
+return.) Pull non-breaking updates with `blueprint upgrade`; file fixes and
+requests upstream via [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
@@ -46,10 +54,12 @@ The five-minute path (formerly `START-HERE.md`):
 
 Blueprint is a methodology and toolset for running product initiatives with AI assistance. You provide the context — screenshots, BRDs, codebase access, competitive intelligence. The agent does research, builds prototypes, writes strategic documents, validates claims against source code, and iterates based on stakeholder feedback.
 
-The output is a deployable site that serves three audiences simultaneously:
-- **Leadership** — strategic documents (CX strategy, roadmap, risk register)
-- **Engineering** — technical feasibility (codebase mapping, open questions, integration plans)
-- **Everyone** — interactive prototype with embedded design rationale and current-state comparison
+The output is the smallest set of artifacts the initiative's actual readers
+need. Each actor, intended outcome, and output is declared in
+`actor-output.yml`: that might be a leadership memo, engineering handoff,
+interactive prototype, native application, review site, or no portal at all.
+Blueprint standardizes the evidence and reader contract, not one presentation
+for everyone.
 
 ## How It Works
 
@@ -122,11 +132,16 @@ blueprint doctor [--target=<dir>] [--json]           # conformance/health — lo
                                                      #   + runs portal conformance (the false-green guard)
 blueprint hive setup --slug=<x> [--execute]          # stand up the team coordination substrate — dry-run
                                                      #   plan by default; --execute provisions (see the Hive note)
+blueprint stage <status|advance> [--target=<dir>]     # derive/gate pipeline state from artifacts on disk
+blueprint feedback [--target=<dir>] [--json] [--gate] # validate exact-candidate review, disposition,
+                                                      #   and return-to-reader receipts
 ```
 
 Each command is a thin front door over a dependency-free, self-tested lib under
-`template/tools/lib/` (`cost-dial`, `telemetry`, `consumers-registry`, `upgrade`,
-`reviewer-registry`, `doctor`). Reviewers are paired `.md` spec + `.mjs`
+`template/tools/lib/` (thirteen at wave 97, including `actor-output`,
+`encounter-audit`, `stage-model`, `review-loop`, and the original registry,
+cost, upgrade, doctor, derivation, recipient-safety, and telemetry cores).
+Reviewers are paired `.md` spec + `.mjs`
 executable (`template/.claude/agents/blueprint/reviewers/`); a department adds its
 own without forking by dropping `.mjs` files in `.blueprint/reviewers/` or
 publishing a `blueprint-reviewer-*` npm package — the `review()` signature is the
@@ -135,8 +150,8 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 `CODEOWNERS` + a committed `main` ruleset (`docs/governance/`).
 
 > Status: **published** — `@nino-chavez-labs/blueprint-cli` is live on npm (`npm view` for the current version; releases ship automatically from main).
-> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all eight
-> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`/`stage`) are real.
+> `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all nine
+> commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`/`stage`/`feedback`) are real.
 
 ## This repo is its own first consumer (the reference portal)
 

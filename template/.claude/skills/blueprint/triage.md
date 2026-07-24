@@ -34,7 +34,11 @@ Every piece of feedback gets exactly one category:
 | **kudos** | Positive feedback, no action required, but capture for retrospective. |
 | **market-signal** | Evidence about the stakeholder's OWN practice or problem, not about the deliverable — their hand-rolled loop, their team process, their named pain. The highest-value Mom Test class (past-specific behavior); it never gets dispositioned against the deliverable — it gets `logged` to the validation script's Log, weighted by what they gave. Promoted on the second-instance rule (two stakeholders in two days described their incumbent practice and the state machine had no honest slot). |
 
-If feedback is ambiguous between categories, ask the maintainer once. Don't guess.
+If feedback is ambiguous between categories, record the classifier uncertainty.
+Ask the maintainer only when the active review contract keeps classification
+human-owned. When `disposition.automation.classify: agent-autonomous`, choose
+the best-supported category, record the rationale, and leave application at the
+declared authority boundary.
 
 ## Commitment weight (the Mom Test axis)
 
@@ -95,11 +99,31 @@ For each piece of feedback, present a single line:
 
 Cluster related items if multiple stakeholders raised the same thing — note "(also raised by: name1, name2)".
 
-Wait for maintainer to confirm or override the recommendations before applying any state.
+Read `review-contract.json` when present:
+
+- `automation.propose: agent-autonomous` allows recommendations to be recorded
+  without waiting for the maintainer;
+- `automation.apply: human-authorized` still requires the declared owner before
+  canonical state changes;
+- `automation.apply: delegated` permits only the effects covered by
+  `delegation_ref`; and
+- no contract means legacy behavior: wait for maintainer confirmation.
+
+Self-service capture therefore removes clerical operator mediation without
+silently removing decision authority.
 
 ### Step 3 — Apply dispositions
 
-For each item, take the disposition action:
+With `review-contract.json`, write one
+`feedback/dispositions/<submission-id>.json` record per submission using
+`$BLUEPRINT_HOME/template/docs/methodology/examples/review-disposition.example.json`.
+Pin it to the same contract and candidate revision, record the declared owner,
+and type every consequence. Do not apply a consequence beyond
+`automation.apply` authority.
+
+Without a review contract, use the legacy Markdown triage record below.
+
+For each authorized item, take the disposition action:
 
 - **scoped-in** → create a task entry in the relevant section of `docs/content/` or in a `followups.md` file. Reference the feedback source.
 - **deferred** → write to `docs/content/deferred.md` with: feedback excerpt, source, rationale for deferral, suggested timing ("next initiative", "after deployment", etc.).
@@ -128,6 +152,11 @@ Triaged [N] pieces of feedback:
 
 Make scoped-in items visible in the deliverable update; make won't-fix rationale public so stakeholders see the reasoning.
 
+When the contract requires a reader return, update each disposition's
+`return_to_reader` only after sending: record `status: sent`, timestamp,
+channel, and a durable message/route receipt. Run `blueprint feedback --gate`;
+a drafted reply or timestamp without a receipt does not close the loop.
+
 ## Anti-patterns
 
 - **"We'll consider it"** — not a state. Use `deferred` with a specific timing or `wontfix` with a rationale.
@@ -139,7 +168,10 @@ Make scoped-in items visible in the deliverable update; make won't-fix rationale
 
 ## Output
 
-A triage record at `feedback/[date]-triage.md`:
+With `review-contract.json`: candidate-pinned JSON submissions and one validated
+JSON disposition per submission, including required return receipts.
+
+Legacy/no-contract: a triage record at `feedback/[date]-triage.md`:
 
 | # | Excerpt | Category | Gave | State | Disposition | Source |
 |---|---------|----------|------|-------|-------------|--------|

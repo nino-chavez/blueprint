@@ -36,6 +36,18 @@ Operator check before starting a Blueprint-touching session: `git -C $BLUEPRINT_
 
 `METHODOLOGY-AMENDMENTS.md` at the initiative root captures methodology learnings specific to this initiative — gaps you worked around, hooks you added, stages you skipped, candidates for methodology promotion. Append-only, reverse-chronological. Convention: `$BLUEPRINT_HOME/template/docs/methodology/methodology-amendments-convention.md`.
 
+## Reader review and disposition
+
+When an output asks a human or team to influence, approve, challenge, or
+evaluate live initiative work, declare `review-contract.json` per
+`$BLUEPRINT_HOME/template/docs/methodology/review-disposition-loop.md`. The
+contract pins the exact candidate, asks, authority, capture adapter,
+disposition owner, and reader-return requirement. Submissions remain untrusted
+until disposition. Run `blueprint feedback` while the loop is active and
+`blueprint feedback --gate` when closure is required. A portal is not required;
+the same contract works with a bespoke site, native product, document, meeting,
+Slack, or an external annotation substrate.
+
 ## Variant declaration (read this first)
 
 Every initiative declares a variant in `blueprint.yml`:
@@ -117,7 +129,14 @@ This table is prose documentation; the machine-readable mapping lives in the sta
 | Any user-facing surface declared ready | `encounter-audit-reviewer` (rendered copy + source map) |
 | Stage 6 ship | `prototype-smoke-runner` + `encounter-audit-reviewer` |
 
-Run exactly one of the two portal-conformance reviewers per initiative — pick by portal type (`initiative` or `review`) per `docs/portal-and-tier-ladder.md`. If the initiative's archetype fits neither type (e.g. an operator-facing process console), run neither conformance reviewer — but a divergence ADR is mandatory; its absence is the violation (see `docs/portal-and-tier-ladder.md` § "When neither portal type fits the archetype").
+Run a portal-conformance reviewer only when a declared reader output uses that
+shell: `portal-initiative-conformance-reviewer` for `apps/portal/`, or
+`portal-review-conformance-reviewer` +
+`portal-chrome-canonical-reviewer` for `portal/` / `blueprint/portal/`.
+`actor-output.yml` is the presentation authority. Bespoke presentations and
+initiatives with no portal run neither; under the actor-output contract, they
+do not need a portal-divergence ADR. Legacy `portal_type` consumers keep the
+old routing until they declare `migration: actor-output`.
 
 ## Document voice
 
@@ -164,7 +183,7 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=<absolute path to initiative root>
 ```
 
-The stamper substitutes the source-project reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + portal_type, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. Review Portal has no initial stamper yet — copy `template/portal/` and rely on `portal-review-conformance-reviewer` to catch drift at Stage 3.
+The stamper substitutes the source-project reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + portal_type, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. `--portal-type=review` stamps the Review Portal path; use its conformance reviewers to catch renderer drift at Stage 3.
 
 ## Session prompts
 

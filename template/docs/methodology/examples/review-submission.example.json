@@ -1,0 +1,14 @@
+{
+  "schema_version": "blueprint-review-submission/1",
+  "id": "review-2026-07-23-001",
+  "contract_id": "north-star-direction-review",
+  "candidate_revision": "0123456789abcdef",
+  "reader_actor": "concept-review-team",
+  "target_id": "product-direction",
+  "category": "question",
+  "body": "What happens when the generated content is rejected?",
+  "submitted_at": "2026-07-23T13:00:00Z",
+  "source": {
+    "adapter": "web-form"
+  }
+}

@@ -393,6 +393,17 @@ The `index.html` landing page should show:
 
 Feedback is a contract, not a hope: the steering loop (decisions/06) makes each channel below an explicit output — a steering-packet states the open decisions, the asks, and the reader's authority; contributions land at a declared capture destination (`feedback/`); a disposition-record shows what each contribution changed. Deploying a surface does not by itself produce feedback.
 
+When the reader is being asked to influence live work, author
+`review-contract.json` using the
+[Review and disposition loop](template/docs/methodology/review-disposition-loop.md).
+It binds the ask to an exact candidate, distinguishes self-service from
+mediated capture, treats reader input as untrusted until disposition, and
+requires a durable return-to-reader receipt. `blueprint feedback` validates the
+structure and authority boundary; `blueprint feedback --gate` refuses closure
+until the issued loop has a real submission, disposition, and required return.
+The presentation may be a portal, bespoke site, native product, document, or
+external venue—the contract does not choose the renderer.
+
 - **Stakeholder feedback on prototype** → update design decisions in strategy panel
 - **Engineering feedback on feasibility** → update technical doc + prototype scope
 - **Market feedback (Gemini, other AI review)** → audit for copy, IA, and UX issues

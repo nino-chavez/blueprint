@@ -37,6 +37,14 @@ Origin: a director-walk of a real scope aid — the reader could decide scope *i
 
 A steering-packet's success is observed-human by construction: a real contribution, recorded at the capture destination, referenced by a disposition-record. Simulated walks (persona agents) are valid *interim* grades — never upgrade them.
 
+When the reader can review independently of the operator, make that loop
+executable with `review-contract.json` per
+`docs/methodology/review-disposition-loop.md`. The steering packet remains the
+invitation; the review contract pins the candidate, adapter, submissions,
+dispositions, and return-to-reader receipt. A synchronous meeting or private
+thread may remain mediated, but the contract must say so rather than implying
+self-service capture.
+
 ## Steering ≠ clearance
 
 Inviting someone to steer does not grant internal clearance. A counterparty steering scope receives a recipient-safe packet (their facts, their decisions, named omissions); a trusted advisor may receive internal strategy. Same loop, different projections — declare each as its own output.

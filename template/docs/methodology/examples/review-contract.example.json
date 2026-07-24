@@ -1,0 +1,41 @@
+{
+  "schema_version": "blueprint-review-loop/1",
+  "id": "north-star-direction-review",
+  "status": "issued",
+  "initiative": "example-initiative",
+  "candidate": {
+    "revision": "0123456789abcdef",
+    "artifact": "https://example.test/review",
+    "issued_at": "2026-07-23T12:00:00Z"
+  },
+  "reader": {
+    "actor": "concept-review-team",
+    "outcome": "review-direction",
+    "identity": "authenticated"
+  },
+  "targets": [
+    {
+      "id": "product-direction",
+      "kind": "decision",
+      "ref": "decisions/0001-product-direction.md",
+      "ask": "Does the proposed direction solve the right problem at the right boundary?",
+      "authority": "advise"
+    }
+  ],
+  "capture": {
+    "mode": "self-service",
+    "adapter": "web-form",
+    "artifact": "/review#feedback",
+    "destination": "feedback/submissions"
+  },
+  "disposition": {
+    "owner": "product-operator",
+    "destination": "feedback/dispositions",
+    "return_to_reader": "required",
+    "automation": {
+      "classify": "agent-autonomous",
+      "propose": "agent-autonomous",
+      "apply": "human-authorized"
+    }
+  }
+}
