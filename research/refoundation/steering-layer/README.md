@@ -6,7 +6,11 @@ kernel. It does not change `template/`, the public CLI, or any consumer.
 The authored packet contains exact claims, journeys, incidents, dispositions,
 and operator touches. `blueprint-steering/0` remains valid.
 `blueprint-steering/1` adds an explicit execution route for every active human
-and decision claim. Machine work defaults to the current harness. The generated
+and decision claim. `blueprint-steering/2` adds bounded decision delegations:
+an autonomous decision route is valid only when a satisfied human authorization
+claim, decision class, effects, prohibitions, exact decision record, completed
+disposition, and exercise receipt agree. It cannot turn a human claim into
+agent evidence. Machine work defaults to the current harness. The generated
 result provides:
 
 - next actions with owner, authority, venue, artifact, capture, pause, and
@@ -58,6 +62,7 @@ execution-boundary follow-up was separately frozen in
 The original fixture-scale results are recorded in `01-results.md`; the
 headless execution follow-up is recorded in
 `03-headless-execution-results.md`; and the one-boundary-at-a-time follow-up is
-recorded in `05-actionable-frontier-results.md`. Generated files remain
-disposable; neither the results nor the evaluator are part of the stampable
-methodology.
+recorded in `05-actionable-frontier-results.md`. Version 2 is preregistered in
+the root `23-adaptive-pilot-promotion-preregistration.md`. Generated files
+remain disposable; neither the results nor the evaluator are part of the
+stampable methodology.

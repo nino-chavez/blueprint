@@ -1,0 +1,132 @@
+{
+  "schema": "blueprint-source-influence/0",
+  "initiative": "adaptive-content-holdout",
+  "as_of_revision": "pilot-complete",
+  "sources": [
+    {
+      "id": "idea-brief",
+      "role": "definition-input",
+      "locator": "attachments/idea-brief.html"
+    },
+    {
+      "id": "marketplace-reference",
+      "role": "prior-art",
+      "locator": "references/marketplace-app"
+    },
+    {
+      "id": "late-poc",
+      "role": "holdout",
+      "locator": "remote/late-poc",
+      "pinned_revision": "holdout-revision",
+      "baseline_revision": "independent-baseline",
+      "comparison_artifact": "research/prior-art/late-poc-protocol.md",
+      "status": "unsealed",
+      "unseal_condition": {
+        "artifact": "decisions/0004-local-direction.md",
+        "revision": "independent-decision"
+      },
+      "unsealed_at_revision": "unseal-boundary",
+      "contamination": {
+        "status": "disclosed",
+        "detail": "A no-checkout status command exposed path names; no content or history influenced the baseline."
+      }
+    },
+    {
+      "id": "sandbox-observation",
+      "role": "receipt-only",
+      "locator": "research/platform/sandbox-observation.md"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/charter.md",
+      "phase": "definition",
+      "kind": "charter",
+      "revision": "independent-baseline",
+      "holdout_state": "pre-unseal",
+      "citations": [
+        {
+          "source": "idea-brief",
+          "use": "definition"
+        }
+      ]
+    },
+    {
+      "path": "research/platform/marketplace-foundation.md",
+      "phase": "research",
+      "kind": "research",
+      "revision": "independent-baseline",
+      "holdout_state": "pre-unseal",
+      "citations": [
+        {
+          "source": "marketplace-reference",
+          "use": "prior-art"
+        }
+      ]
+    },
+    {
+      "path": "research/prior-art/late-poc-protocol.md",
+      "phase": "research",
+      "kind": "protocol",
+      "revision": "protocol-boundary",
+      "holdout_state": "pre-unseal",
+      "citations": []
+    },
+    {
+      "path": "decisions/0004-local-direction.md",
+      "phase": "decision",
+      "kind": "decision",
+      "revision": "independent-decision",
+      "holdout_state": "pre-unseal",
+      "citations": [
+        {
+          "source": "idea-brief",
+          "use": "definition"
+        },
+        {
+          "source": "marketplace-reference",
+          "use": "evidence"
+        }
+      ]
+    },
+    {
+      "path": "research/platform/sandbox-result.md",
+      "phase": "verification",
+      "kind": "receipt",
+      "revision": "independent-decision",
+      "holdout_state": "pre-unseal",
+      "citations": [
+        {
+          "source": "sandbox-observation",
+          "use": "receipt"
+        }
+      ]
+    },
+    {
+      "path": "research/prior-art/late-poc-post-validation.md",
+      "phase": "research",
+      "kind": "comparison",
+      "revision": "pilot-complete",
+      "holdout_state": "post-unseal",
+      "citations": [
+        {
+          "source": "late-poc",
+          "use": "comparison"
+        }
+      ]
+    },
+    {
+      "path": "decisions/0005-post-validation.md",
+      "phase": "decision",
+      "kind": "decision",
+      "revision": "pilot-complete",
+      "holdout_state": "post-unseal",
+      "citations": [
+        {
+          "source": "late-poc",
+          "use": "challenge"
+        }
+      ]
+    }
+  ]
+}

@@ -8,7 +8,11 @@ import {
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SCHEMAS = new Set(['blueprint-steering/0', 'blueprint-steering/1']);
+const SCHEMAS = new Set([
+  'blueprint-steering/0',
+  'blueprint-steering/1',
+  'blueprint-steering/2',
+]);
 const CLAIM_STATES = new Set([
   'satisfied',
   'open',
@@ -35,6 +39,20 @@ const EXECUTION_ROUTE_STRING_FIELDS = [
 ];
 const COMPLETED_DISPOSITIONS = new Set(['accepted', 'completed']);
 const ABSOLUTE_USER_PATH = /(?:\/Users\/|\/home\/|[A-Za-z]:\\Users\\)/;
+const DELEGATION_STRING_FIELDS = [
+  'delegating_actor',
+  'delegate',
+  'authorization_claim',
+  'revision',
+  'decision_record',
+  'exercise_capture',
+];
+const DELEGATION_ARRAY_FIELDS = [
+  'decision_classes',
+  'allowed_effects',
+  'prohibited_effects',
+  'escalation_triggers',
+];
 
 export class SteeringPacketError extends Error {
   constructor(errors) {
@@ -124,7 +142,7 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
   }
 
   if (!SCHEMAS.has(packet.schema)) {
-    add('"schema"', `unsupported schema ${String(packet.schema)}; expected blueprint-steering/0 or blueprint-steering/1`);
+    add('"schema"', `unsupported schema ${String(packet.schema)}; expected blueprint-steering/0, blueprint-steering/1, or blueprint-steering/2`);
   }
   for (const field of ['initiative', 'as_of', 'current_revision', 'outcome']) {
     if (typeof packet[field] !== 'string' || !packet[field].trim()) {
@@ -139,7 +157,10 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
   }
 
   const requiredArrays = ['claims', 'journeys', 'incidents', 'dispositions', 'operator_touches'];
-  if (packet.schema === 'blueprint-steering/1') requiredArrays.push('execution_routes');
+  if (['blueprint-steering/1', 'blueprint-steering/2'].includes(packet.schema)) {
+    requiredArrays.push('execution_routes');
+  }
+  if (packet.schema === 'blueprint-steering/2') requiredArrays.push('decision_delegations');
   for (const field of requiredArrays) {
     if (!Array.isArray(packet[field])) add(`"${field}"`, `${field} must be an array`);
   }
@@ -164,6 +185,9 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
   for (const id of duplicateIds(packet.operator_touches)) {
     add(`"id": "${id}"`, `duplicate operator touch id ${id}`, 2);
   }
+  for (const id of duplicateIds(packet.decision_delegations ?? [])) {
+    add(`"id": "${id}"`, `duplicate decision delegation id ${id}`, 2);
+  }
 
   const claimsById = new Map();
   for (const claim of packet.claims) {
@@ -187,6 +211,15 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
     if (!Array.isArray(claim.needs)) {
       add(`"id": "${claim.id}"`, `claim ${claim.id} needs must be an array`);
     }
+    if (packet.schema === 'blueprint-steering/2' && claim.kind === 'decision') {
+      if (typeof claim.decision_class !== 'string' || !claim.decision_class.trim()) {
+        add(`"id": "${claim.id}"`, `decision claim ${claim.id} requires decision_class`);
+      }
+      if (!Array.isArray(claim.effects) || claim.effects.length === 0
+          || claim.effects.some((effect) => typeof effect !== 'string' || !effect.trim())) {
+        add(`"id": "${claim.id}"`, `decision claim ${claim.id} effects must be a non-empty string array`);
+      }
+    }
   }
 
   for (const claim of packet.claims) {
@@ -200,7 +233,53 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
   const cycle = detectDependencyCycle(claimsById);
   if (cycle) add(`"id": "${cycle}"`, `claim dependency cycle includes ${cycle}`);
 
-  if (packet.schema === 'blueprint-steering/1') {
+  const delegationsById = new Map();
+  if (packet.schema === 'blueprint-steering/2') {
+    for (const delegation of packet.decision_delegations) {
+      if (!isObject(delegation) || typeof delegation.id !== 'string' || !delegation.id) {
+        add('"decision_delegations"', 'every decision delegation requires a non-empty id');
+        continue;
+      }
+      if (!delegationsById.has(delegation.id)) delegationsById.set(delegation.id, delegation);
+      for (const field of DELEGATION_STRING_FIELDS) {
+        if (typeof delegation[field] !== 'string' || !delegation[field].trim()) {
+          add(`"id": "${delegation.id}"`, `decision delegation ${delegation.id} requires ${field}`);
+        }
+      }
+      for (const field of DELEGATION_ARRAY_FIELDS) {
+        if (!Array.isArray(delegation[field]) || delegation[field].length === 0
+            || delegation[field].some((item) => typeof item !== 'string' || !item.trim())) {
+          add(`"id": "${delegation.id}"`, `decision delegation ${delegation.id} ${field} must be a non-empty string array`);
+        }
+      }
+      if (typeof delegation.method_recommendation_default !== 'boolean') {
+        add(`"id": "${delegation.id}"`, `decision delegation ${delegation.id} method_recommendation_default must be boolean`);
+      }
+      const authorization = claimsById.get(delegation.authorization_claim);
+      if (!authorization) {
+        add(`"authorization_claim": "${String(delegation.authorization_claim)}"`, `decision delegation ${delegation.id} references unknown authorization claim ${String(delegation.authorization_claim)}`);
+      } else {
+        if (authorization.kind !== 'human') {
+          add(`"authorization_claim": "${delegation.authorization_claim}"`, `decision delegation ${delegation.id} authorization claim ${delegation.authorization_claim} must be human`);
+        }
+        if (authorization.state !== 'satisfied') {
+          add(`"authorization_claim": "${delegation.authorization_claim}"`, `decision delegation ${delegation.id} authorization claim ${delegation.authorization_claim} must be satisfied`);
+        }
+        if (authorization.revision !== delegation.revision) {
+          add(`"authorization_claim": "${delegation.authorization_claim}"`, `decision delegation ${delegation.id} revision must match authorization claim ${delegation.authorization_claim}`);
+        }
+      }
+      const prohibited = new Set(delegation.prohibited_effects ?? []);
+      for (const effect of delegation.allowed_effects ?? []) {
+        if (prohibited.has(effect)) {
+          add(`"id": "${delegation.id}"`, `decision delegation ${delegation.id} effect ${effect} cannot be both allowed and prohibited`);
+        }
+      }
+    }
+  }
+
+  const delegatedRoutes = new Map();
+  if (['blueprint-steering/1', 'blueprint-steering/2'].includes(packet.schema)) {
     for (const claimId of duplicateValues(packet.execution_routes, 'claim')) {
       add(`"claim": "${claimId}"`, `duplicate execution route for claim ${claimId}`, 2);
     }
@@ -225,6 +304,49 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
       }
       if (typeof route.blocking !== 'boolean') {
         add(`"claim": "${route.claim}"`, `execution route ${route.claim} blocking must be boolean`);
+      }
+      if (packet.schema === 'blueprint-steering/2') {
+        const claim = claimsById.get(route.claim);
+        if (route.delegation != null && (typeof route.delegation !== 'string' || !route.delegation.trim())) {
+          add(`"claim": "${route.claim}"`, `execution route ${route.claim} delegation must be a non-empty string`);
+        }
+        if (route.mode === 'agent-autonomous' && claim?.kind === 'human') {
+          add(`"claim": "${route.claim}"`, `human claim ${route.claim} may not use an agent-autonomous route`);
+        }
+        if (route.mode === 'agent-autonomous' && claim?.kind === 'decision') {
+          const delegation = delegationsById.get(route.delegation);
+          if (!delegation) {
+            add(`"claim": "${route.claim}"`, `autonomous decision route ${route.claim} requires an authored decision delegation`);
+          } else {
+            delegatedRoutes.set(route.claim, delegation);
+            if (route.owner !== delegation.delegate) {
+              add(`"claim": "${route.claim}"`, `autonomous decision route ${route.claim} owner must match delegation ${delegation.id} delegate`);
+            }
+            if (route.blocking !== false) {
+              add(`"claim": "${route.claim}"`, `autonomous decision route ${route.claim} must be non-blocking`);
+            }
+            if (route.capture !== delegation.decision_record) {
+              add(`"claim": "${route.claim}"`, `autonomous decision route ${route.claim} capture must match delegation ${delegation.id} decision_record`);
+            }
+            if (delegation.method_recommendation_default !== true) {
+              add(`"claim": "${route.claim}"`, `decision delegation ${delegation.id} does not allow the method recommendation to become the default`);
+            }
+            if (!delegation.decision_classes?.includes(claim.decision_class)) {
+              add(`"claim": "${route.claim}"`, `decision delegation ${delegation.id} does not cover decision class ${String(claim.decision_class)}`);
+            }
+            const allowed = new Set(delegation.allowed_effects ?? []);
+            const prohibited = new Set(delegation.prohibited_effects ?? []);
+            for (const effect of claim.effects ?? []) {
+              if (prohibited.has(effect)) {
+                add(`"claim": "${route.claim}"`, `decision delegation ${delegation.id} prohibits effect ${effect}`);
+              } else if (!allowed.has(effect)) {
+                add(`"claim": "${route.claim}"`, `decision delegation ${delegation.id} does not allow effect ${effect}`);
+              }
+            }
+          }
+        } else if (route.delegation != null) {
+          add(`"claim": "${route.claim}"`, `execution route ${route.claim} may reference a delegation only for an autonomous decision claim`);
+        }
       }
     }
 
@@ -298,6 +420,43 @@ export function validatePacket(packet, { source = '', path = '<packet>' } = {}) 
     }
     if (!Array.isArray(disposition.covers_incidents)) {
       add(`"id": "${disposition.id}"`, `disposition ${disposition.id} covers_incidents must be an array`);
+    }
+    if (packet.schema === 'blueprint-steering/2' && disposition.delegation != null) {
+      const delegation = delegationsById.get(disposition.delegation);
+      const decisionClaim = claimsById.get(disposition.decision_claim);
+      if (!delegation) {
+        add(`"id": "${disposition.id}"`, `disposition ${disposition.id} references unknown decision delegation ${String(disposition.delegation)}`);
+      }
+      if (!decisionClaim || decisionClaim.kind !== 'decision') {
+        add(`"id": "${disposition.id}"`, `disposition ${disposition.id} must reference a decision claim`);
+      }
+      if (!Array.isArray(disposition.effects) || disposition.effects.length === 0) {
+        add(`"id": "${disposition.id}"`, `delegated disposition ${disposition.id} effects must be a non-empty array`);
+      } else if (decisionClaim && JSON.stringify(disposition.effects) !== JSON.stringify(decisionClaim.effects)) {
+        add(`"id": "${disposition.id}"`, `delegated disposition ${disposition.id} effects must match decision claim ${disposition.decision_claim}`);
+      }
+      if (typeof disposition.exercise_receipt !== 'string' || !disposition.exercise_receipt.trim()) {
+        add(`"id": "${disposition.id}"`, `delegated disposition ${disposition.id} requires exercise_receipt`);
+      }
+      if (delegation && disposition.exercise_receipt !== delegation.exercise_capture) {
+        add(`"id": "${disposition.id}"`, `delegated disposition ${disposition.id} exercise_receipt must match delegation ${delegation.id} exercise_capture`);
+      }
+    }
+  }
+
+  if (packet.schema === 'blueprint-steering/2') {
+    for (const [claimId, delegation] of delegatedRoutes) {
+      const claim = claimsById.get(claimId);
+      if (claim?.state !== 'satisfied') continue;
+      const exercised = packet.dispositions.find((disposition) => (
+        COMPLETED_DISPOSITIONS.has(disposition.status)
+        && disposition.delegation === delegation.id
+        && disposition.decision_claim === claimId
+        && disposition.exercise_receipt === delegation.exercise_capture
+      ));
+      if (!exercised) {
+        add(`"id": "${claimId}"`, `satisfied delegated decision ${claimId} requires a matching completed disposition and exercise receipt`);
+      }
     }
   }
 
@@ -444,6 +603,9 @@ function deriveActiveProjection(packet) {
       kind: claim.kind,
       revision: claim.revision,
       needs: claim.needs,
+      ...(claim.kind === 'decision' && claim.decision_class
+        ? { decision_class: claim.decision_class, effects: claim.effects }
+        : {}),
     })),
     history_summary: {
       total: historical.length,
@@ -678,7 +840,8 @@ function deriveNextActions(packet, recipe, claimsById, routesByClaim) {
       resume_when: route.resume_when,
       blocking: route.blocking,
       handoff_required: route.mode !== 'agent-autonomous',
-      route_source: 'authored',
+      route_source: route.delegation ? 'authored-delegation' : 'authored',
+      delegation: route.delegation ?? null,
     };
   });
 }
@@ -698,7 +861,9 @@ export function evaluatePacket(packet, context = {}) {
   const longitudinal = deriveLongitudinal(packet, clusters, touchBudget);
 
   return {
-    schema: 'blueprint-steering-result/1',
+    schema: packet.schema === 'blueprint-steering/2'
+      ? 'blueprint-steering-result/2'
+      : 'blueprint-steering-result/1',
     packet_schema: packet.schema,
     initiative: packet.initiative,
     as_of: packet.as_of,
@@ -770,6 +935,7 @@ export function resultMarkdown(result) {
         `- Capture: ${action.capture}`,
         `- Resume when: ${action.resume_when}`,
         `- Route source: \`${action.route_source}\``,
+        ...(action.delegation ? [`- Delegation: \`${action.delegation}\``] : []),
         '',
       );
     }

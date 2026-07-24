@@ -1,0 +1,134 @@
+{
+  "schema": "blueprint-steering/2",
+  "initiative": "delegated-local-decision",
+  "as_of": "2026-07-23T23:30:00Z",
+  "current_revision": "decision-boundary",
+  "outcome": "The initiative records one evidence-backed reversible local disposition.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "local-evidence-ready",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "evidence-boundary",
+      "needs": []
+    },
+    {
+      "id": "operator-delegates-local-disposition",
+      "state": "satisfied",
+      "kind": "human",
+      "active": true,
+      "revision": "decision-boundary",
+      "needs": ["local-evidence-ready"]
+    },
+    {
+      "id": "operator-accepts-product-thesis",
+      "state": "open",
+      "kind": "human",
+      "active": false,
+      "revision": "evidence-boundary",
+      "needs": ["local-evidence-ready"]
+    },
+    {
+      "id": "local-product-disposition",
+      "state": "open",
+      "kind": "decision",
+      "active": true,
+      "revision": "decision-boundary",
+      "needs": ["operator-delegates-local-disposition"],
+      "decision_class": "reversible-local-product-direction",
+      "effects": [
+        "record-local-decision",
+        "revise-local-plan"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "local-build-decision",
+      "outcome_claim": "local-product-disposition",
+      "steps": [
+        "local-evidence-ready",
+        "operator-delegates-local-disposition",
+        "local-product-disposition"
+      ],
+      "human_claims": ["operator-delegates-local-disposition"],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [
+    {
+      "id": "bounded-delegation",
+      "journey": "local-build-decision",
+      "purpose": "delegate-one-reversible-local-disposition",
+      "required_claim": "operator-delegates-local-disposition",
+      "result": "satisfied"
+    }
+  ],
+  "execution_routes": [
+    {
+      "claim": "operator-delegates-local-disposition",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "delegate one reversible local product direction",
+      "venue": "current task",
+      "action": "State the bounded delegation and retain external authority.",
+      "artifact": "docs/local-disposition-brief.md",
+      "capture": "research/steering/delegation.md",
+      "resume_when": "the delegation is captured at the exact evidence boundary",
+      "blocking": true
+    },
+    {
+      "claim": "local-product-disposition",
+      "mode": "agent-autonomous",
+      "owner": "blueprint-agent",
+      "authority": "delegation local-disposition",
+      "venue": "current-harness",
+      "action": "Select and record the evidence-backed reversible local direction.",
+      "artifact": "docs/local-disposition-brief.md",
+      "capture": "decisions/local-product-disposition.md",
+      "resume_when": "the decision and delegation exercise receipt are committed",
+      "blocking": false,
+      "delegation": "local-disposition"
+    }
+  ],
+  "decision_delegations": [
+    {
+      "id": "local-disposition",
+      "delegating_actor": "operator",
+      "delegate": "blueprint-agent",
+      "authorization_claim": "operator-delegates-local-disposition",
+      "revision": "decision-boundary",
+      "decision_classes": ["reversible-local-product-direction"],
+      "allowed_effects": [
+        "record-local-decision",
+        "revise-local-plan"
+      ],
+      "prohibited_effects": [
+        "mutate-external-system",
+        "use-credentials",
+        "spend-money",
+        "expand-charter"
+      ],
+      "escalation_triggers": [
+        "external-state-change",
+        "credential-use",
+        "material-scope-expansion",
+        "irreversible-effect"
+      ],
+      "method_recommendation_default": true,
+      "decision_record": "decisions/local-product-disposition.md",
+      "exercise_capture": "research/steering/local-disposition-receipt.md"
+    }
+  ],
+  "source_metrics": {
+    "baseline_lines": 120,
+    "current_lines": 150,
+    "decision_count": 1
+  }
+}
