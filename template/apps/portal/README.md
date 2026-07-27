@@ -50,7 +50,7 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --display-name="<Project Display Name>" \
   --repo-url=https://github.com/<owner>/<repo> \
   --tagline="<one-line tagline>" \
-  --variant=greenfield|midstream|brownfield|research \
+  --variant=greenfield|midstream|brownfield \
   --tier=1|2 \
   --pattern=A \
   --target=<absolute path to initiative root>

@@ -86,7 +86,7 @@ decision memo and evidence tree; it does not require a portal.
 | **Greenfield** | ≤ 1 week pre-decision exploration only | **Default starting tier** for new initiatives | When a real product surface ships from day one |
 | **Midstream**  | Not applicable — the product already exists | When the portal is the only mid-build artifact | Default — product exists, portal is the front door |
 | **Brownfield** | Doc-only audit, no portal needed | Default for redesign-review work | When the audit ships a new product surface alongside |
-| **Research** | **Default — evidence tree + decision memo, no portal required** | Optional reader surface justified by a real reader job | Only when the research also ships product surfaces |
+| **Research** | **Default — evidence tree + decision memo, no portal required** | Optional reader surface added separately for a real reader job; initial stamp remains portal-free | **Blocked — choose the product variant that owns the shipping surface** |
 
 Read the table this way: pick the variant first (decision tree in `docs/variant-selection.md`), then pick the tier (the bolded cell unless you have a reason to deviate). A greenfield initiative at Tier 0 is for ≤ 1 week of pre-decision exploration before committing to a portal — beyond that the deliberation belongs in `decisions/` ADRs, not in tier-0 scratch.
 

@@ -1254,6 +1254,12 @@ async function main() {
   if (portalType !== "initiative" && portalType !== "review" && portalType !== "bespoke") {
     fail(`--portal-type must be initiative, review, or bespoke; got ${portalType}`);
   }
+  if (variant === "research" && (args["portal-type"] || args["pattern"])) {
+    fail(
+      `research initial stamps are portal-free; omit --portal-type/--pattern and ` +
+      `add any justified reader surface separately after the research scaffold exists`
+    );
+  }
   if (portalType === "review") {
     // AMENDMENT 1 (2026-06-27): Pattern B initial stamp now implemented.
     // Wave 85 (ai-enablement consumer, 9 defects): the outer Pattern A
@@ -1308,7 +1314,8 @@ async function main() {
   const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
   const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
 
-  console.log(`blueprint-init: stamping Initiative Portal scaffold into ${target}${targetStat ? "" : " (created)"}`);
+  const scaffoldLabel = variant === "research" ? "research decision/evidence" : "Initiative Portal";
+  console.log(`blueprint-init: stamping ${scaffoldLabel} scaffold into ${target}${targetStat ? "" : " (created)"}`);
   console.log(`  variant=${variant} tier=${tier} (${VARIANT_TIER_MATRIX[variant][tier]})`);
   console.log(`  name=${name} display-name="${displayName}"`);
   console.log(`  repo-url=${repoUrl}`);

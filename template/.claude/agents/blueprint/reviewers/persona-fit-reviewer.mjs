@@ -53,10 +53,18 @@ function outcomeCoverage(memoText, jobIndex) {
   );
   const coveredSlugs = new Set();
   for (const line of (memoText || '').split('\n')) {
-    if (/<sub\b/i.test(line) || /\btraceability\b/i.test(line)) continue;
     const trimmed = line.trim();
     const rowOrBullet = /^\|.*\|$/.test(trimmed) || /^(?:[-*]|\d+\.)\s+/.test(trimmed);
     if (!rowOrBullet) continue;
+    // A labeled index note is metadata, not a reader outcome. Keep this
+    // exclusion narrow: ordinary outcome prose may legitimately use the word
+    // "traceability" (for example, "Can inspect evidence traceability").
+    const unlabeled = trimmed
+      .replace(/^(?:[-*]|\d+\.)\s+/, '')
+      .replace(/^\|\s*/, '')
+      .replace(/^<sub>\s*/i, '')
+      .replace(/^[*_`]+/, '');
+    if (/^traceability[*_`]*\s*(?::|\|)/i.test(unlabeled)) continue;
     const refs = servesRefs(line);
     if (refs.size === 0) continue;
     const prose = line
@@ -179,11 +187,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   await mk('blueprint.yml', 'variant: research # direct-review regression\n');
   await mk('research/personas-and-jtbd.md', '### Leadership (`exec`)\n- **Source:** S1\n- **JOB-1:** When …, I need …\n  - **Acceptance:** sees X\n');
   await mk('decisions/0001-x.md', '**serves:** `exec/JOB-1`\n# ADR-0001\n');
-  const goodMemo = '# Memo\nserves: `exec/JOB-1`\n## What changes for each of you\n| Who | What you can do | Trace |\n|---|---|---|\n| Leadership | Can approve the recommendation with its evidence open | `exec/JOB-1` |\n';
+  const goodMemo = '# Memo\nserves: `exec/JOB-1`\n## What changes for each of you\n| Who | What you can do | Trace |\n|---|---|---|\n| Leadership | Can inspect <sub>evidence</sub> traceability before approval | `exec/JOB-1` |\n';
   await mk('docs/decision-memo.md', goodMemo);
   const ok = await review({ targetDir: tmp });
   await mk('docs/decision-memo.md', '# Memo\nserves: `exec/JOB-1`\n## What each persona can do\n<sub>Traceability: exec/JOB-1</sub>\n');
   const literalOnly = await review({ targetDir: tmp });
+  await mk('docs/decision-memo.md', '# Memo\nserves: `exec/JOB-1`\n## What changes for each of you\n- Traceability: this memo maps directly to `exec/JOB-1`\n');
+  const traceabilityOnly = await review({ targetDir: tmp });
   await mk('docs/decision-memo.md', goodMemo);
   await mk('decisions/0002-bad.md', '# ADR-0002 no serves tag\n');
   const bad = await review({ targetDir: tmp });
@@ -191,7 +201,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const pass = ok.status === 'PASS'
     && literalOnly.status === 'BLOCKED'
     && literalOnly.findings.some((finding) => finding.message.includes('OUTCOME_UNSTATED'))
+    && traceabilityOnly.status === 'BLOCKED'
+    && traceabilityOnly.findings.some((finding) => finding.message.includes('OUTCOME_UNSTATED'))
     && bad.status === 'BLOCKED';
-  console.log(`persona-fit-reviewer self-test: ${pass ? 'PASS' : 'FAIL'} (reader-language=${ok.status}, literal-only=${literalOnly.status}, unanchored=${bad.status})`);
+  console.log(`persona-fit-reviewer self-test: ${pass ? 'PASS' : 'FAIL'} (reader-language=${ok.status}, literal-only=${literalOnly.status}, traceability-only=${traceabilityOnly.status}, unanchored=${bad.status})`);
   process.exit(pass ? 0 : 1);
 }

@@ -13,6 +13,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { readTopLevelYamlScalar } from './yaml-scalar.mjs';
 
 const libUrl = (home, name) => pathToFileURL(join(home, 'template', 'tools', 'lib', name)).href;
 
@@ -67,15 +68,15 @@ export async function runDoctor({ home, targetDir }) {
     try {
       const { readFileSync } = await import('node:fs');
       const text = readFileSync(ymlPath, 'utf8');
-      const m = /^\s*tier:\s*([0-9]+)/m.exec(text);
-      tier = m ? Number(m[1]) : null;
+      const tierValue = readTopLevelYamlScalar(text, 'tier');
+      tier = tierValue != null && /^[0-9]+$/.test(tierValue) ? Number(tierValue) : null;
       // Read portal_type (canonical, wave 72) with portal_pattern as deprecated fallback.
-      const ptNew = /^\s*portal_type:\s*(\w+)/m.exec(text);
-      const ptLegacy = /^\s*portal_pattern:\s*(\w+)/m.exec(text);
+      const ptNew = readTopLevelYamlScalar(text, 'portal_type');
+      const ptLegacy = readTopLevelYamlScalar(text, 'portal_pattern');
       if (ptNew) {
-        portalPattern = ptNew[1].toLowerCase();
+        portalPattern = ptNew.toLowerCase();
       } else if (ptLegacy) {
-        portalPattern = ptLegacy[1].toLowerCase();
+        portalPattern = ptLegacy.toLowerCase();
         // Map legacy A/B values to new names for internal use
         if (portalPattern === 'a') portalPattern = 'initiative';
         else if (portalPattern === 'b') portalPattern = 'review';
@@ -101,8 +102,9 @@ export async function runDoctor({ home, targetDir }) {
     if (existsSync(manifestPath)) {
       let ymlText = '';
       try { ymlText = hasYml ? readFileSync(ymlPath, 'utf8') : ''; } catch { /* unreadable already reported by check 2 */ }
-      const hasLegacyKey = /^\s*portal_(type|pattern):/m.test(ymlText);
-      const migrationMode = /^migration:\s*actor-output\b/m.test(ymlText);
+      const hasLegacyKey = readTopLevelYamlScalar(ymlText, 'portal_type') != null
+        || readTopLevelYamlScalar(ymlText, 'portal_pattern') != null;
+      const migrationMode = readTopLevelYamlScalar(ymlText, 'migration') === 'actor-output';
       if (hasLegacyKey && !migrationMode) {
         add('actor-output-routing', 'fail', 'both actor-output.yml and blueprint.yml portal_type declared with no `migration: actor-output` mode — ambiguous authority (decisions/05)', 'add `migration: actor-output` to blueprint.yml while converting, or remove one declaration');
       } else {
@@ -522,6 +524,42 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(Array.isArray(r2.notChecked) && r2.notChecked.length === 2, 'reports its not-checked boundary');
   assert(['pass', 'warn'].includes(r2.status), 'real home is healthy (pass/warn)');
 
+  // All runtime scalar consumers must agree on column-zero, quote-aware
+  // parsing. A nested lookalike cannot route the initiative.
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const scalarFixture = fs.mkdtempSync(path.join(os.tmpdir(), 'blueprint-doctor-scalar-'));
+  fs.writeFileSync(path.join(scalarFixture, 'actor-output.yml'), 'actors: []\noutputs: []\n');
+  fs.writeFileSync(
+    path.join(scalarFixture, 'blueprint.yml'),
+    'nested:\n  tier: 2\n  portal_type: review\ntier: "1" # direct-review regression\nportal_type: "bespoke" # quoted scalar\n',
+  );
+  const scalarReport = await runDoctor({ home, targetDir: scalarFixture });
+  assert(
+    scalarReport.checks.find((c) => c.name === 'blueprint-yml')?.detail === 'tier 1',
+    'doctor reads quoted/commented top-level tier and ignores nested lookalike',
+  );
+  fs.writeFileSync(path.join(scalarFixture, 'blueprint.yml'), 'nested:\n  tier: 2\n  portal_type: review\n');
+  const nestedOnlyReport = await runDoctor({ home, targetDir: scalarFixture });
+  assert(
+    /no `tier:` declared/.test(nestedOnlyReport.checks.find((c) => c.name === 'blueprint-yml')?.detail ?? ''),
+    'doctor rejects nested-only tier',
+  );
+  assert(
+    !/ambiguous authority/.test(nestedOnlyReport.checks.find((c) => c.name === 'actor-output-routing')?.detail ?? ''),
+    'doctor ignores nested-only portal key for actor-output routing',
+  );
+  fs.writeFileSync(
+    path.join(scalarFixture, 'blueprint.yml'),
+    'tier: 1\nportal_type: "review" # legacy chrome\nmigration: "actor-output" # explicit shim\n',
+  );
+  const migrationReport = await runDoctor({ home, targetDir: scalarFixture });
+  assert(
+    /portal_type shim present/.test(migrationReport.checks.find((c) => c.name === 'actor-output-routing')?.detail ?? ''),
+    'doctor reads quoted/commented top-level actor-output migration mode',
+  );
+  fs.rmSync(scalarFixture, { recursive: true, force: true });
+
   // Actor-output routing (decisions/05): the self-app declares the manifest +
   // migration mode, so the route engages, the manifest reports (PENDING = warn,
   // never green), and legacy portal conformance is a VISIBLE skip.
@@ -533,8 +571,6 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   // Review-loop route is optional, then authoritative once declared. Keep the
   // fixture local to this lib so the published package's self-test does not
   // depend on source-only research/.
-  const fs = await import('node:fs');
-  const os = await import('node:os');
   const reviewFixture = fs.mkdtempSync(path.join(os.tmpdir(), 'blueprint-doctor-review-'));
   fs.mkdirSync(path.join(reviewFixture, 'feedback', 'submissions'), { recursive: true });
   fs.mkdirSync(path.join(reviewFixture, 'feedback', 'dispositions'), { recursive: true });
@@ -618,5 +654,5 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(ready.checks.find((c) => c.name === 'review-loop')?.status === 'warn', 'unissued review loop reports doctor warn');
   fs.rmSync(reviewFixture, { recursive: true, force: true });
 
-  console.log('doctor self-test: PASS (13 assertions)');
+  console.log('doctor self-test: PASS (17 assertions)');
 }
