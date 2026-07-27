@@ -6,7 +6,7 @@
  * build order (ADR-0001 dual-protocol distribution, ADR-0007 toolchain). Kept
  * dependency-free (hand-rolled arg parsing; commander is the named escalation if
  * the surface grows). Subcommands:
- *   init     scaffold a Pattern A/B portal (delegates to the canonical stamper)
+ *   init     scaffold a product portal or research evidence tree
  *   review   run an executable reviewer against a target   (real — step 3, ADR-0002/0006)
  *   cost     per-stage effort/model config + telemetry sweep (real — step 5, ADR-0003)
  *   fleet    classify consumer drift from consumers.yml     (real — step 7, ADR-0005)
@@ -45,7 +45,7 @@ const HELP = `blueprint v${VERSION} — Blueprint methodology CLI
 Usage: blueprint <command> [options]
 
 Commands:
-  init       Scaffold a new Blueprint portal (Pattern A or B)
+  init       Scaffold a new product portal or research evidence tree
   review     Run an executable reviewer against a target  (blueprint review <name> [--target=<dir>] [--json])
              discovers canonical + org reviewers (ADR-0006); blueprint review --list enumerates them
   cost       Per-stage effort/model config + telemetry    (blueprint cost [--target=<dir>] [--json])

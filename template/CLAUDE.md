@@ -183,7 +183,14 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=<absolute path to initiative root>
 ```
 
-The stamper substitutes the source-project reference strings, renames the logo, writes a `blueprint.yml` with variant + tier + portal_type, validates against the Variant × Tier matrix in `docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit code if any unexpected source strings remain. See `template/tools/blueprint-init/README.md` for the full contract. `--portal-type=review` stamps the Review Portal path; use its conformance reviewers to catch renderer drift at Stage 3.
+The stamper substitutes the source-project reference strings, writes a
+variant-shaped `blueprint.yml`, validates against the Variant × Tier matrix in
+`docs/portal-and-tier-ladder.md`, and runs a post-stamp grep that fails the exit
+code if any unexpected source strings remain. Product variants also rename the
+logo and declare `portal_type`; research writes the memo/evidence shape and no
+portal block. See `template/tools/blueprint-init/README.md` for the full
+contract. `--portal-type=review` stamps the Review Portal path; use its
+conformance reviewers to catch renderer drift at Stage 3.
 
 ## Session prompts
 
