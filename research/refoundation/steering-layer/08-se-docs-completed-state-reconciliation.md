@@ -67,6 +67,13 @@ The final state therefore proves neither a sponsor outcome nor prospective
 steering benefit. It supplies exact artifact and history evidence for a
 completed re-charter and for the non-overwriting transition defect.
 
+The integrated K1 specimen's supporting receipt is a new, read-only Blueprint
+inspection of exact Git object `eac9ff6`, completed at
+`2026-07-27T22:14:51Z`. It is not represented as a historical consumer receipt,
+a sponsor receipt, or prospective validation. The earlier pilot specimen
+timestamp preceded the source commit and is superseded by this auditable
+follow-up observation.
+
 ## Reconciled findings
 
 | Finding | Completed-state evidence | Disposition |
@@ -103,16 +110,22 @@ must include:
 
 1. the governed outcome choices and starting claims in reader-compatible
    language;
-2. exact source roles, journey/revision identity, expected recipe transitions,
-   and the authority route for ambiguity or changed intent;
-3. an operator-touch budget, incident-cluster and stop thresholds, an explicit
-   cleanup inventory, a rollback boundary, and a support owner;
+2. journey/revision identity, expected recipe transitions, and the authority
+   route for ambiguity or changed intent;
+3. an operator-touch budget, incident-cluster and stop thresholds, a rollback
+   boundary for the opt-in research contract, and a support owner;
 4. a cold author/interpreter who is not the methodology creator;
 5. a declared comparison showing whether the selected recipe improved the real
-   work sequence, avoided irrelevant work, preserved authored artifacts, and
-   kept revision history legible; and
+   work sequence, avoided irrelevant work, and kept revision history legible;
+   and
 6. an actual operator/reader encounter whose receipt remains distinct from
    mechanical or synthetic evidence.
+
+Source roles are required only if that pilot also opts into the separate
+source-influence/holdout experiment. Cleanup inventories and authored-artifact
+preservation are required only if it also exercises the separately
+preregistered variant-transition capability. Neither contract becomes
+universal charter-first ceremony.
 
 Passing that pilot would trigger a fresh promotion decision; it would not
 automatically publish charter-first intake, steering, or native semantics.
@@ -127,6 +140,19 @@ compatibility, and exercised public support/rollback behavior.
 - no SE Docs-specific variant;
 - no portal requirement; and
 - no model allowlist.
+
+## Integrated verification
+
+- current version-2 steering suite: 163/163 assertions;
+- K1 research suite: 19/19 expected verdicts, including the exact SE Docs
+  re-charter specimen;
+- source-influence preservation suite: 26/26 assertions;
+- current Blueprint core and stamp smoke: pass; and
+- root-research diff and whitespace checks: pass.
+
+The 148/148 count in `07-se-docs-session-pilot-results.md` remains the exact
+historical result on the older pilot branch. It is not the current integrated
+version-2 suite count.
 
 ## Support and rollback
 

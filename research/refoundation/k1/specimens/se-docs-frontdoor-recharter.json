@@ -1,6 +1,6 @@
 {
   "initiative": "se-docs-frontdoor-recharter",
-  "as_of": "2026-07-27T20:47:59Z",
+  "as_of": "2026-07-27T22:14:51Z",
   "current_charter_revision": 2,
   "charters": [
     {
@@ -226,7 +226,7 @@
       "id": "problem-statement-eac9ff6",
       "claim": "current-problem-frame-authored",
       "result": "supports",
-      "observation": "Commit eac9ff6 adds a canonical problem statement derived from both input assets and explicitly supersedes the retrieval-first frame.",
+      "observation": "During the Blueprint follow-up audit, exact Git object eac9ff6 was inspected read-only. It contains a canonical problem statement derived from both input assets and explicitly supersedes the retrieval-first frame.",
       "object": "artifact-content",
       "oracle": {
         "method": "commit-content-inspection",
@@ -240,8 +240,8 @@
         "problem_model": "knowledge-production-and-access"
       },
       "source_version": "eac9ff6",
-      "observed_at": "2026-07-27T19:00:00Z",
-      "source": "SE Docs Front Door commit eac9ff6"
+      "observed_at": "2026-07-27T22:14:51Z",
+      "source": "Blueprint follow-up read-only git inspection of SE Docs Front Door commit eac9ff6"
     }
   ],
   "dispositions": [
