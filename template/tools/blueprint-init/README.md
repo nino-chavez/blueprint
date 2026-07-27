@@ -4,7 +4,12 @@ canonical: true
 
 # `blueprint-init` — stamper for new Blueprint initiatives
 
-Mechanically-checkable scaffold for a Tier 1 Blueprint portal. Replaces the previous "copy `template/apps/portal/` and remember to de-bc-ize" pattern that left `blueprint-example` strings embedded in 6+ files (historical context: [`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../docs/_archive/handoffs/HANDOFF-debcization.md)).
+Mechanically-checkable scaffold for a Blueprint initiative: an Initiative or
+Review Portal for product variants, or the memo-centered evidence tree for the
+research variant. Replaces the previous "copy `template/apps/portal/` and
+remember to de-bc-ize" pattern that left `blueprint-example` strings embedded
+in 6+ files (historical context:
+[`docs/_archive/handoffs/HANDOFF-debcization.md`](../../../docs/_archive/handoffs/HANDOFF-debcization.md)).
 
 **The reason for a stamper, not a copier**: a stamper is mechanically checkable. After running, `grep -rl '<source-project-slug>' <target>/` returns only the substantive content files the operator chose to keep — never package metadata, footer brand, or repo URLs. A copier requires self-attestation ("did I get all the strings?"), which is the failure mode this tool exists to remove.
 
@@ -14,7 +19,7 @@ The stamper has two modes, dispatched by `--mode=<mode>` (default `stamp`).
 
 | Mode | What it does | When to use |
 |---|---|---|
-| `stamp` *(default)* | Initial scaffold. Copies `template/apps/portal/` + `template/packages/` (Pattern A) or `template/portal/` (Pattern B) into a fresh `<target>`, runs substitutions, writes `blueprint.yml`, executes the mechanical check. | Once, per new Blueprint initiative. |
+| `stamp` *(default)* | Initial scaffold. Copies `template/apps/portal/` + `template/packages/` (Pattern A), `template/portal/` (Pattern B), or the research templates (research variant) into a fresh `<target>`; writes `blueprint.yml` and executes the mechanical check. | Once, per new Blueprint initiative. |
 | `restamp-chrome` | Re-stamp canonical chrome files only. Overwrites the canonical chrome surface in `<target>` from `template/portal/` (Pattern B) or `template/apps/portal` styles (Pattern A — not yet implemented). Leaves project-owned files (`project-tokens.css`, `_meta/*`, `pages/*`, `index.html`) untouched. When `--accept-overwrite` is specified, treats it as scope (overwrite only those files) instead of consent (block if any diverge). | Any time the methodology bumps the chrome and a consumer needs to catch up. Run instead of `curl`-ing a peer consumer's deployed CSS. |
 
 ## Usage — initial stamp (Pattern A)
@@ -41,6 +46,38 @@ node template/tools/blueprint-init/stamp.mjs \
   --pattern=A \
   --target=/path/to/your/project
 ```
+
+## Usage — research variant
+
+Research scaffolds the decision-memo pipeline and deliberately omits a portal.
+Use this only for a new target; changing an authored initiative's variant is a
+migration, not another initial stamp.
+
+```bash
+node template/tools/blueprint-init/stamp.mjs \
+  --mode=stamp \
+  --name=my-research-initiative \
+  --variant=research \
+  --tier=0 \
+  --target=/path/to/new/initiative
+```
+
+The resulting tree includes:
+
+```text
+research/
+  sources/README.md
+  personas-and-jtbd.md
+  problem-space/
+  competitive/
+  prior-art/
+decisions/_TEMPLATE.md
+docs/decision-memo.md
+tools/run-reviewers.mjs
+```
+
+It does not create `apps/portal/` or `packages/`. A later presentation can
+render the memo, but research does not require a portal.
 
 ## Usage — initial stamp (Pattern B)
 
@@ -185,7 +222,7 @@ Not yet implemented. The Pattern A canonical chrome surface spans `template/pack
 | `--display-name` | default: title-cased `--name` | — | Human-facing brand string. |
 | `--repo-url` | default: `https://github.com/your-org/<name>` placeholder | — | Full GitHub URL. |
 | `--tagline` | default: `"<Display Name> — a Blueprint initiative"` | — | Footer tagline. |
-| `--variant` | default `greenfield` | — | `greenfield` \| `midstream` \| `brownfield`. |
+| `--variant` | default `greenfield` | — | `greenfield` \| `midstream` \| `brownfield` \| `research`. |
 | `--tier` | default `1` | — | `0` \| `1` \| `2`. Validated against Variant × Tier matrix. |
 | `--logo` | no | — | Path to PNG for `public/project-logo.png`. |
 | `--dry-run` | no | no | Print what would be written, don't write. |
@@ -193,7 +230,7 @@ Not yet implemented. The Pattern A canonical chrome surface spans `template/pack
 Every default the stamp applies is echoed on a `defaulted:` line in the run
 header, so a scaffold never carries a value the operator didn't see.
 
-## What the stamper writes (Pattern A)
+## What the stamper writes (Pattern A product variants)
 
 ```
 <target>/

@@ -29,7 +29,7 @@ The universal on-ramp. In order:
 
 1. **The live portal** — [blueprint.ninochavez.co](https://blueprint.ninochavez.co): what Blueprint is and what it produces, in the product's own front door. The only surface that answers "should we use this?" in under 5 minutes.
 2. **[`README.md`](../README.md)** — the team-evaluation path (§ "Evaluating Blueprint for your team?", folded from the former START-HERE), quickstart, command table, design principles.
-3. **[`docs/variant-selection.md`](variant-selection.md)** — greenfield / midstream / brownfield decision tree, with the stage pipeline shape per variant. "Which variant are we?" gates every downstream decision; pick wrong and the retrofit costs a restart.
+3. **[`docs/variant-selection.md`](variant-selection.md)** — greenfield / midstream / brownfield / research decision tree, with the stage pipeline shape per variant. "Which variant are we?" gates every downstream decision; a later change requires an explicit, preservation-first transition.
 
 After step 3, jump to your role's read-first set under [By role](#by-role).
 
@@ -48,7 +48,7 @@ Decision trees, setup, integration recipes, and actionable patterns.
 
 | Doc | What it does |
 |---|---|
-| [`docs/variant-selection.md`](variant-selection.md) | greenfield / midstream / brownfield decision tree + per-variant pipeline shapes |
+| [`docs/variant-selection.md`](variant-selection.md) | greenfield / midstream / brownfield / research decision tree + per-variant pipeline shapes |
 | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | The one routing question (4-bucket taxonomy); RFC vs plain PR; PR checklist |
 | [`template/docs/methodology/methodology-amendments-convention.md`](../template/docs/methodology/methodology-amendments-convention.md) | How to record a promotable amendment in `METHODOLOGY-AMENDMENTS.md` |
 | [`docs/context/browser-legibility.md`](context/browser-legibility.md) | Stage 0 sensor setup + Chrome DevTools escalation triggers |

@@ -47,6 +47,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'prescription-jtbd-traceability-reviewer';
 
@@ -310,13 +311,6 @@ function assignItemField(item, key, rawVal, setPendingList, ind) {
   item[key] = unquote(val);
 }
 
-// ── blueprint.yml shallow scalar reads (no yaml dep) ─────────────────────────
-function topScalar(ymlText, key) {
-  const re = new RegExp(`^${key}:\\s*(.+)$`, 'm');
-  const m = re.exec(ymlText || '');
-  return m ? unquote(stripComment(m[1]).trim()) : null;
-}
-
 export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
@@ -330,12 +324,12 @@ export default async function review({ targetDir, blueprintYml }) {
         severity: 'BLOCK',
         location: 'blueprint.yml',
         message: 'Cannot read blueprint.yml — variant is undeterminable, so the JTBD-trace gate cannot scope itself.',
-        remediation: 'Ensure blueprint.yml exists at the initiative root with a `variant:` field (greenfield | midstream | brownfield).',
+        remediation: 'Ensure blueprint.yml exists at the initiative root with a `variant:` field (greenfield | midstream | brownfield | research).',
         reference: 'docs/variant-selection.md',
       });
       return finalize(findings, 'blueprint.yml unreadable', startedAt);
     }
-    variant = topScalar(ymlText, 'variant');
+    variant = readTopLevelYamlScalar(ymlText, 'variant');
   }
   variant = (variant || '').toLowerCase();
 

@@ -87,7 +87,7 @@ Docs:    The variant declaration constrains which stages apply.
          before prescription; greenfield initiatives skip it.
 Portal:  Audit-gap 2 closed via the theme registry.
 Error:   blueprint.yml missing required field 'variant'.
-         Fix: add 'variant: greenfield | midstream | brownfield'.
+         Fix: add 'variant: greenfield | midstream | brownfield | research'.
 Success: Stamp complete. 8 files written. 0 conflicts.
 ```
 

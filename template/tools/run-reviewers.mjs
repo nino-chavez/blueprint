@@ -24,6 +24,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { readTopLevelYamlScalar } from './lib/yaml-scalar.mjs';
 
 const targetDir = process.cwd();
 const reviewersDir = path.join(targetDir, '.claude', 'agents', 'blueprint', 'reviewers');
@@ -52,16 +53,10 @@ async function listFiles(dir, ext) {
     return [];
   }
 }
-function yamlScalar(t, k) {
-  if (!t) return null;
-  const m = new RegExp(`^${k}:\\s*(.+)$`, 'm').exec(t);
-  return m ? m[1].trim().replace(/^["']|["']$/g, '') : null;
-}
-
 const ymlText = await fs.readFile(path.join(targetDir, 'blueprint.yml'), 'utf8').catch(() => null);
-const variant = yamlScalar(ymlText, 'variant') || 'greenfield';
+const variant = readTopLevelYamlScalar(ymlText, 'variant') || 'greenfield';
 // Parsed scalars reviewers expect from the harness (some key their scope on tier/variant).
-const blueprintYml = { variant, tier: yamlScalar(ymlText, 'tier') };
+const blueprintYml = { variant, tier: readTopLevelYamlScalar(ymlText, 'tier') };
 
 const mjsFiles = await listFiles(reviewersDir, '.mjs');
 const mdFiles = await listFiles(reviewersDir, '.md');

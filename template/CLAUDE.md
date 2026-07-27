@@ -53,7 +53,7 @@ Slack, or an external annotation substrate.
 Every initiative declares a variant in `blueprint.yml`:
 
 ```yaml
-variant: greenfield   # or: midstream | brownfield
+variant: greenfield   # or: midstream | brownfield | research
 ```
 
 Canonical taxonomy: `$BLUEPRINT_HOME/docs/variant-selection.md` — pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Pick the variant before Stage 0 runs.
@@ -71,7 +71,7 @@ Canonical taxonomy: `$BLUEPRINT_HOME/docs/variant-selection.md` — pattern-matc
 
 ## Pipeline
 
-Pipeline shape depends on the variant. The greenfield variant is the canonical reference; midstream and brownfield diverge per `docs/variant-selection.md`.
+Pipeline shape depends on the variant. The greenfield variant is the canonical product-build reference; midstream, brownfield, and research diverge per `docs/variant-selection.md`.
 
 ```
 [Stage 0: Application Legibility] → /blueprint-research → /blueprint-prototype → /blueprint-docs → /blueprint-validate → /blueprint-deploy → /blueprint-triage
@@ -177,7 +177,7 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --display-name="<Project Display Name>" \
   --repo-url=https://github.com/<owner>/<repo> \
   --tagline="<one-line tagline>" \
-  --variant=greenfield|midstream|brownfield \
+  --variant=greenfield|midstream|brownfield|research \
   --tier=0|1|2 \
   --portal-type=initiative|review|bespoke \
   --target=<absolute path to initiative root>

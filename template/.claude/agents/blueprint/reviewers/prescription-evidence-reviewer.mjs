@@ -35,6 +35,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'prescription-evidence-reviewer';
 
@@ -114,15 +115,6 @@ function indentOf(line) {
   return line.length - line.replace(/^\s+/, '').length;
 }
 
-// Read a top-level scalar (e.g. `variant: brownfield`) from a YAML string.
-function readTopLevelScalar(ymlText, key) {
-  for (const raw of ymlText.split('\n')) {
-    const m = new RegExp(`^${key}:\\s*(.*)$`).exec(raw);
-    if (m) return unquote(stripComment(m[1]).trim());
-  }
-  return null;
-}
-
 // ── blueprint.yml extraction (variant + declared monetization sides) ─────────
 
 function readBlueprint(targetDir) {
@@ -134,7 +126,7 @@ function readBlueprint(targetDir) {
 }
 
 function extractVariant(ymlText) {
-  return (readTopLevelScalar(ymlText, 'variant') || '').toLowerCase() || null;
+  return (readTopLevelYamlScalar(ymlText, 'variant') || '').toLowerCase() || null;
 }
 
 // Declared monetization sides = pilot_profile.monetization_side (a 2-space child
@@ -395,7 +387,7 @@ export default async function review({ targetDir }) {
     findings.push({
       severity: 'WARN',
       location: 'blueprint.yml variant',
-      message: `variant is '${variant ?? '(unset)'}' — expected greenfield | midstream | brownfield. This gate applies only to midstream/brownfield; treating as midstream for the evidence checks.`,
+      message: `variant is '${variant ?? '(unset)'}' — expected greenfield | midstream | brownfield | research. This gate applies only to midstream/brownfield; treating an unknown value as midstream for the evidence checks.`,
       remediation: 'Set `variant:` explicitly in blueprint.yml per docs/variant-selection.md.',
       reference: 'docs/variant-selection.md',
     });

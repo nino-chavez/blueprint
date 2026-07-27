@@ -25,12 +25,12 @@
 |---|---|---|
 | | | |
 
-## What each persona can do once this lands
-<The honest "so what." For each decision persona, the concrete capability this unlocks. If a persona gains nothing, say so.>
+## What changes for each of you
+<The honest "so what," in the readers' language. For each role this memo serves, name the concrete outcome and trace it to the canonical job id on the same row. If a role gains nothing, say so. The heading is an example, not required vocabulary.>
 
-| Persona | What they can now do |
-|---|---|
-| | |
+| Who | What changes | Job trace |
+|---|---|---|
+| <reader-facing role name> | <substantive outcome> | `<slug>/JOB-n` |
 
 ---
 

@@ -8,7 +8,7 @@ You are the Stage 1 gate for a Blueprint initiative. Your job: prevent the "Stag
 
 ## What you check
 
-1. **Read `blueprint.yml`** at the initiative root. Determine the variant (`variant: greenfield | midstream | brownfield`). If absent, default to greenfield.
+1. **Read `blueprint.yml`** at the initiative root. Determine the variant (`variant: greenfield | midstream | brownfield | research`). If absent, default to greenfield.
 
 2. **Determine required sub-deliverables for the variant:**
 

@@ -39,6 +39,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'research-completeness-reviewer';
 
@@ -100,20 +101,6 @@ function finalize(findings, targetSummary, startedAt) {
     ? 'WARN'
     : 'PASS';
   return result(status, findings, targetSummary, startedAt);
-}
-
-// ── Minimal scalar reader (cost-dial.mjs readYamlScalar pattern, reused shape) ──
-// Reads a top-level `key: value` scalar from a YAML string. Stops at the first
-// match. Strips a trailing inline comment. Returns undefined when absent. We use
-// this for `variant:` and `initiative_type:` — both flat top-level scalars.
-function readYamlScalar(ymlText, key) {
-  if (!ymlText) return undefined;
-  const re = new RegExp(`^${key}:\\s*(.+?)\\s*(?:#.*)?$`, 'm');
-  const m = re.exec(ymlText);
-  if (!m) return undefined;
-  let v = m[1].trim();
-  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-  return v || undefined;
 }
 
 // Detect a `stages.stage_1.requires:` override block (spec step 2 note). Shallow
@@ -327,20 +314,20 @@ export default async function review({ targetDir, blueprintYml }) {
   }
   // Prefer the parsed object the harness passes; fall back to a scalar scan of raw text.
   const variantRaw =
-    (blueprintYml && (blueprintYml.variant || blueprintYml.Variant)) || readYamlScalar(ymlText, 'variant');
+    (blueprintYml && (blueprintYml.variant || blueprintYml.Variant)) || readTopLevelYamlScalar(ymlText, 'variant');
   const variant = VARIANT_REQUIREMENTS[variantRaw] ? variantRaw : 'greenfield';
   if (!VARIANT_REQUIREMENTS[variantRaw]) {
     findings.push({
       severity: 'WARN',
       location: 'blueprint.yml',
       message: `variant is ${variantRaw ? `'${variantRaw}' (unrecognized)` : 'absent'} — defaulting to greenfield (all four legs + JTBDs required).`,
-      remediation: "Set `variant: greenfield | midstream | brownfield` in blueprint.yml so the gate enforces the right leg set.",
+      remediation: "Set `variant: greenfield | midstream | brownfield | research` in blueprint.yml so the gate enforces the right leg set.",
       reference: 'docs/variant-selection.md',
     });
   }
   const initiativeType =
     (blueprintYml && (blueprintYml.initiative_type || blueprintYml.initiativeType)) ||
-    readYamlScalar(ymlText, 'initiative_type') ||
+    readTopLevelYamlScalar(ymlText, 'initiative_type') ||
     'consumer-app';
 
   const req = VARIANT_REQUIREMENTS[variant];

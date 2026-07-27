@@ -25,9 +25,10 @@ Initiative root: `METHODOLOGY-AMENDMENTS.md`. Frontmatter optional. Reverse-chro
 ```markdown
 ## YYYY-MM-DD — <Short title of the amendment>
 
-**Trigger**: <One sentence — what observation in the initiative prompted the amendment>
-**Scope**: <Per-initiative | Candidate for methodology promotion | Already promoted (link to methodology PR/commit)>
-**Status**: <Active | Superseded by <YYYY-MM-DD entry> | Promoted to methodology>
+**Trigger**: One sentence
+**Scope**: Per-initiative | Candidate for methodology promotion | Already promoted
+**Bucket**: consumer-local | template | reviewer | methodology
+**Status**: Active | Superseded by <YYYY-MM-DD entry> | Promoted to methodology
 
 <Body — what the amendment is, why, what it changes about how the initiative runs the methodology>
 
@@ -35,6 +36,20 @@ Initiative root: `METHODOLOGY-AMENDMENTS.md`. Frontmatter optional. Reverse-chro
 - <commit, PR, or session transcript link>
 - <related amendment entries>
 ```
+
+`Scope` says how broadly the learning may apply. `Bucket` says where its fix
+belongs; the axes are independent:
+
+| Bucket | Fix location |
+|---|---|
+| **consumer-local** | This initiative only |
+| **template** | Stampable files, shared tools, or scaffold behavior under `template/` |
+| **reviewer** | A reviewer spec or executable reviewer under `template/.claude/agents/blueprint/reviewers/` |
+| **methodology** | `METHODOLOGY.md`, `docs/`, or another public conceptual contract |
+
+The taxonomy is defined in
+`docs/patterns/amendment-classification-pattern.md`; this convention owns the
+canonical entry shape and therefore carries the field too.
 
 ## Append-only rule
 

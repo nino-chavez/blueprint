@@ -16,6 +16,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
+import { readTopLevelYamlScalar } from '../../template/tools/lib/yaml-scalar.mjs';
 
 export class BlueprintHomeError extends Error {}
 
@@ -47,14 +48,7 @@ function* ancestors(start) {
 /** Read a top-level scalar from a blueprint.yml without a yaml dependency. */
 export function readYamlScalar(ymlPath, key) {
   try {
-    for (const line of readFileSync(ymlPath, 'utf8').split('\n')) {
-      const s = line.trim();
-      if (s.startsWith('#') || !s.includes(':')) continue;
-      const idx = s.indexOf(':');
-      if (s.slice(0, idx).trim() !== key) continue;
-      const val = s.slice(idx + 1).split('#')[0].trim().replace(/^["']|["']$/g, '');
-      return val || null;
-    }
+    return readTopLevelYamlScalar(readFileSync(ymlPath, 'utf8'), key);
   } catch {
     /* ignore */
   }

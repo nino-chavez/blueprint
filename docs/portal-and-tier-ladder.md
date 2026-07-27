@@ -74,13 +74,19 @@ contract. A hosted feedback service is not required.
 
 ## Variant × Tier matrix (read this before scaffolding)
 
-**Variant** = pipeline shape (greenfield / midstream / brownfield), per `docs/variant-selection.md`. **Tier** = deliverable sophistication (0 / 1 / 2) — pre-portal scratch / portal app / portal + product surfaces. They are orthogonal axes; conflating them produced the three-session reconciliation on 2026-05-25.
+**Variant** = pipeline shape (greenfield / midstream / brownfield / research),
+per `docs/variant-selection.md`. **Tier** = deliverable sophistication
+(0 / 1 / 2) — pre-portal scratch / portal app / portal + product surfaces.
+They are orthogonal axes; conflating them produced the three-session
+reconciliation on 2026-05-25. Research normally starts at Tier 0 with a
+decision memo and evidence tree; it does not require a portal.
 
 |                 | Tier 0 (pre-portal) | Tier 1 (portal) | Tier 2 (portal + product) |
 |---|---|---|---|
 | **Greenfield** | ≤ 1 week pre-decision exploration only | **Default starting tier** for new initiatives | When a real product surface ships from day one |
 | **Midstream**  | Not applicable — the product already exists | When the portal is the only mid-build artifact | Default — product exists, portal is the front door |
 | **Brownfield** | Doc-only audit, no portal needed | Default for redesign-review work | When the audit ships a new product surface alongside |
+| **Research** | **Default — evidence tree + decision memo, no portal required** | Optional reader surface justified by a real reader job | Only when the research also ships product surfaces |
 
 Read the table this way: pick the variant first (decision tree in `docs/variant-selection.md`), then pick the tier (the bolded cell unless you have a reason to deviate). A greenfield initiative at Tier 0 is for ≤ 1 week of pre-decision exploration before committing to a portal — beyond that the deliberation belongs in `decisions/` ADRs, not in tier-0 scratch.
 

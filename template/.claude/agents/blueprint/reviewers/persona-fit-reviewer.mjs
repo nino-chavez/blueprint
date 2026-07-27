@@ -3,7 +3,8 @@
 //
 // Mechanical (here): personas exist + grounded; jobs resolvable; every decision &
 // memo recommendation carries a `serves:` that resolves (or `serves: none` + reason);
-// deliverable present; memo has the per-persona outcome section; portal not promoted.
+// deliverable present; memo gives each persona an actionable, job-traced outcome;
+// portal not promoted.
 // Judgment (stays in persona-fit-reviewer.md, agent-run): true vanity detection,
 // whether acceptance criteria are genuinely observable, beneficiary nuance.
 //
@@ -12,17 +13,13 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 async function read(p) { try { return await fs.readFile(p, 'utf8'); } catch { return null; } }
 async function exists(p) { try { await fs.access(p); return true; } catch { return false; } }
 async function listMd(dir) {
   try { return (await fs.readdir(dir)).filter((f) => f.endsWith('.md') && !f.startsWith('_')); }
   catch { return []; }
-}
-function yamlScalar(t, k) {
-  if (!t) return null;
-  const m = new RegExp(`^${k}:\\s*(.+)$`, 'm').exec(t);
-  return m ? m[1].trim().replace(/^["']|["']$/g, '') : null;
 }
 function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 
@@ -43,6 +40,42 @@ function buildJobIndex(text) {
 }
 const servesRefs = (text) => new Set([...text.matchAll(/\b([a-z][a-z0-9-]*)\/(JOB-\d+)\b/g)].map((m) => `${m[1]}/${m[2]}`));
 
+// A reader-facing outcome can use the reader's own language. The mechanical
+// seam is semantic traceability: every persona the memo says it serves needs a
+// substantive outcome row/bullet carrying that persona's canonical job id.
+// Pure traceability footnotes do not count; they index prose rather than state
+// an outcome. Whether the prose is genuinely actionable remains agent-judged.
+function outcomeCoverage(memoText, jobIndex) {
+  const expectedSlugs = new Set(
+    [...servesRefs(memoText || '')]
+      .filter((job) => jobIndex.has(job))
+      .map((job) => job.split('/')[0]),
+  );
+  const coveredSlugs = new Set();
+  for (const line of (memoText || '').split('\n')) {
+    if (/<sub\b/i.test(line) || /\btraceability\b/i.test(line)) continue;
+    const trimmed = line.trim();
+    const rowOrBullet = /^\|.*\|$/.test(trimmed) || /^(?:[-*]|\d+\.)\s+/.test(trimmed);
+    if (!rowOrBullet) continue;
+    const refs = servesRefs(line);
+    if (refs.size === 0) continue;
+    const prose = line
+      .replace(/\b[a-z][a-z0-9-]*\/JOB-\d+\b/gi, ' ')
+      .replace(/[|*_`#<>:()[\]-]/g, ' ')
+      .trim();
+    const words = prose.split(/\s+/).filter(Boolean);
+    if (words.length < 3 || /\b(?:tbd|todo|placeholder|none|n\/a)\b/i.test(prose)) continue;
+    for (const ref of refs) {
+      if (jobIndex.has(ref)) coveredSlugs.add(ref.split('/')[0]);
+    }
+  }
+  return {
+    expectedSlugs,
+    coveredSlugs,
+    missingSlugs: [...expectedSlugs].filter((slug) => !coveredSlugs.has(slug)).sort(),
+  };
+}
+
 export default async function review({ targetDir, blueprintYml }) {
   const startedAt = Date.now();
   const findings = [];
@@ -51,7 +84,7 @@ export default async function review({ targetDir, blueprintYml }) {
   const artifactsRoot = findInitiativeRoot(targetDir);
 
   const ymlText = await read(path.join(artifactsRoot, 'blueprint.yml'));
-  const variant = (blueprintYml && blueprintYml.variant) || yamlScalar(ymlText, 'variant') || 'greenfield';
+  const variant = (blueprintYml && blueprintYml.variant) || readTopLevelYamlScalar(ymlText, 'variant') || 'greenfield';
 
   if (variant !== 'research') {
     return {
@@ -108,11 +141,21 @@ export default async function review({ targetDir, blueprintYml }) {
     }
   }
 
-  // Deliverable + the "so what" outcome section
+  // Deliverable + semantic "so what" coverage. Do not prescribe the word
+  // "persona" (methodology vocabulary) in a stakeholder-facing memo.
   if (memoText === null) {
     findings.push({ severity: 'BLOCK', location: 'docs/decision-memo.md', message: 'DELIVERABLE_MISSING — the research-variant deliverable (decision memo) is absent.', remediation: 'Author docs/decision-memo.md from the template.', reference: 'persona-fit-reviewer.md' });
-  } else if (!/what each persona can do/i.test(memoText)) {
-    findings.push({ severity: 'BLOCK', location: 'docs/decision-memo.md', message: 'OUTCOME_UNSTATED — memo lacks the "what each persona can do once this lands" section.', remediation: 'Add the per-persona outcome section.', reference: 'persona-fit-reviewer.md' });
+  } else {
+    const coverage = outcomeCoverage(memoText, jobIndex);
+    if (coverage.missingSlugs.length > 0) {
+      findings.push({
+        severity: 'BLOCK',
+        location: 'docs/decision-memo.md',
+        message: `OUTCOME_UNSTATED — no substantive reader-outcome row or bullet traced to: ${coverage.missingSlugs.join(', ')}.`,
+        remediation: 'In reader language, state the outcome for each role the memo serves and put its <slug>/JOB-n trace on that same row or bullet.',
+        reference: 'persona-fit-reviewer.md',
+      });
+    }
   }
 
   // Vanity (mechanical slice): a portal presented alongside the memo
@@ -133,15 +176,22 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const os = await import('node:os');
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'pfr-'));
   const mk = async (rel, body) => { await fs.mkdir(path.dirname(path.join(tmp, rel)), { recursive: true }); await fs.writeFile(path.join(tmp, rel), body); };
-  await mk('blueprint.yml', 'variant: research\n');
+  await mk('blueprint.yml', 'variant: research # direct-review regression\n');
   await mk('research/personas-and-jtbd.md', '### Leadership (`exec`)\n- **Source:** S1\n- **JOB-1:** When …, I need …\n  - **Acceptance:** sees X\n');
   await mk('decisions/0001-x.md', '**serves:** `exec/JOB-1`\n# ADR-0001\n');
-  await mk('docs/decision-memo.md', '# Memo\nserves: `exec/JOB-1`\n## What each persona can do\n| p | x |\n');
+  const goodMemo = '# Memo\nserves: `exec/JOB-1`\n## What changes for each of you\n| Who | What you can do | Trace |\n|---|---|---|\n| Leadership | Can approve the recommendation with its evidence open | `exec/JOB-1` |\n';
+  await mk('docs/decision-memo.md', goodMemo);
   const ok = await review({ targetDir: tmp });
+  await mk('docs/decision-memo.md', '# Memo\nserves: `exec/JOB-1`\n## What each persona can do\n<sub>Traceability: exec/JOB-1</sub>\n');
+  const literalOnly = await review({ targetDir: tmp });
+  await mk('docs/decision-memo.md', goodMemo);
   await mk('decisions/0002-bad.md', '# ADR-0002 no serves tag\n');
   const bad = await review({ targetDir: tmp });
   await fs.rm(tmp, { recursive: true, force: true });
-  const pass = ok.status === 'PASS' && bad.status === 'BLOCKED';
-  console.log(`persona-fit-reviewer self-test: ${pass ? 'PASS' : 'FAIL'} (clean=${ok.status}, unanchored=${bad.status})`);
+  const pass = ok.status === 'PASS'
+    && literalOnly.status === 'BLOCKED'
+    && literalOnly.findings.some((finding) => finding.message.includes('OUTCOME_UNSTATED'))
+    && bad.status === 'BLOCKED';
+  console.log(`persona-fit-reviewer self-test: ${pass ? 'PASS' : 'FAIL'} (reader-language=${ok.status}, literal-only=${literalOnly.status}, unanchored=${bad.status})`);
   process.exit(pass ? 0 : 1);
 }
