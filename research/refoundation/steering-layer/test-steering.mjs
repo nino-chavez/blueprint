@@ -133,6 +133,53 @@ equal(
   'the install result is captured at the exact candidate revision',
   'external operator route names its resume condition',
 );
+equal(
+  validResults.get('se-docs-intake.json').next_recipe.targets,
+  ['governing-frame-selected'],
+  'SE Docs intake selects only the governing-frame decision',
+);
+equal(
+  actionFor(
+    validResults.get('se-docs-intake.json'),
+    'governing-frame-selected',
+  )?.mode,
+  'operator-inline',
+  'SE Docs intake routes governing-frame authority to the operator',
+);
+equal(
+  actionFor(
+    validResults.get('se-docs-intake.json'),
+    'governing-frame-selected',
+  )?.handoff_required,
+  true,
+  'SE Docs intake exposes the operator handoff before scaffolding',
+);
+equal(
+  validResults.get('se-docs-reframe-needed.json').next_recipe.targets,
+  ['founding-frame-valid'],
+  'SE Docs reframe stops at the contradicted founding frame',
+);
+equal(
+  actionFor(
+    validResults.get('se-docs-reframe-needed.json'),
+    'founding-frame-valid',
+  )?.authority,
+  'change-intent',
+  'SE Docs reframe names the exact charter-changing authority',
+);
+equal(
+  validResults.get('se-docs-reframed.json').next_recipe.targets,
+  ['corpus-census-bounds-reliable-subset'],
+  'SE Docs reframe resumes at the first dependency-ready machine claim',
+);
+equal(
+  actionFor(
+    validResults.get('se-docs-reframed.json'),
+    'corpus-census-bounds-reliable-subset',
+  )?.mode,
+  'agent-autonomous',
+  'SE Docs census resumes autonomously after re-charter',
+);
 
 function caughtPacketError(packet, label) {
   let caught = null;

@@ -1,0 +1,326 @@
+{
+  "initiative": "se-docs-frontdoor-recharter",
+  "as_of": "2026-07-27T20:47:59Z",
+  "current_charter_revision": 2,
+  "charters": [
+    {
+      "revision": 1,
+      "intent": "Configure a canonical documentation front door and test whether a sales engineer can use it to find the next reliable answer.",
+      "scope": {
+        "change_mode": "configure-first",
+        "problem_model": "retrieval-over-noisy-corpus"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": [
+            "operator",
+            "configurator"
+          ],
+          "authority": [
+            "authorize-work",
+            "disposition-transition",
+            "change-intent"
+          ]
+        },
+        {
+          "id": "sales-engineer",
+          "kinds": [
+            "pilot-user"
+          ],
+          "authority": [
+            "issue-own-outcome-receipt"
+          ]
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "intent": "Diagnose how solution knowledge is produced, decays, and retrieved, then choose the first bounded intervention before selecting a delivery surface.",
+      "scope": {
+        "change_mode": "research-first",
+        "problem_model": "knowledge-production-and-access"
+      },
+      "actors": [
+        {
+          "id": "operator",
+          "kinds": [
+            "operator",
+            "research-lead"
+          ],
+          "authority": [
+            "authorize-work",
+            "disposition-transition",
+            "change-intent"
+          ]
+        },
+        {
+          "id": "agent",
+          "kinds": [
+            "builder-agent",
+            "research-agent"
+          ],
+          "authority": [
+            "author-evidence"
+          ]
+        },
+        {
+          "id": "sponsor",
+          "kinds": [
+            "stakeholder",
+            "domain-expert"
+          ],
+          "authority": [
+            "accept-decision-memo",
+            "issue-own-outcome-receipt"
+          ]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "source-baseline-bounded",
+      "statement": "The pilot's canonical source set and freshness boundary are recorded before the front-door configuration is evaluated.",
+      "charter_revision": 1,
+      "scope": {
+        "problem_model": "retrieval-over-noisy-corpus"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "source-baseline-check",
+        "observer": {
+          "actor": "operator",
+          "role": "configurator"
+        }
+      }
+    },
+    {
+      "id": "frontdoor-configuration-live",
+      "statement": "The pilot tenant exposes the declared canonical entry points and routing configuration.",
+      "charter_revision": 1,
+      "scope": {
+        "problem_model": "retrieval-over-noisy-corpus"
+      },
+      "owner": "operator",
+      "depends_on": [
+        "source-baseline-bounded"
+      ],
+      "evidence_requirement": {
+        "object": "live-behavior",
+        "oracle": "platform-query",
+        "observer": {
+          "actor": "operator",
+          "role": "configurator"
+        }
+      }
+    },
+    {
+      "id": "sales-engineer-finds-next-answer",
+      "statement": "A sales engineer enters through the configured front door and identifies the next reliable answer during an observed task.",
+      "charter_revision": 1,
+      "scope": {
+        "problem_model": "retrieval-over-noisy-corpus"
+      },
+      "owner": "operator",
+      "depends_on": [
+        "frontdoor-configuration-live"
+      ],
+      "evidence_requirement": {
+        "object": "actor-outcome",
+        "oracle": "observed-task-run",
+        "observer": {
+          "actor": "sales-engineer",
+          "role": "pilot-user",
+          "independence": "not-builder"
+        }
+      }
+    },
+    {
+      "id": "current-problem-frame-authored",
+      "statement": "The current problem account derives the knowledge-production, decay, and retrieval dependencies from the founding and sponsor input assets.",
+      "charter_revision": 2,
+      "scope": {
+        "problem_model": "knowledge-production-and-access"
+      },
+      "owner": "operator",
+      "depends_on": [],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "commit-content-inspection",
+        "observer": {
+          "actor": "agent",
+          "role": "research-agent"
+        },
+        "freshness": {
+          "source_version": "eac9ff6"
+        }
+      }
+    },
+    {
+      "id": "corpus-census-bounds-reliable-subset",
+      "statement": "A corpus census identifies which source subset is reliable enough for the first intervention and records its freshness and contradiction boundaries.",
+      "charter_revision": 2,
+      "scope": {
+        "problem_model": "knowledge-production-and-access"
+      },
+      "owner": "operator",
+      "depends_on": [
+        "current-problem-frame-authored"
+      ],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "corpus-census-review",
+        "observer": {
+          "actor": "operator",
+          "role": "research-lead"
+        }
+      }
+    },
+    {
+      "id": "boundary-decisions-resolved",
+      "statement": "The read-write, audience, existing-platform, and funding boundaries have authorized dispositions.",
+      "charter_revision": 2,
+      "scope": {
+        "problem_model": "knowledge-production-and-access"
+      },
+      "owner": "operator",
+      "depends_on": [
+        "corpus-census-bounds-reliable-subset"
+      ],
+      "evidence_requirement": {
+        "object": "decision-record",
+        "oracle": "authorized-disposition-review",
+        "observer": {
+          "actor": "operator",
+          "role": "research-lead"
+        }
+      }
+    },
+    {
+      "id": "sponsor-memo-selects-first-intervention",
+      "statement": "The sponsor decision memo recommends one bounded intervention and states the evidence, rejected alternatives, risks, and next observation.",
+      "charter_revision": 2,
+      "scope": {
+        "problem_model": "knowledge-production-and-access"
+      },
+      "owner": "operator",
+      "depends_on": [
+        "boundary-decisions-resolved"
+      ],
+      "evidence_requirement": {
+        "object": "artifact-content",
+        "oracle": "sponsor-memo-review",
+        "observer": {
+          "actor": "sponsor",
+          "role": "stakeholder",
+          "independence": "not-author"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "id": "problem-statement-eac9ff6",
+      "claim": "current-problem-frame-authored",
+      "result": "supports",
+      "observation": "Commit eac9ff6 adds a canonical problem statement derived from both input assets and explicitly supersedes the retrieval-first frame.",
+      "object": "artifact-content",
+      "oracle": {
+        "method": "commit-content-inspection",
+        "executed": true
+      },
+      "observer": {
+        "actor": "agent",
+        "role_during_observation": "research-agent"
+      },
+      "scope": {
+        "problem_model": "knowledge-production-and-access"
+      },
+      "source_version": "eac9ff6",
+      "observed_at": "2026-07-27T19:00:00Z",
+      "source": "SE Docs Front Door commit eac9ff6"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "replace-retrieval-first-frame",
+      "action": "re-charter",
+      "proposed_by": "operator",
+      "decided_by": "operator",
+      "authority": "change-intent",
+      "basis": [
+        "sponsor-kickoff-input",
+        "operator-restate-request"
+      ],
+      "changes": {
+        "charter_revision": 2,
+        "retains_claims": [],
+        "invalidates_claims": [
+          "source-baseline-bounded",
+          "frontdoor-configuration-live",
+          "sales-engineer-finds-next-answer"
+        ]
+      },
+      "rationale": "The sponsor input established that corpus quality is produced by a structurally truncated process, so retrieval-first work could no longer govern the broader decision.",
+      "decided_at": "2026-07-27T18:45:00Z"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "retrieval-first-pilot-observed",
+      "requires": [
+        "source-baseline-bounded",
+        "frontdoor-configuration-live",
+        "sales-engineer-finds-next-answer"
+      ]
+    },
+    {
+      "id": "current-frame-established",
+      "requires": [
+        "current-problem-frame-authored"
+      ]
+    },
+    {
+      "id": "first-intervention-selected",
+      "requires": [
+        "corpus-census-bounds-reliable-subset",
+        "boundary-decisions-resolved",
+        "sponsor-memo-selects-first-intervention"
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "discovery-research",
+      "activation_claims": [
+        "corpus-census-bounds-reliable-subset",
+        "sponsor-memo-selects-first-intervention"
+      ]
+    },
+    {
+      "id": "steering",
+      "activation_claims": [
+        "boundary-decisions-resolved"
+      ]
+    }
+  ],
+  "assertions": {
+    "claims": {
+      "source-baseline-bounded": "invalidated",
+      "frontdoor-configuration-live": "invalidated",
+      "sales-engineer-finds-next-answer": "invalidated",
+      "current-problem-frame-authored": "satisfied",
+      "corpus-census-bounds-reliable-subset": "open",
+      "boundary-decisions-resolved": "open",
+      "sponsor-memo-selects-first-intervention": "open"
+    },
+    "checkpoints": {
+      "retrieval-first-pilot-observed": "invalidated",
+      "current-frame-established": "satisfied",
+      "first-intervention-selected": "open"
+    }
+  }
+}

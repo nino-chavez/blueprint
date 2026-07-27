@@ -720,16 +720,6 @@ function selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, to
       targets: openMachine.map((claim) => claim.id),
     };
   }
-  if (allOpenMachine.length > 0) {
-    return {
-      id: 'implement-or-verify',
-      reason: 'Active machine-checkable claims remain open behind unresolved prerequisites.',
-      targets: dependencyFrontier(
-        allOpenMachine.map((claim) => claim.id),
-        claimsById,
-      ),
-    };
-  }
 
   const readyDecision = active.filter((claim) => (
     claim.kind === 'decision'
@@ -741,6 +731,17 @@ function selectRecipe(packet, claimsById, routesByClaim, readiness, clusters, to
       id: 'record-disposition',
       reason: 'All declared prerequisites are satisfied; an authorized disposition remains open.',
       targets: readyDecision.map((claim) => claim.id),
+    };
+  }
+
+  if (allOpenMachine.length > 0) {
+    return {
+      id: 'implement-or-verify',
+      reason: 'Active machine-checkable claims remain open behind unresolved prerequisites.',
+      targets: dependencyFrontier(
+        allOpenMachine.map((claim) => claim.id),
+        claimsById,
+      ),
     };
   }
 

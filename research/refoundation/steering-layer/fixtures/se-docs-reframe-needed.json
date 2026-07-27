@@ -1,0 +1,96 @@
+{
+  "schema": "blueprint-steering/1",
+  "initiative": "se-docs-frontdoor-reframe",
+  "as_of": "2026-07-27T18:30:00Z",
+  "current_revision": "retrieval-first-v1",
+  "outcome": "Disposition the contradicted problem frame before continuing solution work.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "founding-frame-valid",
+      "state": "contradicted",
+      "kind": "machine",
+      "active": true,
+      "revision": "retrieval-first-v1",
+      "needs": []
+    },
+    {
+      "id": "corpus-census-bounds-reliable-subset",
+      "state": "open",
+      "kind": "machine",
+      "active": true,
+      "revision": "retrieval-first-v1",
+      "needs": [
+        "founding-frame-valid"
+      ]
+    },
+    {
+      "id": "solution-path-selected",
+      "state": "open",
+      "kind": "decision",
+      "active": true,
+      "revision": "retrieval-first-v1",
+      "needs": [
+        "corpus-census-bounds-reliable-subset"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "reframe-before-solution",
+      "outcome_claim": "solution-path-selected",
+      "steps": [
+        "founding-frame-valid",
+        "corpus-census-bounds-reliable-subset",
+        "solution-path-selected"
+      ],
+      "human_claims": [],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [
+    {
+      "id": "sponsor-input-contradicts-founding-frame",
+      "journey": "reframe-before-solution",
+      "claim": "founding-frame-valid",
+      "boundary": "problem framing",
+      "classification": "charter pressure",
+      "revision": "retrieval-first-v1"
+    }
+  ],
+  "dispositions": [],
+  "operator_touches": [],
+  "execution_routes": [
+    {
+      "claim": "founding-frame-valid",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "change-intent",
+      "venue": "current task",
+      "action": "Disposition the sponsor input: retain the frame, revise it, or authorize a re-charter before downstream work.",
+      "artifact": "research/sources/knowledge-database-kickoff-2026-07-27.md",
+      "capture": "research/problem-space/problem-statement.md",
+      "resume_when": "the governing frame and affected downstream claims have an authorized disposition",
+      "blocking": true
+    },
+    {
+      "claim": "solution-path-selected",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "select the bounded intervention after the current evidence is assembled",
+      "venue": "current task",
+      "action": "Select the first bounded intervention from the accepted problem frame and corpus evidence.",
+      "artifact": "research/problem-space/problem-statement.md",
+      "capture": "decisions/solution-path.md",
+      "resume_when": "the selected intervention and its rejected alternatives are recorded",
+      "blocking": true
+    }
+  ],
+  "source_metrics": {
+    "baseline_lines": 30681,
+    "current_lines": 30681,
+    "decision_count": 1
+  }
+}

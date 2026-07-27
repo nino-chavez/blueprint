@@ -1,0 +1,113 @@
+{
+  "schema": "blueprint-steering/1",
+  "initiative": "se-docs-frontdoor-reframed",
+  "as_of": "2026-07-27T20:47:59Z",
+  "current_revision": "knowledge-production-v2",
+  "outcome": "Choose the first bounded intervention from an accepted account of how solution knowledge is produced, decays, and retrieved.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "founding-frame-valid",
+      "state": "invalidated",
+      "kind": "machine",
+      "active": false,
+      "revision": "retrieval-first-v1",
+      "needs": []
+    },
+    {
+      "id": "current-problem-frame-authored",
+      "state": "satisfied",
+      "kind": "machine",
+      "active": true,
+      "revision": "knowledge-production-v2",
+      "needs": []
+    },
+    {
+      "id": "corpus-census-bounds-reliable-subset",
+      "state": "open",
+      "kind": "machine",
+      "active": true,
+      "revision": "knowledge-production-v2",
+      "needs": [
+        "current-problem-frame-authored"
+      ]
+    },
+    {
+      "id": "scope-boundaries-decided",
+      "state": "open",
+      "kind": "decision",
+      "active": true,
+      "revision": "knowledge-production-v2",
+      "needs": [
+        "corpus-census-bounds-reliable-subset"
+      ]
+    },
+    {
+      "id": "sponsor-decision-memo-ready",
+      "state": "open",
+      "kind": "machine",
+      "active": true,
+      "revision": "knowledge-production-v2",
+      "needs": [
+        "scope-boundaries-decided"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "reframed-research-to-decision",
+      "outcome_claim": "sponsor-decision-memo-ready",
+      "steps": [
+        "current-problem-frame-authored",
+        "corpus-census-bounds-reliable-subset",
+        "scope-boundaries-decided",
+        "sponsor-decision-memo-ready"
+      ],
+      "human_claims": [],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [
+    {
+      "id": "sponsor-input-contradicts-founding-frame",
+      "journey": "reframed-research-to-decision",
+      "claim": "founding-frame-valid",
+      "boundary": "problem framing",
+      "classification": "authorized re-charter",
+      "revision": "retrieval-first-v1"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "accept-knowledge-production-frame",
+      "kind": "scope-transition",
+      "status": "completed",
+      "journey": "reframed-research-to-decision",
+      "covers_incidents": [
+        "sponsor-input-contradicts-founding-frame"
+      ]
+    }
+  ],
+  "operator_touches": [],
+  "execution_routes": [
+    {
+      "claim": "scope-boundaries-decided",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "set the read-write, audience, platform-owner, and funding boundaries",
+      "venue": "current task",
+      "action": "Disposition the four named scope boundaries after the corpus census is available.",
+      "artifact": "research/problem-space/problem-statement.md",
+      "capture": "decisions/scope-boundaries.md",
+      "resume_when": "all four boundary decisions have explicit owners and dispositions",
+      "blocking": true
+    }
+  ],
+  "source_metrics": {
+    "baseline_lines": 30681,
+    "current_lines": 30681,
+    "decision_count": 2
+  }
+}

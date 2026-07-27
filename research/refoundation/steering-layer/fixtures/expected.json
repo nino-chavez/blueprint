@@ -59,5 +59,29 @@
     "touches_used": 0,
     "touch_budget_exceeded": false,
     "unresolved_clusters": 0
+  },
+  "se-docs-intake.json": {
+    "recipe": "record-disposition",
+    "active_claims": 2,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
+  },
+  "se-docs-reframe-needed.json": {
+    "recipe": "repair-or-revise",
+    "active_claims": 3,
+    "historical_claims": 0,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
+  },
+  "se-docs-reframed.json": {
+    "recipe": "implement-or-verify",
+    "active_claims": 4,
+    "historical_claims": 1,
+    "touches_used": 0,
+    "touch_budget_exceeded": false,
+    "unresolved_clusters": 0
   }
 }
