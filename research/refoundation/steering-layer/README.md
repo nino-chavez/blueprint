@@ -65,5 +65,8 @@ headless execution follow-up is recorded in
 recorded in `05-actionable-frontier-results.md`. Version 2 is preregistered in
 the root `23-adaptive-pilot-promotion-preregistration.md` and evaluated in
 `24-adaptive-pilot-promotion-results.md`. Decision 09 retains it as root
-research while holding public promotion. Generated files remain disposable;
+research while holding public promotion. The retrospective SE Docs Front Door
+JSONL pilot is preregistered in
+`06-se-docs-session-pilot-preregistration.md` and reported in
+`07-se-docs-session-pilot-results.md`. Generated files remain disposable;
 neither the results nor the evaluator are part of the stampable methodology.

@@ -1,0 +1,64 @@
+{
+  "schema": "blueprint-steering/1",
+  "initiative": "se-docs-frontdoor-intake",
+  "as_of": "2026-07-09T16:00:00Z",
+  "current_revision": "intake-v1",
+  "outcome": "Select the governed initiative outcome before choosing a stamp or building its scaffold.",
+  "operator_touch_budget": {
+    "max": 1
+  },
+  "claims": [
+    {
+      "id": "governing-frame-selected",
+      "state": "open",
+      "kind": "decision",
+      "active": true,
+      "revision": "intake-v1",
+      "needs": []
+    },
+    {
+      "id": "initiative-scaffold-exists",
+      "state": "open",
+      "kind": "machine",
+      "active": true,
+      "revision": "intake-v1",
+      "needs": [
+        "governing-frame-selected"
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "id": "frame-before-scaffold",
+      "outcome_claim": "initiative-scaffold-exists",
+      "steps": [
+        "governing-frame-selected",
+        "initiative-scaffold-exists"
+      ],
+      "human_claims": [],
+      "cluster_threshold": 2
+    }
+  ],
+  "incidents": [],
+  "dispositions": [],
+  "operator_touches": [],
+  "execution_routes": [
+    {
+      "claim": "governing-frame-selected",
+      "mode": "operator-inline",
+      "owner": "operator",
+      "authority": "select the initiative's governing outcome and authorize its starting recipe",
+      "venue": "current task",
+      "action": "Choose whether the governed output is research, a configured service, or built software before any stamp or scaffold.",
+      "artifact": "research/sources/definition-and-grill-2026-07-09.md",
+      "capture": "research/problem-space/problem-statement.md",
+      "resume_when": "one governing frame is accepted and downstream work depends on it",
+      "blocking": true
+    }
+  ],
+  "source_metrics": {
+    "baseline_lines": 0,
+    "current_lines": 0,
+    "decision_count": 0
+  }
+}
