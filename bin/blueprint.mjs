@@ -14,6 +14,7 @@
  *   doctor   conformance / health check (the false-green guard) (real — step 12)
  *   hive     stand up the team coordination substrate (hive setup --slug=<x>)
  *   stage    derive pipeline position from artifacts-on-disk (stage status — ADR-0008)
+ *   variant  plan/apply/rollback a preservation-first pipeline transition
  *   feedback validate a review/disposition loop pinned to an exact candidate
  *
  * The methodology home is resolved by bin/lib/blueprint-home.mjs.
@@ -62,6 +63,10 @@ Commands:
   stage      Derive/advance the initiative's pipeline position (blueprint stage <status|advance> [--target=<dir>] [--json])
              deterministic-core view (ADR-0008): status marks derivable vs. assertion-only gates; advance gates the next transition
              advance is dry-run by default; --execute records to .blueprint/stage-state.json; --assert-<gate>="…" confirms a shell gate
+  variant    Plan/apply/rollback a preservation-first variant transition
+             blueprint variant transition --to=research [--target=<dir>] [--json]
+             planning is read-only; apply requires --apply --plan-id=<sha256>
+             blueprint variant rollback --receipt=<id> [--target=<dir>] [--apply] [--json]
   feedback   Validate the reader review/disposition loop (blueprint feedback [--target=<dir>] [--json] [--gate])
              exact candidate + asks + authority + capture adapter + submissions + dispositions + return-to-reader
 
@@ -622,6 +627,95 @@ async function runStage(stageArgv, home) {
   process.exit(0);
 }
 
+// variant <transition|rollback> — preservation-first migration. v1 supports
+// greenfield→research only. A plan is read-only and content-addressed; apply
+// recomputes it and requires the exact id. Cleanup remains operator-review-only.
+async function runVariant(variantArgv, home) {
+  const { flags, positionals } = parseArgs(variantArgv);
+  const sub = positionals[0];
+  if (flags.help || flags.h || !sub) {
+    console.log(`Usage:
+  blueprint variant transition --to=research [--target=<dir>] [--json]
+  blueprint variant transition --to=research --apply --plan-id=<sha256> [--accept-stage-reset]
+  blueprint variant rollback --receipt=<id> [--target=<dir>] [--json]
+  blueprint variant rollback --receipt=<id> --apply
+
+Planning is the default and does not write. Transition apply creates only
+missing research scaffolds, preserves every collision, never performs cleanup,
+and writes an append-only receipt. Rollback refuses if generated files changed.
+`);
+    return;
+  }
+  if (sub !== 'transition' && sub !== 'rollback') {
+    console.error(`blueprint variant: unknown operation '${sub}' (expected transition or rollback).`);
+    process.exit(2);
+  }
+
+  let lib;
+  try {
+    lib = await import(pathToFileURL(join(home, 'template', 'tools', 'lib', 'variant-transition.mjs')).href);
+  } catch (error) {
+    console.error(`blueprint variant: failed to load transition library — ${error.message}`);
+    process.exit(2);
+  }
+
+  const targetDir = resolve(flags.target || process.cwd());
+  try {
+    if (sub === 'transition') {
+      if (flags.apply) {
+        const result = lib.applyVariantTransition({
+          targetDir,
+          home,
+          to: flags.to || 'research',
+          planId: flags['plan-id'],
+          acceptStageReset: !!flags['accept-stage-reset'],
+        });
+        if (flags.json) console.log(JSON.stringify(result, null, 2));
+        else if (!result.applied) console.log(`blueprint variant transition — ${result.status}; no writes.`);
+        else {
+          console.log(`blueprint variant transition — APPLIED`);
+          console.log(`  target: ${result.target}`);
+          console.log(`  plan-id: ${result.planId}`);
+          console.log(`  receipt: ${result.receiptPath}`);
+          console.log(`  created: ${result.createdFiles.length ? result.createdFiles.join(', ') : '(none)'}`);
+          console.log(`  preserved collisions: ${result.preservedCollisions.length ? result.preservedCollisions.join(', ') : '(none)'}`);
+          console.log('  cleanup: not applied; review the receipt plan separately.');
+        }
+      } else {
+        const plan = lib.planVariantTransition({
+          targetDir,
+          home,
+          to: flags.to || 'research',
+          acceptStageReset: !!flags['accept-stage-reset'],
+        });
+        if (flags.json) console.log(JSON.stringify(plan, null, 2));
+        else console.log(lib.formatTransitionPlan(plan));
+      }
+      return;
+    }
+
+    if (flags.apply) {
+      const result = lib.rollbackVariantTransition({ targetDir, receiptId: flags.receipt });
+      if (flags.json) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log('blueprint variant rollback — APPLIED');
+        console.log(`  target: ${result.target}`);
+        console.log(`  rollback receipt: ${result.rollbackReceiptPath}`);
+        console.log(`  original receipt retained: ${result.originalReceiptRetained}`);
+      }
+    } else {
+      const plan = lib.planVariantRollback({ targetDir, receiptId: flags.receipt });
+      if (flags.json) console.log(JSON.stringify(plan, null, 2));
+      else console.log(lib.formatRollbackPlan(plan));
+      if (plan.status === 'blocked') process.exit(1);
+    }
+  } catch (error) {
+    const code = error?.code ? ` [${error.code}]` : '';
+    console.error(`blueprint variant:${code} ${error.message}`);
+    process.exit(2);
+  }
+}
+
 // feedback [--target=<dir>] [--json] [--gate] — validate the optional
 // renderer-independent review loop. The reader may contribute through a
 // bespoke site, portal, native app, Slack, meeting, or an Atelier-style
@@ -728,6 +822,11 @@ async function main() {
 
   if (cmd === 'stage') {
     await runStage(argv.slice(argv.indexOf('stage') + 1), home);
+    return;
+  }
+
+  if (cmd === 'variant') {
+    await runVariant(argv.slice(argv.indexOf('variant') + 1), home);
     return;
   }
 

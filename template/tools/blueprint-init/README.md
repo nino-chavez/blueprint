@@ -79,6 +79,24 @@ tools/run-reviewers.mjs
 It does not create `apps/portal/` or `packages/`. A later presentation can
 render the memo, but research does not require a portal.
 
+### Existing initiative: transition candidate
+
+Do not re-run the initial stamper against an authored initiative. On the
+`codex/variant-transition-capability` candidate branch, use the separate,
+read-only-by-default migration operation:
+
+```bash
+blueprint variant transition --to=research --target=/path/to/initiative
+# inspect the preservation inventory, cleanup plan, and stage-state disposition
+blueprint variant transition --to=research --target=/path/to/initiative \
+  --apply --plan-id=<exact id from the current plan>
+```
+
+The operation creates only missing research scaffolds, preserves every
+collision (including empty files), performs no cleanup, and writes an
+append-only rollback receipt. This command is not in the published npm package
+until Decision 08's promotion gates are satisfied.
+
 ## Usage — initial stamp (Pattern B)
 
 Pattern B scaffolding creates a Review Portal at `blueprint/portal/` (or a custom path declared in `blueprint.yml`):

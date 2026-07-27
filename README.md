@@ -140,6 +140,11 @@ blueprint hive setup --slug=<x> [--execute]          # stand up the team coordin
 blueprint stage <status|advance> [--target=<dir>]     # derive/gate pipeline state from artifacts on disk
 blueprint feedback [--target=<dir>] [--json] [--gate] # validate exact-candidate review, disposition,
                                                       #   and return-to-reader receipts
+
+# Candidate on codex/variant-transition-capability; not in the published package:
+blueprint variant transition --to=research [--target=<dir>] # read-only preservation/cleanup plan
+blueprint variant transition --to=research --apply --plan-id=<sha256>
+blueprint variant rollback --receipt=<id> [--apply]          # preflight by default
 ```
 
 Each command is a thin front door over a dependency-free, self-tested lib under
@@ -157,6 +162,9 @@ whole interface. Distribution + governance: a `consumers.yml` registry, a
 > Status: **published** — `@nino-chavez-labs/blueprint-cli` is live on npm (`npm view` for the current version; releases ship automatically from main).
 > `npx @nino-chavez-labs/blueprint-cli <command>` works for anyone; all nine
 > commands (`init`/`review`/`cost`/`fleet`/`upgrade`/`doctor`/`hive`/`stage`/`feedback`) are real.
+> The `variant` commands shown above are a verified candidate on a separate
+> branch, not a tenth published command. Promotion still requires the
+> compatibility, support, rollback, and live-consumer gates in Decision 08.
 
 ## This repo is its own first consumer (the reference portal)
 

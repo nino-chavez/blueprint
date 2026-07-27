@@ -1433,6 +1433,7 @@ async function scaffoldResearch({ target, dryRun, log }) {
     log.copied.push(`${d}/ (dir)`);
   }
   const files = [
+    ["template/research/sources-index.template.md", "research/sources/README.md"],
     ["template/research/personas-and-jtbd.template.md", "research/personas-and-jtbd.md"],
     ["template/research/decision-memo.template.md", "docs/decision-memo.md"],
     ["template/research/decision-record.template.md", "decisions/_TEMPLATE.md"],
@@ -1442,20 +1443,6 @@ async function scaffoldResearch({ target, dryRun, log }) {
     if (!dryRun) await fs.copyFile(path.join(BLUEPRINT_ROOT, src), path.join(target, dst));
     log.copied.push(dst);
   }
-  const sourcesStub = [
-    "# Source assets — provenance catalog",
-    "",
-    "Stage 0 (research variant). One row per input asset (brief, deck, dataset, dashboard).",
-    "Confidential binaries are not committed — catalog them here with provenance and link out.",
-    "This is the source-of-record every downstream claim must resolve to.",
-    "",
-    "| Asset | Author | Date | Type | Where it lives | Verification status |",
-    "|---|---|---|---|---|---|",
-    "| | | | | | |",
-    "",
-  ].join("\n");
-  if (!dryRun) await fs.writeFile(path.join(target, "research/sources/README.md"), sourcesStub, "utf8");
-  log.copied.push("research/sources/README.md");
 }
 
 main().catch((e) => { console.error(e); process.exit(2); });
