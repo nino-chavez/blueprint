@@ -1260,6 +1260,31 @@ async function main() {
       `add any justified reader surface separately after the research scaffold exists`
     );
   }
+  // Initial stamp is create-once once Blueprint owns the target. Re-running
+  // the broad stamper against an authored initiative is not a migration
+  // operation: copyTree has methodology-owned overwrite rules and
+  // writeBlueprintYml intentionally preserves the old variant, producing a
+  // destructive mixed state. Existing non-Blueprint repositories remain valid
+  // initial-stamp targets.
+  const targetStat = await fs.lstat(target).catch((error) => {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  });
+  if (targetStat?.isSymbolicLink()) fail(`--target may not be a symlink: ${target}`);
+  if (targetStat && !targetStat.isDirectory()) fail(`--target exists and is not a directory: ${target}`);
+  if (targetStat) {
+    const existingBlueprint = await fs.lstat(path.join(target, "blueprint.yml")).catch((error) => {
+      if (error?.code === "ENOENT") return null;
+      throw error;
+    });
+    if (existingBlueprint) {
+      fail(
+        `initial stamp is create-once: ${target}/blueprint.yml already exists. ` +
+        `Use \`blueprint variant transition\` for a variant change, \`blueprint upgrade\` ` +
+        `for methodology files, or the bounded restamp command for declared chrome.`
+      );
+    }
+  }
   if (portalType === "review") {
     // AMENDMENT 1 (2026-06-27): Pattern B initial stamp now implemented.
     // Wave 85 (ai-enablement consumer, 9 defects): the outer Pattern A
@@ -1307,8 +1332,6 @@ async function main() {
 
   // Create a missing target (category convention: scaffolders create their
   // directory). Refuse only when the path exists and isn't a directory.
-  const targetStat = await fs.stat(target).catch(() => null);
-  if (targetStat && !targetStat.isDirectory()) fail(`--target exists and is not a directory: ${target}`);
   if (!targetStat && !dryRun) await fs.mkdir(target, { recursive: true });
 
   const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
@@ -1330,8 +1353,8 @@ async function main() {
   if (!args["variant"]) {
     console.log(
       `  HINT: variant defaulted to greenfield — the product-build pipeline. If this initiative is\n` +
-      `        a decision driven by a brief / deck / dataset (no product, no codebase), re-run with\n` +
-      `        --variant=research: portal-optional, provenance-only, deliverable is a decision memo.\n` +
+      `        a decision driven by a brief / deck / dataset (no product, no codebase), stamp a fresh\n` +
+      `        target with --variant=research. After authoring begins, use \`blueprint variant transition\`.\n` +
       `        Pre-stamp fit check: docs/variant-selection.md (top).`
     );
   }

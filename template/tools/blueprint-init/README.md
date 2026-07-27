@@ -94,8 +94,11 @@ blueprint variant transition --to=research --target=/path/to/initiative \
 
 The operation creates only missing research scaffolds, preserves every
 collision (including empty files), performs no cleanup, and writes an
-append-only rollback receipt. This command is not in the published npm package
-until Decision 08's promotion gates are satisfied.
+append-only rollback receipt. Apply/rollback serialize through Git metadata,
+refuse any after-plan hash change, and keep the receipt usable across a
+same-filesystem rename of the whole checkout directory. The recorded root
+directory identity rejects copied checkouts. This command is not in the
+published npm package until Decision 08's promotion gates are satisfied.
 
 ## Usage — initial stamp (Pattern B)
 

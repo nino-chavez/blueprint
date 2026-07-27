@@ -10,6 +10,7 @@
 import {
   chmodSync,
   existsSync,
+  linkSync,
   lstatSync,
   mkdirSync,
   readFileSync,
@@ -27,6 +28,7 @@ import { createHash } from 'node:crypto';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readTopLevelYamlScalar, stripYamlComment } from './yaml-scalar.mjs';
+import { isValidStateShape } from './stage-model.mjs';
 
 export const PLAN_SCHEMA = 'blueprint-variant-transition-plan/1';
 export const RECEIPT_SCHEMA = 'blueprint-variant-transition-receipt/1';
@@ -123,15 +125,96 @@ function requireGitRoot(targetDir) {
   const stat = safeLstat(declared);
   if (!stat || !stat.isDirectory()) fail(`transition target is not a directory: ${declared}`, 'TARGET_INVALID');
   if (stat.isSymbolicLink()) fail(`transition target may not be a symlink: ${declared}`, 'SYMLINK_PATH');
-  const root = git(declared, ['rev-parse', '--show-toplevel']);
-  if (realpathSync(root) !== realpathSync(declared)) {
+  const canonical = realpathSync(declared);
+  const root = git(canonical, ['rev-parse', '--show-toplevel']);
+  if (realpathSync(root) !== canonical) {
     fail(`transition target must be the Git worktree root (got ${declared}; Git root is ${root})`, 'TARGET_NOT_GIT_ROOT');
   }
-  return declared;
+  // Pin all later joins to the resolved worktree root. A lexical path whose
+  // parent is a symlink may be retargeted after preflight; carrying the
+  // canonical root prevents that swap from redirecting writes or receipts.
+  return canonical;
+}
+
+function directoryIdentity(target) {
+  let stat;
+  try {
+    stat = lstatSync(target, { bigint: true });
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      fail(`transition target disappeared: ${target}`, 'TARGET_IDENTITY_CHANGED');
+    }
+    throw error;
+  }
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    fail(`transition target identity is no longer a real directory: ${target}`, 'TARGET_IDENTITY_CHANGED');
+  }
+  return {
+    device: stat.dev.toString(),
+    inode: stat.ino.toString(),
+  };
+}
+
+function assertTargetIdentity(target, expected) {
+  const current = directoryIdentity(target);
+  if (
+    !expected
+    || current.device !== expected.device
+    || current.inode !== expected.inode
+  ) {
+    fail(`transition target directory changed after preflight: ${target}`, 'TARGET_IDENTITY_CHANGED');
+  }
+}
+
+function assertRecoveryTargetIdentity(target, expected, operation) {
+  try {
+    assertTargetIdentity(target, expected);
+  } catch (error) {
+    fail(
+      `${operation} recovery refused a replaced target root; inspect the recorded directory before any manual action (${error.message})`,
+      'RECOVERY_CONFLICT',
+    );
+  }
 }
 
 function gitHead(target) {
   return git(target, ['rev-parse', 'HEAD']);
+}
+
+function transitionLockPath(target) {
+  const gitPath = git(target, ['rev-parse', '--git-path', 'blueprint-variant-transition.lock']);
+  return isAbsolute(gitPath) ? gitPath : resolve(target, gitPath);
+}
+
+function withTransitionLock(target, operation) {
+  const pathname = transitionLockPath(target);
+  const token = `${process.pid}:${Date.now()}:${sha256(`${target}:${Math.random()}`)}`;
+  try {
+    writeFileSync(pathname, `${token}\n`, { flag: 'wx', mode: 0o600 });
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      fail(
+        `another variant transition/rollback holds ${pathname}; remove a stale lock only after verifying no operation is active`,
+        'TRANSITION_LOCKED',
+      );
+    }
+    throw error;
+  }
+  try {
+    return operation();
+  } finally {
+    try {
+      if (readFileSync(pathname, 'utf8') === `${token}\n`) unlinkSync(pathname);
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+  }
+}
+
+function invokeMutationHook(hook, event) {
+  if (hook == null) return;
+  if (typeof hook !== 'function') fail('mutationHook must be a function', 'INVALID_TEST_HOOK');
+  hook(event);
 }
 
 function methodologyIdentity(home, materials) {
@@ -336,10 +419,14 @@ function stageStatePlan(target, acceptStageReset) {
   if (!stat) return { path: rel, status: 'absent', requiresAcceptance: false };
   if (!stat.isFile()) fail(`${rel} is not a regular file`, 'STAGE_STATE_SHAPE');
   const bytes = readFileSync(join(target, rel));
+  let parsed;
   try {
-    JSON.parse(bytes.toString('utf8'));
+    parsed = JSON.parse(bytes.toString('utf8'));
   } catch (error) {
     fail(`${rel} is corrupt and cannot be archived safely — ${error.message}`, 'STAGE_STATE_CORRUPT');
+  }
+  if (!isValidStateShape(parsed)) {
+    fail(`${rel} is valid JSON but not a canonical stage-state object`, 'STAGE_STATE_SHAPE');
   }
   return {
     path: rel,
@@ -398,6 +485,7 @@ export function planVariantTransition({
 } = {}) {
   if (to !== 'research') fail(`variant transition v1 supports only --to=research (got '${to}')`, 'UNSUPPORTED_TO_VARIANT');
   const target = requireGitRoot(targetDir || process.cwd());
+  const targetIdentity = directoryIdentity(target);
   const blueprintPath = join(target, 'blueprint.yml');
   ensureNoSymlinkPath(target, 'blueprint.yml');
   const blueprintStat = safeLstat(blueprintPath);
@@ -465,6 +553,7 @@ export function planVariantTransition({
     schema: PLAN_SCHEMA,
     status: patch.status,
     target,
+    targetIdentity,
     from: patch.from,
     to: patch.to,
     git: { head: gitHead(target) },
@@ -483,7 +572,13 @@ export function planVariantTransition({
     },
   };
   const dirtyPlannedPaths = plannedDirtyPaths(target, actions);
-  return publicPlan({ ...core, dirtyPlannedPaths });
+  const plan = publicPlan({ ...core, dirtyPlannedPaths });
+  // Receipt authority must stay inside the initiative. Check the complete
+  // content-addressed path during read-only planning; apply checks it again
+  // immediately before directory creation.
+  ensureNoSymlinkPath(target, plan.receiptPath);
+  assertTargetIdentity(target, targetIdentity);
+  return plan;
 }
 
 function materialMap(home) {
@@ -491,40 +586,130 @@ function materialMap(home) {
 }
 
 function ensureDirTracked(target, absoluteDir, createdDirs) {
-  const missing = [];
-  let cursor = absoluteDir;
-  while (cursor !== target && !existsSync(cursor)) {
-    missing.push(cursor);
-    cursor = dirname(cursor);
-  }
-  if (cursor === target || cursor.startsWith(`${target}${sep}`)) {
-    for (const dir of missing.reverse()) {
-      mkdirSync(dir);
-      createdDirs.push(posixRel(relative(target, dir)));
+  const root = resolve(target);
+  const destination = resolve(absoluteDir);
+  const rawRelative = posixRel(relative(root, destination));
+  if (!rawRelative) return;
+  const safeRelative = validateRelative(rawRelative);
+  let cursor = root;
+  let cursorRelative = '';
+  for (const part of safeRelative.split('/')) {
+    cursor = join(cursor, part);
+    cursorRelative = cursorRelative ? `${cursorRelative}/${part}` : part;
+    const stat = safeLstat(cursor);
+    if (stat?.isSymbolicLink()) {
+      fail(`refusing to traverse a symlink while creating ${cursorRelative}`, 'SYMLINK_PATH');
     }
-    return;
+    if (stat && !stat.isDirectory()) {
+      fail(`directory path collides with a non-directory: ${cursorRelative}`, 'SCAFFOLD_COLLISION');
+    }
+    if (!stat) {
+      try {
+        mkdirSync(cursor);
+      } catch (error) {
+        // A competing creator may have won between lstat and mkdir. Accept
+        // only a real directory; never follow a newly introduced symlink.
+        if (error?.code !== 'EEXIST') throw error;
+        const current = safeLstat(cursor);
+        if (!current?.isDirectory() || current.isSymbolicLink()) {
+          fail(`unsafe concurrent directory creation at ${cursorRelative}`, 'CONCURRENT_MODIFICATION');
+        }
+        continue;
+      }
+      createdDirs.push(cursorRelative);
+    }
   }
-  fail(`refusing to create a directory outside transition target: ${absoluteDir}`, 'UNSAFE_PATH');
 }
 
-function atomicWrite(pathname, bytes, mode, token) {
+function atomicWrite(pathname, bytes, mode, token, { expectedSha256 = null } = {}) {
   const temp = `${pathname}.variant-transition-${token}.tmp`;
   if (existsSync(temp)) fail(`transaction temp already exists: ${temp}`, 'TRANSACTION_COLLISION');
-  writeFileSync(temp, bytes, { flag: 'wx' });
-  chmodSync(temp, mode);
-  renameSync(temp, pathname);
-  return temp;
+  let tempOwned = false;
+  try {
+    writeFileSync(temp, bytes, { flag: 'wx' });
+    tempOwned = true;
+    chmodSync(temp, mode);
+    if (expectedSha256) {
+      const current = safeLstat(pathname);
+      if (
+        !current?.isFile()
+        || current.isSymbolicLink()
+        || sha256(readFileSync(pathname)) !== expectedSha256
+      ) {
+        fail(`concurrent modification detected immediately before replacing ${pathname}`, 'CONCURRENT_MODIFICATION');
+      }
+    }
+    renameSync(temp, pathname);
+    tempOwned = false;
+    return temp;
+  } finally {
+    if (tempOwned) {
+      try { unlinkSync(temp); } catch (error) { if (error?.code !== 'ENOENT') throw error; }
+    }
+  }
 }
 
-function removeEmptyDirs(target, rels) {
+function currentRegularFileHash(pathname) {
+  const stat = safeLstat(pathname);
+  if (!stat) return { status: 'absent', sha256: null };
+  if (!stat.isFile() || stat.isSymbolicLink()) return { status: 'unsafe', sha256: null };
+  return { status: 'file', sha256: sha256(readFileSync(pathname)) };
+}
+
+function guardedRegularFileHash(target, rel) {
+  const safeRel = validateRelative(rel);
+  ensureNoSymlinkPath(target, safeRel);
+  return currentRegularFileHash(join(target, safeRel));
+}
+
+function recoveryRegularFileHash(target, pathname, conflicts, label) {
+  let rel;
+  try {
+    rel = validateRelative(posixRel(relative(resolve(target), resolve(pathname))));
+    return guardedRegularFileHash(target, rel);
+  } catch (error) {
+    conflicts.push(`${label} has an unsafe recovery path; preserved (${error.message})`);
+    return { status: 'unsafe', sha256: null };
+  }
+}
+
+function removeOwnedFile(target, pathname, expectedSha256, conflicts, label) {
+  const current = recoveryRegularFileHash(target, pathname, conflicts, label);
+  if (current.status === 'absent') return;
+  if (current.status !== 'file' || current.sha256 !== expectedSha256) {
+    if (current.status !== 'unsafe') conflicts.push(`${label} changed concurrently; preserved`);
+    return;
+  }
+  unlinkSync(pathname);
+}
+
+function removeEmptyDirs(target, rels, conflicts = []) {
   for (const rel of [...new Set(rels)].sort((a, b) => b.split('/').length - a.split('/').length)) {
     const absolute = join(target, rel);
     try {
+      ensureNoSymlinkPath(target, validateRelative(rel));
+    } catch (error) {
+      conflicts.push(`${rel} has an unsafe cleanup path; preserved (${error.message})`);
+      continue;
+    }
+    const stat = safeLstat(absolute);
+    if (!stat) continue;
+    if (!stat.isDirectory() || stat.isSymbolicLink()) {
+      conflicts.push(`${rel} is no longer a transition-owned directory; preserved`);
+      continue;
+    }
+    try {
       rmdirSync(absolute);
     } catch (error) {
-      if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error?.code)) throw error;
+      if (['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error?.code)) continue;
+      if (error?.code === 'ENOTDIR') {
+        conflicts.push(`${rel} changed during directory cleanup; preserved`);
+        continue;
+      }
+      throw error;
     }
   }
+  return conflicts;
 }
 
 function verifyPreservation(plan, target, createdFiles, createdDirs) {
@@ -559,42 +744,107 @@ function verifyPreservation(plan, target, createdFiles, createdDirs) {
   }
 }
 
+function verifyAppliedPostimage(plan, target, createdFiles, createdDirs) {
+  assertTargetIdentity(target, plan.targetIdentity);
+  const patch = plan.actions.find((item) => item.kind === 'patch-file');
+  const blueprint = guardedRegularFileHash(target, 'blueprint.yml');
+  if (!patch || blueprint.status !== 'file' || blueprint.sha256 !== patch.afterSha256) {
+    fail('blueprint.yml does not match the planned postimage', 'TRANSACTION_VERIFY_FAILED');
+  }
+  for (const action of plan.actions.filter((item) => item.kind === 'create-file')) {
+    const current = guardedRegularFileHash(target, action.path);
+    if (current.status !== 'file' || current.sha256 !== action.sha256) {
+      fail(`created scaffold failed byte verification: ${action.path}`, 'TRANSACTION_VERIFY_FAILED');
+    }
+  }
+  verifyPreservation(plan, target, createdFiles, createdDirs);
+  assertTargetIdentity(target, plan.targetIdentity);
+}
+
 function rollbackApplyFailure({
   target,
+  targetIdentity,
   token,
   blueprintBefore,
   blueprintMode,
+  blueprintAfterSha256,
   blueprintChanged,
   createdFiles,
+  createdFileHashes,
   createdDirs,
   stageBefore,
   stageRemoved,
   receiptFiles,
   receiptDirs,
 }) {
-  for (const pathname of receiptFiles) {
-    try { unlinkSync(pathname); } catch (error) { if (error?.code !== 'ENOENT') throw error; }
+  assertRecoveryTargetIdentity(target, targetIdentity, 'apply');
+  const conflicts = [];
+  for (const { pathname, sha256: expectedSha256 } of receiptFiles) {
+    assertRecoveryTargetIdentity(target, targetIdentity, 'apply');
+    removeOwnedFile(target, pathname, expectedSha256, conflicts, pathname);
   }
   if (stageRemoved && stageBefore) {
-    ensureDirTracked(target, dirname(join(target, '.blueprint/stage-state.json')), createdDirs);
-    writeFileSync(join(target, '.blueprint/stage-state.json'), stageBefore, { flag: 'wx' });
+    assertRecoveryTargetIdentity(target, targetIdentity, 'apply');
+    const stagePath = join(target, '.blueprint/stage-state.json');
+    let stagePathSafe = true;
+    try {
+      ensureNoSymlinkPath(target, '.blueprint/stage-state.json');
+    } catch (error) {
+      stagePathSafe = false;
+      conflicts.push(`.blueprint/stage-state.json has an unsafe recovery path; preserved (${error.message})`);
+    }
+    if (!stagePathSafe) {
+      // Never inspect or write through the unsafe ancestor.
+    } else if (safeLstat(stagePath)) {
+      conflicts.push('.blueprint/stage-state.json was recreated concurrently; preserved');
+    } else {
+      ensureDirTracked(target, dirname(stagePath), createdDirs);
+      try {
+        writeFileSync(stagePath, stageBefore, { flag: 'wx' });
+      } catch (error) {
+        if (error?.code !== 'EEXIST') throw error;
+        conflicts.push('.blueprint/stage-state.json was recreated concurrently; preserved');
+      }
+    }
   }
   for (const rel of [...createdFiles].reverse()) {
-    try { unlinkSync(join(target, rel)); } catch (error) { if (error?.code !== 'ENOENT') throw error; }
+    assertRecoveryTargetIdentity(target, targetIdentity, 'apply');
+    removeOwnedFile(target, join(target, rel), createdFileHashes.get(rel), conflicts, rel);
   }
   if (blueprintChanged) {
-    atomicWrite(join(target, 'blueprint.yml'), blueprintBefore, blueprintMode, `${token}-restore`);
+    assertRecoveryTargetIdentity(target, targetIdentity, 'apply');
+    const blueprintPath = join(target, 'blueprint.yml');
+    const current = currentRegularFileHash(blueprintPath);
+    if (current.status === 'file' && current.sha256 === blueprintAfterSha256) {
+      atomicWrite(
+        blueprintPath,
+        blueprintBefore,
+        blueprintMode,
+        `${token}-restore`,
+        { expectedSha256: blueprintAfterSha256 },
+      );
+    } else if (current.status !== 'file' || current.sha256 !== sha256(blueprintBefore)) {
+      conflicts.push('blueprint.yml changed concurrently after transition write; preserved');
+    }
   }
-  removeEmptyDirs(target, [...receiptDirs, ...createdDirs]);
+  assertRecoveryTargetIdentity(target, targetIdentity, 'apply');
+  removeEmptyDirs(target, [...receiptDirs, ...createdDirs], conflicts);
+  if (conflicts.length) {
+    fail(
+      `transaction recovery preserved concurrent edits: ${conflicts.join(' | ')}`,
+      'RECOVERY_CONFLICT',
+    );
+  }
 }
 
-export function applyVariantTransition({
+function applyVariantTransitionUnlocked({
   targetDir,
   home = DEFAULT_HOME,
   to = 'research',
   planId,
   acceptStageReset = false,
   failAfter = null,
+  mutationHook = null,
 } = {}) {
   if (!planId || !/^[a-f0-9]{64}$/.test(planId)) {
     fail('--apply requires the exact 64-character --plan-id from a fresh plan', 'PLAN_ID_REQUIRED');
@@ -615,6 +865,7 @@ export function applyVariantTransition({
 
   const target = plan.target;
   const receiptAbsolute = join(target, plan.receiptPath);
+  ensureNoSymlinkPath(target, plan.receiptPath);
   if (existsSync(dirname(receiptAbsolute))) {
     fail(`receipt directory already exists for plan ${plan.planId}`, 'RECEIPT_EXISTS');
   }
@@ -624,7 +875,12 @@ export function applyVariantTransition({
   const blueprintMode = statSync(blueprintPath).mode & 0o777;
   const blueprintPatch = computeBlueprintPatch(blueprintBefore.toString('utf8'));
   const blueprintAfter = Buffer.from(blueprintPatch.next);
+  const blueprintAction = plan.actions.find((item) => item.kind === 'patch-file');
+  if (!blueprintAction || sha256(blueprintBefore) !== blueprintAction.beforeSha256) {
+    fail('blueprint.yml changed after transition preflight', 'PLAN_MISMATCH');
+  }
   const createdFiles = [];
+  const createdFileHashes = new Map();
   const createdDirs = [];
   const receiptFiles = [];
   const receiptDirs = [];
@@ -638,11 +894,22 @@ export function applyVariantTransition({
   };
 
   try {
-    atomicWrite(blueprintPath, blueprintAfter, blueprintMode, plan.planId);
+    invokeMutationHook(mutationHook, { operation: 'patch-file', path: 'blueprint.yml', target });
+    assertTargetIdentity(target, plan.targetIdentity);
+    atomicWrite(
+      blueprintPath,
+      blueprintAfter,
+      blueprintMode,
+      plan.planId,
+      { expectedSha256: blueprintAction.beforeSha256 },
+    );
     blueprintChanged = true;
     checkpoint();
 
     for (const action of plan.actions.filter((item) => item.kind === 'create-directory')) {
+      invokeMutationHook(mutationHook, { operation: 'create-directory', path: action.path, target });
+      assertTargetIdentity(target, plan.targetIdentity);
+      ensureNoSymlinkPath(target, action.path);
       ensureDirTracked(target, join(target, action.path), createdDirs);
       checkpoint();
     }
@@ -651,35 +918,38 @@ export function applyVariantTransition({
       if (!material || material.sha256 !== action.sha256) {
         fail(`canonical scaffold changed after planning: ${action.path}`, 'CANONICAL_SCAFFOLD_CHANGED');
       }
+      invokeMutationHook(mutationHook, { operation: 'create-file', path: action.path, target });
+      assertTargetIdentity(target, plan.targetIdentity);
+      ensureNoSymlinkPath(target, action.path);
       ensureDirTracked(target, dirname(join(target, action.path)), createdDirs);
       writeFileSync(join(target, action.path), material.content, { flag: 'wx' });
       createdFiles.push(action.path);
+      createdFileHashes.set(action.path, action.sha256);
       checkpoint();
     }
 
     const stageAction = plan.actions.find((item) => item.kind === 'archive-stage-state');
     if (stageAction) {
       const stagePath = join(target, stageAction.path);
+      invokeMutationHook(mutationHook, { operation: 'archive-stage-state', path: stageAction.path, target });
+      assertTargetIdentity(target, plan.targetIdentity);
+      ensureNoSymlinkPath(target, stageAction.path);
       stageBefore = readFileSync(stagePath);
       if (sha256(stageBefore) !== stageAction.beforeSha256) {
-        fail('stage state changed after planning', 'PLAN_MISMATCH');
+        fail('stage state changed immediately before archive', 'CONCURRENT_MODIFICATION');
       }
       unlinkSync(stagePath);
       stageRemoved = true;
       checkpoint();
     }
 
-    if (sha256(readFileSync(blueprintPath)) !== plan.actions.find((item) => item.kind === 'patch-file').afterSha256) {
-      fail('blueprint.yml did not match the planned postimage', 'TRANSACTION_VERIFY_FAILED');
-    }
-    for (const action of plan.actions.filter((item) => item.kind === 'create-file')) {
-      if (sha256(readFileSync(join(target, action.path))) !== action.sha256) {
-        fail(`created scaffold failed byte verification: ${action.path}`, 'TRANSACTION_VERIFY_FAILED');
-      }
-    }
-    verifyPreservation(plan, target, createdFiles, createdDirs);
+    verifyAppliedPostimage(plan, target, createdFiles, createdDirs);
     checkpoint();
 
+    invokeMutationHook(mutationHook, { operation: 'write-receipt', path: plan.receiptPath, target });
+    assertTargetIdentity(target, plan.targetIdentity);
+    ensureNoSymlinkPath(target, plan.receiptPath);
+    verifyAppliedPostimage(plan, target, createdFiles, createdDirs);
     ensureDirTracked(target, dirname(receiptAbsolute), receiptDirs);
     const receipt = {
       schema: RECEIPT_SCHEMA,
@@ -706,11 +976,20 @@ export function applyVariantTransition({
       cleanup: plan.cleanup,
       rollbackBoundary: plan.rollback,
     };
+    const receiptBytes = Buffer.from(`${JSON.stringify(receipt, null, 2)}\n`);
+    const receiptSha256 = sha256(receiptBytes);
     const receiptTemp = `${receiptAbsolute}.tmp`;
-    writeFileSync(receiptTemp, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
-    receiptFiles.push(receiptTemp);
-    renameSync(receiptTemp, receiptAbsolute);
-    receiptFiles.splice(receiptFiles.indexOf(receiptTemp), 1);
+    writeFileSync(receiptTemp, receiptBytes, { flag: 'wx' });
+    receiptFiles.push({ pathname: receiptTemp, sha256: receiptSha256 });
+    ensureNoSymlinkPath(target, plan.receiptPath);
+    // Last whole-operation check before the success receipt becomes visible.
+    // A receipt may never certify a postimage that changed after verification.
+    verifyAppliedPostimage(plan, target, createdFiles, createdDirs);
+    assertTargetIdentity(target, plan.targetIdentity);
+    linkSync(receiptTemp, receiptAbsolute);
+    receiptFiles.push({ pathname: receiptAbsolute, sha256: receiptSha256 });
+    unlinkSync(receiptTemp);
+    receiptFiles.splice(receiptFiles.findIndex((item) => item.pathname === receiptTemp), 1);
     checkpoint();
 
     return {
@@ -727,20 +1006,31 @@ export function applyVariantTransition({
   } catch (error) {
     rollbackApplyFailure({
       target,
+      targetIdentity: plan.targetIdentity,
       token: plan.planId,
       blueprintBefore,
       blueprintMode,
+      blueprintAfterSha256: blueprintAction.afterSha256,
       blueprintChanged,
       createdFiles,
+      createdFileHashes,
       createdDirs,
       stageBefore,
       stageRemoved,
-      receiptFiles: [...receiptFiles, receiptAbsolute],
+      receiptFiles,
       receiptDirs,
     });
     if (error instanceof VariantTransitionError) throw error;
     fail(`transition transaction failed and was restored — ${error.message}`, 'TRANSACTION_FAILED');
   }
+}
+
+export function applyVariantTransition(options = {}) {
+  const target = requireGitRoot(options.targetDir || process.cwd());
+  return withTransitionLock(target, () => applyVariantTransitionUnlocked({
+    ...options,
+    targetDir: target,
+  }));
 }
 
 function receiptPath(target, receiptId) {
@@ -750,12 +1040,41 @@ function receiptPath(target, receiptId) {
   return join(target, '.blueprint', 'variant-transitions', receiptId, 'receipt.json');
 }
 
+function expectedCreatedDirectories(plan) {
+  const preexisting = new Set();
+  for (const inventory of plan.protectedRoots || []) {
+    if (inventory.exists) preexisting.add(validateRelative(inventory.root));
+    for (const entry of inventory.entries || []) {
+      if (entry.type === 'directory') preexisting.add(validateRelative(entry.path));
+    }
+  }
+
+  const candidates = new Set();
+  const addDirectoryAndAncestors = (rel) => {
+    let cursor = validateRelative(rel);
+    while (cursor) {
+      candidates.add(cursor);
+      if (!cursor.includes('/')) break;
+      cursor = cursor.slice(0, cursor.lastIndexOf('/'));
+    }
+  };
+  for (const action of plan.actions || []) {
+    if (action.kind === 'create-directory') addDirectoryAndAncestors(action.path);
+    if (action.kind === 'create-file') addDirectoryAndAncestors(posixRel(dirname(action.path)));
+  }
+  return [...candidates].filter((rel) => !preexisting.has(rel)).sort();
+}
+
 function validateReceiptShape(receipt, receiptId, target) {
   if (receipt.schema !== RECEIPT_SCHEMA || receipt.receiptId !== receiptId) {
     fail('transition receipt schema or identity is invalid', 'RECEIPT_CORRUPT');
   }
-  if (resolve(receipt.target) !== target || resolve(receipt.plan?.target || '') !== target) {
-    fail(`receipt belongs to a different target: ${receipt.target}`, 'RECEIPT_TARGET_MISMATCH');
+  if (
+    typeof receipt.target !== 'string'
+    || !isAbsolute(receipt.target)
+    || receipt.plan?.target !== receipt.target
+  ) {
+    fail('transition receipt target provenance is invalid', 'RECEIPT_CORRUPT');
   }
   const { planId, receiptPath: plannedReceiptPath, ...planCore } = receipt.plan || {};
   const expectedReceiptPath = `.blueprint/variant-transitions/${receiptId}/receipt.json`;
@@ -766,6 +1085,32 @@ function validateReceiptShape(receipt, receiptId, target) {
     || sha256(stableJson(planCore)) !== receiptId
   ) {
     fail('transition receipt contains a modified or invalid plan', 'RECEIPT_CORRUPT');
+  }
+  const recordedIdentity = receipt.plan?.targetIdentity;
+  const currentIdentity = directoryIdentity(target);
+  if (
+    !recordedIdentity
+    || !/^\d+$/.test(recordedIdentity.device || '')
+    || !/^\d+$/.test(recordedIdentity.inode || '')
+    || recordedIdentity.device !== currentIdentity.device
+    || recordedIdentity.inode !== currentIdentity.inode
+  ) {
+    fail(
+      'current worktree root is not the directory that received the transition',
+      'RECEIPT_TARGET_MISMATCH',
+    );
+  }
+  // A receipt records the original absolute checkout path as provenance, but
+  // rollback authority survives a same-filesystem directory rename. Device
+  // and inode identity distinguish that rename from a copied checkout; Git
+  // ancestry supplies an additional repository-history boundary.
+  const baseline = receipt.plan?.git?.head;
+  if (
+    typeof baseline !== 'string'
+    || !/^[a-f0-9]{40,64}$/.test(baseline)
+    || git(target, ['merge-base', '--is-ancestor', baseline, 'HEAD'], { optional: true }) === null
+  ) {
+    fail('current repository history does not descend from the transition receipt baseline', 'RECEIPT_TARGET_MISMATCH');
   }
 
   const planCreateFiles = new Map(
@@ -778,21 +1123,6 @@ function validateReceiptShape(receipt, receiptId, target) {
       .filter((action) => action.kind === 'patch-file')
       .map((action) => [action.path, action]),
   );
-  const expectedDirectoryCandidates = new Set();
-  const addAncestors = (rel) => {
-    let cursor = validateRelative(rel);
-    while (cursor.includes('/')) {
-      cursor = cursor.slice(0, cursor.lastIndexOf('/'));
-      expectedDirectoryCandidates.add(cursor);
-    }
-  };
-  for (const action of receipt.plan.actions) {
-    if (action.kind === 'create-directory') {
-      expectedDirectoryCandidates.add(validateRelative(action.path));
-      addAncestors(action.path);
-    }
-    if (action.kind === 'create-file') addAncestors(action.path);
-  }
 
   if (!Array.isArray(receipt.patchedFiles) || receipt.patchedFiles.length !== planPatches.size) {
     fail('receipt patched-file set does not match its plan', 'RECEIPT_CORRUPT');
@@ -823,12 +1153,16 @@ function validateReceiptShape(receipt, receiptId, target) {
     }
   }
 
-  if (!Array.isArray(receipt.createdDirectories)) fail('receipt created-directory set is invalid', 'RECEIPT_CORRUPT');
-  for (const rel of receipt.createdDirectories) {
-    validateRelative(rel);
-    if (!expectedDirectoryCandidates.has(rel)) {
-      fail(`receipt names an unplanned created directory: ${rel}`, 'RECEIPT_CORRUPT');
-    }
+  if (!Array.isArray(receipt.createdDirectories)) {
+    fail('receipt created-directory set is invalid', 'RECEIPT_CORRUPT');
+  }
+  const actualCreatedDirectories = receipt.createdDirectories.map(validateRelative).sort();
+  const expectedDirectories = expectedCreatedDirectories(receipt.plan);
+  if (
+    new Set(actualCreatedDirectories).size !== actualCreatedDirectories.length
+    || stableJson(actualCreatedDirectories) !== stableJson(expectedDirectories)
+  ) {
+    fail('receipt created-directory set does not match the pre-transition inventory', 'RECEIPT_CORRUPT');
   }
 
   const stageAction = receipt.plan.actions.find((action) => action.kind === 'archive-stage-state');
@@ -898,8 +1232,11 @@ export function planVariantRollback({ targetDir, receiptId } = {}) {
       conflicts.push(`${created.path} was removed or edited after transition`);
     }
   }
-  if (receipt.archivedStageState && existsSync(join(target, receipt.archivedStageState.path))) {
-    conflicts.push(`${receipt.archivedStageState.path} has replacement state; rollback will not overwrite it`);
+  if (receipt.archivedStageState) {
+    ensureNoSymlinkPath(target, receipt.archivedStageState.path);
+    if (existsSync(join(target, receipt.archivedStageState.path))) {
+      conflicts.push(`${receipt.archivedStageState.path} has replacement state; rollback will not overwrite it`);
+    }
   }
 
   const allowedFiles = new Set(receipt.createdFiles.map((item) => item.path));
@@ -915,7 +1252,9 @@ export function planVariantRollback({ targetDir, receiptId } = {}) {
   }
 
   const rollbackPath = join(dirname(pathname), 'rollback.json');
+  ensureNoSymlinkPath(target, posixRel(relative(target, rollbackPath)));
   if (existsSync(rollbackPath)) conflicts.push('rollback receipt already exists');
+  assertTargetIdentity(target, receipt.plan.targetIdentity);
   return {
     schema: ROLLBACK_SCHEMA,
     status: conflicts.length ? 'blocked' : 'ready',
@@ -931,7 +1270,111 @@ export function planVariantRollback({ targetDir, receiptId } = {}) {
   };
 }
 
-export function rollbackVariantTransition({ targetDir, receiptId, failAfter = null } = {}) {
+function restoreRollbackFailure({
+  target,
+  targetIdentity,
+  receipt,
+  receiptId,
+  currentPatched,
+  currentCreated,
+  restoredStage,
+  rollbackReceiptFiles,
+}) {
+  assertRecoveryTargetIdentity(target, targetIdentity, 'rollback');
+  const conflicts = [];
+  for (const { pathname, sha256: expectedSha256 } of rollbackReceiptFiles) {
+    assertRecoveryTargetIdentity(target, targetIdentity, 'rollback');
+    removeOwnedFile(target, pathname, expectedSha256, conflicts, pathname);
+  }
+  if (restoredStage && receipt.archivedStageState) {
+    assertRecoveryTargetIdentity(target, targetIdentity, 'rollback');
+    removeOwnedFile(
+      target,
+      join(target, receipt.archivedStageState.path),
+      receipt.archivedStageState.sha256,
+      conflicts,
+      receipt.archivedStageState.path,
+    );
+  }
+  for (const rel of [...receipt.createdDirectories].sort((a, b) => a.split('/').length - b.split('/').length)) {
+    assertRecoveryTargetIdentity(target, targetIdentity, 'rollback');
+    try {
+      ensureDirTracked(target, join(target, rel), []);
+    } catch (error) {
+      conflicts.push(`${rel} could not be restored safely: ${error.message}`);
+    }
+  }
+  for (const [rel, bytes] of currentCreated) {
+    assertRecoveryTargetIdentity(target, targetIdentity, 'rollback');
+    const pathname = join(target, rel);
+    const current = recoveryRegularFileHash(target, pathname, conflicts, rel);
+    if (current.status === 'absent') {
+      try {
+        ensureDirTracked(target, dirname(pathname), []);
+        writeFileSync(pathname, bytes, { flag: 'wx' });
+      } catch (error) {
+        if (error?.code !== 'EEXIST') throw error;
+        conflicts.push(`${rel} was recreated concurrently; preserved`);
+      }
+    } else if (current.status !== 'file' || current.sha256 !== sha256(bytes)) {
+      conflicts.push(`${rel} was recreated concurrently with different content; preserved`);
+    }
+  }
+  for (const patched of receipt.patchedFiles) {
+    assertRecoveryTargetIdentity(target, targetIdentity, 'rollback');
+    const bytes = currentPatched.get(patched.path);
+    if (!bytes) continue;
+    const pathname = join(target, patched.path);
+    const current = recoveryRegularFileHash(target, pathname, conflicts, patched.path);
+    if (current.status === 'file' && current.sha256 === patched.beforeSha256) {
+      atomicWrite(
+        pathname,
+        bytes,
+        patched.mode,
+        `${receiptId}-rollback-restore`,
+        { expectedSha256: patched.beforeSha256 },
+      );
+    } else if (current.status !== 'file' || current.sha256 !== patched.afterSha256) {
+      conflicts.push(`${patched.path} changed concurrently during rollback; preserved`);
+    }
+  }
+  if (conflicts.length) {
+    fail(
+      `rollback recovery preserved concurrent edits: ${conflicts.join(' | ')}`,
+      'RECOVERY_CONFLICT',
+    );
+  }
+}
+
+function verifyRollbackPostimage(receipt, target) {
+  assertTargetIdentity(target, receipt.plan.targetIdentity);
+  for (const patched of receipt.patchedFiles) {
+    const current = guardedRegularFileHash(target, patched.path);
+    if (current.status !== 'file' || current.sha256 !== patched.beforeSha256) {
+      fail(`${patched.path} changed after rollback restore`, 'TRANSACTION_VERIFY_FAILED');
+    }
+  }
+  for (const created of receipt.createdFiles) {
+    ensureNoSymlinkPath(target, created.path);
+    if (safeLstat(join(target, created.path))) {
+      fail(`${created.path} reappeared after rollback removal`, 'TRANSACTION_VERIFY_FAILED');
+    }
+  }
+  if (receipt.archivedStageState) {
+    const current = guardedRegularFileHash(target, receipt.archivedStageState.path);
+    if (current.status !== 'file' || current.sha256 !== receipt.archivedStageState.sha256) {
+      fail(`${receipt.archivedStageState.path} changed after rollback restore`, 'TRANSACTION_VERIFY_FAILED');
+    }
+  }
+  assertTargetIdentity(target, receipt.plan.targetIdentity);
+}
+
+function rollbackVariantTransitionUnlocked({
+  targetDir,
+  receiptId,
+  failAfter = null,
+  mutationHook = null,
+} = {}) {
   const rollbackPlan = planVariantRollback({ targetDir, receiptId });
   if (rollbackPlan.status !== 'ready') {
     fail(`rollback is blocked: ${rollbackPlan.conflicts.join(' | ')}`, 'ROLLBACK_BLOCKED');
@@ -941,6 +1384,7 @@ export function rollbackVariantTransition({ targetDir, receiptId, failAfter = nu
   const rollbackAbsolute = join(target, rollbackPlan.rollbackReceiptPath);
   const currentPatched = new Map();
   const currentCreated = new Map();
+  const rollbackReceiptFiles = [];
   let restoredStage = false;
   let step = 0;
   const checkpoint = () => {
@@ -950,18 +1394,45 @@ export function rollbackVariantTransition({ targetDir, receiptId, failAfter = nu
 
   try {
     for (const patched of receipt.patchedFiles) {
-      currentPatched.set(patched.path, readFileSync(join(target, patched.path)));
+      invokeMutationHook(mutationHook, { operation: 'restore-file', path: patched.path, target });
+      assertTargetIdentity(target, receipt.plan.targetIdentity);
+      ensureNoSymlinkPath(target, patched.path);
+      const current = readFileSync(join(target, patched.path));
+      if (sha256(current) !== patched.afterSha256) {
+        fail(`${patched.path} changed immediately before rollback restore`, 'CONCURRENT_MODIFICATION');
+      }
+      currentPatched.set(patched.path, current);
       const before = Buffer.from(patched.beforeBase64, 'base64');
       if (sha256(before) !== patched.beforeSha256) fail(`receipt preimage hash mismatch: ${patched.path}`, 'RECEIPT_CORRUPT');
-      atomicWrite(join(target, patched.path), before, patched.mode, `${receiptId}-rollback`);
+      atomicWrite(
+        join(target, patched.path),
+        before,
+        patched.mode,
+        `${receiptId}-rollback`,
+        { expectedSha256: patched.afterSha256 },
+      );
       checkpoint();
     }
     for (const created of receipt.createdFiles) {
-      currentCreated.set(created.path, readFileSync(join(target, created.path)));
+      invokeMutationHook(mutationHook, { operation: 'remove-created-file', path: created.path, target });
+      assertTargetIdentity(target, receipt.plan.targetIdentity);
+      ensureNoSymlinkPath(target, created.path);
+      const current = readFileSync(join(target, created.path));
+      if (sha256(current) !== created.sha256) {
+        fail(`${created.path} changed immediately before rollback removal`, 'CONCURRENT_MODIFICATION');
+      }
+      currentCreated.set(created.path, current);
       unlinkSync(join(target, created.path));
       checkpoint();
     }
     if (receipt.archivedStageState) {
+      invokeMutationHook(mutationHook, {
+        operation: 'restore-stage-state',
+        path: receipt.archivedStageState.path,
+        target,
+      });
+      assertTargetIdentity(target, receipt.plan.targetIdentity);
+      ensureNoSymlinkPath(target, receipt.archivedStageState.path);
       const state = Buffer.from(receipt.archivedStageState.beforeBase64, 'base64');
       if (sha256(state) !== receipt.archivedStageState.sha256) fail('archived stage-state hash mismatch', 'RECEIPT_CORRUPT');
       ensureDirTracked(target, dirname(join(target, receipt.archivedStageState.path)), []);
@@ -969,7 +1440,11 @@ export function rollbackVariantTransition({ targetDir, receiptId, failAfter = nu
       restoredStage = true;
       checkpoint();
     }
-    removeEmptyDirs(target, rollbackPlan.removeDirectories);
+    assertTargetIdentity(target, receipt.plan.targetIdentity);
+    const directoryConflicts = removeEmptyDirs(target, rollbackPlan.removeDirectories);
+    if (directoryConflicts.length) {
+      fail(`rollback directory cleanup changed concurrently: ${directoryConflicts.join(' | ')}`, 'CONCURRENT_MODIFICATION');
+    }
 
     const rollbackReceipt = {
       schema: ROLLBACK_SCHEMA,
@@ -982,9 +1457,29 @@ export function rollbackVariantTransition({ targetDir, receiptId, failAfter = nu
       restoredStageState: rollbackPlan.restoreStageState,
       originalReceiptRetained: posixRel(relative(target, pathname)),
     };
+    invokeMutationHook(mutationHook, {
+      operation: 'write-rollback-receipt',
+      path: rollbackPlan.rollbackReceiptPath,
+      target,
+    });
+    assertTargetIdentity(target, receipt.plan.targetIdentity);
+    ensureNoSymlinkPath(target, rollbackPlan.rollbackReceiptPath);
+    verifyRollbackPostimage(receipt, target);
+    const rollbackReceiptBytes = Buffer.from(`${JSON.stringify(rollbackReceipt, null, 2)}\n`);
+    const rollbackReceiptSha256 = sha256(rollbackReceiptBytes);
     const temp = `${rollbackAbsolute}.tmp`;
-    writeFileSync(temp, `${JSON.stringify(rollbackReceipt, null, 2)}\n`, { flag: 'wx' });
-    renameSync(temp, rollbackAbsolute);
+    writeFileSync(temp, rollbackReceiptBytes, { flag: 'wx' });
+    rollbackReceiptFiles.push({ pathname: temp, sha256: rollbackReceiptSha256 });
+    // Last whole-operation check before the rollback receipt becomes visible.
+    verifyRollbackPostimage(receipt, target);
+    assertTargetIdentity(target, receipt.plan.targetIdentity);
+    linkSync(temp, rollbackAbsolute);
+    rollbackReceiptFiles.push({ pathname: rollbackAbsolute, sha256: rollbackReceiptSha256 });
+    unlinkSync(temp);
+    rollbackReceiptFiles.splice(
+      rollbackReceiptFiles.findIndex((item) => item.pathname === temp),
+      1,
+    );
     checkpoint();
     return {
       ok: true,
@@ -996,25 +1491,27 @@ export function rollbackVariantTransition({ targetDir, receiptId, failAfter = nu
       originalReceiptRetained: rollbackPlan.receiptPath,
     };
   } catch (error) {
-    try { unlinkSync(`${rollbackAbsolute}.tmp`); } catch (cleanupError) { if (cleanupError?.code !== 'ENOENT') throw cleanupError; }
-    try { unlinkSync(rollbackAbsolute); } catch (cleanupError) { if (cleanupError?.code !== 'ENOENT') throw cleanupError; }
-    if (restoredStage && receipt.archivedStageState) {
-      unlinkSync(join(target, receipt.archivedStageState.path));
-    }
-    for (const rel of [...receipt.createdDirectories].sort((a, b) => a.split('/').length - b.split('/').length)) {
-      ensureDirTracked(target, join(target, rel), []);
-    }
-    for (const [rel, bytes] of currentCreated) {
-      ensureDirTracked(target, dirname(join(target, rel)), []);
-      if (!existsSync(join(target, rel))) writeFileSync(join(target, rel), bytes, { flag: 'wx' });
-    }
-    for (const patched of receipt.patchedFiles) {
-      const bytes = currentPatched.get(patched.path);
-      if (bytes) atomicWrite(join(target, patched.path), bytes, patched.mode, `${receiptId}-rollback-restore`);
-    }
+    restoreRollbackFailure({
+      target,
+      targetIdentity: receipt.plan.targetIdentity,
+      receipt,
+      receiptId,
+      currentPatched,
+      currentCreated,
+      restoredStage,
+      rollbackReceiptFiles,
+    });
     if (error instanceof VariantTransitionError) throw error;
     fail(`rollback transaction failed and the applied state was restored — ${error.message}`, 'ROLLBACK_TRANSACTION_FAILED');
   }
+}
+
+export function rollbackVariantTransition(options = {}) {
+  const target = requireGitRoot(options.targetDir || process.cwd());
+  return withTransitionLock(target, () => rollbackVariantTransitionUnlocked({
+    ...options,
+    targetDir: target,
+  }));
 }
 
 export function formatTransitionPlan(plan) {

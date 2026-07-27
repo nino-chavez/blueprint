@@ -2,15 +2,19 @@
 
 import {
   appendFileSync,
+  cpSync,
   existsSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
+  renameSync,
   rmSync,
   statSync,
   symlinkSync,
+  unlinkSync,
   utimesSync,
   writeFileSync,
 } from 'node:fs';
@@ -183,12 +187,105 @@ try {
   ok(errorCode(() => planVariantTransition({ targetDir: custom, home: ROOT })) === 'CUSTOM_STAGE_MODEL', 'custom stage model refuses');
   const corrupt = fixture('corrupt', { stageState: '{not json\n' });
   ok(errorCode(() => planVariantTransition({ targetDir: corrupt, home: ROOT })) === 'STAGE_STATE_CORRUPT', 'corrupt stage state refuses');
+  const malformedStageStates = [
+    ['array', '[]\n'],
+    ['null', 'null\n'],
+    ['scalar', '"state"\n'],
+    ['history', '{"history":{}}\n'],
+    ['reviews', '{"reviews":[]}\n'],
+  ];
+  for (const [name, body] of malformedStageStates) {
+    const malformed = fixture(`malformed-stage-${name}`, { stageState: body });
+    ok(
+      errorCode(() => planVariantTransition({ targetDir: malformed, home: ROOT })) === 'STAGE_STATE_SHAPE',
+      `parseable malformed stage state refuses: ${name}`,
+    );
+  }
   const symlinked = fixture('symlinked');
   rmSync(path.join(symlinked, 'docs'), { recursive: true });
   symlinkSync('research', path.join(symlinked, 'docs'));
   ok(errorCode(() => planVariantTransition({ targetDir: symlinked, home: ROOT })) === 'SYMLINK_PATH', 'symlinked planned path refuses');
+  const receiptSymlinked = fixture('receipt-symlinked');
+  const receiptEscape = path.join(TEST_ROOT, 'receipt-escape');
+  mkdirSync(receiptEscape);
+  mkdirSync(path.join(receiptSymlinked, '.blueprint'));
+  symlinkSync(receiptEscape, path.join(receiptSymlinked, '.blueprint/variant-transitions'));
+  ok(
+    errorCode(() => planVariantTransition({ targetDir: receiptSymlinked, home: ROOT })) === 'SYMLINK_PATH',
+    'symlinked receipt root refuses during read-only planning',
+  );
+  ok(readdirSync(receiptEscape).length === 0, 'receipt symlink refusal writes nothing outside target');
 
   // 3. Plan mismatch, planned-path dirt, and unrelated dirt.
+  const pinnedParentA = path.join(TEST_ROOT, 'pinned-parent-a');
+  const pinnedParentB = path.join(TEST_ROOT, 'pinned-parent-b');
+  mkdirSync(pinnedParentA);
+  mkdirSync(pinnedParentB);
+  const pinnedTargetA = fixture('pinned-parent-a/initiative');
+  const pinnedTargetB = fixture('pinned-parent-b/initiative');
+  const pinnedTargetBBefore = walkSnapshot(pinnedTargetB);
+  const lexicalParent = path.join(TEST_ROOT, 'pinned-parent-current');
+  symlinkSync(pinnedParentA, lexicalParent);
+  const lexicalTarget = path.join(lexicalParent, 'initiative');
+  const pinnedPlan = planVariantTransition({ targetDir: lexicalTarget, home: ROOT });
+  ok(pinnedPlan.target === realpathSync(pinnedTargetA), 'plan records the canonical Git-root target');
+  const pinnedApply = applyVariantTransition({
+    targetDir: lexicalTarget,
+    home: ROOT,
+    planId: pinnedPlan.planId,
+    mutationHook(event) {
+      if (event.operation === 'patch-file') {
+        unlinkSync(lexicalParent);
+        symlinkSync(pinnedParentB, lexicalParent);
+      }
+    },
+  });
+  ok(pinnedApply.applied, 'apply completes against the pinned canonical target');
+  ok(
+    readFileSync(path.join(pinnedTargetA, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'symlink-parent swap cannot redirect the scalar patch',
+  );
+  ok(
+    walkSnapshot(pinnedTargetB) === pinnedTargetBBefore,
+    'symlink-parent swap changes no bytes in the alternate checkout',
+  );
+  ok(
+    !existsSync(path.join(pinnedTargetB, pinnedApply.receiptPath)),
+    'symlink-parent swap cannot redirect the success receipt',
+  );
+
+  const rootSwapA = fixture('root-swap-a');
+  const rootSwapB = fixture('root-swap-b');
+  const rootSwapBBefore = walkSnapshot(rootSwapB);
+  const rootSwapPlan = planVariantTransition({ targetDir: rootSwapA, home: ROOT });
+  const rootSwapMoved = path.join(path.dirname(rootSwapPlan.target), 'root-swap-a-moved');
+  ok(
+    errorCode(() => applyVariantTransition({
+      targetDir: rootSwapA,
+      home: ROOT,
+      planId: rootSwapPlan.planId,
+      mutationHook(event) {
+        if (event.operation === 'patch-file') {
+          renameSync(event.target, rootSwapMoved);
+          symlinkSync(realpathSync(rootSwapB), event.target);
+        }
+      },
+    })) === 'RECOVERY_CONFLICT',
+    'apply recovery refuses a replaced canonical target root',
+  );
+  ok(
+    walkSnapshot(rootSwapB) === rootSwapBBefore,
+    'canonical-root replacement changes no bytes in the replacement checkout',
+  );
+  ok(
+    readFileSync(path.join(rootSwapMoved, 'blueprint.yml'), 'utf8').includes('variant: greenfield'),
+    'canonical-root replacement before mutation leaves the recorded checkout unchanged',
+  );
+  ok(
+    lstatSync(rootSwapPlan.target).isSymbolicLink(),
+    'recovery preserves the replacement root for operator resolution',
+  );
+
   const mismatch = fixture('mismatch');
   const mismatchPlan = planVariantTransition({ targetDir: mismatch, home: ROOT });
   appendFileSync(path.join(mismatch, 'blueprint.yml'), '# changed after plan\n');
@@ -207,6 +304,171 @@ try {
   applyVariantTransition({ targetDir: unrelated, home: ROOT, planId: unrelatedPlan.planId });
   ok(readFileSync(path.join(unrelated, 'notes-unrelated.txt'), 'utf8').includes('out of scope'), 'unrelated dirty file survives apply');
 
+  // 3b. A Git-metadata lock serializes writers; final preimage checks preserve
+  // external edits made after preflight.
+  const locked = fixture('locked');
+  const lockedPlan = planVariantTransition({ targetDir: locked, home: ROOT });
+  const rawLockPath = git(locked, 'rev-parse', '--git-path', 'blueprint-variant-transition.lock');
+  const lockPath = path.isAbsolute(rawLockPath) ? rawLockPath : path.resolve(locked, rawLockPath);
+  writeFileSync(lockPath, 'independent writer\n', { flag: 'wx' });
+  ok(
+    errorCode(() => applyVariantTransition({ targetDir: locked, home: ROOT, planId: lockedPlan.planId })) === 'TRANSITION_LOCKED',
+    'active transition lock blocks apply before writes',
+  );
+  rmSync(lockPath);
+  ok(readFileSync(path.join(locked, 'blueprint.yml'), 'utf8').includes('variant: greenfield'), 'locked apply leaves blueprint unchanged');
+
+  const rollbackLocked = fixture('rollback-locked');
+  const rollbackLockedPlan = planVariantTransition({ targetDir: rollbackLocked, home: ROOT });
+  applyVariantTransition({ targetDir: rollbackLocked, home: ROOT, planId: rollbackLockedPlan.planId });
+  const rawRollbackLockPath = git(rollbackLocked, 'rev-parse', '--git-path', 'blueprint-variant-transition.lock');
+  const rollbackLockPath = path.isAbsolute(rawRollbackLockPath)
+    ? rawRollbackLockPath
+    : path.resolve(rollbackLocked, rawRollbackLockPath);
+  writeFileSync(rollbackLockPath, 'independent writer\n', { flag: 'wx' });
+  ok(
+    errorCode(() => rollbackVariantTransition({
+      targetDir: rollbackLocked,
+      receiptId: rollbackLockedPlan.planId,
+    })) === 'TRANSITION_LOCKED',
+    'active transition lock blocks rollback before writes',
+  );
+  rmSync(rollbackLockPath);
+  ok(
+    readFileSync(path.join(rollbackLocked, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'locked rollback leaves the applied state unchanged',
+  );
+  const foreignReceipt = fixture('foreign-receipt', {
+    blueprint: 'variant: greenfield\nstage_model: greenfield\ntier: 1\n# unrelated repository history\n',
+  });
+  write(
+    foreignReceipt,
+    `.blueprint/variant-transitions/${rollbackLockedPlan.planId}/receipt.json`,
+    readFileSync(
+      path.join(
+        rollbackLocked,
+        `.blueprint/variant-transitions/${rollbackLockedPlan.planId}/receipt.json`,
+      ),
+    ),
+  );
+  ok(
+    errorCode(() => planVariantRollback({
+      targetDir: foreignReceipt,
+      receiptId: rollbackLockedPlan.planId,
+    })) === 'RECEIPT_TARGET_MISMATCH',
+    'copied receipt cannot authorize rollback in unrelated repository history',
+  );
+
+  const concurrentApply = fixture('concurrent-apply');
+  const concurrentApplyPlan = planVariantTransition({ targetDir: concurrentApply, home: ROOT });
+  ok(
+    errorCode(() => applyVariantTransition({
+      targetDir: concurrentApply,
+      home: ROOT,
+      planId: concurrentApplyPlan.planId,
+      mutationHook(event) {
+        if (event.operation === 'patch-file') {
+          appendFileSync(path.join(concurrentApply, 'blueprint.yml'), '# concurrent author edit\n');
+        }
+      },
+    })) === 'CONCURRENT_MODIFICATION',
+    'apply final preimage check detects a concurrent blueprint edit',
+  );
+  ok(
+    readFileSync(path.join(concurrentApply, 'blueprint.yml'), 'utf8').endsWith('# concurrent author edit\n'),
+    'apply preserves the concurrent blueprint edit',
+  );
+  ok(!existsSync(path.join(concurrentApply, '.blueprint/variant-transitions')), 'concurrent apply refusal leaves no receipt');
+
+  const concurrentRecovery = fixture('concurrent-recovery');
+  const concurrentRecoveryPlan = planVariantTransition({ targetDir: concurrentRecovery, home: ROOT });
+  let changedAfterPatch = false;
+  ok(
+    errorCode(() => applyVariantTransition({
+      targetDir: concurrentRecovery,
+      home: ROOT,
+      planId: concurrentRecoveryPlan.planId,
+      mutationHook(event) {
+        if (!changedAfterPatch && event.operation === 'create-file') {
+          changedAfterPatch = true;
+          appendFileSync(path.join(concurrentRecovery, 'blueprint.yml'), '# concurrent edit after patch\n');
+        }
+      },
+    })) === 'RECOVERY_CONFLICT',
+    'apply recovery reports rather than overwrites a post-write concurrent edit',
+  );
+  ok(
+    readFileSync(path.join(concurrentRecovery, 'blueprint.yml'), 'utf8').includes('# concurrent edit after patch'),
+    'apply recovery preserves a post-write concurrent edit',
+  );
+
+  const recoverySymlinkSwap = fixture('recovery-symlink-swap');
+  const recoverySymlinkSwapPlan = planVariantTransition({
+    targetDir: recoverySymlinkSwap,
+    home: ROOT,
+  });
+  const recoverySymlinkBlueprintBefore = readFileSync(
+    path.join(recoverySymlinkSwap, 'blueprint.yml'),
+  );
+  const recoveryEscape = path.join(TEST_ROOT, 'recovery-symlink-escape');
+  const recoveryEscapeReadme = path.join(recoveryEscape, 'README.md');
+  const canonicalSourcesReadme = readFileSync(
+    path.join(ROOT, 'template/research/sources-index.template.md'),
+  );
+  mkdirSync(recoveryEscape);
+  writeFileSync(recoveryEscapeReadme, canonicalSourcesReadme);
+  ok(
+    errorCode(() => applyVariantTransition({
+      targetDir: recoverySymlinkSwap,
+      home: ROOT,
+      planId: recoverySymlinkSwapPlan.planId,
+      mutationHook(event) {
+        if (event.operation === 'create-file' && event.path === 'docs/decision-memo.md') {
+          rmSync(path.join(recoverySymlinkSwap, 'research/sources'), { recursive: true });
+          symlinkSync(recoveryEscape, path.join(recoverySymlinkSwap, 'research/sources'));
+          throw new Error('force recovery after swapping a created-directory ancestor');
+        }
+      },
+    })) === 'RECOVERY_CONFLICT',
+    'apply recovery refuses a swapped symlink ancestor',
+  );
+  ok(
+    readFileSync(recoveryEscapeReadme).equals(canonicalSourcesReadme),
+    'apply recovery preserves the outside file byte-for-byte',
+  );
+  ok(
+    lstatSync(path.join(recoverySymlinkSwap, 'research/sources')).isSymbolicLink(),
+    'apply recovery preserves the swapped symlink for operator resolution',
+  );
+  ok(
+    readFileSync(path.join(recoverySymlinkSwap, 'blueprint.yml')).equals(recoverySymlinkBlueprintBefore),
+    'apply recovery restores the safe blueprint preimage after a symlink swap',
+  );
+
+  const finalApplyRace = fixture('final-apply-race');
+  const finalApplyRacePlan = planVariantTransition({ targetDir: finalApplyRace, home: ROOT });
+  ok(
+    errorCode(() => applyVariantTransition({
+      targetDir: finalApplyRace,
+      home: ROOT,
+      planId: finalApplyRacePlan.planId,
+      mutationHook(event) {
+        if (event.operation === 'write-receipt') {
+          appendFileSync(path.join(finalApplyRace, 'blueprint.yml'), '# edit at receipt boundary\n');
+        }
+      },
+    })) === 'RECOVERY_CONFLICT',
+    'apply refuses to receipt a postimage changed at the final receipt boundary',
+  );
+  ok(
+    readFileSync(path.join(finalApplyRace, 'blueprint.yml'), 'utf8').includes('# edit at receipt boundary'),
+    'final apply verification preserves the receipt-boundary edit',
+  );
+  ok(
+    !existsSync(path.join(finalApplyRace, `.blueprint/variant-transitions/${finalApplyRacePlan.planId}/receipt.json`)),
+    'failed final apply verification leaves no success receipt',
+  );
+
   // 4. Stage state requires explicit archival and round-trips on rollback.
   const stateBody = '{"schema":"test","cursor":2,"assertions":{"x":"y"}}\n';
   const withState = fixture('with-state', { stageState: stateBody });
@@ -223,6 +485,30 @@ try {
   ok(!existsSync(path.join(withState, '.blueprint/stage-state.json')), 'accepted apply archives/removes incompatible stage state');
   rollbackVariantTransition({ targetDir: withState, receiptId: statePlan.planId });
   ok(readFileSync(path.join(withState, '.blueprint/stage-state.json'), 'utf8') === stateBody, 'rollback restores exact archived stage state');
+
+  const rollbackStageSymlink = fixture('rollback-stage-symlink', { stageState: stateBody });
+  const rollbackStageSymlinkPlan = planVariantTransition({
+    targetDir: rollbackStageSymlink,
+    home: ROOT,
+    acceptStageReset: true,
+  });
+  applyVariantTransition({
+    targetDir: rollbackStageSymlink,
+    home: ROOT,
+    planId: rollbackStageSymlinkPlan.planId,
+    acceptStageReset: true,
+  });
+  const externalStage = path.join(TEST_ROOT, 'external-stage-state.json');
+  writeFileSync(externalStage, 'external state\n');
+  symlinkSync(externalStage, path.join(rollbackStageSymlink, '.blueprint/stage-state.json'));
+  ok(
+    errorCode(() => planVariantRollback({
+      targetDir: rollbackStageSymlink,
+      receiptId: rollbackStageSymlinkPlan.planId,
+    })) === 'SYMLINK_PATH',
+    'rollback preflight rejects a symlinked stage-state destination',
+  );
+  ok(readFileSync(externalStage, 'utf8') === 'external state\n', 'stage-state symlink refusal leaves its target untouched');
 
   // 5. Injected apply failure restores bytes/paths and leaves no receipt.
   const injected = fixture('injected');
@@ -247,6 +533,106 @@ try {
   ok(errorCode(() => rollbackVariantTransition({ targetDir: edited, receiptId: editedPlan.planId })) === 'ROLLBACK_BLOCKED', 'rollback refuses edited generated scaffold');
   ok(readFileSync(path.join(edited, 'blueprint.yml'), 'utf8').includes('variant: research'), 'blocked rollback makes no scalar write');
 
+  const concurrentRollback = fixture('concurrent-rollback');
+  const concurrentRollbackPlan = planVariantTransition({ targetDir: concurrentRollback, home: ROOT });
+  applyVariantTransition({ targetDir: concurrentRollback, home: ROOT, planId: concurrentRollbackPlan.planId });
+  let editedGenerated = false;
+  ok(
+    errorCode(() => rollbackVariantTransition({
+      targetDir: concurrentRollback,
+      receiptId: concurrentRollbackPlan.planId,
+      mutationHook(event) {
+        if (!editedGenerated && event.operation === 'remove-created-file') {
+          editedGenerated = true;
+          appendFileSync(path.join(concurrentRollback, event.path), '\nConcurrent authored edit.\n');
+        }
+      },
+    })) === 'CONCURRENT_MODIFICATION',
+    'rollback final preimage check detects an edit after preview',
+  );
+  ok(
+    readFileSync(path.join(concurrentRollback, 'research/sources/README.md'), 'utf8').includes('Concurrent authored edit.'),
+    'rollback preserves the concurrently edited generated file',
+  );
+  ok(
+    readFileSync(path.join(concurrentRollback, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'failed concurrent rollback restores the applied scalar state',
+  );
+
+  const finalRollbackRace = fixture('final-rollback-race');
+  const finalRollbackRacePlan = planVariantTransition({ targetDir: finalRollbackRace, home: ROOT });
+  applyVariantTransition({ targetDir: finalRollbackRace, home: ROOT, planId: finalRollbackRacePlan.planId });
+  const recreatedAtReceipt = 'Authored at rollback receipt boundary.\n';
+  ok(
+    errorCode(() => rollbackVariantTransition({
+      targetDir: finalRollbackRace,
+      receiptId: finalRollbackRacePlan.planId,
+      mutationHook(event) {
+        if (event.operation === 'write-rollback-receipt') {
+          write(finalRollbackRace, 'research/sources/README.md', recreatedAtReceipt);
+        }
+      },
+    })) === 'RECOVERY_CONFLICT',
+    'rollback refuses to receipt a removal reversed at the final receipt boundary',
+  );
+  ok(
+    readFileSync(path.join(finalRollbackRace, 'research/sources/README.md'), 'utf8') === recreatedAtReceipt,
+    'final rollback verification preserves the receipt-boundary recreation',
+  );
+  ok(
+    readFileSync(path.join(finalRollbackRace, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'failed final rollback verification restores the applied scalar state',
+  );
+  ok(
+    !existsSync(path.join(
+      finalRollbackRace,
+      `.blueprint/variant-transitions/${finalRollbackRacePlan.planId}/rollback.json`,
+    )),
+    'failed final rollback verification leaves no rollback receipt',
+  );
+
+  const rollbackRootSwapA = fixture('rollback-root-swap-a');
+  const rollbackRootSwapB = fixture('rollback-root-swap-b');
+  const rollbackRootSwapPlan = planVariantTransition({
+    targetDir: rollbackRootSwapA,
+    home: ROOT,
+  });
+  applyVariantTransition({
+    targetDir: rollbackRootSwapA,
+    home: ROOT,
+    planId: rollbackRootSwapPlan.planId,
+  });
+  const rollbackRootSwapBBefore = walkSnapshot(rollbackRootSwapB);
+  const rollbackRootSwapMoved = path.join(
+    path.dirname(rollbackRootSwapPlan.target),
+    'rollback-root-swap-a-moved',
+  );
+  ok(
+    errorCode(() => rollbackVariantTransition({
+      targetDir: rollbackRootSwapA,
+      receiptId: rollbackRootSwapPlan.planId,
+      mutationHook(event) {
+        if (event.operation === 'restore-file') {
+          renameSync(event.target, rollbackRootSwapMoved);
+          symlinkSync(realpathSync(rollbackRootSwapB), event.target);
+        }
+      },
+    })) === 'RECOVERY_CONFLICT',
+    'rollback recovery refuses a replaced canonical target root',
+  );
+  ok(
+    walkSnapshot(rollbackRootSwapB) === rollbackRootSwapBBefore,
+    'rollback root replacement changes no bytes in the replacement checkout',
+  );
+  ok(
+    readFileSync(path.join(rollbackRootSwapMoved, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'rollback root replacement before mutation leaves the applied checkout unchanged',
+  );
+  ok(
+    lstatSync(rollbackRootSwapPlan.target).isSymbolicLink(),
+    'rollback recovery preserves the replacement root for operator resolution',
+  );
+
   // 7. A modified receipt cannot expand rollback authority.
   const tampered = fixture('tampered');
   const tamperedPlan = planVariantTransition({ targetDir: tampered, home: ROOT });
@@ -260,6 +646,39 @@ try {
     'tampered receipt cannot expand rollback paths',
   );
   ok(readFileSync(path.join(tampered, 'blueprint.yml'), 'utf8').includes('variant: research'), 'tampered receipt refusal makes no scalar write');
+
+  const tamperedEmptyAncestor = fixture('tampered-empty-ancestor', { authoredPersona: false });
+  mkdirSync(path.join(tamperedEmptyAncestor, 'research'));
+  const tamperedEmptyPlan = planVariantTransition({
+    targetDir: tamperedEmptyAncestor,
+    home: ROOT,
+  });
+  const tamperedEmptyApply = applyVariantTransition({
+    targetDir: tamperedEmptyAncestor,
+    home: ROOT,
+    planId: tamperedEmptyPlan.planId,
+  });
+  const tamperedEmptyReceiptPath = path.join(
+    tamperedEmptyAncestor,
+    tamperedEmptyApply.receiptPath,
+  );
+  const tamperedEmptyReceipt = JSON.parse(readFileSync(tamperedEmptyReceiptPath, 'utf8'));
+  tamperedEmptyReceipt.createdDirectories.push('research');
+  writeFileSync(
+    tamperedEmptyReceiptPath,
+    `${JSON.stringify(tamperedEmptyReceipt, null, 2)}\n`,
+  );
+  ok(
+    errorCode(() => planVariantRollback({
+      targetDir: tamperedEmptyAncestor,
+      receiptId: tamperedEmptyPlan.planId,
+    })) === 'RECEIPT_CORRUPT',
+    'tampered receipt cannot claim a pre-existing empty ancestor',
+  );
+  ok(
+    lstatSync(path.join(tamperedEmptyAncestor, 'research')).isDirectory(),
+    'tampered empty-ancestor refusal preserves the pre-existing directory',
+  );
 
   // 8. Injected rollback failure restores the fully applied state.
   const rollbackInjected = fixture('rollback-injected');
@@ -284,7 +703,32 @@ try {
     '--tier=1',
     `--target=${stamped}`,
   ], { stdio: 'ignore' });
+  write(stamped, 'research/personas-and-jtbd.md', '# Authored after initial stamp\n\nDO NOT OVERWRITE\n');
   commitFixture(stamped);
+  const beforeLegacyRestamp = walkSnapshot(stamped, { mtimes: true });
+  let legacyRestampRejected = false;
+  try {
+    execFileSync(process.execPath, [
+      STAMP,
+      '--mode=stamp',
+      '--name=transition-stamp',
+      '--variant=research',
+      '--tier=0',
+      `--target=${stamped}`,
+    ], { stdio: 'ignore' });
+  } catch {
+    legacyRestampRejected = true;
+  }
+  ok(legacyRestampRejected, 'legacy init cannot be reused as a variant migration');
+  ok(walkSnapshot(stamped, { mtimes: true }) === beforeLegacyRestamp, 'rejected legacy restamp changes no bytes, paths, or mtimes');
+  ok(
+    readFileSync(path.join(stamped, 'research/personas-and-jtbd.md'), 'utf8').includes('DO NOT OVERWRITE'),
+    'rejected legacy restamp preserves authored research',
+  );
+  ok(
+    readFileSync(path.join(stamped, 'blueprint.yml'), 'utf8').includes('variant: greenfield'),
+    'rejected legacy restamp preserves the original variant',
+  );
   const stampedPlan = JSON.parse(execFileSync(process.execPath, [
     BIN,
     'variant',
@@ -301,6 +745,50 @@ try {
   ok(deriveStageStatus({ root: stamped }).variant === 'research', 'real greenfield stamp derives research after transition');
   rollbackVariantTransition({ targetDir: stamped, receiptId: stampedPlan.planId });
   ok(readFileSync(path.join(stamped, 'blueprint.yml'), 'utf8').includes('variant: greenfield'), 'real stamp rollback restores greenfield');
+
+  const copiedOriginal = fixture('copied-original');
+  const copiedPlan = planVariantTransition({ targetDir: copiedOriginal, home: ROOT });
+  applyVariantTransition({ targetDir: copiedOriginal, home: ROOT, planId: copiedPlan.planId });
+  const copiedCheckout = path.join(TEST_ROOT, 'copied-checkout');
+  cpSync(copiedOriginal, copiedCheckout, { recursive: true, preserveTimestamps: true });
+  ok(
+    errorCode(() => planVariantRollback({
+      targetDir: copiedCheckout,
+      receiptId: copiedPlan.planId,
+    })) === 'RECEIPT_TARGET_MISMATCH',
+    'copied checkout cannot claim moved-checkout rollback while the original target exists',
+  );
+  ok(
+    readFileSync(path.join(copiedCheckout, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'copied-checkout refusal makes no rollback write',
+  );
+  rmSync(copiedOriginal, { recursive: true, force: true });
+  ok(
+    errorCode(() => planVariantRollback({
+      targetDir: copiedCheckout,
+      receiptId: copiedPlan.planId,
+    })) === 'RECEIPT_TARGET_MISMATCH',
+    'copied checkout cannot impersonate a move after the original is removed',
+  );
+  ok(
+    readFileSync(path.join(copiedCheckout, 'blueprint.yml'), 'utf8').includes('variant: research'),
+    'deleted-original copy refusal makes no rollback write',
+  );
+
+  const portableOriginal = fixture('portable-original');
+  const portablePlan = planVariantTransition({ targetDir: portableOriginal, home: ROOT });
+  applyVariantTransition({ targetDir: portableOriginal, home: ROOT, planId: portablePlan.planId });
+  const portableMoved = path.join(TEST_ROOT, 'portable-moved');
+  renameSync(portableOriginal, portableMoved);
+  ok(
+    planVariantRollback({ targetDir: portableMoved, receiptId: portablePlan.planId }).status === 'ready',
+    'rollback receipt remains valid after checkout directory rename',
+  );
+  rollbackVariantTransition({ targetDir: portableMoved, receiptId: portablePlan.planId });
+  ok(
+    readFileSync(path.join(portableMoved, 'blueprint.yml'), 'utf8').includes('variant: greenfield'),
+    'moved-checkout rollback restores the preimage',
+  );
 
   const already = fixture('already', { blueprint: 'variant: research\nstage_model: research\n' });
   const alreadyPlan = planVariantTransition({ targetDir: already, home: ROOT });
