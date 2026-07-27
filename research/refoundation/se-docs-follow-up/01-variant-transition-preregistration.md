@@ -1,8 +1,11 @@
 # Variant transition v1 — preregistration
 
-**Frozen before implementation:** 2026-07-27  
-**Status:** preregistered candidate; not published  
-**Initial scope:** existing `greenfield` initiative → `research`  
+**Frozen before implementation:** 2026-07-27
+
+**Status:** preregistered candidate; not published
+
+**Initial scope:** existing `greenfield` initiative → `research`
+
 **Evidence anchor:** SE Docs Front Door commits `b78910f`, `5289a86`, and
 completed state `95f6191`
 

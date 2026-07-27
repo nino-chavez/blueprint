@@ -1,8 +1,11 @@
 # Variant transition v1 — candidate results
 
-**Status:** implemented and mechanically verified candidate  
-**Branch:** `codex/variant-transition-capability`  
-**Public distribution:** not published  
+**Status:** implemented and mechanically verified candidate
+
+**Branch:** `codex/variant-transition-capability`
+
+**Public distribution:** not published
+
 **Consumer mutation:** none
 
 ## What was built

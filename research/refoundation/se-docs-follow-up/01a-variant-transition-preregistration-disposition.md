@@ -1,7 +1,9 @@
 # Variant transition preregistration — pre-implementation disposition
 
-**Date:** 2026-07-27  
-**Timing:** before implementation  
+**Date:** 2026-07-27
+
+**Timing:** before implementation
+
 **Disposition:** two corrections accepted; all other frozen expectations stand
 
 Reviewing the preregistered scaffold set against the current canonical runner
