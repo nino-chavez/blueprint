@@ -1,7 +1,9 @@
 # SE Docs follow-up — public correctness maintenance
 
-**Status:** candidate implementation, not published  
-**Evidence cutoff:** completed SE Docs Front Door state `95f6191`  
+**Status:** candidate implementation, not published
+
+**Evidence cutoff:** completed SE Docs Front Door state `95f6191`
+
 **Boundary:** public correctness only; no steering promotion and no consumer mutation
 
 ## Authority and freeze check
