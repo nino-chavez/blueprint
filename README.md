@@ -13,13 +13,16 @@ npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 ## Quickstart
 
 ```bash
-# 1. Scaffold a new initiative + its portal. --name is the only required flag;
-#    variant/tier/pattern default (greenfield/1/A) and are validated at scaffold time
-#    (docs/variant-selection.md + docs/portal-and-tier-ladder.md). Defaults are echoed back.
+# 1. Choose the variant before the initial stamp (docs/variant-selection.md).
+#    Product-build example — --name is the only required flag; greenfield/1/A defaults are echoed.
 npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 
-# 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield|research), tier (0–2),
-#    and portal_pattern (A|B). Then run the pipeline in Claude Code:
+#    Decision/research example — memo/evidence tree, no portal:
+npx @nino-chavez-labs/blueprint-cli init --name=my-research --variant=research --tier=0
+
+# 2. Fill the generated blueprint.yml for the variant you stamped. A later
+#    variant change is a preservation-first migration, not another init run.
+#    Then run the applicable pipeline in Claude Code:
 #    /blueprint-research → /blueprint-prototype → /blueprint-validate → /blueprint-docs → /blueprint-deploy
 
 # 3. Push to deploy your portal, then verify conformance
@@ -117,8 +120,10 @@ methodology home is resolved automatically (`$BLUEPRINT_HOME` → a consumer's
 paths), so an `npm install` user gets a working CLI with zero config.
 
 ```bash
-# scaffold a new initiative's portal (--name is the only required flag; defaults echoed)
+# scaffold a new initiative (--name only defaults to greenfield product build; defaults echoed)
 npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
+# research/decision work is explicit and portal-free
+npx @nino-chavez-labs/blueprint-cli init --name=my-research --variant=research --tier=0
 
 blueprint review <name> [--target=<dir>] [--json]   # run an executable reviewer (ADR-0002);
 blueprint review --list                              #   discovers canonical + org reviewers (ADR-0006)
