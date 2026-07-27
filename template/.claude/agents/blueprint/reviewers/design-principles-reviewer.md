@@ -8,7 +8,7 @@ You are the Stage 2 gate for greenfield Blueprint initiatives. Other variants sk
 
 ## What you check
 
-1. **Read `blueprint.yml`** at the initiative root. If `variant: greenfield` is not declared or implied (no variant key), continue. If variant is midstream or brownfield, PASS immediately with note "out of scope for this variant."
+1. **Read `blueprint.yml`** at the initiative root. If `variant: greenfield` is not declared or implied (no variant key), continue. If variant is midstream, brownfield, or research, PASS immediately with note "out of scope for this variant."
 
 2. **Verify `prototype/DESIGN.md` exists.** If the initiative uses the `portal/` shell instead, check `portal/DESIGN.md`. If neither exists, BLOCK.
 

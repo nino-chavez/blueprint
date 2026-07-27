@@ -23,9 +23,10 @@ Read these updates before continuing existing blueprint work — they change
 how this initiative operates:
 
 1. ~/Workspace/dev/tools/blueprint/docs/variant-selection.md
-   — Three-variant taxonomy (greenfield / midstream / brownfield). If this
-   initiative's blueprint.yml doesn't have a `variant:` key yet, add it.
-   Default is greenfield; pick the actual variant if different.
+   — Four-variant taxonomy (greenfield / midstream / brownfield / research).
+   If this initiative's blueprint.yml doesn't have a `variant:` key yet,
+   classify it before adding one. Greenfield is the initial-stamp default, not
+   an instruction to relabel existing work without a preservation plan.
 
 2. ~/Workspace/dev/tools/blueprint/template/.claude/agents/blueprint/reviewers/
    — Twelve stage-gate reviewer agents (12 executable, 3 spec-only by design) replace the legacy `validator`.

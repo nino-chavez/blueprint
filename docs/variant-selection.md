@@ -36,7 +36,7 @@ Run this at project init. Answer in order; first "yes" wins.
 
 3. Is the work audit-first — diagnose what exists, prescribe changes, optionally prototype the result?
    └─ Yes → Brownfield
-   └─ No  → review the answers; one of the three should fit. If genuinely none of them do, the
+   └─ No  → review the answers; one of the four should fit. If genuinely none of them do, the
             project may not be a blueprint candidate.
 ```
 
@@ -61,7 +61,10 @@ None of this means the vibe coding failed; demand-first building is how the prod
 
 ## Stage shapes per variant
 
-All three variants share **Stage 0 (Application Legibility)**. Sensor wiring is identical; the difference is what Stage 0 captures. Greenfield captures nothing yet (the app may not exist); midstream and brownfield capture the live surfaces that subsequent stages diagnose against.
+All four variants share a Stage 0, but research uses **Inputs Intake** rather
+than Application Legibility. Greenfield may have no app to capture yet;
+midstream and brownfield capture live surfaces that subsequent stages diagnose;
+research catalogs the input assets its later claims must resolve to.
 
 ### Greenfield — build pipeline
 

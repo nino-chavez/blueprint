@@ -32,6 +32,7 @@ import { pathToFileURL } from 'node:url';
 import { resolveReviewer } from './reviewer-registry.mjs';
 import { parseManifest } from './actor-output.mjs';
 import { evaluateReviewLoop } from './review-loop.mjs';
+import { readTopLevelYamlScalar } from './yaml-scalar.mjs';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
@@ -75,14 +76,7 @@ export function ymlHasBlock(yml, key) {
 }
 // ymlScalar: the inline value of a top-level `key:` (quotes stripped), or null.
 export function ymlScalar(yml, key) {
-  for (const line of yml.split('\n')) {
-    const m = line.match(/^([A-Za-z0-9_]+):\s*(.+?)\s*(?:#.*)?$/);
-    if (m && m[1] === key) {
-      const v = m[2].replace(/^["']|["']$/g, '').trim();
-      return v === 'null' || v === '' ? null : v;
-    }
-  }
-  return null;
+  return readTopLevelYamlScalar(yml, key);
 }
 
 // ── pilot-profile policy parsing ───────────────────────────────────

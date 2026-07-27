@@ -18,7 +18,7 @@ npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 #    (docs/variant-selection.md + docs/portal-and-tier-ladder.md). Defaults are echoed back.
 npx @nino-chavez-labs/blueprint-cli init --name=my-initiative
 
-# 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield), tier (0–2),
+# 2. Configure blueprint.yml — set variant (greenfield|midstream|brownfield|research), tier (0–2),
 #    and portal_pattern (A|B). Then run the pipeline in Claude Code:
 #    /blueprint-research → /blueprint-prototype → /blueprint-validate → /blueprint-docs → /blueprint-deploy
 
@@ -266,7 +266,7 @@ Platform-specific context packs (marketplace apps, B2B edition, buyer-portal int
 | [docs/patterns/hive-coordination-pattern.md](docs/patterns/hive-coordination-pattern.md) | Initiative needs multiple agents working in parallel | When to use Hive, bootstrap sequence, working rules, integration with Blueprint stages |
 | [docs/patterns/cloudflare-deployment-pattern.md](docs/patterns/cloudflare-deployment-pattern.md) | Initiative deploys on Cloudflare (Workers, Pages, D1, Workers AI, Vectorize, etc.) | Wrangler config conventions, path-scoped GitHub Actions, secrets, multi-environment, cost envelope |
 | [docs/context/browser-legibility.md](docs/context/browser-legibility.md) | Every initiative with a `prototype/` or `portal/` shell (Stage 0) | `browse-tool` as the default browser sensor (~few hundred tokens vs MCP's ~18k), four-trigger escalation rubric to Chrome DevTools MCP, per-worktree bootability via cwd-named profiles |
-| [docs/variant-selection.md](docs/variant-selection.md) | Every new initiative — picked at `blueprint.yml` init | Three-variant taxonomy (greenfield / midstream / brownfield), pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Wrong variant produces retrofit feel that cannot be un-retrofitted without restart. |
+| [docs/variant-selection.md](docs/variant-selection.md) | Every new initiative — picked at `blueprint.yml` init | Four-variant taxonomy (greenfield / midstream / brownfield / research), pattern-match decision tree, per-variant stage shapes, required sub-deliverables, reviewer-agent gate mapping. Wrong variant requires an explicit, preservation-first transition. |
 | [docs/context/voice-template.md](docs/context/voice-template.md) | Every initiative producing deliverables — loaded on demand by `doc-writer` agent | Canonical voice rules + 5-check document quality audit + citation rules + 7 universal anti-patterns. Carved out of `template/CLAUDE.md` 2026-05-25 so the per-session map stays slim. Enforced by `doc-quality-auditor` + `terminology-linter` reviewers. |
 | [docs/context/voice-b2b-addendum.md](docs/context/voice-b2b-addendum.md) | Platform B2B initiatives (`b2b_edition.enabled: true`) only | B2B-specific anti-patterns (8-13), actor-naming rules (Owner/Payer/Beneficiary/Manager/Org Admin), terminology overrides (Buyer not User, Quote not RFQ), platform-fidelity citation requirements |
 | [docs/lessons/ground-truth-over-proxy.md](docs/lessons/ground-truth-over-proxy.md) | Running a build wave where a single gate decides "done" (esp. with AI-authored designs) | Six lessons on why representations of a system drift from the system — done-is-a-test-not-a-tag, mocked-dependency false-greens, red-first as discovery, test-the-seam, destructive-ops-from-live-state, generated-plan drift. Pre-build checklist + promotion criteria. |

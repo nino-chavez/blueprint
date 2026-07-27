@@ -33,6 +33,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 
 const NAME = 'portal-review-conformance-reviewer';
@@ -135,7 +136,7 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // Research variant: Review Portal is a brownfield-audit surface; portal optional for research — skip.
   const _prYml = await fs.readFile(path.join(artifactsRoot, 'blueprint.yml'), 'utf8').catch(() => '');
-  if (/^variant:\s*research\b/m.test(_prYml)) {
+  if (readTopLevelYamlScalar(_prYml, 'variant') === 'research') {
     return result('PASS', [], 'research — out of scope (Review Portal is brownfield; portal optional for research)', startedAt);
   }
 

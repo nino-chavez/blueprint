@@ -17,6 +17,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'portal-initiative-conformance-reviewer';
 const CANONICAL_ROUTES = ['index', 'discover', 'try', 'build', 'operate', 'inspect', 'roadmap'];
@@ -68,7 +69,7 @@ export default async function review({ targetDir, blueprintYml }) {
 
   // Research variant: the portal is optional provenance, not the deliverable — skip.
   const _piYml = await fs.readFile(path.join(artifactsRoot, 'blueprint.yml'), 'utf8').catch(() => '');
-  if (/^variant:\s*research\b/m.test(_piYml)) {
+  if (readTopLevelYamlScalar(_piYml, 'variant') === 'research') {
     return result('PASS', [], 'research — out of scope (portal is optional provenance for research)', startedAt);
   }
   const portalDir = path.join(artifactsRoot, 'apps', 'portal');

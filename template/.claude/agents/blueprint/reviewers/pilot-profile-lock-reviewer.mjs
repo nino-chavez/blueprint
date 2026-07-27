@@ -37,6 +37,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'pilot-profile-lock-reviewer';
 
@@ -285,7 +286,7 @@ export default async function review({ targetDir }) {
   }
   // Research variant locks personas/JTBD (research/personas-and-jtbd.md), not a pilot_profile.
   const _pplYml = (() => { try { return readFileSync(path.join(targetDir, 'blueprint.yml'), 'utf8'); } catch { return ''; } })();
-  if (/^variant:\s*research\b/m.test(_pplYml)) {
+  if (readTopLevelYamlScalar(_pplYml, 'variant') === 'research') {
     return result('PASS', [], 'research — out of scope (research locks personas/JTBD, not a pilot_profile)', startedAt);
   }
 

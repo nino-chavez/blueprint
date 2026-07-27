@@ -19,8 +19,9 @@ Entry shape:
 ## YYYY-MM-DD — Short title
 
 **Trigger**: One sentence
-**Scope**: Per-initiative | Candidate for methodology promotion | Promoted to methodology
-**Status**: Active | Superseded by YYYY-MM-DD | Promoted
+**Scope**: Per-initiative | Candidate for methodology promotion | Already promoted
+**Bucket**: consumer-local | template | reviewer | methodology
+**Status**: Active | Superseded by <YYYY-MM-DD entry> | Promoted to methodology
 
 Body — what the amendment is, why, what it changes.
 

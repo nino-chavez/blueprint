@@ -21,6 +21,8 @@
  *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
  *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
  *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
+ *  11. Research real stamp: memo/evidence tree, no portal, inline-comment routing
+ *  12. Methodology-amendment templates share one canonical field shape
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
  * Exit: 0 = all green; 1 = any failure (each failure printed).
@@ -337,6 +339,78 @@ try {
     await fs.rename(exHtml + ".gone", exHtml);
   } catch (err) {
     bad("readiness/intent gate integration", err.message);
+  }
+
+  // 11 — research is a first-class initial stamp, not a greenfield stamp with
+  // a renamed scalar. Its decision-memo tree exists, product portal scaffolding
+  // does not, and an inline comment on variant must survive runner routing.
+  const researchTarget = path.join(tmp, "smoke-research");
+  try {
+    await execFile(process.execPath, [
+      STAMP,
+      "--mode=stamp",
+      "--name=smoke-research",
+      "--display-name=Smoke Research",
+      "--variant=research",
+      "--tier=0",
+      `--target=${researchTarget}`,
+    ]);
+    ok("research real stamp exits 0");
+    for (const rel of [
+      "research/sources/README.md",
+      "research/personas-and-jtbd.md",
+      "decisions/_TEMPLATE.md",
+      "docs/decision-memo.md",
+      "tools/run-reviewers.mjs",
+      "tools/lib/yaml-scalar.mjs",
+    ]) {
+      if (await fs.stat(path.join(researchTarget, rel)).catch(() => null)) ok(`research stamped: ${rel}`);
+      else bad(`research stamped: ${rel}`, "missing");
+    }
+    for (const rel of ["apps/portal", "packages"]) {
+      if (await fs.stat(path.join(researchTarget, rel)).catch(() => null)) bad(`research omits ${rel}`, "unexpected product scaffold");
+      else ok(`research omits ${rel}`);
+    }
+    const researchYmlPath = path.join(researchTarget, "blueprint.yml");
+    const researchYml = await fs.readFile(researchYmlPath, "utf8");
+    await fs.writeFile(researchYmlPath, researchYml.replace(/^variant: research$/m, "variant: research # routing regression"));
+    const runner = await execFile(process.execPath, [path.join(researchTarget, "tools", "run-reviewers.mjs")], {
+      cwd: researchTarget,
+    }).catch((error) => ({ stdout: error.stdout || "", stderr: error.stderr || "" }));
+    const runnerText = `${runner.stdout || ""}\n${runner.stderr || ""}`;
+    if (/variant=research\b/.test(runnerText) && !/variant=greenfield\b/.test(runnerText)) {
+      ok("research inline-comment scalar routes runner as research");
+    } else {
+      bad("research inline-comment scalar routes runner as research", runnerText.trim().split("\n").slice(0, 4).join(" | "));
+    }
+  } catch (err) {
+    bad("research real stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
+
+  // 12 — the canonical convention and both shipped entry examples must expose
+  // the same fields. Drift here made a consumer choose between incompatible
+  // stamped instructions.
+  try {
+    const amendmentFiles = [
+      path.join(BLUEPRINT_ROOT, "template", "docs", "methodology", "methodology-amendments-convention.md"),
+      path.join(BLUEPRINT_ROOT, "template", "METHODOLOGY-AMENDMENTS.md"),
+      path.join(BLUEPRINT_ROOT, "template", "methodology", "amendments", "METHODOLOGY-AMENDMENTS.template.md"),
+    ];
+    const expectedLines = [
+      "**Trigger**: One sentence",
+      "**Scope**: Per-initiative | Candidate for methodology promotion | Already promoted",
+      "**Bucket**: consumer-local | template | reviewer | methodology",
+      "**Status**: Active | Superseded by <YYYY-MM-DD entry> | Promoted to methodology",
+      "**References**:",
+    ];
+    for (const file of amendmentFiles) {
+      const text = await fs.readFile(file, "utf8");
+      const missing = expectedLines.filter((line) => !text.includes(line));
+      if (missing.length === 0) ok(`amendment entry shape: ${path.relative(BLUEPRINT_ROOT, file)}`);
+      else bad(`amendment entry shape: ${path.relative(BLUEPRINT_ROOT, file)}`, `missing ${missing.join(" / ")}`);
+    }
+  } catch (err) {
+    bad("amendment entry shape", err.message);
   }
 } finally {
   await fs.rm(tmp, { recursive: true, force: true });

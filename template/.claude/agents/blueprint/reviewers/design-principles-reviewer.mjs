@@ -28,6 +28,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'design-principles-reviewer';
 
@@ -114,17 +115,7 @@ function countPresent(text, specs) {
 // can't be misread — no full YAML parse, shape is a flat scalar per the consumer
 // CLAUDE.md (`variant: greenfield`). Strips quotes and trailing comments.
 function variantFromYmlText(ymlText) {
-  if (!ymlText) return null;
-  for (const rawLine of ymlText.split('\n')) {
-    const m = /^variant:\s*(.+?)\s*$/.exec(rawLine);
-    if (!m) continue;
-    let v = m[1];
-    const hash = v.indexOf('#');
-    if (hash !== -1) v = v.slice(0, hash);
-    v = v.trim().replace(/^['"]|['"]$/g, '').toLowerCase();
-    return v || null;
-  }
-  return null;
+  return readTopLevelYamlScalar(ymlText, 'variant')?.toLowerCase() ?? null;
 }
 
 // Extract candidate "planned page" names from DESIGN.md to flag variant-shaped

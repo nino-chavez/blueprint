@@ -13,23 +13,18 @@ Per methodology rule, no entry here is automatically promoted upstream. Methodol
 
 ## YYYY-MM-DD — Example amendment title (delete this entry when filing your first real one)
 
-**Trigger**: One sentence — what observation in the initiative prompted the amendment
+**Trigger**: One sentence
 
-**Scope**: One of:
-- `Per-initiative` — applies only to this initiative's specific shape
-- `Candidate for methodology promotion` — operator believes it's a general pattern worth promoting
-- `Already promoted` — landed in methodology repo at commit <SHA>
+**Scope**: Per-initiative | Candidate for methodology promotion | Already promoted
 
-**Bucket** (per wave 27 classification taxonomy):
-- `consumer-local` — fix stays in this initiative repo
-- `template` — fix lands in `tools/blueprint/template/*`
-- `reviewer` — fix lands in `tools/blueprint/template/.claude/agents/blueprint/reviewers/*`
-- `methodology` — fix lands in `tools/blueprint/METHODOLOGY.md` / `docs/` / top-level conceptual artifacts
+**Bucket**: consumer-local | template | reviewer | methodology
 
-**Status**: One of:
-- `Active` — current
-- `Superseded by <YYYY-MM-DD entry>` — replaced
-- `Promoted to methodology` — landed upstream at wave N (commit <SHA>)
+Bucket meanings: `consumer-local` stays in this initiative; `template` changes
+stampable files or shared tools; `reviewer` changes a reviewer contract;
+`methodology` changes `METHODOLOGY.md`, `docs/`, or another public conceptual
+artifact.
+
+**Status**: Active | Superseded by <YYYY-MM-DD entry> | Promoted to methodology
 
 ### What the amendment is
 

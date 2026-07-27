@@ -46,6 +46,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 
 const NAME = 'prototype-smoke-runner';
 
@@ -82,12 +83,7 @@ function finalize(findings, targetSummary, startedAt) {
 // Line-scan blueprint.yml for `variant:` — no yaml dep, same idiom as readTier
 // in bin/blueprint.mjs and the cost-dial block parser.
 export function readVariant(text) {
-  if (!text) return null;
-  for (const line of text.split('\n')) {
-    const m = /^\s*variant:\s*([A-Za-z_-]+)/.exec(line);
-    if (m) return m[1].toLowerCase();
-  }
-  return null;
+  return readTopLevelYamlScalar(text, 'variant')?.toLowerCase() ?? null;
 }
 
 // Line-scan for a declared port. Accepts `port: 8080`, a localhost URL with a
@@ -281,7 +277,7 @@ export default async function review({ targetDir, blueprintYml }) {
       severity: 'WARN',
       location: 'blueprint.yml variant',
       message: `Unrecognized variant '${variant}' — treating the smoke gate as mandatory (greenfield/midstream policy).`,
-      remediation: 'Set variant to greenfield | midstream | brownfield in blueprint.yml.',
+      remediation: 'Set variant to greenfield | midstream | brownfield | research in blueprint.yml.',
       reference: 'docs/variant-selection.md',
     });
   }
@@ -451,7 +447,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // — pure helpers —
   assert(readVariant('variant: greenfield\ntier: 1\n') === 'greenfield', 'readVariant greenfield');
-  assert(readVariant('  variant:   Midstream  # note\n') === 'midstream', 'readVariant midstream lowercased');
+  assert(readVariant('variant:   Midstream  # note\n') === 'midstream', 'readVariant inline comment + lowercase');
+  assert(readVariant('parent:\n  variant: research\n') === null, 'readVariant ignores nested scalar');
   assert(readVariant('tier: 0\n') === null, 'readVariant absent → null');
 
   assert(readPort('port: 8080\n') === 8080, 'readPort yaml port');

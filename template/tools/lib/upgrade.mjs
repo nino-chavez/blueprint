@@ -110,9 +110,9 @@ export function bumpPin(targetDir, from, to) {
   } else {
     // insert (unpinned consumer): a single column-0 line, appended.
     if (all.length > 0) return { ok: false, mode: 'insert', before: null, error: 'methodology_version already present; use replace' };
-    // readYamlScalar reads an INDENTED methodology_version (it trims), but the
-    // column-0 PIN_RE won't — inserting would create a duplicate the reader then
-    // shadows. Refuse rather than write a confusing second line.
+    // An indented methodology_version is not a top-level declaration, but do
+    // not create a second lookalike key beside it. Refuse and make the operator
+    // repair the malformed declaration explicitly.
     if (/^[ \t]+methodology_version[ \t]*:/m.test(text)) {
       return { ok: false, mode: 'insert', before: null, error: 'methodology_version present but not at column 0 — fix its indentation, then re-run' };
     }

@@ -306,6 +306,17 @@ export function validateManifest(m, opts = {}) {
   // existence is the mechanical half — "authorizes what the citation implies"
   // stays a reviewer's job.) Runs only when raw text + root are available.
   if (opts.rawText && root) {
+    // R6 owns the lifecycle of a precondition artifact. An exact artifact path
+    // is expected to be absent while its blocked output is planned/draft, so
+    // the raw citation scanner must not reinterpret that same path as a broken
+    // citation and turn an honest PENDING into BLOCKED.
+    const preconditionArtifacts = new Set(
+      (m.preconditions ?? [])
+        .filter((precondition) => precondition?.assertion === 'exists')
+        .map((precondition) => precondition?.artifact)
+        .filter((artifact) => typeof artifact === 'string')
+        .map((artifact) => artifact.replace(/^\.\//, '')),
+    );
     const decisionDirs = [];
     for (const v of Object.values(m.account ?? {}))
       for (const item of Array.isArray(v) ? v : [v])
@@ -320,6 +331,7 @@ export function validateManifest(m, opts = {}) {
     // which are not consumer-local files (smoke caught the false BLOCK on fresh stamps).
     const cites = new Set((opts.rawText.match(/(?:decisions\/[\w-]*\d[\w-]*\.md|ADR-\d{1,4})/g) ?? []));
     for (const cite of cites) {
+      if (preconditionArtifacts.has(cite.replace(/^\.\//, ''))) continue;
       if (cite.endsWith('.md')) { if (!existsSync(resolve(root, cite))) E('R7-paths', `citation "${cite}" resolves to no file`); continue; }
       const num = parseInt(cite.replace(/\D/g, ''), 10);
       if (!numbered(num)) E('R7-paths', `citation "${cite}" resolves to no decision record in ${decisionDirs.join(', ') || 'decisions/'}`);
@@ -486,6 +498,22 @@ outputs:
   ok(!validateManifestFile(join(fx, 'cite.yml'), opts).errors.some((e) => e.includes('citation')), 'existing citations pass');
   writeFileSync(join(fx, 'cite-bad.yml'), BASE + '# authorized by ADR-0099\n');
   ok(validateManifestFile(join(fx, 'cite-bad.yml'), opts).errors.some((e) => e.includes('ADR-0099')), 'citation to nonexistent record BLOCKs');
+  const preconditionDecision = BASE
+    .replace('status: issued', 'status: planned')
+    + `preconditions:
+  - id: decision-pending
+    artifact: decisions/9999-pending.md
+    assertion: exists
+    blocks: package
+`;
+  writeFileSync(join(fx, 'precondition-decision.yml'), preconditionDecision);
+  const preconditionDecisionReport = validateManifestFile(join(fx, 'precondition-decision.yml'), opts);
+  ok(
+    preconditionDecisionReport.verdict === 'PENDING'
+      && preconditionDecisionReport.pendings.some((pending) => pending.includes('decisions/9999-pending.md'))
+      && !preconditionDecisionReport.errors.some((error) => error.includes('decisions/9999-pending.md')),
+    'missing exact precondition artifact stays R6 PENDING without an R7 citation ERROR',
+  );
 
   // 17. decisions/07 — team actor kind accepted, held to observed-human targets
   const TEAM = BASE.replace('- id: reviewer\n    kind: human', '- id: reviewer\n    kind: team');
