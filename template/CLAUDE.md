@@ -169,7 +169,7 @@ target created when missing; every applied default is echoed in the run header):
 node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs --name=<project-slug>
 ```
 
-Explicit form (any flag overrides its default):
+Explicit product-variant form (any flag overrides its default):
 
 ```bash
 node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
@@ -177,9 +177,20 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --display-name="<Project Display Name>" \
   --repo-url=https://github.com/<owner>/<repo> \
   --tagline="<one-line tagline>" \
-  --variant=greenfield|midstream|brownfield|research \
+  --variant=greenfield|midstream|brownfield \
   --tier=0|1|2 \
   --portal-type=initiative|review|bespoke \
+  --target=<absolute path to initiative root>
+```
+
+Research initial stamps are portal-free, so omit `--portal-type` and
+`--pattern`:
+
+```bash
+node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
+  --name=<project-slug> \
+  --variant=research \
+  --tier=0|1 \
   --target=<absolute path to initiative root>
 ```
 
@@ -189,8 +200,8 @@ variant-shaped `blueprint.yml`, validates against the Variant × Tier matrix in
 code if any unexpected source strings remain. Product variants also rename the
 logo and declare `portal_type`; research writes the memo/evidence shape and no
 portal block. See `template/tools/blueprint-init/README.md` for the full
-contract. `--portal-type=review` stamps the Review Portal path; use its
-conformance reviewers to catch renderer drift at Stage 3.
+contract. For product variants, `--portal-type=review` stamps the Review Portal
+path; use its conformance reviewers to catch renderer drift at Stage 3.
 
 ## Session prompts
 

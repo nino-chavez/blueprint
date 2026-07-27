@@ -346,7 +346,7 @@ try {
   // does not, and an inline comment on variant must survive runner routing.
   const researchTarget = path.join(tmp, "smoke-research");
   try {
-    await execFile(process.execPath, [
+    const researchStamp = await execFile(process.execPath, [
       STAMP,
       "--mode=stamp",
       "--name=smoke-research",
@@ -356,6 +356,12 @@ try {
       `--target=${researchTarget}`,
     ]);
     ok("research real stamp exits 0");
+    if (/stamping research decision\/evidence scaffold/.test(researchStamp.stdout)
+      && !/stamping Initiative Portal scaffold/.test(researchStamp.stdout)) {
+      ok("research stamp identifies the memo/evidence scaffold, not an Initiative Portal");
+    } else {
+      bad("research stamp identifies the memo/evidence scaffold, not an Initiative Portal", researchStamp.stdout.trim().split("\n")[0]);
+    }
     for (const rel of [
       "research/sources/README.md",
       "research/personas-and-jtbd.md",
@@ -382,6 +388,59 @@ try {
       ok("research inline-comment scalar routes runner as research");
     } else {
       bad("research inline-comment scalar routes runner as research", runnerText.trim().split("\n").slice(0, 4).join(" | "));
+    }
+    const blockedTierTarget = path.join(tmp, "smoke-research-tier-2");
+    await execFile(process.execPath, [
+      STAMP,
+      "--mode=stamp",
+      "--name=smoke-research-tier-2",
+      "--variant=research",
+      "--tier=2",
+      `--target=${blockedTierTarget}`,
+    ]).then(
+      () => bad("research Tier 2 remains blocked", "stamp exited 0"),
+      () => ok("research Tier 2 remains blocked"),
+    );
+    const reviewTarget = path.join(tmp, "smoke-research-review");
+    await execFile(process.execPath, [
+      STAMP,
+      "--mode=stamp",
+      "--name=smoke-research-review",
+      "--variant=research",
+      "--tier=1",
+      "--portal-type=review",
+      `--target=${reviewTarget}`,
+    ]).then(
+      () => bad("research initial stamp rejects Review Portal composition", "stamp exited 0"),
+      () => ok("research initial stamp rejects Review Portal composition"),
+    );
+    if (await fs.stat(reviewTarget).catch(() => null)) {
+      bad("rejected research Review Portal leaves no partial target", "target exists");
+    } else {
+      ok("rejected research Review Portal leaves no partial target");
+    }
+    const tierDoc = await fs.readFile(path.join(BLUEPRINT_ROOT, "docs", "portal-and-tier-ladder.md"), "utf8");
+    const portalReadme = await fs.readFile(path.join(BLUEPRINT_ROOT, "template", "apps", "portal", "README.md"), "utf8");
+    const consumerGuide = await fs.readFile(path.join(BLUEPRINT_ROOT, "template", "CLAUDE.md"), "utf8");
+    if (/\| \*\*Research\*\* .* \*\*Blocked — choose the product variant/.test(tierDoc)) {
+      ok("research Tier 2 documentation matches the runtime block");
+    } else {
+      bad("research Tier 2 documentation matches the runtime block", "matrix does not declare the block");
+    }
+    if (/--variant=greenfield\|midstream\|brownfield \\/.test(portalReadme)
+      && !/--variant=[^\n]*research/.test(portalReadme)) {
+      ok("Pattern A portal command excludes the portal-free research variant");
+    } else {
+      bad("Pattern A portal command excludes the portal-free research variant", "portal README advertises research");
+    }
+    if (
+      /Research initial stamps are portal-free, so omit `--portal-type` and\s+`--pattern`/.test(consumerGuide)
+      && /--variant=greenfield\|midstream\|brownfield \\\n\s+--tier=0\|1\|2 \\\n\s+--portal-type=initiative\|review\|bespoke/.test(consumerGuide)
+      && /--variant=research \\\n\s+--tier=0\|1 \\\n\s+--target=/.test(consumerGuide)
+    ) {
+      ok("stamped consumer guide separates product portal flags from research init");
+    } else {
+      bad("stamped consumer guide separates product portal flags from research init", "explicit forms are contradictory");
     }
   } catch (err) {
     bad("research real stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));

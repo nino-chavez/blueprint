@@ -91,16 +91,8 @@ function runInit(initArgv, home) {
 }
 
 function readTier(targetDir) {
-  // Minimal blueprint.yml read for the tier the reviewer gates on (no yaml dep).
-  try {
-    for (const line of readFileSync(join(targetDir, 'blueprint.yml'), 'utf8').split('\n')) {
-      const m = /^\s*tier:\s*([0-9]+)/.exec(line);
-      if (m) return Number(m[1]);
-    }
-  } catch {
-    /* no blueprint.yml at the target */
-  }
-  return undefined;
+  const value = readYamlScalar(join(targetDir, 'blueprint.yml'), 'tier');
+  return value != null && /^[0-9]+$/.test(value) ? Number(value) : undefined;
 }
 
 // review <name> [--target=<dir>] [--json] | review --list — discover reviewers
