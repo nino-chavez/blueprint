@@ -68,5 +68,8 @@ the root `23-adaptive-pilot-promotion-preregistration.md` and evaluated in
 research while holding public promotion. The retrospective SE Docs Front Door
 JSONL pilot is preregistered in
 `06-se-docs-session-pilot-preregistration.md` and reported in
-`07-se-docs-session-pilot-results.md`. Generated files remain disposable;
-neither the results nor the evaluator are part of the stampable methodology.
+`07-se-docs-session-pilot-results.md`. Its in-progress snapshot is reconciled
+against the completed consumer state in
+`08-se-docs-completed-state-reconciliation.md`. Generated files remain
+disposable; neither the results nor the evaluator are part of the stampable
+methodology.
