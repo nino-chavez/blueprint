@@ -94,14 +94,15 @@ The created scaffold set is bounded to:
 
 - `research/sources/README.md`
 - `research/personas-and-jtbd.md`
-- `research/problem-space/README.md`
-- `research/competitive/README.md`
-- `research/prior-art/README.md`
 - `decisions/_TEMPLATE.md`
 - `docs/decision-memo.md`
 - `tools/run-reviewers.mjs`
+- `tools/lib/yaml-scalar.mjs`
 
-Directory creation is incidental to those files and never implies authority to
+The operation may also create the three empty research-leg directories from a
+fresh research stamp: `research/problem-space/`, `research/competitive/`, and
+`research/prior-art/`. They stay empty so a transition cannot falsely satisfy
+the Stage 2 populated-leg gate. Directory creation never implies authority to
 replace an existing directory tree.
 
 ### Cleanup plan
