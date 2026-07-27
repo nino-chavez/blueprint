@@ -8,9 +8,19 @@ consumer_changed: false
 prospective_external_threshold_met: false
 depends_on:
   - research/refoundation/steering-layer/06-se-docs-session-pilot-preregistration.md
+qualified_by:
+  - research/refoundation/steering-layer/08-se-docs-completed-state-reconciliation.md
 ---
 
 # SE Docs Front Door session pilot results
+
+> **Completed-state qualification:** this pilot froze the consumer through
+> `bb4c459` while the re-founding session was still in progress. Exact completed
+> state `95f6191` says greenfield was defensible at founding and classifies the
+> case as right-variant, changed-problem-mid-flight. P1 below is therefore a
+> synthetic promotion hypothesis, not validated SE Docs history. The historical
+> result is preserved below; `08-se-docs-completed-state-reconciliation.md`
+> controls its interpretation.
 
 ## Verdict
 
