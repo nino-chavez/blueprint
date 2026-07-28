@@ -13,7 +13,7 @@ const TMP = '/private/tmp/';
 const DECISION_SCHEMA = 'blueprint-variant-transition-decision/1';
 const RECEIPT_SCHEMA = 'blueprint-variant-transition-receipt/1';
 const FROZEN_CANDIDATE = 'd372a63ee31433b720f066e81f3ab17fe2c5a7fa';
-const PACKET_NAME = 'AUTHOR-PACKET-v4.md';
+const PACKET_NAME = 'AUTHOR-PACKET-v5.md';
 function args(argv) { const out = {}; for (const arg of argv) { const m = /^--([^=]+)=(.*)$/.exec(arg); if (m) out[m[1]] = m[2]; } return out; }
 function hash(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
 function git(root, parts) { return execFileSync('git', ['-C', root, ...parts], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); }
@@ -23,6 +23,7 @@ function tmpPath(value) { if (!value || !isAbsolute(value) || !resolve(value).st
 function tmpFixture(value) { if (!value || !isAbsolute(value) || !resolve(value).startsWith(TMP)) throw new Error('--fixture must be an explicit path under /private/tmp'); return resolve(value); }
 function relativePath(value) { return typeof value === 'string' && value && !value.startsWith('/') && !value.split('/').includes('..') && !value.split('/').includes('.'); }
 function decisionValid(value) { return value && typeof value === 'object' && !Array.isArray(value) && value.schema === DECISION_SCHEMA && typeof value.accountable_party === 'string' && value.accountable_party.trim() && typeof value.rollback_route === 'string' && value.rollback_route.trim() && date(value.receipt_review_at) && value.acknowledged === true; }
+function redirectsJson(command, filename) { return new RegExp(`(?:^|\\s)(?:1?>)\\s*${filename.replaceAll('.', '\\.')}(?:\\s|$)`).test(command); }
 function allowedMaterials(baselineFiles) {
   return [
     PACKET_NAME,
@@ -66,12 +67,14 @@ function commandAttemptsValid(value) {
     && typeof value[0]?.command === 'string'
     && value[0].command.includes('variant transition')
     && !value[0].command.includes(' --apply')
+    && redirectsJson(value[0].command, 'cold-author-plan.json')
     && value[0]?.exit_code === 0
     && value[0]?.output_path === 'cold-author-plan.json'
     && value[1]?.operation === 'apply'
     && typeof value[1]?.command === 'string'
     && value[1].command.includes('variant transition')
     && value[1].command.includes(' --apply')
+    && redirectsJson(value[1].command, 'cold-author-apply.json')
     && value[1]?.exit_code === 0
     && value[1]?.output_path === 'cold-author-apply.json';
 }
@@ -115,11 +118,15 @@ if (process.argv.includes('--self-test')) {
     || boundaryShapeValid({ ...goodBoundary, attestation: { ...goodBoundary.attestation, fresh_no_fork: false } })
     || boundaryShapeValid({ ...goodBoundary, author_id: 'raw-author-id' })
     || !commandAttemptsValid([
-      { operation: 'plan', command: 'blueprint variant transition --json', exit_code: 0, output_path: 'cold-author-plan.json' },
-      { operation: 'apply', command: 'blueprint variant transition --apply', exit_code: 0, output_path: 'cold-author-apply.json' },
+      { operation: 'plan', command: 'blueprint variant transition --json > cold-author-plan.json', exit_code: 0, output_path: 'cold-author-plan.json' },
+      { operation: 'apply', command: 'blueprint variant transition --apply > cold-author-apply.json', exit_code: 0, output_path: 'cold-author-apply.json' },
     ])
     || commandAttemptsValid([
-      { operation: 'plan', command: 'blueprint variant transition --json', exit_code: 1, output_path: 'cold-author-plan.json' },
+      { operation: 'plan', command: 'blueprint variant transition --json > cold-author-plan.json', exit_code: 1, output_path: 'cold-author-plan.json' },
+      { operation: 'apply', command: 'blueprint variant transition --apply > cold-author-apply.json', exit_code: 0, output_path: 'cold-author-apply.json' },
+    ])
+    || commandAttemptsValid([
+      { operation: 'plan', command: 'blueprint variant transition --json', exit_code: 0, output_path: 'cold-author-plan.json' },
       { operation: 'apply', command: 'blueprint variant transition --apply', exit_code: 0, output_path: 'cold-author-apply.json' },
     ])
   ) throw new Error('self-test failed');
@@ -189,7 +196,7 @@ add(
     && commandAttemptsValid(session?.command_attempts),
   session ? `duration=${durationMinutes}; attempts=${session.attempts}; questions=${session.questions_asked?.length ?? 'invalid'}; interventions=${session.methodology_creator_interventions}` : 'missing or invalid cold-author-session.json',
 );
-add('exact-command-attempts', commandAttemptsValid(session?.command_attempts), 'plan then apply; both exit 0; exact output paths');
+add('exact-command-attempts', commandAttemptsValid(session?.command_attempts), 'one plan then one apply; both exit 0 and redirect to exact output paths');
 const planOutput = safeJson(join(fixture, 'cold-author-plan.json'));
 const applyOutput = safeJson(join(fixture, 'cold-author-apply.json'));
 const receipts = receiptFiles(fixture); add('exactly-one-receipt', receipts.length === 1, `${receipts.length} receipt(s)`);
