@@ -1,0 +1,29 @@
+{
+  "schema": "blueprint-variant-transition-cold-author-receipt-summary/1",
+  "receipt_id": "4b210fd7057883d47383d4d9cee6e03fbf487bc6ab2740d8bcd61929ef9601bb",
+  "receipt_schema": "blueprint-variant-transition-receipt/1",
+  "receipt_sha256": "07a89e915c19604e5b6cb5c155b600f6e8dcccbaa98db375644c1977791be9d8",
+  "applied_at": "2026-07-28T01:53:24.968Z",
+  "candidate_revision": "d372a63ee31433b720f066e81f3ab17fe2c5a7fa",
+  "fixture_baseline_head": "fd024816e8977a037bd1a6ec8a82871e637e308d",
+  "from": "greenfield",
+  "to": "research",
+  "decision": {
+    "path": "decisions/variant-transition.json",
+    "sha256": "080eff9f233186c33712d7d876f239dddd84e66f978e827b477ad69da124c297"
+  },
+  "preserved": [
+    {
+      "path": "research/personas-and-jtbd.md",
+      "sha256": "9434918efbdaccd2113dc1c98dfe728900f7db583f772360c674e5e6e85cad5d"
+    },
+    {
+      "path": "decisions/0001-deliverable-recharter.md",
+      "sha256": "b5d0bc47c99d1205b6e678b6295cef964e426dc6bcea5dad2fd221a461e84b22"
+    }
+  ],
+  "cleanup_applied": false,
+  "rollback_applied": false,
+  "rollback_available": true,
+  "journal_present": false
+}

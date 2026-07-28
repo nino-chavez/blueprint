@@ -1,0 +1,31 @@
+{
+  "schema": "blueprint-variant-transition-cold-author-fixture/1",
+  "prepared_at": "2026-07-28T01:52:37.067Z",
+  "candidate": {
+    "root": "/private/tmp/blueprint-transition-cold-candidate-d372a63",
+    "head": "d372a63ee31433b720f066e81f3ab17fe2c5a7fa",
+    "package_version": "0.7.0",
+    "package_sha256": "f4449e5e030335acc6693bd09f2de5727c712f26936891f59a8f44c90fbccc6c"
+  },
+  "fixture": {
+    "root": "/private/tmp/blueprint-transition-cold-run-20260727/fixture",
+    "baseline_head": "fd024816e8977a037bd1a6ec8a82871e637e308d",
+    "baseline_files": [
+      {
+        "path": "blueprint.yml",
+        "sha256": "df0dd3c7aefc08f6d107898bbc73039b07d831bf24cec4bcdbff9c566729d87a",
+        "size": 172
+      },
+      {
+        "path": "decisions/0001-deliverable-recharter.md",
+        "sha256": "b5d0bc47c99d1205b6e678b6295cef964e426dc6bcea5dad2fd221a461e84b22",
+        "size": 207
+      },
+      {
+        "path": "research/personas-and-jtbd.md",
+        "sha256": "9434918efbdaccd2113dc1c98dfe728900f7db583f772360c674e5e6e85cad5d",
+        "size": 231
+      }
+    ]
+  }
+}

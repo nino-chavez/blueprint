@@ -155,9 +155,15 @@ capability suites while those modules require `--self-test`. The script now uses
 the exact supported flag, so the aggregate run visibly executes both suites
 instead of accepting their no-op exit.
 
-The sealed cold-author scorer was not executed in this fleet-support slice.
-Continued cold-author success is therefore an explicit remaining evidence gate,
-not an implied consequence of `test:core`.
+The fleet-support slice itself did not execute a sealed cold-author encounter.
+A separately preregistered fixture observation passed 18/18 at frozen candidate
+`d372a63` with one attempt, zero questions, and zero recorded creator
+interventions; see
+`research/refoundation/variant-transition-cold-author/01-results.md`. Its
+retained evidence lacks a facilitator-authored pre-access boundary receipt, so
+it establishes fixture CLI usability only and does not clear continued
+cold-author success. A fresh rerun is preregistered in
+`research/refoundation/variant-transition-cold-author/02-boundary-receipt-preregistration.md`.
 
 The read-only pilot audit found no legitimate registered candidate. SE Docs is
 the only local initiative with an evidenced greenfield-to-research re-charter,

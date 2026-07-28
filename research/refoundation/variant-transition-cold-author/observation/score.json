@@ -1,0 +1,99 @@
+{
+  "schema": "blueprint-variant-transition-cold-author-score/1",
+  "verdict": "PASS",
+  "generated_at": "2026-07-28T01:53:56.472Z",
+  "fixture": "/private/tmp/blueprint-transition-cold-run-20260727/fixture",
+  "candidate": "/private/tmp/blueprint-transition-cold-candidate-d372a63",
+  "checks": [
+    {
+      "id": "fixture-manifest-valid",
+      "passed": true,
+      "detail": "prepared fixture manifest"
+    },
+    {
+      "id": "fixture-is-git-root",
+      "passed": true,
+      "detail": "/private/tmp/blueprint-transition-cold-run-20260727/fixture"
+    },
+    {
+      "id": "fixture-baseline-head-unchanged",
+      "passed": true,
+      "detail": "fd024816e8977a037bd1a6ec8a82871e637e308d"
+    },
+    {
+      "id": "candidate-head-frozen-and-unchanged",
+      "passed": true,
+      "detail": "d372a63ee31433b720f066e81f3ab17fe2c5a7fa"
+    },
+    {
+      "id": "candidate-checkout-clean",
+      "passed": true,
+      "detail": "/private/tmp/blueprint-transition-cold-candidate-d372a63"
+    },
+    {
+      "id": "candidate-package-unchanged",
+      "passed": true,
+      "detail": "f4449e5e030335acc6693bd09f2de5727c712f26936891f59a8f44c90fbccc6c"
+    },
+    {
+      "id": "session-valid",
+      "passed": true,
+      "detail": "duration=0.4; attempts=1; questions=0; interventions=0"
+    },
+    {
+      "id": "exactly-one-receipt",
+      "passed": true,
+      "detail": "1 receipt(s)"
+    },
+    {
+      "id": "receipt-valid-applied",
+      "passed": true,
+      "detail": "schema, id, directory, and plan status"
+    },
+    {
+      "id": "transition-status-applied",
+      "passed": true,
+      "detail": "receipt has not been rolled back"
+    },
+    {
+      "id": "decision-schema-and-path-valid",
+      "passed": true,
+      "detail": "decisions/variant-transition.json"
+    },
+    {
+      "id": "decision-bound-to-plan",
+      "passed": true,
+      "detail": "decisions/variant-transition.json"
+    },
+    {
+      "id": "research-variant-and-stage",
+      "passed": true,
+      "detail": "variant and stage_model are research"
+    },
+    {
+      "id": "authored-sentinel-preserved",
+      "passed": true,
+      "detail": "2 baseline sentinel(s)"
+    },
+    {
+      "id": "cleanup-unapplied",
+      "passed": true,
+      "detail": "receipt cleanup remains operator-review-only"
+    },
+    {
+      "id": "no-interrupted-or-corrupt-journal",
+      "passed": true,
+      "detail": "no transition journal present"
+    },
+    {
+      "id": "candidate-status-applied",
+      "passed": true,
+      "detail": "{\n  \"status\": \"applied\",\n  \"target\": \"/private/tmp/blueprint-transition-cold-run-20260727/fixture\",\n  \"receipts\": [\n    {\n      \"receiptId\": \"4b210fd7057883d47383d4d9cee6e03fbf487bc6ab2740d8bcd61929ef9601bb\",\n      \"status\": \"applied\",\n      \"rollbackAvailable\": true,\n      \"conflicts\": []\n    }\n  ]\n}\n"
+    },
+    {
+      "id": "explanation-complete",
+      "passed": true,
+      "detail": "must name plan id and explain preserve/create/cleanup/rollback/review"
+    }
+  ]
+}

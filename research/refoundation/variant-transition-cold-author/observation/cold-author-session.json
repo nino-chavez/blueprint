@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-07-28T01:53:05Z",
+  "finished_at": "2026-07-28T01:53:29Z",
+  "attempts": 1,
+  "questions_asked": [],
+  "assumptions": [
+    "The fixture's named research sponsor is the accountable party for this one transition.",
+    "The transition receipt is the fixture-local record through which the research sponsor can route a rollback decision.",
+    "2026-07-27 is the intended receipt review point for this observation."
+  ],
+  "methodology_creator_interventions": 0
+}

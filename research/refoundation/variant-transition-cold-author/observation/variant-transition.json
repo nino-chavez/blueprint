@@ -1,0 +1,7 @@
+{
+  "schema": "blueprint-variant-transition-decision/1",
+  "accountable_party": "fixture research sponsor",
+  "rollback_route": "the fixture research sponsor reviews the transition receipt and authorizes rollback through the recorded receipt route",
+  "receipt_review_at": "2026-07-27",
+  "acknowledged": true
+}
