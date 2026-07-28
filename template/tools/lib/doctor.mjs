@@ -148,6 +148,44 @@ export async function runDoctor({ home, targetDir }) {
     }
   }
 
+  // 2d. Variant-transition support state. A durable recovery journal is a hard
+  //     health failure until explicitly recovered; a completed transition whose
+  //     generated postimage changed keeps working but no longer has an automatic
+  //     rollback window, so it is visible as WARN.
+  if (hasYml) {
+    try {
+      const transitions = await import(libUrl(home, 'variant-transition.mjs'));
+      const state = transitions.inspectVariantTransitionState({ targetDir });
+      if (state.status === 'none') {
+        add('variant-transition', 'pass', 'no transition journal or receipt');
+      } else if (state.status === 'applied') {
+        add('variant-transition', 'pass', `applied receipt ${state.receipts[0].receiptId}; rollback preflight ready`);
+      } else if (state.status === 'rolled-back') {
+        add('variant-transition', 'pass', `${state.receipts.length} transition receipt(s), all rolled back`);
+      } else if (state.status === 'applied-rollback-blocked') {
+        add(
+          'variant-transition',
+          'warn',
+          `applied receipt ${state.receipts[0].receiptId}; automatic rollback blocked by post-transition changes`,
+          'run `blueprint variant status --json` and preserve authored changes before deciding any manual rollback',
+        );
+      } else {
+        add(
+          'variant-transition',
+          'fail',
+          `${state.status} variant-transition support state`,
+          'run `blueprint variant recover` for a read-only recovery plan; apply only after reviewing every action',
+        );
+      }
+    } catch (e) {
+      if (['GIT_REQUIRED', 'TARGET_NOT_GIT_ROOT'].includes(e?.code)) {
+        add('variant-transition', 'skip', 'target is not a Git worktree root; transition operation is not supported here');
+      } else {
+        add('variant-transition', 'fail', `transition support inspection failed: ${e.message}`);
+      }
+    }
+  }
+
   // 3. cost-config — the cost block resolves; flag any below-anchor-unjustified
   //    stage (the step-6 gate would BLOCK it). Reuses cost-dial.
   if (hasYml) {
@@ -521,6 +559,8 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(r2.checks.find((c) => c.name === 'reviewers-loadable').status === 'pass', 'real reviewers all load');
   const smCheck = r2.checks.find((c) => c.name === 'stage-model');
   assert(smCheck && smCheck.status === 'pass', 'stage-model resolves (self-app declares greenfield, no fallback)');
+  const transitionCheck = r2.checks.find((c) => c.name === 'variant-transition');
+  assert(transitionCheck && transitionCheck.status === 'pass', 'variant-transition support state is inspected');
   assert(Array.isArray(r2.notChecked) && r2.notChecked.length === 2, 'reports its not-checked boundary');
   assert(['pass', 'warn'].includes(r2.status), 'real home is healthy (pass/warn)');
 
@@ -654,5 +694,5 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(ready.checks.find((c) => c.name === 'review-loop')?.status === 'warn', 'unissued review loop reports doctor warn');
   fs.rmSync(reviewFixture, { recursive: true, force: true });
 
-  console.log('doctor self-test: PASS (17 assertions)');
+  console.log('doctor self-test: PASS (18 assertions)');
 }

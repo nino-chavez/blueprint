@@ -90,6 +90,10 @@ blueprint variant transition --to=research --target=/path/to/initiative
 # inspect the preservation inventory, cleanup plan, and stage-state disposition
 blueprint variant transition --to=research --target=/path/to/initiative \
   --apply --plan-id=<exact id from the current plan>
+blueprint variant status --target=/path/to/initiative
+blueprint variant recover --target=/path/to/initiative
+# review every recovery action before:
+blueprint variant recover --target=/path/to/initiative --apply
 ```
 
 The operation creates only missing research scaffolds, preserves every
@@ -97,7 +101,10 @@ collision (including empty files), performs no cleanup, and writes an
 append-only rollback receipt. Apply/rollback serialize through Git metadata,
 refuse any after-plan hash change, and keep the receipt usable across a
 same-filesystem rename of the whole checkout directory. The recorded root
-directory identity rejects copied checkouts. This command is not in the
+directory identity rejects copied checkouts. A durable Git-metadata journal is
+published before the first mutation; Doctor and upgrade surface interrupted
+state, and explicit recovery returns an incomplete apply or rollback to its
+pre-operation state. This command is not in the
 published npm package until Decision 08's promotion gates are satisfied.
 
 ## Usage — initial stamp (Pattern B)

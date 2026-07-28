@@ -25,11 +25,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   applyVariantTransition,
+  inspectVariantTransitionState,
+  planVariantRecovery,
   planVariantRollback,
   planVariantTransition,
+  recoverVariantTransition,
   rollbackVariantTransition,
 } from './variant-transition.mjs';
 import { deriveStageStatus } from './stage-model.mjs';
+import { runDoctor } from './doctor.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const STAMP = path.join(ROOT, 'template', 'tools', 'blueprint-init', 'stamp.mjs');
@@ -128,6 +132,67 @@ function errorCode(fn) {
     return error.code || error.name;
   }
   return null;
+}
+
+function crashOperation({
+  operation,
+  target,
+  planId,
+  receiptId,
+  event,
+  eventPath = null,
+  acceptStageReset = false,
+}) {
+  const driver = path.join(TEST_ROOT, 'crash-driver.mjs');
+  if (!existsSync(driver)) {
+    writeFileSync(driver, `
+const lib = await import(${JSON.stringify(new URL('./variant-transition.mjs', import.meta.url).href)});
+const config = JSON.parse(process.env.BLUEPRINT_VARIANT_CRASH_CONFIG);
+const hook = (record) => {
+  if (
+    record.operation === config.event
+    && (config.eventPath == null || record.path === config.eventPath)
+  ) process.exit(86);
+};
+if (config.operation === 'apply') {
+  lib.applyVariantTransition({
+    targetDir: config.target,
+    home: config.home,
+    planId: config.planId,
+    acceptStageReset: config.acceptStageReset,
+    mutationHook: hook,
+  });
+} else {
+  lib.rollbackVariantTransition({
+    targetDir: config.target,
+    receiptId: config.receiptId,
+    mutationHook: hook,
+  });
+}
+`, 'utf8');
+  }
+  let status = 0;
+  try {
+    execFileSync(process.execPath, [driver], {
+      stdio: 'ignore',
+      env: {
+        ...process.env,
+        BLUEPRINT_VARIANT_CRASH_CONFIG: JSON.stringify({
+          operation,
+          target,
+          home: ROOT,
+          planId,
+          receiptId,
+          event,
+          eventPath,
+          acceptStageReset,
+        }),
+      },
+    });
+  } catch (error) {
+    status = error.status;
+  }
+  return status;
 }
 
 try {
@@ -788,6 +853,289 @@ try {
   ok(
     readFileSync(path.join(portableMoved, 'blueprint.yml'), 'utf8').includes('variant: greenfield'),
     'moved-checkout rollback restores the preimage',
+  );
+
+  // 10. Durable journals recover subprocess death after every mutating action.
+  const applyCrashSeed = fixture('apply-crash-seed', { authoredPersona: false });
+  const applyCrashSeedPlan = planVariantTransition({
+    targetDir: applyCrashSeed,
+    home: ROOT,
+  });
+  const applyCrashCases = [
+    ['after-patch-file', 'blueprint.yml'],
+    ...applyCrashSeedPlan.actions
+      .filter((action) => action.kind === 'create-directory')
+      .map((action) => ['after-create-directory', action.path]),
+    ...applyCrashSeedPlan.actions
+      .filter((action) => action.kind === 'create-file')
+      .map((action) => ['after-create-file', action.path]),
+    ['after-verify-postimage', 'blueprint.yml'],
+  ];
+  for (const [index, [event, eventPath]] of applyCrashCases.entries()) {
+    const target = fixture(`apply-crash-${index}`, { authoredPersona: false });
+    const before = walkSnapshot(target);
+    const crashPlan = planVariantTransition({ targetDir: target, home: ROOT });
+    ok(
+      crashOperation({
+        operation: 'apply',
+        target,
+        planId: crashPlan.planId,
+        event,
+        eventPath,
+      }) === 86,
+      `subprocess exits after apply mutation ${event}:${eventPath}`,
+    );
+    const interrupted = inspectVariantTransitionState({ targetDir: target });
+    ok(interrupted.status === 'interrupted', `status exposes interrupted apply ${event}:${eventPath}`);
+    const beforeRecoveryPlan = walkSnapshot(target, { mtimes: true });
+    const recoveryPlan = planVariantRecovery({ targetDir: target });
+    const afterRecoveryPlan = walkSnapshot(target, { mtimes: true });
+    ok(
+      recoveryPlan.status === 'interrupted' && beforeRecoveryPlan === afterRecoveryPlan,
+      `apply recovery plan is read-only ${event}:${eventPath}`,
+    );
+    const recovery = recoverVariantTransition({ targetDir: target });
+    ok(recovery.status === 'recovered' && recovery.terminal === 'pre-operation', `apply recovery executes ${event}:${eventPath}`);
+    ok(walkSnapshot(target) === before, `apply recovery restores exact preimage ${event}:${eventPath}`);
+  }
+
+  const applyReceiptCrash = fixture('apply-receipt-crash', { authoredPersona: false });
+  const applyReceiptCrashPlan = planVariantTransition({ targetDir: applyReceiptCrash, home: ROOT });
+  ok(
+    crashOperation({
+      operation: 'apply',
+      target: applyReceiptCrash,
+      planId: applyReceiptCrashPlan.planId,
+      event: 'after-publish-receipt',
+      eventPath: `.blueprint/variant-transitions/${applyReceiptCrashPlan.planId}/receipt.json`,
+    }) === 86,
+    'subprocess exits after apply success receipt publication',
+  );
+  ok(
+    planVariantRecovery({ targetDir: applyReceiptCrash }).status === 'completed-stale-metadata',
+    'published apply receipt is recognized as completed after process death',
+  );
+  const completedApplyRecovery = recoverVariantTransition({ targetDir: applyReceiptCrash });
+  ok(
+    completedApplyRecovery.status === 'completed'
+      && inspectVariantTransitionState({ targetDir: applyReceiptCrash }).status === 'applied',
+    'apply recovery clears only stale metadata after a verified success receipt',
+  );
+  const cliStatus = JSON.parse(execFileSync(process.execPath, [
+    BIN,
+    'variant',
+    'status',
+    `--target=${applyReceiptCrash}`,
+    '--json',
+  ], {
+    encoding: 'utf8',
+    env: { ...process.env, BLUEPRINT_HOME: ROOT },
+  }));
+  ok(cliStatus.status === 'applied', 'variant status CLI renders the shared applied state');
+  const appliedDoctor = await runDoctor({ home: ROOT, targetDir: applyReceiptCrash });
+  ok(
+    appliedDoctor.checks.find((check) => check.name === 'variant-transition')?.status === 'pass',
+    'Doctor reports an applied transition with ready rollback as PASS',
+  );
+  const appliedUpgrade = JSON.parse(execFileSync(process.execPath, [
+    BIN,
+    'upgrade',
+    `--target=${applyReceiptCrash}`,
+    '--json',
+  ], {
+    encoding: 'utf8',
+    env: { ...process.env, BLUEPRINT_HOME: ROOT },
+  }));
+  ok(appliedUpgrade.transitionState.status === 'applied', 'upgrade dry-run exposes the shared applied transition state');
+
+  const applyStageCrash = fixture('apply-stage-crash', {
+    authoredPersona: false,
+    stageState: '{"schema":"test","cursor":1,"assertions":{}}\n',
+  });
+  const applyStageCrashBefore = walkSnapshot(applyStageCrash);
+  const applyStageCrashPlan = planVariantTransition({
+    targetDir: applyStageCrash,
+    home: ROOT,
+    acceptStageReset: true,
+  });
+  ok(
+    crashOperation({
+      operation: 'apply',
+      target: applyStageCrash,
+      planId: applyStageCrashPlan.planId,
+      event: 'after-archive-stage-state',
+      eventPath: '.blueprint/stage-state.json',
+      acceptStageReset: true,
+    }) === 86,
+    'subprocess exits after stage-state archival',
+  );
+  recoverVariantTransition({ targetDir: applyStageCrash });
+  ok(walkSnapshot(applyStageCrash) === applyStageCrashBefore, 'apply recovery restores archived stage state after process death');
+
+  const rollbackCrashSeed = fixture('rollback-crash-seed', { authoredPersona: false });
+  const rollbackCrashSeedPlan = planVariantTransition({ targetDir: rollbackCrashSeed, home: ROOT });
+  applyVariantTransition({ targetDir: rollbackCrashSeed, home: ROOT, planId: rollbackCrashSeedPlan.planId });
+  const rollbackCrashReceipt = JSON.parse(readFileSync(
+    path.join(
+      rollbackCrashSeed,
+      `.blueprint/variant-transitions/${rollbackCrashSeedPlan.planId}/receipt.json`,
+    ),
+    'utf8',
+  ));
+  const rollbackCrashCases = [
+    ...rollbackCrashReceipt.patchedFiles.map((item) => ['after-restore-file', item.path]),
+    ...rollbackCrashReceipt.createdFiles.map((item) => ['after-remove-created-file', item.path]),
+  ];
+  for (const [index, [event, eventPath]] of rollbackCrashCases.entries()) {
+    const target = fixture(`rollback-crash-${index}`, { authoredPersona: false });
+    const transitionPlan = planVariantTransition({ targetDir: target, home: ROOT });
+    applyVariantTransition({ targetDir: target, home: ROOT, planId: transitionPlan.planId });
+    const appliedBefore = walkSnapshot(target);
+    ok(
+      crashOperation({
+        operation: 'rollback',
+        target,
+        receiptId: transitionPlan.planId,
+        event,
+        eventPath,
+      }) === 86,
+      `subprocess exits after rollback mutation ${event}:${eventPath}`,
+    );
+    ok(inspectVariantTransitionState({ targetDir: target }).status === 'interrupted', `status exposes interrupted rollback ${event}:${eventPath}`);
+    const recoveryPlan = planVariantRecovery({ targetDir: target });
+    ok(recoveryPlan.status === 'interrupted' && recoveryPlan.conflicts.length === 0, `rollback recovery plans ${event}:${eventPath}`);
+    const recovery = recoverVariantTransition({ targetDir: target });
+    ok(recovery.status === 'recovered' && recovery.terminal === 'pre-operation', `rollback recovery executes ${event}:${eventPath}`);
+    ok(walkSnapshot(target) === appliedBefore, `rollback recovery restores exact applied state ${event}:${eventPath}`);
+  }
+
+  const rollbackReceiptCrash = fixture('rollback-receipt-crash', { authoredPersona: false });
+  const rollbackReceiptCrashPlan = planVariantTransition({ targetDir: rollbackReceiptCrash, home: ROOT });
+  applyVariantTransition({
+    targetDir: rollbackReceiptCrash,
+    home: ROOT,
+    planId: rollbackReceiptCrashPlan.planId,
+  });
+  ok(
+    crashOperation({
+      operation: 'rollback',
+      target: rollbackReceiptCrash,
+      receiptId: rollbackReceiptCrashPlan.planId,
+      event: 'after-publish-rollback-receipt',
+      eventPath: `.blueprint/variant-transitions/${rollbackReceiptCrashPlan.planId}/rollback.json`,
+    }) === 86,
+    'subprocess exits after rollback success receipt publication',
+  );
+  ok(
+    planVariantRecovery({ targetDir: rollbackReceiptCrash }).status === 'completed-stale-metadata',
+    'published rollback receipt is recognized as completed after process death',
+  );
+  recoverVariantTransition({ targetDir: rollbackReceiptCrash });
+  ok(
+    inspectVariantTransitionState({ targetDir: rollbackReceiptCrash }).status === 'rolled-back',
+    'rollback recovery clears only stale metadata after a verified rollback receipt',
+  );
+
+  const rollbackStageCrash = fixture('rollback-stage-crash', {
+    authoredPersona: false,
+    stageState: '{"schema":"test","cursor":1,"assertions":{}}\n',
+  });
+  const rollbackStageTransition = planVariantTransition({
+    targetDir: rollbackStageCrash,
+    home: ROOT,
+    acceptStageReset: true,
+  });
+  applyVariantTransition({
+    targetDir: rollbackStageCrash,
+    home: ROOT,
+    planId: rollbackStageTransition.planId,
+    acceptStageReset: true,
+  });
+  const rollbackStageApplied = walkSnapshot(rollbackStageCrash);
+  ok(
+    crashOperation({
+      operation: 'rollback',
+      target: rollbackStageCrash,
+      receiptId: rollbackStageTransition.planId,
+      event: 'after-restore-stage-state',
+      eventPath: '.blueprint/stage-state.json',
+    }) === 86,
+    'subprocess exits after rollback stage-state restoration',
+  );
+  recoverVariantTransition({ targetDir: rollbackStageCrash });
+  ok(walkSnapshot(rollbackStageCrash) === rollbackStageApplied, 'rollback recovery removes restored stage state and returns to applied state');
+
+  const staleLock = fixture('stale-lock-recovery');
+  const rawStaleLock = git(staleLock, 'rev-parse', '--git-path', 'blueprint-variant-transition.lock');
+  const staleLockPath = path.isAbsolute(rawStaleLock) ? rawStaleLock : path.resolve(staleLock, rawStaleLock);
+  writeFileSync(staleLockPath, `999999:${Date.now()}:${'a'.repeat(64)}\n`, { flag: 'wx' });
+  ok(planVariantRecovery({ targetDir: staleLock }).status === 'stale-lock', 'dead pre-journal lock is recoverable');
+  recoverVariantTransition({ targetDir: staleLock });
+  ok(!existsSync(staleLockPath), 'explicit recovery clears a dead pre-journal lock');
+
+  const liveLock = fixture('live-lock-recovery');
+  const rawLiveLock = git(liveLock, 'rev-parse', '--git-path', 'blueprint-variant-transition.lock');
+  const liveLockPath = path.isAbsolute(rawLiveLock) ? rawLiveLock : path.resolve(liveLock, rawLiveLock);
+  writeFileSync(liveLockPath, `${process.pid}:${Date.now()}:${'b'.repeat(64)}\n`, { flag: 'wx' });
+  ok(planVariantRecovery({ targetDir: liveLock }).status === 'active', 'live lock owner blocks recovery');
+  unlinkSync(liveLockPath);
+
+  const corruptJournal = fixture('corrupt-journal', { authoredPersona: false });
+  const corruptJournalPlan = planVariantTransition({ targetDir: corruptJournal, home: ROOT });
+  crashOperation({
+    operation: 'apply',
+    target: corruptJournal,
+    planId: corruptJournalPlan.planId,
+    event: 'after-patch-file',
+    eventPath: 'blueprint.yml',
+  });
+  const rawJournal = git(corruptJournal, 'rev-parse', '--git-path', 'blueprint-variant-transition.journal.json');
+  const journalPath = path.isAbsolute(rawJournal) ? rawJournal : path.resolve(corruptJournal, rawJournal);
+  const corruptBeforePlan = walkSnapshot(corruptJournal, { mtimes: true });
+  const journal = JSON.parse(readFileSync(journalPath, 'utf8'));
+  journal.payload.planId = '0'.repeat(64);
+  writeFileSync(journalPath, `${JSON.stringify(journal, null, 2)}\n`);
+  const corruptRecovery = planVariantRecovery({ targetDir: corruptJournal });
+  ok(corruptRecovery.status === 'blocked' && corruptRecovery.conflicts.length > 0, 'content-address mismatch blocks corrupt journal recovery');
+  ok(walkSnapshot(corruptJournal, { mtimes: true }) === corruptBeforePlan, 'corrupt recovery plan preserves initiative bytes and mtimes');
+
+  const concurrentCrash = fixture('concurrent-crash-recovery', { authoredPersona: false });
+  const concurrentCrashPlan = planVariantTransition({ targetDir: concurrentCrash, home: ROOT });
+  crashOperation({
+    operation: 'apply',
+    target: concurrentCrash,
+    planId: concurrentCrashPlan.planId,
+    event: 'after-patch-file',
+    eventPath: 'blueprint.yml',
+  });
+  appendFileSync(path.join(concurrentCrash, 'blueprint.yml'), '# authored after crash\n');
+  ok(planVariantRecovery({ targetDir: concurrentCrash }).status === 'blocked', 'post-crash concurrent edit blocks automatic recovery');
+  ok(errorCode(() => recoverVariantTransition({ targetDir: concurrentCrash })) === 'RECOVERY_BLOCKED', 'blocked crash recovery performs no overwrite');
+  ok(readFileSync(path.join(concurrentCrash, 'blueprint.yml'), 'utf8').includes('authored after crash'), 'blocked crash recovery preserves concurrent edit');
+  const interruptedDoctor = await runDoctor({ home: ROOT, targetDir: concurrentCrash });
+  ok(
+    interruptedDoctor.checks.find((check) => check.name === 'variant-transition')?.status === 'fail',
+    'Doctor reports blocked interrupted recovery as FAIL',
+  );
+  let interruptedUpgradeStatus = 0;
+  try {
+    execFileSync(process.execPath, [
+      BIN,
+      'upgrade',
+      `--target=${concurrentCrash}`,
+      '--apply',
+      '--json',
+    ], {
+      stdio: 'ignore',
+      env: { ...process.env, BLUEPRINT_HOME: ROOT },
+    });
+  } catch (error) {
+    interruptedUpgradeStatus = error.status;
+  }
+  ok(interruptedUpgradeStatus === 2, 'upgrade apply refuses interrupted or corrupt transition state');
+  ok(
+    !readFileSync(path.join(concurrentCrash, 'blueprint.yml'), 'utf8').includes('methodology_version:'),
+    'refused upgrade does not change the methodology pin',
   );
 
   const already = fixture('already', { blueprint: 'variant: research\nstage_model: research\n' });

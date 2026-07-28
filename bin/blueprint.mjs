@@ -345,10 +345,11 @@ async function runUpgrade(upgradeArgv, home) {
   }
 
   const libDir = join(home, 'template', 'tools', 'lib');
-  let reg, up;
+  let reg, up, transitions;
   try {
     reg = await import(pathToFileURL(join(libDir, 'consumers-registry.mjs')).href);
     up = await import(pathToFileURL(join(libDir, 'upgrade.mjs')).href);
+    transitions = await import(pathToFileURL(join(libDir, 'variant-transition.mjs')).href);
   } catch (e) {
     console.error(`blueprint upgrade: failed to load upgrade libs from ${libDir} — ${e.message}`);
     process.exit(2);
@@ -360,6 +361,14 @@ async function runUpgrade(upgradeArgv, home) {
   const verdict = reg.classifyConsumer({ repo: '(this consumer)', methodology_version: pin, deprecated_pin: false }, current, gitProbe);
   const delta = up.narrateChangelogDelta({ home, pin, current, verdictClass: verdict.class, gitProbe });
   const gate = up.computeGate(verdict, { ackUntagged });
+  let transitionState;
+  try {
+    transitionState = transitions.inspectVariantTransitionState({ targetDir });
+  } catch (error) {
+    transitionState = ['GIT_REQUIRED', 'TARGET_NOT_GIT_ROOT'].includes(error?.code)
+      ? { status: 'unsupported-layout', detail: error.message }
+      : { status: 'corrupt', detail: error.message };
+  }
   // upgrade-TO is `current`, shaped to match the pin: a semver pin bumps to the
   // version; a sha pin bumps to the short HEAD. An UNPINNED consumer adopts the
   // stable semver release identity (version) when one exists — friendlier and
@@ -379,6 +388,7 @@ async function runUpgrade(upgradeArgv, home) {
       current,
       verdict: { class: verdict.class, distance: verdict.distance, distanceUnit: verdict.distanceUnit, reason: verdict.reason, breaking: verdict.breaking },
       delta,
+      transitionState,
       proposed: { from: pin, to, gate: gate.action },
       applied: false,
     }, null, 2));
@@ -388,6 +398,7 @@ async function runUpgrade(upgradeArgv, home) {
     console.log(`blueprint upgrade — ${targetDir}`);
     console.log(`pinned: ${pin || '(unpinned)'}   methodology current: ${current.version || '?'} (HEAD ${head7})`);
     console.log(`verdict: ${verdict.class}${verdict.distance != null ? ` (${verdict.distance} ${verdict.distanceUnit})` : ''} — ${verdict.reason}`);
+    console.log(`variant transition: ${transitionState.status}${transitionState.detail ? ` — ${transitionState.detail}` : ''}`);
     if (delta.kind === 'commitlog') {
       console.log(`delta: no semver releases between ${(pin || '').slice(0, 7)} and current — methodology commit log (CHANGELOG narration begins once vX.Y.Z tags exist in range):`);
       for (const s of delta.entries.slice(0, 15)) console.log(`  ${s}`);
@@ -418,6 +429,10 @@ async function runUpgrade(upgradeArgv, home) {
   if (gate.action.startsWith('refuse')) {
     if (!flags.json) console.log(`\nnot applied — ${gate.message}. exit 1`);
     process.exit(1);
+  }
+  if (['active', 'interrupted', 'corrupt'].includes(transitionState.status)) {
+    console.error(`blueprint upgrade: variant transition state is ${transitionState.status}; run \`blueprint variant status\` and recover before changing the methodology pin.`);
+    process.exit(2);
   }
   // dirty-tree guard — makes "revert via git" true rather than asserted.
   if (up.isDirty(targetDir, ['blueprint.yml'])) {
@@ -639,15 +654,20 @@ async function runVariant(variantArgv, home) {
   blueprint variant transition --to=research --apply --plan-id=<sha256> [--accept-stage-reset]
   blueprint variant rollback --receipt=<id> [--target=<dir>] [--json]
   blueprint variant rollback --receipt=<id> --apply
+  blueprint variant recover [--target=<dir>] [--json]
+  blueprint variant recover --apply
+  blueprint variant status [--target=<dir>] [--json]
 
 Planning is the default and does not write. Transition apply creates only
 missing research scaffolds, preserves every collision, never performs cleanup,
 and writes an append-only receipt. Rollback refuses if generated files changed.
+Recovery restores an interrupted operation's preimage and is read-only unless
+--apply is supplied.
 `);
     return;
   }
-  if (sub !== 'transition' && sub !== 'rollback') {
-    console.error(`blueprint variant: unknown operation '${sub}' (expected transition or rollback).`);
+  if (!['transition', 'rollback', 'recover', 'status'].includes(sub)) {
+    console.error(`blueprint variant: unknown operation '${sub}' (expected transition, rollback, recover, or status).`);
     process.exit(2);
   }
 
@@ -661,6 +681,50 @@ and writes an append-only receipt. Rollback refuses if generated files changed.
 
   const targetDir = resolve(flags.target || process.cwd());
   try {
+    if (sub === 'status') {
+      const result = lib.inspectVariantTransitionState({ targetDir });
+      if (flags.json) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`blueprint variant status — ${result.status}`);
+        console.log(`  target: ${result.target}`);
+        if (result.receipts?.length) {
+          for (const receipt of result.receipts) {
+            console.log(`  ${receipt.receiptId}: ${receipt.status}`);
+          }
+        }
+        if (result.recovery?.detail) console.log(`  recovery: ${result.recovery.detail}`);
+      }
+      if (['active', 'interrupted', 'corrupt'].includes(result.status)) process.exit(1);
+      return;
+    }
+
+    if (sub === 'recover') {
+      if (flags.apply) {
+        const result = lib.recoverVariantTransition({ targetDir });
+        if (flags.json) console.log(JSON.stringify(result, null, 2));
+        else {
+          console.log(`blueprint variant recover — ${result.status}`);
+          console.log(`  target: ${result.target}`);
+          console.log(`  terminal: ${result.terminal}`);
+          console.log(`  actions: ${result.actions.length}`);
+        }
+      } else {
+        const plan = lib.planVariantRecovery({ targetDir });
+        if (flags.json) console.log(JSON.stringify(plan, null, 2));
+        else {
+          console.log(`blueprint variant recover — ${plan.status}`);
+          console.log(`  target: ${plan.target}`);
+          if (plan.operation) console.log(`  operation: ${plan.operation}`);
+          if (plan.detail) console.log(`  ${plan.detail}`);
+          for (const action of plan.actions) console.log(`  ${action.kind}: ${action.path}`);
+          for (const conflict of plan.conflicts) console.log(`  BLOCK: ${conflict}`);
+          console.log('  dry-run; pass --apply to recover.');
+        }
+        if (plan.conflicts.length) process.exit(1);
+      }
+      return;
+    }
+
     if (sub === 'transition') {
       if (flags.apply) {
         const result = lib.applyVariantTransition({

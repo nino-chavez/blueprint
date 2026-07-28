@@ -145,6 +145,8 @@ blueprint feedback [--target=<dir>] [--json] [--gate] # validate exact-candidate
 blueprint variant transition --to=research [--target=<dir>] # read-only preservation/cleanup plan
 blueprint variant transition --to=research --apply --plan-id=<sha256>
 blueprint variant rollback --receipt=<id> [--apply]          # preflight by default
+blueprint variant status [--target=<dir>]                    # receipts, rollback availability, interruption
+blueprint variant recover [--target=<dir>] [--apply]         # preflight by default; restores an interrupted preimage
 ```
 
 Each command is a thin front door over a dependency-free, self-tested lib under
