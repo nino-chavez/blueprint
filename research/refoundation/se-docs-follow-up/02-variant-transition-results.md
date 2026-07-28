@@ -148,6 +148,13 @@ not an operator support receipt.
 
 ## Support and rollback implications
 
+> Follow-up: the repository-side crash-recovery and local Doctor/upgrade
+> visibility gaps described below were subsequently preregistered and closed on
+> this candidate in `04-variant-transition-recovery-preregistration.md` and
+> `05-variant-transition-recovery-results.md`. Fleet support, the public
+> support/compatibility window, and live prospective/operator receipts remain
+> open.
+
 The operation requires the initiative root to be a Git worktree root. This
 keeps planned-path dirt and rollback scope mechanically resolvable but excludes
 nested/non-Git layouts from v1.
@@ -173,8 +180,8 @@ rollback encounter remain open under Decision 08.
 This branch is a candidate, not the published tenth CLI command. It does not
 authorize npm publication or consumer rollout. Public consideration should
 happen only after the correctness maintenance lands, consumers can receive
-that prerequisite, the open support gates above close, and a prospective
-external transition succeeds.
+that prerequisite, the remaining Decision 08 support gates close, and a
+prospective external transition succeeds.
 
 No universal problem-statement stage, SE Docs-specific variant, portal
 requirement, model allowlist, or steering-layer semantics were added.

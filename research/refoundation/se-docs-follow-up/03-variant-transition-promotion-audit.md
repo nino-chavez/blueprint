@@ -125,6 +125,12 @@ The focused suite now covers:
 
 ## Residual boundary
 
+> Follow-up: `04-variant-transition-recovery-preregistration.md` and
+> `05-variant-transition-recovery-results.md` close the crash-journal and local
+> Doctor/upgrade visibility portions of this boundary on the candidate branch.
+> Fleet integration, a public support window, and the prospective/operator
+> receipts remain open.
+
 The lock coordinates Blueprint transition writers and the final hash checks
 protect against ordinary external editors. It is not a crash journal. Process
 death or power loss between filesystem operations still requires a dedicated
