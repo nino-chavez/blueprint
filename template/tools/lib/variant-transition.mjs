@@ -37,6 +37,7 @@ export const PLAN_SCHEMA = 'blueprint-variant-transition-plan/1';
 export const RECEIPT_SCHEMA = 'blueprint-variant-transition-receipt/1';
 export const ROLLBACK_SCHEMA = 'blueprint-variant-transition-rollback/1';
 export const JOURNAL_SCHEMA = 'blueprint-variant-transition-journal/1';
+export const DECISION_SCHEMA = 'blueprint-variant-transition-decision/1';
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_HOME = resolve(MODULE_DIR, '..', '..', '..');
@@ -417,6 +418,35 @@ function ensureNoSymlinkPath(target, rel) {
   }
 }
 
+function validCalendarDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function transitionDecisionPlan(target, declaredPath) {
+  if (!declaredPath) return { status: 'requires-explicit-decision', requiresAcceptance: true, path: null, reason: 'provide --transition-decision=<repo-relative JSON path> before apply' };
+  const path = validateRelative(declaredPath);
+  ensureNoSymlinkPath(target, path);
+  const stat = safeLstat(join(target, path));
+  if (!stat?.isFile() || stat.isSymbolicLink()) fail(`transition decision must be a regular in-target JSON file: ${path}`, 'TRANSITION_DECISION_REQUIRED');
+  const bytes = readFileSync(join(target, path));
+  let parsed;
+  try { parsed = JSON.parse(bytes.toString('utf8')); } catch (error) { fail(`transition decision is not valid JSON: ${path} — ${error.message}`, 'TRANSITION_DECISION_INVALID'); }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)
+    || parsed.schema !== DECISION_SCHEMA
+    || typeof parsed.accountable_party !== 'string' || !parsed.accountable_party.trim()
+    || typeof parsed.rollback_route !== 'string' || !parsed.rollback_route.trim()
+    || !validCalendarDate(parsed.receipt_review_at)
+    || parsed.acknowledged !== true) {
+    fail(`transition decision has invalid ${DECISION_SCHEMA} declaration: ${path}`, 'TRANSITION_DECISION_INVALID');
+  }
+  return { status: 'ready', requiresAcceptance: false, path, sha256: sha256(bytes), declaration: {
+    schema: DECISION_SCHEMA, accountable_party: parsed.accountable_party.trim(), rollback_route: parsed.rollback_route.trim(), receipt_review_at: parsed.receipt_review_at, acknowledged: true,
+  } };
+}
+
 function scalarOccurrences(text, key) {
   const found = [];
   let start = 0;
@@ -659,6 +689,7 @@ export function planVariantTransition({
   home = DEFAULT_HOME,
   to = 'research',
   acceptStageReset = false,
+  transitionDecision = null,
 } = {}) {
   if (to !== 'research') fail(`variant transition v1 supports only --to=research (got '${to}')`, 'UNSUPPORTED_TO_VARIANT');
   const target = requireGitRoot(targetDir || process.cwd());
@@ -669,6 +700,7 @@ export function planVariantTransition({
   if (!blueprintStat?.isFile()) fail(`blueprint.yml is missing at ${target}`, 'BLUEPRINT_MISSING');
   const blueprintBytes = readFileSync(blueprintPath);
   const blueprintText = blueprintBytes.toString('utf8');
+  const decision = transitionDecisionPlan(target, transitionDecision);
   const patch = computeBlueprintPatch(blueprintText);
   const materials = scaffoldMaterials(resolve(home));
   const actions = [];
@@ -739,6 +771,7 @@ export function planVariantTransition({
     collisions,
     protectedRoots: inventory,
     stageState,
+    transitionDecision: decision,
     cleanup: cleanupPlan(target),
     rollback: {
       patchedFiles: actions.filter((action) => action.kind === 'patch-file').map((action) => action.path),
@@ -1037,6 +1070,7 @@ function applyVariantTransitionUnlocked({
   to = 'research',
   planId,
   acceptStageReset = false,
+  transitionDecision = null,
   failAfter = null,
   mutationHook = null,
   lockToken,
@@ -1044,7 +1078,7 @@ function applyVariantTransitionUnlocked({
   if (!planId || !/^[a-f0-9]{64}$/.test(planId)) {
     fail('--apply requires the exact 64-character --plan-id from a fresh plan', 'PLAN_ID_REQUIRED');
   }
-  const plan = planVariantTransition({ targetDir, home, to, acceptStageReset });
+  const plan = planVariantTransition({ targetDir, home, to, acceptStageReset, transitionDecision });
   if (plan.planId !== planId) {
     fail(`plan id mismatch: supplied ${planId}, current state produces ${plan.planId}`, 'PLAN_MISMATCH');
   }
@@ -1053,6 +1087,9 @@ function applyVariantTransitionUnlocked({
   }
   if (plan.stageState.requiresAcceptance) {
     fail('stage state exists; re-plan and apply with --accept-stage-reset', 'STAGE_RESET_REQUIRED');
+  }
+  if (plan.transitionDecision.requiresAcceptance) {
+    fail('transition decision is required; re-plan and apply with --transition-decision=<repo-relative JSON path>', 'TRANSITION_DECISION_REQUIRED');
   }
   if (plan.dirtyPlannedPaths.length > 0) {
     fail(`planned paths are dirty: ${plan.dirtyPlannedPaths.join(' | ')}`, 'PLANNED_PATH_DIRTY');
@@ -2381,9 +2418,14 @@ export function formatTransitionPlan(plan) {
   if (plan.stageState.requiresAcceptance) {
     lines.push(`BLOCK ${plan.stageState.path}: re-plan with --accept-stage-reset to archive/reset incompatible cursor state.`);
   }
+  if (plan.transitionDecision.requiresAcceptance) {
+    lines.push(`BLOCK transition decision: ${plan.transitionDecision.reason}`);
+  } else {
+    lines.push(`DECISION ${plan.transitionDecision.path} (sha256 ${plan.transitionDecision.sha256})`);
+  }
   for (const dirty of plan.dirtyPlannedPaths) lines.push(`BLOCK dirty planned path: ${dirty}`);
   lines.push('cleanup: plan only; no deletion or nested-config rewrite is authorized.');
-  lines.push(`apply: re-run with --apply --plan-id=${plan.planId}${plan.stageState.status === 'archive-and-reset' ? ' --accept-stage-reset' : ''}`);
+  lines.push(`apply: re-run with --apply --plan-id=${plan.planId}${plan.stageState.status === 'archive-and-reset' ? ' --accept-stage-reset' : ''}${plan.transitionDecision.path ? ` --transition-decision=${plan.transitionDecision.path}` : ''}`);
   return lines.join('\n');
 }
 

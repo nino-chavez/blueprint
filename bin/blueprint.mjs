@@ -308,7 +308,7 @@ async function runFleet(fleetArgv, home) {
       process.exit(1);
     }
     console.log(`status: ${view.status}; introduced: ${view.introducedIn || 'not distributed'}`);
-    console.log(`support owner: ${view.supportWindow.owner || 'unnamed'} (${view.supportWindow.owner_acceptance})`);
+    console.log('transition accountability: declared per initiative before apply');
     console.log(`authority: ${view.registryAuthority}; ${view.disclaimer}\n`);
     for (const warning of view.registryWarnings) {
       console.log(`! ${warning.repo} ${warning.field}: ${warning.reason}`);
@@ -699,8 +699,8 @@ async function runVariant(variantArgv, home) {
   const sub = positionals[0];
   if (flags.help || flags.h || !sub) {
     console.log(`Usage:
-  blueprint variant transition --to=research [--target=<dir>] [--json]
-  blueprint variant transition --to=research --apply --plan-id=<sha256> [--accept-stage-reset]
+  blueprint variant transition --to=research --transition-decision=<repo-relative JSON path> [--target=<dir>] [--json]
+  blueprint variant transition --to=research --transition-decision=<repo-relative JSON path> --apply --plan-id=<sha256> [--accept-stage-reset]
   blueprint variant rollback --receipt=<id> [--target=<dir>] [--json]
   blueprint variant rollback --receipt=<id> --apply
   blueprint variant recover [--target=<dir>] [--json]
@@ -782,6 +782,7 @@ Recovery restores an interrupted operation's preimage and is read-only unless
           to: flags.to || 'research',
           planId: flags['plan-id'],
           acceptStageReset: !!flags['accept-stage-reset'],
+          transitionDecision: flags['transition-decision'] || null,
         });
         if (flags.json) console.log(JSON.stringify(result, null, 2));
         else if (!result.applied) console.log(`blueprint variant transition — ${result.status}; no writes.`);
@@ -800,6 +801,7 @@ Recovery restores an interrupted operation's preimage and is read-only unless
           home,
           to: flags.to || 'research',
           acceptStageReset: !!flags['accept-stage-reset'],
+          transitionDecision: flags['transition-decision'] || null,
         });
         if (flags.json) console.log(JSON.stringify(plan, null, 2));
         else console.log(lib.formatTransitionPlan(plan));

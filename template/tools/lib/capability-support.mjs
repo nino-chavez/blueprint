@@ -85,15 +85,6 @@ export function validateCapabilityRecord(record) {
     if (support.starts_at !== 'first-public-opt-in') {
       errors.push('support_window.starts_at must be first-public-opt-in');
     }
-    if (!['pending', 'accepted'].includes(support.owner_acceptance)) {
-      errors.push('support_window.owner_acceptance must be pending or accepted');
-    }
-    if (support.owner_acceptance === 'accepted' && !(typeof support.owner === 'string' && support.owner.trim())) {
-      errors.push('accepted support owner must be named');
-    }
-    if (support.owner_acceptance === 'pending' && support.owner != null) {
-      errors.push('pending support owner must remain null');
-    }
     for (const field of ['coverage', 'exclusions']) {
       if (!Array.isArray(support[field]) || support[field].length === 0 || support[field].some((item) => typeof item !== 'string' || !item.trim())) {
         errors.push(`support_window.${field} must be a non-empty string array`);
@@ -185,9 +176,7 @@ export function computeCapabilityFleet(registry, capabilityRead, opts = {}) {
     };
   });
   const count = (field, value) => consumers.filter((consumer) => consumer[field] === value).length;
-  const ownerAccepted = capability.support_window.owner_acceptance === 'accepted';
   const structurallyClear =
-    ownerAccepted &&
     capability.remaining_gates.length === 0 &&
     registry.fieldWarnings.length === 0;
   const promotionEvidenceComplete = capability.status === 'candidate' && structurallyClear;
@@ -243,8 +232,6 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
       minimum_minor_releases: 2,
       minimum_days: 90,
       starts_at: 'first-public-opt-in',
-      owner: null,
-      owner_acceptance: 'pending',
       coverage: ['status', 'recovery planning', 'recovery execution', 'rollback preflight', 'rollback execution'],
       exclusions: ['authored post-transition changes', 'non-Git or nested layouts', 'other variant pairs', 'cleanup execution'],
     },
@@ -257,7 +244,6 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(!validateCapabilityRecord({ ...base, operation: { from: ['midstream'], to: ['research'] } }).ok, 'known but unsupported source widening rejected');
   assert(!validateCapabilityRecord({ ...base, operation: { from: ['greenfield', 'midstream'], to: ['research'] } }).ok, 'multi-source widening rejected');
   assert(!validateCapabilityRecord({ ...base, distribution: { introduced_in: '0.8.0' } }).ok, 'candidate release contradiction rejected');
-  assert(!validateCapabilityRecord({ ...base, support_window: { ...base.support_window, owner_acceptance: 'accepted' } }).ok, 'accepted owner cannot be missing');
 
   const registry = {
     fieldWarnings: [],
@@ -282,7 +268,6 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
     ...base,
     status: 'released',
     distribution: { introduced_in: '0.8.0' },
-    support_window: { ...base.support_window, owner: 'operator', owner_acceptance: 'accepted' },
     remaining_gates: [],
   };
   assert(
@@ -312,7 +297,6 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(releasedClearedView.operationallyClean, 'released support becomes green only after authorization gates are cleared');
   const candidateEvidenceComplete = {
     ...base,
-    support_window: { ...base.support_window, owner: 'operator', owner_acceptance: 'accepted' },
     remaining_gates: [],
     authorization_gates: [],
   };
@@ -344,5 +328,5 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   );
   assert(unknownCli.status === 2 && /unknown capability/.test(unknownCli.stderr), 'CLI rejects unknown capability');
 
-  console.log('capability-support self-test: PASS (21 assertions)');
+  console.log('capability-support self-test: PASS (20 assertions)');
 }

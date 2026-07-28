@@ -77,12 +77,13 @@ support promise or a conversion of repository ownership into one.
 Focused:
 
 - `consumers-registry` self-test: PASS, 42 assertions;
-- `capability-support` self-test: PASS, 21 assertions, including CLI
+- `capability-support` self-test: PASS, 20 assertions, including CLI
   candidate/unknown-capability behavior;
 - candidate capability JSON and plain output: expected exit 1;
 - unknown capability: expected exit 2;
 - default fleet output compatibility comparison: PASS;
-- variant-transition suite: PASS, 237 assertions; and
+- variant-transition suite: PASS, 243 assertions, including missing, invalid,
+  unsafe, and changed transition-decision refusal plus receipt binding; and
 - `git diff --check`: PASS.
 
 Distribution and repository checks:

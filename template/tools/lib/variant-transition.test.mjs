@@ -24,11 +24,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  applyVariantTransition,
+  applyVariantTransition as rawApplyVariantTransition,
   inspectVariantTransitionState,
   planVariantRecovery,
   planVariantRollback,
-  planVariantTransition,
+  planVariantTransition as rawPlanVariantTransition,
   recoverVariantTransition,
   rollbackVariantTransition,
 } from './variant-transition.mjs';
@@ -39,6 +39,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const STAMP = path.join(ROOT, 'template', 'tools', 'blueprint-init', 'stamp.mjs');
 const BIN = path.join(ROOT, 'bin', 'blueprint.mjs');
 const TEST_ROOT = mkdtempSync(path.join(os.tmpdir(), 'variant-transition-test-'));
+const DECISION_PATH = 'decisions/variant-transition.json';
 let assertions = 0;
 
 function ok(condition, label) {
@@ -54,6 +55,26 @@ function write(root, rel, content) {
   const pathname = path.join(root, rel);
   mkdirSync(path.dirname(pathname), { recursive: true });
   writeFileSync(pathname, content);
+}
+
+function transitionDecision() {
+  return JSON.stringify({
+    schema: 'blueprint-variant-transition-decision/1',
+    accountable_party: 'initiative operator',
+    rollback_route: 'blueprint variant rollback --receipt=<receipt-id>',
+    receipt_review_at: '2026-08-15',
+    acknowledged: true,
+  }, null, 2);
+}
+
+// Most preservation tests exercise an accepted initiative decision. Individual
+// assertions below call the raw functions to prove the missing-decision gate.
+function planVariantTransition(options = {}) {
+  return rawPlanVariantTransition({ ...options, transitionDecision: options.transitionDecision ?? DECISION_PATH });
+}
+
+function applyVariantTransition(options = {}) {
+  return rawApplyVariantTransition({ ...options, transitionDecision: options.transitionDecision ?? DECISION_PATH });
 }
 
 function git(root, ...args) {
@@ -84,6 +105,7 @@ function fixture(name, {
   if (authoredPersona) write(root, 'research/personas-and-jtbd.md', '# Authored personas\n\nDO NOT OVERWRITE\n');
   if (emptyMemo) write(root, 'docs/decision-memo.md', '');
   write(root, 'decisions/0001-authored.md', '# Authored decision\n');
+  write(root, DECISION_PATH, transitionDecision());
   write(root, 'docs/authored.md', '# Authored doc\n');
   write(root, '.claude/sentinel.bin', Buffer.from([0, 255, 1, 2, 3]));
   write(root, 'tools/sentinel.txt', 'tool sentinel\n');
@@ -160,6 +182,7 @@ if (config.operation === 'apply') {
     home: config.home,
     planId: config.planId,
     acceptStageReset: config.acceptStageReset,
+    transitionDecision: config.transitionDecision,
     mutationHook: hook,
   });
 } else {
@@ -186,6 +209,7 @@ if (config.operation === 'apply') {
           event,
           eventPath,
           acceptStageReset,
+          transitionDecision: DECISION_PATH,
         }),
       },
     });
@@ -209,6 +233,20 @@ try {
   ok(plan.collisions.some((item) => item.path === 'research/personas-and-jtbd.md'), 'authored persona is PRESERVE');
   ok(plan.collisions.some((item) => item.path === 'docs/decision-memo.md' && item.size === 0), 'zero-byte scaffold collision is PRESERVE');
   ok(plan.cleanup.some((item) => item.path === 'apps/portal/' && item.automaticAction === 'none'), 'cleanup remains plan-only');
+  const missingDecisionPlan = rawPlanVariantTransition({ targetDir: base, home: ROOT });
+  ok(missingDecisionPlan.transitionDecision.requiresAcceptance && /BLOCK transition decision/.test((await import('./variant-transition.mjs')).formatTransitionPlan(missingDecisionPlan)), 'plan without decision stays read-only and visibly blocks apply');
+  ok(errorCode(() => rawApplyVariantTransition({ targetDir: base, home: ROOT, planId: missingDecisionPlan.planId })) === 'TRANSITION_DECISION_REQUIRED', 'apply refuses a plan without an initiative decision');
+  const invalidDecision = fixture('invalid-decision');
+  write(invalidDecision, DECISION_PATH, transitionDecision().replace('2026-08-15', '2026-02-30'));
+  ok(errorCode(() => planVariantTransition({ targetDir: invalidDecision, home: ROOT })) === 'TRANSITION_DECISION_INVALID', 'decision rejects impossible receipt-review date');
+  ok(
+    errorCode(() => rawPlanVariantTransition({ targetDir: invalidDecision, home: ROOT, transitionDecision: '../outside.json' })) === 'UNSAFE_PATH',
+    'decision path cannot escape the initiative root',
+  );
+  const changedDecision = fixture('changed-decision');
+  const changedDecisionPlan = planVariantTransition({ targetDir: changedDecision, home: ROOT });
+  write(changedDecision, DECISION_PATH, transitionDecision().replace('initiative operator', 'changed initiative operator'));
+  ok(errorCode(() => applyVariantTransition({ targetDir: changedDecision, home: ROOT, planId: changedDecisionPlan.planId })) === 'PLAN_MISMATCH', 'decision mutation after planning invalidates apply');
 
   const sentinelsBefore = new Map([
     ['research/personas-and-jtbd.md', sha(readFileSync(path.join(base, 'research/personas-and-jtbd.md')))],
@@ -221,6 +259,8 @@ try {
   ]);
   const applied = applyVariantTransition({ targetDir: base, home: ROOT, planId: plan.planId });
   ok(applied.applied && existsSync(path.join(base, applied.receiptPath)), 'apply writes a receipt after success');
+  const receipt = JSON.parse(readFileSync(path.join(base, applied.receiptPath), 'utf8'));
+  ok(receipt.plan.transitionDecision.path === DECISION_PATH && receipt.plan.transitionDecision.sha256 === sha(readFileSync(path.join(base, DECISION_PATH))), 'receipt binds the initiative decision path and hash');
   const appliedYml = readFileSync(path.join(base, 'blueprint.yml'), 'utf8');
   ok(appliedYml.includes('variant: research # keep routing note'), 'variant patch preserves inline comment');
   ok(appliedYml.includes('stage_model: research # keep model note'), 'stage_model patch preserves inline comment');
@@ -769,6 +809,7 @@ try {
     `--target=${stamped}`,
   ], { stdio: 'ignore' });
   write(stamped, 'research/personas-and-jtbd.md', '# Authored after initial stamp\n\nDO NOT OVERWRITE\n');
+  write(stamped, DECISION_PATH, transitionDecision());
   commitFixture(stamped);
   const beforeLegacyRestamp = walkSnapshot(stamped, { mtimes: true });
   let legacyRestampRejected = false;
@@ -799,6 +840,7 @@ try {
     'variant',
     'transition',
     '--to=research',
+    `--transition-decision=${DECISION_PATH}`,
     `--target=${stamped}`,
     '--json',
   ], {
