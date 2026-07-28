@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASELINE = join(HERE, 'fixture-baseline');
-const PACKET_NAME = 'AUTHOR-PACKET-v3.md';
+const PACKET_NAME = 'AUTHOR-PACKET-v4.md';
 const AUTHOR_PACKET = join(HERE, PACKET_NAME);
 const TMP = '/private/tmp/';
 const FROZEN_CANDIDATE = 'd372a63ee31433b720f066e81f3ab17fe2c5a7fa';

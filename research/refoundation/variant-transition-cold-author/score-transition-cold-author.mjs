@@ -13,7 +13,7 @@ const TMP = '/private/tmp/';
 const DECISION_SCHEMA = 'blueprint-variant-transition-decision/1';
 const RECEIPT_SCHEMA = 'blueprint-variant-transition-receipt/1';
 const FROZEN_CANDIDATE = 'd372a63ee31433b720f066e81f3ab17fe2c5a7fa';
-const PACKET_NAME = 'AUTHOR-PACKET-v3.md';
+const PACKET_NAME = 'AUTHOR-PACKET-v4.md';
 function args(argv) { const out = {}; for (const arg of argv) { const m = /^--([^=]+)=(.*)$/.exec(arg); if (m) out[m[1]] = m[2]; } return out; }
 function hash(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
 function git(root, parts) { return execFileSync('git', ['-C', root, ...parts], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); }
