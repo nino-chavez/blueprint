@@ -42,7 +42,6 @@ The methodology source gains one machine-readable capability record containing:
 - plan, receipt, rollback, and journal schema versions;
 - distribution state (`candidate` until a separately authorized release);
 - the proposed compatibility/support window;
-- owner acceptance state; and
 - the remaining promotion gates.
 
 The consumer registry may add an optional, explicitly mirrored `variant` and
@@ -87,15 +86,17 @@ The candidate support policy is:
 - escalation evidence is a sanitized status/Doctor JSON result plus the exact
   methodology revision, never a consumer secret or an invented receipt.
 
-Accountable owner acceptance is intentionally **pending**. Repository ownership
-does not silently assign a human support obligation. Public promotion remains
-blocked until the operator names and accepts the owner in the capability
-record.
+The capability record defines this reusable policy; it does not assign a
+methodology-wide support owner. Before an initiative applies a transition, its
+transition decision must record the accountable party, the rollback route, and
+the receipt review point. That is a per-initiative responsibility for the
+specific transition evidence and recovery decision, not a standing Blueprint
+support promise or an assignment of repository ownership.
 
 ## Preregistered tests
 
-1. capability schema rejects missing owner state, invalid schema ids, unsupported
-   variant shapes, and contradictory candidate/release fields;
+1. capability schema rejects invalid schema ids, unsupported variant shapes, and
+   contradictory candidate/release fields;
 2. candidate/no-release state reports every consumer as `not-distributed`;
 3. eligible, unsupported-source, and unknown rows classify from explicit
    mirrored variants only;
@@ -108,13 +109,16 @@ record.
 7. malformed optional variant fields are visible registry warnings rather than
    silently normalized;
 8. focused tests, full `test:core`, stamp smoke, Doctor, package dry-run, and
-   diff checks remain green.
+   diff checks remain green; and
+9. apply refuses a missing, invalid, unsafe, or changed initiative-local
+   transition decision, while a valid declaration is content-addressed into the
+   plan and retained by the receipt.
 
 ## Promotion ceiling
 
 Passing this slice supplies a mechanically honest fleet compatibility view and
-a reviewable proposed support policy. It does not accept the support owner,
-release the capability, mutate a consumer, select a live pilot, or satisfy the
-prospective transition/rollback gates.
+a reviewable proposed support policy. It does not assign standing methodology
+support ownership, release the capability, mutate a consumer, select a live
+pilot, or satisfy the prospective transition/rollback gates.
 
 No public Wave entry is warranted while distribution remains blocked.

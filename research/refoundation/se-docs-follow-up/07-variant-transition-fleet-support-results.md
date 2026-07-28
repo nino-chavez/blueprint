@@ -65,9 +65,12 @@ preflight, and rollback execution. Authored post-transition changes,
 non-Git/nested layouts, other variant pairs, and cleanup execution remain out of
 scope.
 
-The accountable support owner is deliberately unnamed with acceptance
-`pending`. Repository ownership was not converted into an implied human
-support promise.
+The capability record defines the reusable support and retention boundary; it
+does not name a methodology-wide support owner. Before any initiative applies a
+transition, its transition decision must record the accountable party, rollback
+route, and receipt review point. That declaration is responsibility for that
+initiative's transition evidence and recovery decision, not an implied standing
+support promise or a conversion of repository ownership into one.
 
 ## Verification
 
@@ -99,31 +102,31 @@ Distribution and repository checks:
 
 Public promotion remains blocked on all of the following:
 
-1. an operator names and explicitly accepts the support owner;
-2. a real contrasting external initiative is re-chartered and prospectively
+1. a real contrasting external initiative is re-chartered and prospectively
    executes the transition;
-3. that initiative prospectively exercises rollback inside the documented
+2. that initiative prospectively exercises rollback inside the documented
    boundary;
-4. a delayed preservation check confirms the retained authored artifact state;
-5. continued cold-author success is demonstrated at the release candidate;
-6. the release/version and Wave are separately authorized; and
-7. any then-active external consumer migration freeze is cleared or waived.
+3. a delayed preservation check confirms the retained authored artifact state;
+4. continued cold-author success is demonstrated at the release candidate;
+5. the release/version and Wave are separately authorized; and
+6. any then-active external consumer migration freeze is cleared or waived.
 
 This slice does not publish npm, mutate a consumer, open or merge a transition
-PR, accept support ownership, claim prospective validation, or promote
-steering-layer semantics.
+PR, assign standing methodology support ownership, claim prospective
+validation, or promote steering-layer semantics.
 
 ## Recommended promotion sequence
 
-1. Review this candidate and the proposed support obligation without merging.
-2. Name the support owner and record explicit acceptance.
-3. Select a genuinely re-chartered, contrasting external pilot.
-4. Execute prospective dry-run, apply, rollback, and delayed preservation
+1. Review this candidate and the proposed policy boundary without merging.
+2. Select a genuinely re-chartered, contrasting external pilot and, before
+   apply, record its accountable party, rollback route, and receipt review
+   point in the transition decision.
+3. Execute prospective dry-run, apply, rollback, and delayed preservation
    checks at a pinned candidate revision.
-5. Update the capability record to a separately authorized release version only
+4. Update the capability record to a separately authorized release version only
    after those receipts pass.
-6. Re-run fleet/freeze, full core, stamp, Doctor, package, and diff checks.
-7. Land through a public Wave, then publish only through the normal authorized
+5. Re-run fleet/freeze, full core, stamp, Doctor, package, and diff checks.
+6. Land through a public Wave, then publish only through the normal authorized
    release path.
 
 ## Parallel audit corrections

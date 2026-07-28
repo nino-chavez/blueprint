@@ -23,8 +23,6 @@
     "minimum_minor_releases": 2,
     "minimum_days": 90,
     "starts_at": "first-public-opt-in",
-    "owner": null,
-    "owner_acceptance": "pending",
     "coverage": [
       "status",
       "recovery planning",
@@ -40,7 +38,6 @@
     ]
   },
   "remaining_gates": [
-    "named support owner acceptance",
     "prospective external transition",
     "prospective external rollback",
     "delayed preservation check",
