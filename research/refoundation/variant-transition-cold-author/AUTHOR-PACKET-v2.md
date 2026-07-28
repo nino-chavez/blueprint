@@ -39,15 +39,17 @@ authored research or decision sentinels.
 
 ## Record the observation
 
-Create `cold-author-session.json` with `observation_id`, ISO-8601
+Create `cold-author-session.json` with the facilitator-supplied
+`observation_id`, ISO-8601
 `started_at`/`finished_at`, integer `attempts`, arrays `questions_asked` and
 `assumptions`, and `methodology_creator_interventions`. Record every attempt,
 question, assumption, and intervention truthfully.
 
 Preserve the dry-run JSON as `cold-author-plan.json` and the apply JSON as
 `cold-author-apply.json`. Add `command_attempts` to the session: one object per
-invocation with `command`, `operation` (`plan` or `apply`), `exit_code`, and
-`output_path`. The plan and apply IDs must match. Do not omit a failed or
+invocation with the exact `command`, `operation` (`plan` or `apply`),
+`exit_code`, and `output_path`. Set `attempts` to the number of entries in
+`command_attempts`. The plan and apply IDs must match. Do not omit a failed or
 repaired attempt.
 
 Create `cold-author-explanation.md` identifying the exact plan ID, what was

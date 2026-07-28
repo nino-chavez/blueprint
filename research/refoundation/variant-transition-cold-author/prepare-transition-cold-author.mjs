@@ -4,13 +4,13 @@
 
 import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASELINE = join(HERE, 'fixture-baseline');
-const AUTHOR_PACKET = join(HERE, 'AUTHOR-PACKET.md');
+const AUTHOR_PACKET = join(HERE, 'AUTHOR-PACKET-v2.md');
 const TMP = '/private/tmp/';
 const FROZEN_CANDIDATE = 'd372a63ee31433b720f066e81f3ab17fe2c5a7fa';
 
@@ -45,18 +45,37 @@ function inventory(root) {
   walk();
   return records;
 }
+function allowedMaterials(baselineFiles) {
+  return [
+    'AUTHOR-PACKET-v2.md',
+    'candidate/bin/blueprint.mjs',
+    'candidate-help.txt',
+    ...baselineFiles.map((item) => `fixture/${item.path}`),
+  ].sort();
+}
 
 const flags = args(process.argv.slice(2));
 if (process.argv.includes('--self-test')) {
-  if (tmpPath('/private/tmp/allowed', 'self-test') !== '/private/tmp/allowed') throw new Error('self-test failed');
+  const allowed = allowedMaterials([{ path: 'blueprint.yml' }, { path: 'docs/authored.md' }]);
+  if (
+    tmpPath('/private/tmp/allowed', 'self-test') !== '/private/tmp/allowed'
+    || JSON.stringify(allowed) !== JSON.stringify([
+      'AUTHOR-PACKET-v2.md',
+      'candidate-help.txt',
+      'candidate/bin/blueprint.mjs',
+      'fixture/blueprint.yml',
+      'fixture/docs/authored.md',
+    ])
+  ) throw new Error('self-test failed');
   console.log('prepare-transition-cold-author self-test: PASS');
   process.exit(0);
 }
 if (flags.help) {
-  console.log('Usage: node prepare-transition-cold-author.mjs --candidate-root=<candidate checkout> --output=/private/tmp/<new-output-dir>');
+  console.log('Usage: node prepare-transition-cold-author.mjs --candidate-root=<candidate checkout> --author-id=<nonempty private identifier> --output=/private/tmp/<new-output-dir>');
   process.exit(0);
 }
 const candidate = flags['candidate-root'] ? resolve(flags['candidate-root']) : fail('--candidate-root is required');
+const authorId = flags['author-id']?.trim() || fail('--author-id must be nonempty');
 const output = tmpPath(flags.output, '--output');
 if (!existsSync(candidate) || !lstatSync(candidate).isDirectory()) fail(`candidate root is not a directory: ${candidate}`);
 if (!existsSync(join(candidate, '.git'))) fail(`candidate root is not a Git checkout: ${candidate}`);
@@ -69,7 +88,9 @@ try { candidateHead = git(candidate, ['rev-parse', 'HEAD']); } catch { fail(`can
 if (candidateHead !== FROZEN_CANDIDATE) fail(`candidate HEAD must be frozen revision ${FROZEN_CANDIDATE} (got ${candidateHead})`);
 if (git(candidate, ['status', '--porcelain=v1'])) fail('candidate checkout must be clean');
 const packagePath = join(candidate, 'package.json');
+const candidateBin = join(candidate, 'bin', 'blueprint.mjs');
 if (!existsSync(packagePath)) fail(`candidate package.json is missing: ${packagePath}`);
+if (!existsSync(candidateBin)) fail(`candidate executable is missing: ${candidateBin}`);
 let candidatePackage;
 try { candidatePackage = JSON.parse(readFileSync(packagePath, 'utf8')); } catch { fail('candidate package.json is invalid JSON'); }
 
@@ -77,7 +98,7 @@ const baselineFiles = inventory(BASELINE);
 mkdirSync(output, { recursive: false });
 const fixture = join(output, 'fixture');
 cpSync(BASELINE, fixture, { recursive: true, errorOnExist: true, dereference: false });
-cpSync(AUTHOR_PACKET, join(output, 'AUTHOR-PACKET.md'), { errorOnExist: true });
+cpSync(AUTHOR_PACKET, join(output, 'AUTHOR-PACKET-v2.md'), { errorOnExist: true });
 let help;
 try {
   const command = join(candidate, 'bin', 'blueprint.mjs');
@@ -116,6 +137,40 @@ const manifest = {
   candidate: { root: candidate, head: candidateHead, package_version: candidatePackage.version ?? null, package_sha256: hash(readFileSync(packagePath)) },
   fixture: { root: fixture, baseline_head: git(fixture, ['rev-parse', 'HEAD']), baseline_files: baselineFiles },
 };
-writeFileSync(join(output, 'fixture-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
+const manifestPath = join(output, 'fixture-manifest.json');
+writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
+const observationId = randomUUID();
+const boundary = {
+  schema: 'blueprint-variant-transition-observation-boundary/1',
+  observation_id: observationId,
+  issued_at: new Date().toISOString(),
+  author_id: `sha256:${hash(Buffer.from(`${observationId}\0${authorId}`))}`,
+  candidate: {
+    root: candidate,
+    head: candidateHead,
+    package_version: candidatePackage.version ?? null,
+    package_sha256: hash(readFileSync(packagePath)),
+    executable_sha256: hash(readFileSync(candidateBin)),
+  },
+  fixture: {
+    root: fixture,
+    baseline_head: manifest.fixture.baseline_head,
+  },
+  material_hashes: {
+    'AUTHOR-PACKET-v2.md': hash(readFileSync(join(output, 'AUTHOR-PACKET-v2.md'))),
+    'candidate-help.txt': hash(readFileSync(join(output, 'candidate-help.txt'))),
+    'fixture-manifest.json': hash(readFileSync(manifestPath)),
+  },
+  allowed_materials: allowedMaterials(baselineFiles),
+  facilitator_role: 'Blueprint methodology observation facilitator',
+  attestation: {
+    written_before_author_access: true,
+    fresh_no_fork: true,
+    no_prior_context: true,
+    no_creator_contact: true,
+  },
+};
+writeFileSync(join(output, 'observation-boundary.json'), `${JSON.stringify(boundary, null, 2)}\n`, { flag: 'wx' });
 console.log(`prepared disposable fixture: ${fixture}`);
-console.log(`manifest: ${join(output, 'fixture-manifest.json')}`);
+console.log(`manifest: ${manifestPath}`);
+console.log(`observation boundary: ${join(output, 'observation-boundary.json')}`);
