@@ -35,6 +35,12 @@ function validVariantList(value) {
     value.every((variant) => VARIANTS.includes(variant));
 }
 
+function exactVariantBoundary(operation) {
+  return plainObject(operation) &&
+    JSON.stringify(operation.from) === JSON.stringify(['greenfield']) &&
+    JSON.stringify(operation.to) === JSON.stringify(['research']);
+}
+
 export function validateCapabilityRecord(record) {
   const errors = [];
   if (!plainObject(record)) return { ok: false, errors: ['record must be an object'] };
@@ -47,6 +53,9 @@ export function validateCapabilityRecord(record) {
   } else {
     if (!validVariantList(record.operation.from)) errors.push('operation.from must be a unique non-empty known-variant array');
     if (!validVariantList(record.operation.to)) errors.push('operation.to must be a unique non-empty known-variant array');
+    if (validVariantList(record.operation.from) && validVariantList(record.operation.to) && !exactVariantBoundary(record.operation)) {
+      errors.push('operation must be exactly greenfield to research for variant-transition v1');
+    }
   }
 
   if (!plainObject(record.schemas)) {
@@ -59,7 +68,9 @@ export function validateCapabilityRecord(record) {
 
   const introduced = record.distribution?.introduced_in;
   if (record.status === 'candidate' && introduced != null) errors.push('candidate distribution.introduced_in must be null');
-  if (record.status === 'released' && !looksLikeSemver(introduced)) errors.push('released distribution.introduced_in must be semver');
+  if (record.status === 'released' && !/^\d+\.\d+\.\d+$/.test(introduced || '')) {
+    errors.push('released distribution.introduced_in must be a stable semver release');
+  }
 
   const support = record.support_window;
   if (!plainObject(support)) {
@@ -92,6 +103,9 @@ export function validateCapabilityRecord(record) {
 
   if (!Array.isArray(record.remaining_gates) || record.remaining_gates.some((gate) => typeof gate !== 'string' || !gate.trim())) {
     errors.push('remaining_gates must be an array of non-empty strings');
+  }
+  if (!Array.isArray(record.authorization_gates) || record.authorization_gates.some((gate) => typeof gate !== 'string' || !gate.trim())) {
+    errors.push('authorization_gates must be an array of non-empty strings');
   }
   return { ok: errors.length === 0, errors };
 }
@@ -148,7 +162,9 @@ export function computeCapabilityFleet(registry, capabilityRead, opts = {}) {
       valid: false,
       errors: validation.errors,
       consumers: [],
-      readyForPromotion: false,
+      promotionEvidenceComplete: false,
+      releaseSupportHealthy: false,
+      operationallyClean: false,
     };
   }
 
@@ -170,6 +186,12 @@ export function computeCapabilityFleet(registry, capabilityRead, opts = {}) {
   });
   const count = (field, value) => consumers.filter((consumer) => consumer[field] === value).length;
   const ownerAccepted = capability.support_window.owner_acceptance === 'accepted';
+  const structurallyClear =
+    ownerAccepted &&
+    capability.remaining_gates.length === 0 &&
+    registry.fieldWarnings.length === 0;
+  const promotionEvidenceComplete = capability.status === 'candidate' && structurallyClear;
+  const releaseSupportHealthy = capability.status === 'released' && structurallyClear;
   return {
     schema: CAPABILITY_SCHEMA,
     capability: capability.capability,
@@ -180,6 +202,8 @@ export function computeCapabilityFleet(registry, capabilityRead, opts = {}) {
     disclaimer: 'Eligibility is not transition intent, receipt state, applied state, or validation.',
     supportWindow: capability.support_window,
     remainingGates: capability.remaining_gates,
+    authorizationGates: capability.authorization_gates,
+    authorizationDisclaimer: 'Mechanical evidence completeness does not authorize release, a Wave, merge, or consumer mutation.',
     registryWarnings: registry.fieldWarnings,
     consumers,
     summary: {
@@ -192,11 +216,12 @@ export function computeCapabilityFleet(registry, capabilityRead, opts = {}) {
       behindCapability: count('distributionAvailability', 'behind-capability'),
       unknownDistribution: count('distributionAvailability', 'unknown'),
     },
-    readyForPromotion:
+    promotionEvidenceComplete,
+    releaseSupportHealthy,
+    operationallyClean:
       capability.status === 'released' &&
-      ownerAccepted &&
-      capability.remaining_gates.length === 0 &&
-      registry.fieldWarnings.length === 0,
+      releaseSupportHealthy &&
+      capability.authorization_gates.length === 0,
   };
 }
 
@@ -224,10 +249,13 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
       exclusions: ['authored post-transition changes', 'non-Git or nested layouts', 'other variant pairs', 'cleanup execution'],
     },
     remaining_gates: ['prospective transition'],
+    authorization_gates: ['authorized release/version and Wave', 'active external migration freeze clear or waived'],
   };
   assert(validateCapabilityRecord(base).ok, 'candidate record validates');
   assert(!validateCapabilityRecord({ ...base, schema: 'wrong/1' }).ok, 'invalid schema rejected');
   assert(!validateCapabilityRecord({ ...base, operation: { from: ['GREEN'], to: ['research'] } }).ok, 'invalid variant rejected');
+  assert(!validateCapabilityRecord({ ...base, operation: { from: ['midstream'], to: ['research'] } }).ok, 'known but unsupported source widening rejected');
+  assert(!validateCapabilityRecord({ ...base, operation: { from: ['greenfield', 'midstream'], to: ['research'] } }).ok, 'multi-source widening rejected');
   assert(!validateCapabilityRecord({ ...base, distribution: { introduced_in: '0.8.0' } }).ok, 'candidate release contradiction rejected');
   assert(!validateCapabilityRecord({ ...base, support_window: { ...base.support_window, owner_acceptance: 'accepted' } }).ok, 'accepted owner cannot be missing');
 
@@ -257,6 +285,10 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
     support_window: { ...base.support_window, owner: 'operator', owner_acceptance: 'accepted' },
     remaining_gates: [],
   };
+  assert(
+    !validateCapabilityRecord({ ...released, distribution: { introduced_in: '0.8.0-rc.1' } }).ok,
+    'prerelease introduction rejected so compatibility never relies on prerelease lexical ordering',
+  );
   const releasedView = computeCapabilityFleet(
     registry,
     { record: released, validation: validateCapabilityRecord(released) },
@@ -267,13 +299,34 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(releasedView.consumers[2].distributionAvailability === 'unknown', 'unpinned remains unknown');
   assert(releasedView.consumers[3].distributionAvailability === 'compatible', 'resolvable SHA package version classified');
   assert(releasedView.consumers[4].distributionAvailability === 'unknown', 'unresolvable pin remains unknown');
-  assert(releasedView.readyForPromotion, 'released, accepted, gate-free record is mechanically ready');
+  assert(
+    !releasedView.promotionEvidenceComplete && releasedView.releaseSupportHealthy && !releasedView.operationallyClean,
+    'released record with uncleared authorization gates reports support health but remains non-green',
+  );
+  const releasedCleared = { ...released, authorization_gates: [] };
+  const releasedClearedView = computeCapabilityFleet(
+    registry,
+    { record: releasedCleared, validation: validateCapabilityRecord(releasedCleared) },
+    { gitProbe: { packageVersionAt: (pin) => pin === 'abcdef0' ? '0.8.1' : null } },
+  );
+  assert(releasedClearedView.operationallyClean, 'released support becomes green only after authorization gates are cleared');
+  const candidateEvidenceComplete = {
+    ...base,
+    support_window: { ...base.support_window, owner: 'operator', owner_acceptance: 'accepted' },
+    remaining_gates: [],
+    authorization_gates: [],
+  };
+  const candidateEvidenceView = computeCapabilityFleet(
+    registry,
+    { record: candidateEvidenceComplete, validation: validateCapabilityRecord(candidateEvidenceComplete) },
+  );
+  assert(candidateEvidenceView.promotionEvidenceComplete && !candidateEvidenceView.operationallyClean, 'evidence-complete candidate remains non-green until released');
 
   const warned = computeCapabilityFleet(
     { ...registry, fieldWarnings: [{ repo: 'a/x', field: 'variant', value: 'GREEN', reason: 'invalid' }] },
     { record: released, validation: validateCapabilityRecord(released) },
   );
-  assert(warned.registryWarnings.length === 1 && !warned.readyForPromotion, 'registry field warnings are visible and block readiness');
+  assert(warned.registryWarnings.length === 1 && !warned.releaseSupportHealthy, 'registry field warnings are visible and block release support health');
 
   const home = fileURLToPath(new URL('../../../', import.meta.url));
   const cli = join(home, 'bin', 'blueprint.mjs');
@@ -283,7 +336,7 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
     { encoding: 'utf8', env: { ...process.env, BLUEPRINT_HOME: home } },
   );
   const cliView = JSON.parse(cliResult.stdout);
-  assert(cliResult.status === 1 && cliView.status === 'candidate' && cliView.summary.notDistributed === cliView.summary.total, 'CLI candidate view is non-green and entirely not-distributed');
+  assert(cliResult.status === 1 && cliView.status === 'candidate' && !cliView.promotionEvidenceComplete && cliView.summary.notDistributed === cliView.summary.total, 'CLI candidate view is non-green and entirely not-distributed');
   const unknownCli = spawnSync(
     process.execPath,
     [cli, 'fleet', '--capability=not-real', '--json'],
@@ -291,5 +344,5 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   );
   assert(unknownCli.status === 2 && /unknown capability/.test(unknownCli.stderr), 'CLI rejects unknown capability');
 
-  console.log('capability-support self-test: PASS (16 assertions)');
+  console.log('capability-support self-test: PASS (21 assertions)');
 }

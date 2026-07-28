@@ -73,8 +73,8 @@ support promise.
 
 Focused:
 
-- `consumers-registry` self-test: PASS, 41 assertions;
-- `capability-support` self-test: PASS, 16 assertions, including CLI
+- `consumers-registry` self-test: PASS, 42 assertions;
+- `capability-support` self-test: PASS, 21 assertions, including CLI
   candidate/unknown-capability behavior;
 - candidate capability JSON and plain output: expected exit 1;
 - unknown capability: expected exit 2;
@@ -105,8 +105,9 @@ Public promotion remains blocked on all of the following:
 3. that initiative prospectively exercises rollback inside the documented
    boundary;
 4. a delayed preservation check confirms the retained authored artifact state;
-5. the release/version and Wave are separately authorized; and
-6. any then-active external consumer migration freeze is cleared or waived.
+5. continued cold-author success is demonstrated at the release candidate;
+6. the release/version and Wave are separately authorized; and
+7. any then-active external consumer migration freeze is cleared or waived.
 
 This slice does not publish npm, mutate a consumer, open or merge a transition
 PR, accept support ownership, claim prospective validation, or promote
@@ -124,3 +125,39 @@ steering-layer semantics.
 6. Re-run fleet/freeze, full core, stamp, Doctor, package, and diff checks.
 7. Land through a public Wave, then publish only through the normal authorized
    release path.
+
+## Parallel audit corrections
+
+A post-implementation parallel audit found and corrected three false-green
+risks:
+
+- the capability validator now requires the exact frozen
+  greenfield-to-research v1 boundary rather than accepting any known variant
+  arrays;
+- `variant_synced_at` now rejects impossible calendar dates, not merely
+  malformed date shapes; and
+- `introduced_in` must be a stable semantic version, so capability
+  compatibility cannot depend on the registry comparator's incomplete
+  prerelease ordering.
+
+The audit also corrected an inverted gate name. A candidate now reports
+`promotionEvidenceComplete`; a released record reports
+`releaseSupportHealthy`. Neither state authorizes a release, Wave, merge, or
+consumer mutation. The CLI remains non-green for every candidate and for a
+released record while explicit authorization gates remain.
+
+The audit further found that `test:core` used `--selftest` for the registry and
+capability suites while those modules require `--self-test`. The script now uses
+the exact supported flag, so the aggregate run visibly executes both suites
+instead of accepting their no-op exit.
+
+The sealed cold-author scorer was not executed in this fleet-support slice.
+Continued cold-author success is therefore an explicit remaining evidence gate,
+not an implied consequence of `test:core`.
+
+The read-only pilot audit found no legitimate registered candidate. SE Docs is
+the only local initiative with an evidenced greenfield-to-research re-charter,
+but it is not in `consumers.yml` and its retrospective manual transition cannot
+be reclassified as prospective. Blog and Fleet Observability remain
+greenfield; Film Room, Photography, Rally HQ, and the website remain
+midstream/brownfield. Adaptive Commerce remains excluded.

@@ -43,6 +43,11 @@
     "named support owner acceptance",
     "prospective external transition",
     "prospective external rollback",
-    "delayed preservation check"
+    "delayed preservation check",
+    "continued cold-author success"
+  ],
+  "authorization_gates": [
+    "authorized release/version and Wave",
+    "active external migration freeze clear or waived"
   ]
 }

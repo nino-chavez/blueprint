@@ -39,6 +39,12 @@ function coerceScalar(raw) {
   return v;
 }
 
+function isCalendarDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 // ── Version-shape detectors + semver compare ─────────────────────────────────
 export function looksLikeSemver(s) {
   // Optional prerelease (-...) AND optional build metadata (+...), per semver.org —
@@ -164,13 +170,13 @@ export function parseConsumersRegistry(text) {
     }
     if (
       entry.variant_synced_at != null &&
-      (typeof entry.variant_synced_at !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.variant_synced_at))
+      !isCalendarDate(entry.variant_synced_at)
     ) {
       result.fieldWarnings.push({
         repo,
         field: 'variant_synced_at',
         value: entry.variant_synced_at,
-        reason: 'expected YYYY-MM-DD or null',
+        reason: 'expected a valid calendar date in YYYY-MM-DD form or null',
       });
     }
     if (byRepo.has(repo) && !result.duplicates.includes(repo)) result.duplicates.push(repo);
@@ -410,6 +416,8 @@ consumers:
   assert(variants.consumers[0].variant === 'greenfield' && variants.fieldWarnings.length === 0, 'optional mirrored variant fields parsed');
   const badVariants = parseConsumersRegistry('consumers:\n  - repo: a/b\n    variant: GREEN\n    variant_synced_at: yesterday\n');
   assert(badVariants.fieldWarnings.length === 2, 'malformed optional variant fields are visible warnings');
+  const impossibleDate = parseConsumersRegistry('consumers:\n  - repo: a/b\n    variant: greenfield\n    variant_synced_at: "2026-02-30"\n');
+  assert(impossibleDate.fieldWarnings.length === 1, 'impossible optional variant sync date is a visible warning');
 
   // Parser: empty + absent + malformed + duplicate.
   assert(parseConsumersRegistry('   \n\n').emptyFile === true, 'empty file flagged');
@@ -502,5 +510,5 @@ consumers:
   assert(computeFleet(dir, regPath, { gitProbe: fakeGit }).driftPresent === false, 'ahead not drift by default');
   assert(computeFleet(dir, regPath, { gitProbe: fakeGit, strict: true }).driftPresent === true, '--strict: ahead counts as drift');
 
-  console.log('consumers-registry self-test: PASS (41 assertions)');
+  console.log('consumers-registry self-test: PASS (42 assertions)');
 }

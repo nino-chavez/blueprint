@@ -300,7 +300,7 @@ async function runFleet(fleetArgv, home) {
     const view = capabilityLib.computeCapabilityFleet(registry, capabilityRead, { gitProbe: lib.makeGitProbe(home) });
     if (flags.json) {
       console.log(JSON.stringify(view, null, 2));
-      process.exit(view.readyForPromotion ? 0 : 1);
+      process.exit(view.operationallyClean ? 0 : 1);
     }
     console.log(`blueprint fleet — capability ${view.capability}`);
     if (!view.valid) {
@@ -326,8 +326,10 @@ async function runFleet(fleetArgv, home) {
     console.log(
       `\n${view.summary.total} consumers: ${view.summary.eligible} eligible, ${view.summary.unsupportedSource} unsupported source, ${view.summary.unknownSource} unknown; ${view.summary.notDistributed} not distributed.`
     );
-    console.log(`remaining gates: ${view.remainingGates.join('; ') || 'none'} → exit ${view.readyForPromotion ? 0 : 1}`);
-    process.exit(view.readyForPromotion ? 0 : 1);
+    console.log(`remaining evidence gates: ${view.remainingGates.join('; ') || 'none'}`);
+    console.log(`authorization gates: ${view.authorizationGates.join('; ') || 'none'}`);
+    console.log(`${view.authorizationDisclaimer} → exit ${view.operationallyClean ? 0 : 1}`);
+    process.exit(view.operationallyClean ? 0 : 1);
   }
 
   if (flags.json) {
