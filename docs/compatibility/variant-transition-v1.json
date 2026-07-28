@@ -1,0 +1,48 @@
+{
+  "schema": "blueprint-capability-support/1",
+  "capability": "variant-transition",
+  "status": "candidate",
+  "operation": {
+    "from": [
+      "greenfield"
+    ],
+    "to": [
+      "research"
+    ]
+  },
+  "schemas": {
+    "plan": "blueprint-variant-transition-plan/1",
+    "receipt": "blueprint-variant-transition-receipt/1",
+    "rollback": "blueprint-variant-transition-rollback/1",
+    "journal": "blueprint-variant-transition-journal/1"
+  },
+  "distribution": {
+    "introduced_in": null
+  },
+  "support_window": {
+    "minimum_minor_releases": 2,
+    "minimum_days": 90,
+    "starts_at": "first-public-opt-in",
+    "owner": null,
+    "owner_acceptance": "pending",
+    "coverage": [
+      "status",
+      "recovery planning",
+      "recovery execution",
+      "rollback preflight",
+      "rollback execution"
+    ],
+    "exclusions": [
+      "authored post-transition changes",
+      "non-Git or nested layouts",
+      "other variant pairs",
+      "cleanup execution"
+    ]
+  },
+  "remaining_gates": [
+    "named support owner acceptance",
+    "prospective external transition",
+    "prospective external rollback",
+    "delayed preservation check"
+  ]
+}

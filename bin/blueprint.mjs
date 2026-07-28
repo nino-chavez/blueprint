@@ -50,7 +50,7 @@ Commands:
   review     Run an executable reviewer against a target  (blueprint review <name> [--target=<dir>] [--json])
              discovers canonical + org reviewers (ADR-0006); blueprint review --list enumerates them
   cost       Per-stage effort/model config + telemetry    (blueprint cost [--target=<dir>] [--json])
-  fleet      Classify consumer drift from consumers.yml    (blueprint fleet [--json] [--strict])
+  fleet      Classify consumer drift from consumers.yml    (blueprint fleet [--json] [--strict] [--capability=variant-transition])
              current / behind / ahead / on-deprecated / unpinned / unresolvable
              exit 0 = clean (incl. unpinned); exit 1 = drift (behind/on-deprecated/unresolvable or suspect registry)
   upgrade    Preview/apply this consumer's pin bump        (blueprint upgrade [--target=<dir>] [--apply] [--ack-untagged] [--require-pin] [--json])
@@ -281,6 +281,53 @@ async function runFleet(fleetArgv, home) {
   if (!fleet.present) {
     console.error(`blueprint fleet: no consumers.yml at ${home} — the registry is methodology-side. Add one to register consumers (see docs/decisions/0005-consumer-registry-and-fleet.md).`);
     process.exit(2);
+  }
+
+  if (flags.capability) {
+    if (flags.capability !== 'variant-transition') {
+      console.error(`blueprint fleet: unknown capability ${flags.capability}; supported: variant-transition`);
+      process.exit(2);
+    }
+    let capabilityLib;
+    try {
+      capabilityLib = await import(pathToFileURL(join(libDir, 'capability-support.mjs')).href);
+    } catch (e) {
+      console.error(`blueprint fleet: failed to load capability-support lib from ${libDir} — ${e.message}`);
+      process.exit(2);
+    }
+    const registry = lib.readConsumersRegistry(join(home, 'consumers.yml'));
+    const capabilityRead = capabilityLib.readCapabilityRecord(home);
+    const view = capabilityLib.computeCapabilityFleet(registry, capabilityRead, { gitProbe: lib.makeGitProbe(home) });
+    if (flags.json) {
+      console.log(JSON.stringify(view, null, 2));
+      process.exit(view.readyForPromotion ? 0 : 1);
+    }
+    console.log(`blueprint fleet — capability ${view.capability}`);
+    if (!view.valid) {
+      for (const error of view.errors) console.log(`! ${error}`);
+      process.exit(1);
+    }
+    console.log(`status: ${view.status}; introduced: ${view.introducedIn || 'not distributed'}`);
+    console.log(`support owner: ${view.supportWindow.owner || 'unnamed'} (${view.supportWindow.owner_acceptance})`);
+    console.log(`authority: ${view.registryAuthority}; ${view.disclaimer}\n`);
+    for (const warning of view.registryWarnings) {
+      console.log(`! ${warning.repo} ${warning.field}: ${warning.reason}`);
+    }
+    const padTrunc = (s, w) => {
+      s = String(s ?? '—');
+      return s.length > w ? s.slice(0, w - 1) + '…' : s.padEnd(w);
+    };
+    console.log('  repo                                variant      eligibility        distribution');
+    for (const consumer of view.consumers) {
+      console.log(
+        `  ${padTrunc(consumer.repo, 35)} ${padTrunc(consumer.mirroredVariant, 12)} ${padTrunc(consumer.sourceEligibility, 18)} ${consumer.distributionAvailability}`
+      );
+    }
+    console.log(
+      `\n${view.summary.total} consumers: ${view.summary.eligible} eligible, ${view.summary.unsupportedSource} unsupported source, ${view.summary.unknownSource} unknown; ${view.summary.notDistributed} not distributed.`
+    );
+    console.log(`remaining gates: ${view.remainingGates.join('; ') || 'none'} → exit ${view.readyForPromotion ? 0 : 1}`);
+    process.exit(view.readyForPromotion ? 0 : 1);
   }
 
   if (flags.json) {

@@ -29,6 +29,10 @@
 #   - owner:               CODEOWNERS-shaped handle accountable for upgrades.
 #   - synced_at:           ISO date this mirror row was last reconciled to the
 #                          consumer's blueprint.yml (null = never/unknown).
+#   - variant:             optional MIRROR of the consumer's explicit blueprint.yml
+#                          variant. Never inferred from pattern, repo name, or prose.
+#   - variant_synced_at:   ISO date the variant mirror was reconciled independently
+#                          of the methodology pin (null = never/unknown).
 #   - deprecated_pin:      optional; operator-asserted "this pin is on a deprecated
 #                          line." v1 reads the explicit flag only.
 
@@ -51,12 +55,16 @@ consumers:
     methodology_version: "0.4.0"      # bumped 0.3.0->0.4.0 2026-06-26 (wave-74 promoted its 7 amendments); pin committed
     owner: nino-chavez
     synced_at: "2026-06-26"
+    variant: midstream
+    variant_synced_at: "2026-07-27"
 
   - repo: nino-chavez/blog
     pattern: B
     methodology_version: null         # apps/blog/blueprint.yml — no pin
     owner: nino-chavez
     synced_at: "2026-06-04"
+    variant: greenfield
+    variant_synced_at: "2026-07-27"
 
   - repo: nino-chavez/blueprint-redesign
     pattern: A
@@ -114,6 +122,8 @@ consumers:
     methodology_version: "0.5.0"          # stamped at wave 84; wave 85 promoted from its 9 logged amendments
     owner: nino-chavez
     synced_at: "2026-07-09"
+    variant: brownfield
+    variant_synced_at: "2026-07-27"
 
   - repo: private/promo-initiative   # de-named for the public registry; real identity in consumers.local.yml
     pattern: null
@@ -132,6 +142,8 @@ consumers:
     methodology_version: "0.4.0"      #   portal_pattern: B. Variant: MIDSTREAM, tier 2. Bumped 0.3.0->0.4.0 on
     owner: nino-chavez                #   2026-06-26 (wave-74 promoted its 4 amendments); blueprint.yml pin committed.
     synced_at: "2026-06-26"
+    variant: midstream
+    variant_synced_at: "2026-07-27"
 
   # EXTERNAL consumer — the first non-Nino adopter (refutes "zero external users").
   - repo: external-a/media-toolkit    # de-named (external operator, A.); real identity in consumers.local.yml
@@ -145,9 +157,13 @@ consumers:
     methodology_version: "0.6.0"      # pinned at init-day 2026-07-16 via `blueprint upgrade --apply`
     owner: nino-chavez
     synced_at: "2026-07-16"
+    variant: midstream
+    variant_synced_at: "2026-07-27"
 
   - repo: nino-chavez/fleet-observability # first native-contract pilot on codex/blueprint-v2-pilot (609edb8)
     pattern: null                         # legacy portal_type: initiative; native contract is portal-independent
     methodology_version: null             # legacy blueprint.yml remains unpinned; native profiles pin k1-research-0
     owner: nino-chavez
     synced_at: "2026-07-22"
+    variant: greenfield
+    variant_synced_at: "2026-07-27"

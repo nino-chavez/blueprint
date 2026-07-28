@@ -83,7 +83,15 @@ export function semverCmp(a, b) {
 // An item with no resolvable `repo` is malformed: dropped AND counted. Duplicate
 // `repo` keys: last-wins, recorded in `duplicates`.
 export function parseConsumersRegistry(text) {
-  const result = { present: true, emptyFile: false, version: null, consumers: [], skippedItems: 0, duplicates: [] };
+  const result = {
+    present: true,
+    emptyFile: false,
+    version: null,
+    consumers: [],
+    skippedItems: 0,
+    duplicates: [],
+    fieldWarnings: [],
+  };
   // never-throws contract: a non-string (or empty) input degrades to emptyFile,
   // never a `.trim()`/`.split()` crash.
   if (typeof text !== 'string' || text.trim() === '') { result.emptyFile = true; return result; }
@@ -143,7 +151,28 @@ export function parseConsumersRegistry(text) {
       synced_at: raw.synced_at ?? null,
       deprecated_pin: raw.deprecated_pin === true,
       range: raw.range ?? null,
+      variant: raw.variant ?? null,
+      variant_synced_at: raw.variant_synced_at ?? null,
     };
+    if (entry.variant != null && !['greenfield', 'midstream', 'brownfield', 'research'].includes(entry.variant)) {
+      result.fieldWarnings.push({
+        repo,
+        field: 'variant',
+        value: entry.variant,
+        reason: 'expected greenfield, midstream, brownfield, research, or null',
+      });
+    }
+    if (
+      entry.variant_synced_at != null &&
+      (typeof entry.variant_synced_at !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.variant_synced_at))
+    ) {
+      result.fieldWarnings.push({
+        repo,
+        field: 'variant_synced_at',
+        value: entry.variant_synced_at,
+        reason: 'expected YYYY-MM-DD or null',
+      });
+    }
     if (byRepo.has(repo) && !result.duplicates.includes(repo)) result.duplicates.push(repo);
     byRepo.set(repo, entry); // last-wins
   }
@@ -157,7 +186,15 @@ export function readConsumersRegistry(registryPath) {
   try {
     text = readFileSync(registryPath, 'utf8');
   } catch {
-    return { present: false, emptyFile: false, version: null, consumers: [], skippedItems: 0, duplicates: [] };
+    return {
+      present: false,
+      emptyFile: false,
+      version: null,
+      consumers: [],
+      skippedItems: 0,
+      duplicates: [],
+      fieldWarnings: [],
+    };
   }
   return parseConsumersRegistry(text);
 }
@@ -369,6 +406,10 @@ consumers:
   assert(p.consumers.length === 2, 'two consumers parsed');
   assert(p.consumers[0].repo === 'nino-chavez/rally-hq' && p.consumers[0].methodology_version === null, 'unpinned entry');
   assert(p.consumers[1].methodology_version === '010945a' && p.consumers[1].pattern === 'A', 'sha-pinned entry + inline comment stripped');
+  const variants = parseConsumersRegistry('consumers:\n  - repo: a/b\n    variant: greenfield\n    variant_synced_at: "2026-07-27"\n');
+  assert(variants.consumers[0].variant === 'greenfield' && variants.fieldWarnings.length === 0, 'optional mirrored variant fields parsed');
+  const badVariants = parseConsumersRegistry('consumers:\n  - repo: a/b\n    variant: GREEN\n    variant_synced_at: yesterday\n');
+  assert(badVariants.fieldWarnings.length === 2, 'malformed optional variant fields are visible warnings');
 
   // Parser: empty + absent + malformed + duplicate.
   assert(parseConsumersRegistry('   \n\n').emptyFile === true, 'empty file flagged');
@@ -461,5 +502,5 @@ consumers:
   assert(computeFleet(dir, regPath, { gitProbe: fakeGit }).driftPresent === false, 'ahead not drift by default');
   assert(computeFleet(dir, regPath, { gitProbe: fakeGit, strict: true }).driftPresent === true, '--strict: ahead counts as drift');
 
-  console.log('consumers-registry self-test: PASS (39 assertions)');
+  console.log('consumers-registry self-test: PASS (41 assertions)');
 }
