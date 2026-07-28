@@ -108,9 +108,8 @@ Public promotion remains blocked on all of the following:
 2. that initiative prospectively exercises rollback inside the documented
    boundary;
 3. a delayed preservation check confirms the retained authored artifact state;
-4. continued cold-author success is demonstrated at the release candidate;
-5. the release/version and Wave are separately authorized; and
-6. any then-active external consumer migration freeze is cleared or waived.
+4. the release/version and Wave are separately authorized; and
+5. any then-active external consumer migration freeze is cleared or waived.
 
 This slice does not publish npm, mutate a consumer, open or merge a transition
 PR, assign standing methodology support ownership, claim prospective
@@ -156,14 +155,13 @@ the exact supported flag, so the aggregate run visibly executes both suites
 instead of accepting their no-op exit.
 
 The fleet-support slice itself did not execute a sealed cold-author encounter.
-A separately preregistered fixture observation passed 18/18 at frozen candidate
-`d372a63` with one attempt, zero questions, and zero recorded creator
-interventions; see
-`research/refoundation/variant-transition-cold-author/01-results.md`. Its
-retained evidence lacks a facilitator-authored pre-access boundary receipt, so
-it establishes fixture CLI usability only and does not clear continued
-cold-author success. A fresh rerun is preregistered in
-`research/refoundation/variant-transition-cold-author/02-boundary-receipt-preregistration.md`.
+The separately preregistered v5 observation later passed 27/27 at frozen
+candidate `d372a63`, with a fresh pre-access boundary, exactly one plan and one
+matching apply, zero questions, and zero creator interventions; see
+`research/refoundation/variant-transition-cold-author/09-v5-results.md`. It
+clears continued cold-author success only for the guided packet/candidate
+workflow. V4 remains failed evidence that bare instructions did not explain
+output capture, and the three external evidence gates above remain open.
 
 The read-only pilot audit found no legitimate registered candidate. SE Docs is
 the only local initiative with an evidenced greenfield-to-research re-charter,

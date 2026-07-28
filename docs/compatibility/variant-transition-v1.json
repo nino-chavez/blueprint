@@ -40,8 +40,7 @@
   "remaining_gates": [
     "prospective external transition",
     "prospective external rollback",
-    "delayed preservation check",
-    "continued cold-author success"
+    "delayed preservation check"
   ],
   "authorization_gates": [
     "authorized release/version and Wave",
