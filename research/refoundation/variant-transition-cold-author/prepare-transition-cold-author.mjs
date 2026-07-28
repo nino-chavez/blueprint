@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASELINE = join(HERE, 'fixture-baseline');
-const AUTHOR_PACKET = join(HERE, 'AUTHOR-PACKET-v2.md');
+const PACKET_NAME = 'AUTHOR-PACKET-v3.md';
+const AUTHOR_PACKET = join(HERE, PACKET_NAME);
 const TMP = '/private/tmp/';
 const FROZEN_CANDIDATE = 'd372a63ee31433b720f066e81f3ab17fe2c5a7fa';
 
@@ -47,7 +48,7 @@ function inventory(root) {
 }
 function allowedMaterials(baselineFiles) {
   return [
-    'AUTHOR-PACKET-v2.md',
+    PACKET_NAME,
     'candidate/bin/blueprint.mjs',
     'candidate-help.txt',
     ...baselineFiles.map((item) => `fixture/${item.path}`),
@@ -60,7 +61,7 @@ if (process.argv.includes('--self-test')) {
   if (
     tmpPath('/private/tmp/allowed', 'self-test') !== '/private/tmp/allowed'
     || JSON.stringify(allowed) !== JSON.stringify([
-      'AUTHOR-PACKET-v2.md',
+      PACKET_NAME,
       'candidate-help.txt',
       'candidate/bin/blueprint.mjs',
       'fixture/blueprint.yml',
@@ -98,7 +99,7 @@ const baselineFiles = inventory(BASELINE);
 mkdirSync(output, { recursive: false });
 const fixture = join(output, 'fixture');
 cpSync(BASELINE, fixture, { recursive: true, errorOnExist: true, dereference: false });
-cpSync(AUTHOR_PACKET, join(output, 'AUTHOR-PACKET-v2.md'), { errorOnExist: true });
+cpSync(AUTHOR_PACKET, join(output, PACKET_NAME), { errorOnExist: true });
 let help;
 try {
   const command = join(candidate, 'bin', 'blueprint.mjs');
@@ -157,7 +158,7 @@ const boundary = {
     baseline_head: manifest.fixture.baseline_head,
   },
   material_hashes: {
-    'AUTHOR-PACKET-v2.md': hash(readFileSync(join(output, 'AUTHOR-PACKET-v2.md'))),
+    [PACKET_NAME]: hash(readFileSync(join(output, PACKET_NAME))),
     'candidate-help.txt': hash(readFileSync(join(output, 'candidate-help.txt'))),
     'fixture-manifest.json': hash(readFileSync(manifestPath)),
   },

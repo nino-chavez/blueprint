@@ -13,6 +13,7 @@ const TMP = '/private/tmp/';
 const DECISION_SCHEMA = 'blueprint-variant-transition-decision/1';
 const RECEIPT_SCHEMA = 'blueprint-variant-transition-receipt/1';
 const FROZEN_CANDIDATE = 'd372a63ee31433b720f066e81f3ab17fe2c5a7fa';
+const PACKET_NAME = 'AUTHOR-PACKET-v3.md';
 function args(argv) { const out = {}; for (const arg of argv) { const m = /^--([^=]+)=(.*)$/.exec(arg); if (m) out[m[1]] = m[2]; } return out; }
 function hash(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
 function git(root, parts) { return execFileSync('git', ['-C', root, ...parts], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); }
@@ -24,7 +25,7 @@ function relativePath(value) { return typeof value === 'string' && value && !val
 function decisionValid(value) { return value && typeof value === 'object' && !Array.isArray(value) && value.schema === DECISION_SCHEMA && typeof value.accountable_party === 'string' && value.accountable_party.trim() && typeof value.rollback_route === 'string' && value.rollback_route.trim() && date(value.receipt_review_at) && value.acknowledged === true; }
 function allowedMaterials(baselineFiles) {
   return [
-    'AUTHOR-PACKET-v2.md',
+    PACKET_NAME,
     'candidate/bin/blueprint.mjs',
     'candidate-help.txt',
     ...(Array.isArray(baselineFiles) ? baselineFiles.map((item) => `fixture/${item.path}`) : []),
@@ -46,7 +47,7 @@ function boundaryShapeValid(value) {
     && /^[0-9a-f]{64}$/.test(value.candidate?.executable_sha256 || '')
     && typeof value.fixture?.root === 'string'
     && /^[0-9a-f]{40,64}$/.test(value.fixture?.baseline_head || '')
-    && ['AUTHOR-PACKET-v2.md', 'candidate-help.txt', 'fixture-manifest.json']
+    && [PACKET_NAME, 'candidate-help.txt', 'fixture-manifest.json']
       .every((path) => /^[0-9a-f]{64}$/.test(value.material_hashes?.[path] || ''))
     && Array.isArray(value.allowed_materials)
     && new Set(value.allowed_materials).size === value.allowed_materials.length
@@ -98,7 +99,7 @@ if (process.argv.includes('--self-test')) {
     },
     fixture: { root: '/private/tmp/run/fixture', baseline_head: 'd'.repeat(40) },
     material_hashes: {
-      'AUTHOR-PACKET-v2.md': 'e'.repeat(64),
+      [PACKET_NAME]: 'e'.repeat(64),
       'candidate-help.txt': 'f'.repeat(64),
       'fixture-manifest.json': '1'.repeat(64),
     },
@@ -163,7 +164,7 @@ const materialRoot = dirname(fixture);
 add(
   'boundary-material-hashes',
   boundaryShapeValid(boundary)
-    && JSON.stringify(Object.keys(boundary.material_hashes).sort()) === JSON.stringify(['AUTHOR-PACKET-v2.md', 'candidate-help.txt', 'fixture-manifest.json'])
+    && JSON.stringify(Object.keys(boundary.material_hashes).sort()) === JSON.stringify([PACKET_NAME, 'candidate-help.txt', 'fixture-manifest.json'].sort())
     && Object.entries(boundary.material_hashes).every(([path, digest]) => existsSync(join(materialRoot, path)) && hash(readFileSync(join(materialRoot, path))) === digest),
   'packet, help, and manifest hashes',
 );
@@ -250,7 +251,7 @@ add(
     && lowerExplanation.includes('preserv') && lowerExplanation.includes('creat')
     && lowerExplanation.includes('cleanup') && lowerExplanation.includes('rollback')
     && lowerExplanation.includes('review'),
-  explanation ? 'must name plan id and explain preserve/create/cleanup/rollback/review' : 'missing cold-author-explanation.md',
+  explanation ? 'must name plan id and explain preservation, creation, operator-review-only cleanup, rollback execution, and review' : 'missing cold-author-explanation.md',
 );
 const failed = checks.filter((check) => !check.passed);
 const score = { schema: 'blueprint-variant-transition-cold-author-score/1', verdict: failed.length ? 'FAIL' : 'PASS', generated_at: new Date().toISOString(), fixture, candidate, checks };
