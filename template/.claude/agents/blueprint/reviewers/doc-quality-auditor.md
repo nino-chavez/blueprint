@@ -115,7 +115,22 @@ After the fixes: 7 warnings, of which 5 are solid true positives (unsourced meas
 
 ## Gate wiring
 
-The `.mjs` carries no stage-model gate mapping as of wave 99 — this reviewer runs manually at the Stage 5 → 6 transition, so a `BLOCK` verdict is advisory-in-practice until a mapping lands. That ordering is deliberate: a too-tight predicate must not be able to wedge a real initiative before it has been calibrated against one. Calibration evidence to date is fixtures plus a reconstruction of the single real instance; the first live calibration comes from a consumer deliverable.
+**Machine-wired as of wave 99** (ADR-0009), after fleet calibration cleared its stated precondition. The Documents-stage gate in all four variant models carries `reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' }`:
+
+| Variant | Stage | Gate |
+|---|---|---|
+| greenfield | 5 — Documents | `decisions` |
+| midstream | 6 — Documents | `strategy-docs` |
+| brownfield | 6 — Documents | `package-docs` |
+| research | 5 — Decision Memo | `decision-memo` |
+
+Consequences, in order of how much they matter:
+
+- **`BLOCKED` refuses the transition.** `blueprint stage advance` will not move past the Documents stage while `derivation-methodology` fires, and exits `1` so CI fails. This is the only verdict that blocks.
+- **`WARN` proceeds** (`onWarn: 'pass'`) and is recorded for the audit trail. `figure-attribution` findings are advisory: they surface unattributed figures without wedging a pipeline over a judgment call. WARN results are deliberately never reused from cache — advisory findings should re-surface on every advance.
+- **A recorded `PASS` is reused** only while both the reviewer file's hash and the fingerprint of its declared `inputs` are unchanged. Edit a deliverable and the reviewer reruns. The `inputs` export mirrors the deliverable set; if it matched nothing, `fingerprintInputs` returns null and the reviewer reruns every time — the fail-safe, never a stale green.
+
+Verified end to end on a fixture initiative walked to the mapped gate: a WARN-shaped deliverable advanced with `onWarn=pass — advisory, proceeding`; a BLOCK-shaped one refused the transition with the reviewer's message surfaced and exit `1`.
 
 ## Why this gate exists
 

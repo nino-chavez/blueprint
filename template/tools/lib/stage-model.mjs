@@ -364,7 +364,7 @@ export const GREENFIELD_MODEL = {
       { id: 'claims-verified', derivable: false, kind: 'manual', params: { evidence: 'not derivable — a report existing ≠ claims verified' } },
     ] },
     { id: 5, name: 'Documents', gates: [
-      { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
+      { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 }, reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' } },
     ] },
     { id: 6, name: 'Deploy', gates: [
       { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
@@ -409,7 +409,7 @@ export const MIDSTREAM_MODEL = {
       { id: 'claims-verified', derivable: false, kind: 'manual', params: { evidence: 'Ralph Wiggum convergence — reviewers pass' } },
     ] },
     { id: 6, name: 'Documents', gates: [
-      { id: 'strategy-docs', derivable: true, kind: 'dir-md-min', params: { dirs: ['docs', 'decisions'], min: 1 } },
+      { id: 'strategy-docs', derivable: true, kind: 'dir-md-min', params: { dirs: ['docs', 'decisions'], min: 1 }, reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' } },
     ] },
     { id: 7, name: 'Deploy + Iterate', gates: [
       { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
@@ -454,7 +454,7 @@ export const BROWNFIELD_MODEL = {
       { id: 'claims-verified', derivable: false, kind: 'manual', params: { evidence: 'Ralph Wiggum convergence — mandatory whether or not a prototype ran' } },
     ] },
     { id: 6, name: 'Documents', gates: [
-      { id: 'package-docs', derivable: true, kind: 'dir-md-min', params: { dirs: ['docs', 'decisions'], min: 1 } },
+      { id: 'package-docs', derivable: true, kind: 'dir-md-min', params: { dirs: ['docs', 'decisions'], min: 1 }, reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' } },
     ] },
     { id: 7, name: 'Deploy + Iterate', gates: [
       { id: 'deploy-config', derivable: true, kind: 'deploy-signals', params: { paths: ['vercel.json', '.github/workflows'], distDir: 'apps/portal/dist' } },
@@ -493,7 +493,7 @@ export const RESEARCH_MODEL = {
       { id: 'cross-asset-reconciled', derivable: false, kind: 'manual', params: { evidence: 'cross-asset reconciliation + independent re-pull of any external claim' } },
     ] },
     { id: 5, name: 'Decision Memo', gates: [
-      { id: 'decision-memo', derivable: true, kind: 'name-match', params: { dirs: ['docs', '.'], pattern: 'decision-memo' } },
+      { id: 'decision-memo', derivable: true, kind: 'name-match', params: { dirs: ['docs', '.'], pattern: 'decision-memo' }, reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' } },
     ] },
     { id: 6, name: 'Deliver', gates: [
       { id: 'delivered', derivable: false, kind: 'manual', params: { evidence: 'memo shared where the audience is (portal optional, provenance-only)' } },

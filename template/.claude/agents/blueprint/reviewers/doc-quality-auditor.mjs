@@ -75,6 +75,13 @@ const DELIVERABLE_FILES = ['01-diagnose.md', '03-design-brief.md', 'docs/decisio
 const MEMO_DIRS = ['docs', '.'];
 const DATE_PREFIXED = /^\d{4}-\d{2}-\d{2}-/;
 
+// Declared inputs for ADR-0009 fingerprint freshness: a recorded PASS is reused
+// only while these files are unchanged. Must mirror collectDeliverables() — a
+// glob narrower than what the review actually reads would let an edited
+// deliverable ride a stale PASS. Zero matches → fingerprintInputs returns null
+// → the reviewer reruns every advance (the fail-safe, not a false-green).
+export const inputs = ['docs/content/**', 'docs/decision-memo.md', '01-diagnose.md', '03-design-brief.md'];
+
 export const jurisdiction = {
   description: 'derived-figure attribution + derivation methodology in shipping deliverables',
   roots: DELIVERABLE_DIRS,
