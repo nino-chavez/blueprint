@@ -50,7 +50,10 @@ const mdOnlyCount = specCount - execCount;
         <code class="font-mono text-[13px] text-foreground">max</code> — so a demo runs lean and a launch runs thorough
         (<a href={`${GH}/docs/decisions/ADR-0003-cost-effort-dial.md`} target="_blank" rel="noreferrer" class="text-brand-strong hover:underline">ADR-0003</a>).
         The only hard stop is dropping a stage below its default effort with no written justification.
-        What that buys: a confident, unverified claim can’t ride into the deliverable — fact-check blocks before deploy.
+        What that buys: fact-check blocks before deploy, so a confident claim can’t ride into the deliverable unchecked.
+        Some of that checking is mechanical — cited links have to resolve, counts have to match their source, and a
+        percentage breakdown over data you’ve called incomplete has to say how it was derived or the stage won’t advance.
+        The rest is judgment, and the gate records who asserted it rather than assuming it happened.
       </p>
     </section>
 

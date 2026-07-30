@@ -161,7 +161,7 @@ const DEEPER = [
           </Fragment>
         ))}
       </div>
-      <p class="mt-3 text-center text-sm text-contrast-500">A reviewer gate sits between every stage — work doesn’t advance until it passes.</p>
+      <p class="mt-3 text-center text-sm text-contrast-500">A gate sits between every stage — work doesn’t advance until it passes. Some gates run an automated reviewer; the rest check the artifacts on disk.</p>
     </div>
     <!-- A real grid, left-aligned: the 7th card lands in column 1 of its row.
          Audit evidence: a centered flex-wrap bottom row floats OFF the column
@@ -259,7 +259,7 @@ portal_type: initiative  <span class="text-contrast-500"># initiative = product 
           <span class="font-heading text-lg font-semibold text-brand">4</span>
           <div class="min-w-0">
             <h3 class="mb-2 font-heading text-lg font-semibold tracking-tight">Run the pipeline</h3>
-            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">In Claude Code, the stages are skills. Run them in order — each gate is enforced by a reviewer.</p>
+            <p class="mb-3 text-[15px] leading-relaxed text-contrast-500">In Claude Code, the stages are skills. Run them in order — each stage has a gate it has to clear first.</p>
             <CommandBlock command="/blueprint-research → /blueprint-prototype → /blueprint-validate → /blueprint-docs → /blueprint-deploy" prompt="" client:visible />
           </div>
         </li>
