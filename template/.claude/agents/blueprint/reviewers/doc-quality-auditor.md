@@ -95,7 +95,21 @@ If any file has SEVERITY=critical, STATUS=BLOCKED — the agent MUST NOT proceed
 - **Bare `N/M` ratios are not treated as figures** — the shape collides with dates and versions, and "N of M" covers the readable form.
 - **`~` and "approx" do not exempt a figure.** An approximation is still a claim about the world and still owes a source. `illustrative` / `hypothetical` / `example` / `placeholder` do exempt — they declare the number is not a claim.
 - **Attribution is checked at BLOCK granularity, not per figure.** A contiguous run of non-blank lines is one block, so a markdown table is one unit — a single source or link in any cell exempts every figure in every row. Comparison tables are where deliverable figures concentrate, so this is a real ceiling, accepted to keep per-row noise out of the gate. Per-figure attribution is agent territory.
-- **Attribution phrases must be deliberate, not ambient.** `per` and `from the` were removed from the accepted set: they occur constantly in analytical prose ("42% per quarter", "cost per seat", "18% from the baseline") and would have exempted almost any block. Same for `for example` / `e.g.` as not-a-claim markers, and `sample` ("a sample of 400" is a claim, not a disclaimer). Accepted attribution is a link, a bare URL, a footnote, a dated `(2024)` reference, or the words *source(s)* / *according to* / *cited* / *citing* / *derived from*.
+- **Attribution phrases must be deliberate, not ambient.** `per` and `from the` were removed from the accepted set: they occur constantly in analytical prose ("42% per quarter", "cost per seat", "18% from the baseline") and would have exempted almost any block. Same for `for example` / `e.g.` as not-a-claim markers, `sample` ("a sample of 400" is a claim, not a disclaimer), and `proposal` / `proposed` ("the proposed plan lifts conversion 20%" is a claim). Accepted attribution: a link, a bare URL, a footnote, a dated `(2024)` reference, an arXiv/DOI identifier, a backtick'd internal artifact path, or the words *source(s)* / *according to* / *cited* / *citing* / *derived from*.
+- **`Nx` multipliers are not a figure shape.** Every instance the fleet run surfaced was domain vocabulary ("straight 4x cuts" in a video-editing spec), never a derived claim. A multiplier that *is* a claim reads as a percentage or a count elsewhere in the same doc.
+
+### Fleet calibration (wave 99)
+
+The check was calibrated against two real consumer deliverable surfaces (17 documents, 34 figures) before shipping, because a gate authored only against its own fixtures is circular — the wave-84 lesson. First run produced 21 warnings; reading every one found four false-positive sources, all fixed:
+
+| Cause | Real example | Fix |
+|---|---|---|
+| Bare arXiv/DOI identifiers unrecognized | "audio alone locates 89% of highlights — arXiv:2501.16100" | added to accepted attribution |
+| Backtick'd internal artifact refs unrecognized — Blueprint's most common citation form | "~70% of auto-clips need manual cleanup (`analogous-creator-clipping.md`)" | added to accepted attribution |
+| `Nx` matched domain vocabulary | "straight 4x cuts" | shape removed |
+| Explicit author disclaimers unrecognized | "**Pricing (proposal, NOT validated):** $1,500–1,800/yr" | *not validated* / *unvalidated* / *not verified* / *TBD* added to not-a-claim |
+
+After the fixes: 7 warnings, of which 5 are solid true positives (unsourced measured metrics, an unsourced corpus count, a competitor price with a named vendor and no citation, a derived noise percentage) and 2 are the block-granularity ceiling above — a source named in a section heading does not reach figures in the paragraph below it. **`derivation-methodology` produced zero findings across all 17 documents**, which is the intended precision for a BLOCK-severity check: it fires on one specific shape and stays silent otherwise.
 - **Under-matching by design.** Novel figure phrasings will not match. A looser matcher would manufacture noise into a BLOCK-severity gate — the failure `stateful-claim-lint-reviewer.md` documents (27 findings before guards, 5 true positives after).
 - **Deliberately out of jurisdiction:** a stale count in a launch post or announcement (e.g. "15 of 18 reviewers"). A launch post is not a deliverable; that class belongs to `stateful-claim-lint-reviewer`'s count checks and its own under-matching note, not to widening this reviewer.
 

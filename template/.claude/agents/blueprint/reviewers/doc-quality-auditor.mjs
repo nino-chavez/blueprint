@@ -99,11 +99,15 @@ function blankFences(src) {
 }
 
 // ── figure shapes ────────────────────────────────────────────────────────────
+// `Nx` multipliers are deliberately NOT a figure shape. Fleet calibration
+// (film-room, wave 99) found every instance was domain vocabulary — "straight
+// 4x cuts" in a video-editing spec — not a derived claim. It was the weakest of
+// the four shapes and contributed only noise; a multiplier that IS a claim
+// ("3x faster than the baseline") reads as a percentage or a count elsewhere.
 const PERCENT = /\b\d{1,3}(?:\.\d+)?%/g;
 const N_OF_M = /\b\d[\d,]*\s+of\s+\d[\d,]*\b/gi;
 const CURRENCY = /\$\d[\d,]*(?:\.\d+)?\s*[KMB]?\b/gi;
-const MULTIPLIER = /\b\d+(?:\.\d+)?x\b/gi;
-const FIGURE_PATTERNS = [PERCENT, N_OF_M, CURRENCY, MULTIPLIER];
+const FIGURE_PATTERNS = [PERCENT, N_OF_M, CURRENCY];
 
 function figuresIn(text) {
   const out = [];
@@ -133,18 +137,32 @@ const hasDerivationDecl = (body) => DERIVATION_DECL.some((re) => re.test(body));
 // and would exempt almost any block. Caught by an isolation probe the fixtures
 // missed — every passing fixture also carried a real link, so the weak branches
 // were never exercised alone.
+// Fleet calibration (film-room + docracles, wave 99) added the last two: a bare
+// arXiv/DOI identifier and a backtick'd internal artifact path are BOTH real
+// attribution forms Blueprint research docs use constantly, and both were
+// false-positiving. Real examples caught: "audio alone locates 89% of
+// highlights — arXiv:2501.16100" and "~70% of auto-clips need manual cleanup
+// (`analogous-creator-clipping.md`)".
 const ATTRIBUTION = [
   /\[[^\]]*\]\([^)]+\)/,             // markdown link
   /https?:\/\//,                      // bare URL
   /\[\^[^\]]+\]/,                     // footnote reference
   /\b(?:sources?|according to|cited|citing|derived from)\b/i,
   /\(\s*(?:19|20)\d{2}\s*\)/,         // (2024) — a dated source
+  /\b(?:arxiv:\s*\d{4}\.\d{4,5}|doi:\s*10\.\d{4,9}\/|\b10\.\d{4,9}\/\S+)/i,
+  /`[^`\s]*\.(?:md|yml|yaml|json|ts|tsx|js|mjs|py|sql)`/,  // internal artifact ref
 ];
 // These declare the number is NOT a claim about the world, so attribution is
 // not owed. Deliberately excludes: ~ / approx / estimate (still world-claims);
 // `for example` / `e.g.` (discourse markers, not declarations about the figure);
 // `sample` ("sample size of 400" is a claim, not a disclaimer).
-const NOT_A_CLAIM = /\b(?:illustrative|hypothetical|placeholder|mock)\b/i;
+// Fleet calibration (film-room, wave 99) added the explicit-disclaimer forms:
+// "**Pricing (proposal, NOT validated):** $1,500–1,800/yr" is a STRONGER
+// disclosure than `illustrative`, and was false-positiving.
+// `proposal` / `proposed` were considered and REJECTED as too ambient — "the
+// proposed plan lifts conversion 20%" is a claim, not a disclaimer. Only the
+// explicit not-yet-established forms qualify.
+const NOT_A_CLAIM = /\b(?:illustrative|hypothetical|placeholder|mock|not validated|unvalidated|not verified|TBD)\b/i;
 
 const hasAttribution = (block) => ATTRIBUTION.some((re) => re.test(block)) || NOT_A_CLAIM.test(block);
 
@@ -372,6 +390,29 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   await w(t2, 'docs/content/memo.md', 'Adoption reached 42%, according to the Q3 board deck.\n');
   r = await review({ targetDir: t2 });
   ok(r.status === 'PASS', `"according to" alone exempts (got ${r.status})`);
+
+  // 9b. FLEET-CALIBRATION REGRESSION (film-room + docracles, wave 99). Both
+  //     shapes are attribution forms Blueprint research docs use constantly,
+  //     and both false-positived on the first real consumer run. Strings are
+  //     reduced from the genuine lines.
+  for (const cited of [
+    'Audio alone locates 89% of highlights — arXiv:2501.16100.',
+    'Roughly 70% of auto-clips need manual cleanup (`analogous-creator-clipping.md`).',
+    'Coverage sits at 31% (doi: 10.1145/3372297).',
+    '**Pricing (proposal, NOT validated):** $1,500-1,800/yr platform.',
+  ]) {
+    await w(t2, 'docs/content/memo.md', `${cited}\n`);
+    r = await review({ targetDir: t2 });
+    ok(r.status === 'PASS', `fleet-calibrated attribution exempts: "${cited}" (got ${r.status})`);
+  }
+  // …but `proposed` alone stays a claim — rejected as too ambient.
+  await w(t2, 'docs/content/memo.md', 'The proposed plan lifts conversion 20%.\n');
+  r = await review({ targetDir: t2 });
+  ok(r.status === 'WARN', `"proposed" alone does not exempt (got ${r.status})`);
+  // Nx multipliers are not a figure shape — domain vocabulary, not a claim.
+  await w(t2, 'docs/content/memo.md', 'Drag-order manifests plus straight 4x cuts.\n');
+  r = await review({ targetDir: t2 });
+  ok(r.status === 'PASS', `"4x cuts" is not a figure (got ${r.status})`);
 
   // 10. Root-trio and memo deliverables are reached.
   const t5 = await mk();
