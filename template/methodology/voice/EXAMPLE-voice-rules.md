@@ -118,10 +118,11 @@ Apply during prose review before publishing any Blueprint-the-product output:
 Compatible:
 - Anti-corporate-jargon (entire list — see `signal-dispatch-voice-guide.md` § corporate-jargon)
 - Anti-celebration ("great" / "awesome" / "perfect" are banned across both voices)
-- Short sentence default (Blueprint inherits ~12-word median sentence target)
+- Low cognitive load: explicit subjects, stable terms, short blocks, and one idea per sentence when the material is difficult. Sentence counts remain diagnostics, not gates.
+- Evidence status and scope: verified or observed evidence, stakeholder reports, and hypotheses remain distinct; a single case is not widened into a general rule.
 
 Distinct (because audience differs):
-- Operator's published voice is self-interrogating + provisional ("but wait — is that actually true?"). Blueprint's voice is **grounded, not self-interrogating**. Methodology product shouldn't perform doubt about its own decisions; it declares decisions confidently with their named provisional status.
+- Operator's published voice may use self-interrogation when evidence creates a genuine turn. Blueprint's voice is **grounded, not self-interrogating**. Methodology product shouldn't perform doubt about its own decisions; it declares decisions confidently with their named provisional status.
 - Operator's published voice is conversational + colloquial. Blueprint's voice is **precise, methodical**. Solution Architecture register.
 - Operator's published voice frequently uses imperative openings ("Stop. Look at the actual error."). Blueprint's voice uses role-subject openings ("The CLI fails when X. The recovery is Y.").
 
