@@ -13,6 +13,34 @@ shape for controls, captions, essays, or chat answers. This is the remediation
 the `terminology-linter` gate lacks: the linter detects lexical leakage; this
 pass repairs the reader's actual encounter.
 
+## Position in the writing stack
+
+Reader clarity is one layer of a larger decision order. Apply the layers in
+this sequence; a later layer cannot repair an earlier failure:
+
+1. **Truth and evidence** — keep verified or observed evidence, stakeholder
+   reports, and agent hypotheses distinct. The Mom Test pattern governs human
+   evidence collection; it is not a prose style.
+2. **Reader and job** — declare the reader, their task, and the artifact's
+   primary purpose. Diátaxis assigns jobs to documentation only.
+3. **Argument** — organize the material under one controlling point. Minto and
+   SCQA may help identify the reader's question and put the answer first; do not
+   expose those labels or their consultant cadence by default.
+4. **Cognitive load** — use explicit subjects, stable vocabulary, short blocks,
+   and one idea per sentence when the material is difficult. “CTE-based
+   writing” is local shorthand for respectful low-memory-load writing, not an
+   established framework, a simulated diagnosis, or a grade-level target.
+5. **Voice** — apply the declared register without weakening evidence, the
+   reader's job, or precision locks.
+6. **Surface mechanics** — apply documentation, portal, email, chat, or public
+   prose conventions only to their own surfaces.
+
+Counts, sentence lengths, question rates, and other corpus measurements are
+diagnostics unless a local contract explicitly promotes one to a gate. Do not
+add a question, self-correction, process beat, or open ending merely to satisfy
+a voice pattern. Agent or stakeholder steering during a session is not a change
+in point of view unless new evidence changed the claim.
+
 This procedure is written to be executed directly. When you dispatch it, inline
 this text into the agent's instructions — do not tell the agent to "go read the
 plain-language pass." Describe what to do in words, here.
@@ -167,6 +195,10 @@ alone fixed the page.
   decision; say it more simply. If you are unsure a claim is true, keep the
   original meaning rather than embellish. (Audit discipline: a plain lie is
   still a lie.)
+- **Preserve claim status and scope.** A repo-grounded observation does not
+  become a causal, quality, value, or population-level conclusion during a
+  rewrite. A general claim does not become the author's personal experience,
+  and one person's case does not become a general rule.
 
 ## Step 5 — Verify
 

@@ -116,7 +116,7 @@ twice gets a row.
 
 ## What this pattern is NOT
 
-- **Not a prose style for generated docs.** Rewriting agent output to "sound mom-tested" launders hypotheses; the test governs how evidence is *collected from humans*, not how documents read.
+- **Not a prose style for generated docs.** Rewriting agent output to "sound mom-tested" launders hypotheses; the test governs how evidence is *collected from humans*, not how documents read. Reader clarity, argument order, cognitive load, and voice remain separate layers; see `plain-language-pass.md`.
 - **Not a gate on shipping the doc package.** A package can ship all-class-3 — early-stage initiatives mostly do. The gate-shaped question is "does a validation script exist naming them," not "are they validated."
 - **Not a replacement for the fact-check loop.** Fact-check verifies what IS (code, citations); this pattern plans the verification of what is WANTED (demand).
 

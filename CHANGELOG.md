@@ -17,6 +17,12 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Added
 
+- **Writing-decision stack** (wave 101) — the reader-clarity pass now orders
+  evidence, reader/job, argument, cognitive load, voice, and surface mechanics;
+  keeps Mom Test, Diátaxis, Minto/SCQA, and local CTE shorthand in their proper
+  jurisdictions; and treats corpus metrics as diagnostics rather than prose
+  gates.
+
 - **Review and disposition loop** (wave 97) — `review-contract.json` binds a
   human/team review to an exact candidate, reader, asks, authority, capture
   adapter, automation boundary, disposition owner, and return path.
