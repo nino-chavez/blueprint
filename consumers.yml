@@ -151,3 +151,9 @@ consumers:
     methodology_version: null             # legacy blueprint.yml remains unpinned; native profiles pin k1-research-0
     owner: nino-chavez
     synced_at: "2026-07-22"
+
+  - repo: nino-chavez/docracles       # local-only initiative at ~/Workspace/dev/labs/docracles (no remote yet);
+    pattern: null                     #   portal_type: initiative (Initiative Portal harness, not pattern A/B)
+    methodology_version: "0.7.0"      # pinned at init-day 2026-07-28 (spawn ADR 0001; greenfield successor to se-docs-frontdoor write side)
+    owner: nino-chavez
+    synced_at: "2026-07-28"
