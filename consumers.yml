@@ -94,12 +94,6 @@ consumers:
     owner: nino-chavez
     synced_at: "2026-06-06"
 
-  - repo: nino-chavez/tna
-    pattern: null                     # wip/tna/blueprint — TNA public site
-    methodology_version: null
-    owner: nino-chavez
-    synced_at: "2026-06-06"
-
   - repo: private/subs-initiative    # de-named for the public registry; real identity in
     pattern: A                        #   consumers.local.yml (gitignored). The code-shipping
     methodology_version: null         #   flagship (116k LOC shipped). Consumes the methodology via
