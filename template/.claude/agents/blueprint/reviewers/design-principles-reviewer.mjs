@@ -112,7 +112,16 @@ const CONCEPT_DIRS = [
   ['prototype', 'concepts'],
   ['portal', 'concepts'],
   ['research', 'design-explorations'],
+  ['docs', 'design', 'concepts'],
 ];
+// Accepted artifact locations — judged-screen-pattern.md § 2b owns this set.
+const BRIEF_PATHS = [
+  ['prototype', 'EXPERIENCE-BRIEF.md'],
+  ['portal', 'EXPERIENCE-BRIEF.md'],
+  ['docs', 'design', 'experience-brief.md'],
+];
+// The matrix may live in the brief, in the direction record, or on its own.
+const MATRIX_PATHS = [['DIRECTION.md'], ['docs', 'design', 'object-action-state.md']];
 // A selection ADR names the chosen concept AND the rejected ones.
 const ADR_CONCEPT_WORDS = ['concept', 'divergent'];
 const ADR_SELECTION_WORDS = ['chose', 'chosen', 'selected', 'rejected', 'alternatives considered'];
@@ -204,13 +213,29 @@ async function countFilesIn(dir) {
 }
 
 // A selection ADR in decisions/ — names concepts and names a choice among them.
-async function findSelectionAdr(decisionsDir) {
-  let files;
+// Walk decisions/ recursively — § 2b accepts the selection ADR anywhere under
+// it, and projects that group ADRs into subdirectories are not skipping the gate.
+async function walkMarkdown(dir, rel = '') {
+  let entries;
   try {
-    files = (await fs.readdir(decisionsDir)).filter((f) => f.endsWith('.md'));
+    entries = await fs.readdir(dir, { withFileTypes: true });
   } catch {
-    return { file: null, attributed: false };
+    return [];
   }
+  const out = [];
+  for (const e of entries) {
+    if (e.name.startsWith('_') || e.name.startsWith('.')) continue;
+    const child = path.join(dir, e.name);
+    const childRel = rel ? `${rel}/${e.name}` : e.name;
+    if (e.isDirectory()) out.push(...(await walkMarkdown(child, childRel)));
+    else if (e.isFile() && e.name.endsWith('.md')) out.push(childRel);
+  }
+  return out;
+}
+
+async function findSelectionAdr(decisionsDir) {
+  const files = await walkMarkdown(decisionsDir);
+  if (!files.length) return { file: null, attributed: false };
   for (const f of files.sort()) {
     const text = (await read(path.join(decisionsDir, f))) || '';
     const lower = text.toLowerCase();
@@ -483,10 +508,11 @@ export default async function review({ targetDir, blueprintYml }) {
   //   preserve → design_direction points at a record that EXISTS; no brief.
   //   refit    → brief + matrix; no concepts.
   //   rethink  → brief + matrix + >=2 concepts + a selection ADR.
+  const ymlTextCache = (await read(path.join(artifactsRoot, 'blueprint.yml'))) || '';
   const designIntentRaw =
     (blueprintYml && typeof blueprintYml.design_intent === 'string'
       ? blueprintYml.design_intent
-      : readTopLevelYamlScalar((await read(path.join(artifactsRoot, 'blueprint.yml'))) || '', 'design_intent')) || '';
+      : readTopLevelYamlScalar(ymlTextCache, 'design_intent')) || '';
   const designIntent = designIntentRaw.trim().toLowerCase();
   const KNOWN_INTENTS = ['preserve', 'refit', 'rethink'];
   const intentDeclared = KNOWN_INTENTS.includes(designIntent);
@@ -506,12 +532,9 @@ export default async function review({ targetDir, blueprintYml }) {
   }
 
   // ── 10. preserve → a direction record that exists ───────────────────────────
-  const briefCandidates = [
-    path.join(artifactsRoot, 'prototype', 'EXPERIENCE-BRIEF.md'),
-    path.join(artifactsRoot, 'portal', 'EXPERIENCE-BRIEF.md'),
-  ];
   let briefPath = null;
-  for (const p of briefCandidates) {
+  for (const parts of BRIEF_PATHS) {
+    const p = path.join(artifactsRoot, ...parts);
     if (await exists(p)) {
       briefPath = p;
       break;
@@ -522,27 +545,32 @@ export default async function review({ targetDir, blueprintYml }) {
   let experienceBriefState = briefPath ? 'present' : 'missing';
   let directionState = 'n/a';
 
-  if (designIntent === 'preserve') {
-    const declared = (
-      readTopLevelYamlScalar((await read(path.join(artifactsRoot, 'blueprint.yml'))) || '', 'design_direction') || ''
-    ).trim();
-    if (!declared) {
-      directionState = 'missing';
-      findings.push({
-        severity: 'WARN',
-        location: 'blueprint.yml',
-        message:
-          'design_intent is `preserve` but no design_direction is declared — nothing names the approved direction this change claims to work inside. (WARN: judged-screen-pattern.md is a promotion candidate.)',
-        remediation:
-          'Set design_direction to the repo-relative path of the approved direction record (a DIRECTION.md or a decisions/ ADR).',
-        reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
-      });
-    } else if (!(await exists(path.join(artifactsRoot, declared)))) {
+  // `preserve` AND `refit` both work inside a direction someone already
+  // approved, so both owe the pointer. `rethink` creates the direction — its
+  // selection ADR IS the record — so it owes no prior pointer. Requiring the
+  // § 3b conformance review under `refit` while nothing guaranteed a record to
+  // read against would be a gate with no artifact behind it.
+  const directionRequired = designIntent === 'preserve' || designIntent === 'refit';
+  const declaredDirectionPath = (readTopLevelYamlScalar(ymlTextCache, 'design_direction') || '').trim();
+  if (directionRequired && !declaredDirectionPath) {
+    directionState = 'missing';
+    findings.push({
+      severity: 'WARN',
+      location: 'blueprint.yml',
+      message: `design_intent is \`${designIntent}\` but no design_direction is declared — nothing names the approved direction this change works inside, and the conformance review has no record to read against. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
+      remediation:
+        'Set design_direction to the repo-relative path of the approved direction record (a DIRECTION.md or a decisions/ ADR). Under `rethink` the selection ADR is that record and no pointer is owed.',
+      reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
+    });
+  } else if (declaredDirectionPath) {
+    // Checked whenever declared, under every intent: a dangling pointer is a
+    // dangling pointer regardless of which intent wrote it.
+    if (!(await exists(path.join(artifactsRoot, declaredDirectionPath)))) {
       directionState = 'dangling';
       findings.push({
         severity: 'WARN',
         location: 'blueprint.yml',
-        message: `design_direction points at '${declared}', which does not exist — a pointer to a deleted direction record is not an approved direction. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
+        message: `design_direction points at '${declaredDirectionPath}', which does not exist — a pointer to a deleted direction record is not an approved direction. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
         remediation: 'Point design_direction at a record that exists, or change design_intent if the direction is genuinely open.',
         reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
       });
@@ -564,9 +592,16 @@ export default async function review({ targetDir, blueprintYml }) {
         reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2b',
       });
     } else {
-      const lowerBrief = briefText.toLowerCase();
-      const hasMatrix =
-        MATRIX_PHRASES.some((phrase) => lowerBrief.includes(phrase)) || MATRIX_TABLE_HEADER.test(briefText);
+      // The matrix counts wherever § 2b accepts it: in the brief, in the
+      // direction record (including whatever design_direction names), or on its
+      // own. Checking the brief alone would fail a project that keeps its
+      // object model beside the direction, which is a layout choice, not a gap.
+      const matrixTexts = [briefText];
+      for (const parts of MATRIX_PATHS) matrixTexts.push((await read(path.join(artifactsRoot, ...parts))) || '');
+      if (declaredDirectionPath) matrixTexts.push((await read(path.join(artifactsRoot, declaredDirectionPath))) || '');
+      const hasMatrix = matrixTexts.some(
+        (t) => t && (MATRIX_PHRASES.some((phrase) => t.toLowerCase().includes(phrase)) || MATRIX_TABLE_HEADER.test(t)),
+      );
       experienceBriefState = hasMatrix ? 'present' : 'present-no-matrix';
       if (!hasMatrix) {
         findings.push({
@@ -667,8 +702,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // Checks 10/11 (judged-screen) artifacts. Any fixture asserting PASS needs
   // these, since a missing brief or unevidenced convergence is a WARN.
   async function writeJudgedScreenArtifacts(dir, intent = 'rethink') {
-    const yml = await fs.readFile(path.join(dir, 'blueprint.yml'), 'utf8').catch(() => '');
-    if (!/^design_intent:/m.test(yml)) await writeFile(dir, 'blueprint.yml', `${yml}design_intent: ${intent}\n`);
+    let yml = await fs.readFile(path.join(dir, 'blueprint.yml'), 'utf8').catch(() => '');
+    if (!/^design_intent:/m.test(yml)) yml += `design_intent: ${intent}\n`;
+    // preserve and refit work inside an existing direction, so both owe the pointer.
+    if ((intent === 'preserve' || intent === 'refit') && !/^design_direction:/m.test(yml)) {
+      yml += 'design_direction: "DIRECTION.md"\n';
+      await writeFile(dir, 'DIRECTION.md', '# Direction\n\nThesis: the product does its job live.\n');
+    }
+    await writeFile(dir, 'blueprint.yml', yml);
     await writeFile(
       dir,
       'prototype/EXPERIENCE-BRIEF.md',
@@ -958,6 +999,7 @@ Stakeholder review surface, one confident take per route.
     const res = await review({ targetDir: dir });
     check('refit without brief → WARN', res.status === 'WARN');
     check('refit names the intent in the finding', res.findings.some((f) => /design_intent is `refit` but there is no EXPERIENCE-BRIEF/.test(f.message)));
+    check('refit also owes a direction pointer', res.findings.some((f) => /design_intent is `refit` but no design_direction is declared/.test(f.message)));
     check('refit demands no concepts', !res.findings.some((f) => /convergence is unevidenced/.test(f.message)));
     check('summary reports concepts=not-required', /concepts=not-required/.test(res.metadata.targetSummary));
     await fs.rm(dir, { recursive: true, force: true });
@@ -1033,6 +1075,90 @@ Stakeholder review surface, one confident take per route.
     check('unattributed selection ADR → WARN', res.status === 'WARN');
     const af = res.findings.find((f) => /does not attribute the choice/.test(f.message));
     check('attribution finding disclaims what it proved', af && /cannot verify a human made the selection/.test(af.message));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 12 — the alternate layout (docs/design/…) is accepted everywhere:
+  // brief, matrix on its own file, concepts dir, and an ADR in a subdirectory.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeFile(dir, 'docs/design/experience-brief.md', '# Experience brief\n\n## Surfaces\n- today\n');
+    await writeFile(
+      dir,
+      'docs/design/object-action-state.md',
+      '# Object / action / state\n\n| Object | Owner | Valid actions | States | Reverse action |\n|---|---|---|---|---|\n| Task | the user | complete | open, done | reopen |\n',
+    );
+    await writeFile(dir, 'docs/design/concepts/concept-a.md', 'stacked list\n');
+    await writeFile(dir, 'docs/design/concepts/concept-b.md', 'two-column split\n');
+    await writeFile(dir, 'decisions/design/0001-concept-selection.md', '# Concept selection\n\nThe operator chose concept-b; concept-a was rejected.\n');
+    const res = await review({ targetDir: dir });
+    check('docs/design layout → PASS', res.status === 'PASS');
+    check('matrix found outside the brief', /experience-brief=present;/.test(res.metadata.targetSummary));
+    check('nested ADR found', /adr=present/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 12b — the matrix may live in the record design_direction names.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: refit\ndesign_direction: "docs/DIRECTION.md"\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', '# Experience brief\n\n## Surfaces\n- today\n');
+    await writeFile(
+      dir,
+      'docs/DIRECTION.md',
+      '# Direction\n\n## Object / action / state matrix\n\n| Object | Owner |\n|---|---|\n| Task | the user |\n',
+    );
+    const res = await review({ targetDir: dir });
+    check('matrix in the design_direction record → PASS', res.status === 'PASS');
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 13 — the reproduced hole: refit with a brief and NO direction record
+  // used to pass while screen-composition still demanded a conformance review
+  // against a record that need not exist. A § 3b requirement with no artifact
+  // behind it is the same shape as the preserve/roster hole, one intent over.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: refit\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeFile(
+      dir,
+      'prototype/EXPERIENCE-BRIEF.md',
+      '# Experience brief\n\n## Surfaces\n- today\n\n## Object / action / state matrix\n\n| Object | Owner |\n|---|---|\n| Task | the user |\n',
+    );
+    const res = await review({ targetDir: dir });
+    check('refit + brief + no direction record → WARN, not a silent PASS', res.status === 'WARN');
+    check('names the conformance consequence', res.findings.some((f) => /the conformance review has no record to read against/.test(f.message)));
+    check('summary reports direction=missing', /direction=missing/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 13b — a dangling pointer is caught under ANY intent that declares
+  // one, not just preserve. rethink owes no pointer, but declaring a broken one
+  // is still a broken pointer.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\ndesign_direction: "gone.md"\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    const res = await review({ targetDir: dir });
+    check('dangling pointer under rethink → WARN', res.status === 'WARN');
+    check('dangling finding names the path', res.findings.some((f) => /points at 'gone\.md', which does not exist/.test(f.message)));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 13c — rethink owes NO direction pointer; its selection ADR is the record.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    const res = await review({ targetDir: dir });
+    check('rethink without a design_direction → PASS', res.status === 'PASS');
+    check('summary reports direction=n/a', /direction=n\/a/.test(res.metadata.targetSummary));
     await fs.rm(dir, { recursive: true, force: true });
   }
 

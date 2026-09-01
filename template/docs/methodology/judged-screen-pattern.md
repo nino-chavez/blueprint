@@ -59,18 +59,32 @@ design_intent: refit   # preserve | refit | rethink
 | Intent | Means | Stage 2 owes |
 |---|---|---|
 | `preserve` | The existing approved direction stands. This change works inside it. | A pointer to the approved direction record — `design_direction:` in `blueprint.yml`, naming a `DIRECTION.md` or an ADR that exists, plus a surface roster. **No brief beyond that roster, no concepts.** |
-| `refit` | Change the presentation; the named behavior stays. | The experience brief (§ 2b), including the object / action / state matrix. **No concepts.** |
-| `rethink` | The direction itself is the question. | The brief, **three divergent whole-screen concepts** (§ 2c), and a selection ADR that names the human who chose. |
+| `refit` | Change the presentation; the named behavior stays. | A `design_direction:` pointer to the existing approved record, **and** the experience brief (§ 2b) including the object / action / state matrix. **No concepts.** |
+| `rethink` | The direction itself is the question. | The brief, **three divergent whole-screen concepts** (§ 2c), and a selection ADR that names the human who chose. The ADR **is** the new direction record; no prior pointer is owed. |
 
 **Why this field exists.** Without it the pattern fails in one of two directions, and both were live. Skip divergence entirely and Stage 2 has nowhere to put it, which is how eleven variants surfaced in Stage 3 on the blog initiative. Mandate three concepts for every change and a one-line copy fix owes a design exercise, which is the ceremony that gets a methodology ignored rather than followed. The intent is the operator's declaration of which situation this is, made once, in a place both reviewers read.
 
 **Undeclared is not `preserve`.** A missing `design_intent` reads as undeclared and WARNs. Defaulting silently to the cheapest intent would let every change opt out of design work by saying nothing, which is the behavior the field exists to make visible.
 
-**Every intent owes the surface roster**, including `preserve`. The roster is the `## Surfaces` list in `EXPERIENCE-BRIEF.md` (§ 2b), and it is the only part of the brief `preserve` owes — a `preserve` brief may be that one section and nothing else. Without it nothing declares which surfaces exist, and the cold review § 3 requires under every intent has no roster to be required against. Declaring an intent is what adopts the pattern; from that point a missing roster is a gap the reviewer reports. An initiative with no declared intent has not adopted the pattern, and the reviewer stays quiet.
+**`preserve` and `refit` both owe a direction record, for the same reason.** Both work inside a direction someone already approved — `preserve` leaves it alone, `refit` changes the presentation within it. Neither creates one. So both point at it with `design_direction:`, and **the file it names must exist**: a pointer to a deleted record is not an approved direction. Under `rethink` the selection ADR is the record, so no prior pointer is owed. This is what the conformance review of § 3b reads; requiring that review while nothing guarantees a record to read against would be a gate with no artifact behind it.
+
+**Every intent owes the surface roster**, including `preserve`. The roster is the `## Surfaces` list in the experience brief (§ 2b names where that may live), and it is the only part of the brief `preserve` owes — a `preserve` brief may be that one section and nothing else. Without it nothing declares which surfaces exist, and the cold review § 3 requires under every intent has no roster to be required against. Declaring an intent is what adopts the pattern; from that point a missing roster is a gap the reviewer reports. An initiative with no declared intent has not adopted the pattern, and the reviewer stays quiet.
 
 ### 2b. The experience brief states the user's situation before anyone draws
 
-Write it at `prototype/EXPERIENCE-BRIEF.md` (or `portal/EXPERIENCE-BRIEF.md`, matching whichever shell the initiative uses). It is authored before the first concept and it is the document the screen review reads the job questions from.
+It is authored before the first concept, and it is the document the screen review reads the job questions from.
+
+**Where these artifacts live — the accepted set, stated once.** Projects organize design work differently and the reviewers accept either layout. This table is the whole contract; nothing else in this pattern names a path.
+
+| Artifact | Accepted locations |
+|---|---|
+| Experience brief | `prototype/EXPERIENCE-BRIEF.md`, `portal/EXPERIENCE-BRIEF.md`, or `docs/design/experience-brief.md` |
+| Object / action / state matrix | Inside the brief, inside `DIRECTION.md` (or whatever `design_direction` names), or `docs/design/object-action-state.md` |
+| Concepts | `prototype/concepts/`, `portal/concepts/`, `research/design-explorations/`, or `docs/design/concepts/` |
+| Selection ADR | Anywhere under `decisions/`, including subdirectories |
+| Screen reviews | `docs/evidence/screen-reviews/`, captures in `<surface>-<build>/` beside the record |
+
+The `## Surfaces` roster lives in the brief wherever the brief lives, and the heading text is exact — it is the one literal format requirement here, because two mechanical readers walk it.
 
 It carries ten parts.
 
@@ -105,6 +119,22 @@ The matrix is what prevents "Mark not done." A calendar event owned by an extern
 
 This subsection applies when `design_intent: rethink`. Under `refit` or `preserve` it does not.
 
+**`rethink` splits Stage 2 into two phases, in order.** Collapsing them is how a token decision gets mistaken for a direction.
+
+**Phase 1 — Direction.** What the surface should be.
+
+1. **A blind cold review of the current rendered product, before reading any prior rationale.** On an existing product this comes first, because the shipped screen is the evidence for what needs rethinking, and prior rationale is exactly what makes a weak screen look justified.
+
+   This is a real record, not a scratch note: same protocol, same frontmatter, `kind: cold`, at **the build it judged** — the old one. So a surface accumulates several cold reviews over its life, which is correct and expected. What is not acceptable is ambiguity about which one the gate is reading: once more than one review exists for a surface and kind, `release_marker` must be declared so the current record is identifiable. The reviewer reports the ambiguity rather than picking, because picking silently is how a stale accept passes for a fresh one.
+2. The experience brief and the object / action / state matrix (§ 2b).
+3. **Curated prior art, one question per reference.** Name what you are asking each reference — how it handles density, how it opens, how it fails — not "here is a site we like." A reference list with no question attached asks the surface to look like the category, which is the opposite of art direction.
+4. Three concepts, rendered on the same representative states.
+5. A named human selection, with the rejected concepts preserved rather than deleted. Preservation is not approval to continue them; it keeps the comparison auditable.
+
+**Phase 2 — System.** How the selected direction becomes buildable. The chosen direction converts into tokens, components, templates, motion rules, and `prototype/DESIGN.md`. This is the layer the design-system audit measures, and it is downstream of a direction — a complete system built with no direction selected is the boilerplate outcome forge-site names in § 8.
+
+**Only then production implementation.** Blueprint governs the sequence and demands the evidence. It is not the art director, and no gate in it is a person approving (§ 8, film-room ADR-0042 Decision 2).
+
 Author three whole-screen concepts. Not three treatments of one layout — three takes on how the job gets done. Render each on the same representative states so they are comparable.
 
 The canonical state set:
@@ -136,6 +166,8 @@ Each step's output is the next step's input, and the two reviews sit at the end 
 product truth        what is actually true of the domain and the data
   ↓
 design_intent        preserve | refit | rethink          (§ 2a)
+  ↓
+cold review of what ships today                           (§ 2c step 1, rethink on an existing product)
   ↓
 experience brief     the job, the surfaces, the object / action / state matrix   (§ 2b, refit + rethink)
   ↓
@@ -215,7 +247,13 @@ Name the file `<surface>-<build>-<kind>.md`, so the two reviews of one build do 
 
 ### 3b. The direction-conformance review
 
-This reviewer starts where the cold reviewer is forbidden to go. Read the direction record — a `DIRECTION.md`, or the selection ADR from § 2c — and then the same device captures.
+This reviewer starts where the cold reviewer is forbidden to go. Read the direction record, then the same device captures. Which record that is depends on the intent, and § 2a guarantees one exists in each case:
+
+| Intent | The direction record | Conformance owed? |
+|---|---|---|
+| `preserve` | The record `design_direction` names | No — nothing changed inside the direction |
+| `refit` | The record `design_direction` names | Yes |
+| `rethink` | The selection ADR from § 2c | Yes |
 
 One question, in three parts:
 
@@ -243,7 +281,7 @@ Every slice closeout gains one line:
 
 "If nothing, why" is the load-bearing half. A slice that adds without subtracting may be correct; a slice that cannot say why is accreting.
 
-## 5. The evidence ladder gains a rung: the rendered whole, reviewed cold
+## 5. Six acceptance states, one new ladder rung, and no collapsing them into "done"
 
 A consumer that runs a physical-evidence ladder inserts one rung:
 
@@ -256,6 +294,37 @@ A consumer that runs a physical-evidence ladder inserts one rung:
 A consumer running a physical-evidence ladder already has names for the outer two rungs; slot the new one between them under whatever those names are. Those are three different claims.
 
 **Which reviews satisfy the new rung is set by `design_intent` — see § 3.** Under `preserve` it is the blind cold review; under `refit` and `rethink` it is cold and then conformance, in that order. The rung is one step on the ladder and up to two reviews inside it; § 3 owns the count, so this table does not restate it. Installing proves it launches. Accepting behavior proves it does the thing. Neither one has judged the frame, and without the middle rung a ladder walks straight past the only question this pattern is about.
+
+### Six receipts, six different claims
+
+"Done" is six separate acceptances wearing one word. Each has its own oracle, and none implies any other:
+
+| # | Acceptance | The claim it settles |
+|---|---|---|
+| 1 | Standards-compliant | It meets the external standard it is measured against — accessibility checks, platform guidelines, lint. |
+| 2 | Behaviorally correct | It does the thing. Tests pass against the required behavior, not the implemented one. |
+| 3 | Design-system-conformant | It uses the system's tokens, components, and rules. Completeness, per the 15 dimensions in § 8. |
+| 4 | Visually reviewed (cold) | Someone who did not build it judged the rendered frame on sight and accepted it (§ 3a). |
+| 5 | Direction-conformant | What shipped is the direction a human selected (§ 3b). |
+| 6 | Accepted in real use | A person did their actual job with it and it held. |
+
+**They collapse in one direction only: never.** A screen can be 1, 2 and 3 and fail 4 — that combination is what Minder shipped. It can be 4 and fail 5, or 5 and fail 4, which is why § 3 keeps those two reviews apart. And 1 through 5 together are not 6: every earlier receipt is a proxy for someone doing the work, and only the last one is the work.
+
+Record them separately. A closeout that says "done" has thrown away which of the six it earned, and the next reader cannot recover it.
+
+### "Best in class" needs comparative task evidence
+
+A claim that something is best-in-class, optimal, or better than a named alternative is a **comparative** claim, and it needs comparative evidence: the same task, attempted on the live comparable, captured the way § 7 requires.
+
+Passing accessibility checks is receipt 1 and says nothing about the comparison. Resembling the comparables is not a receipt at all — naming category leaders as references asks the surface to look like the category, which is the opposite of a direction (§ 8, design-qa). Without the task evidence, downgrade the word rather than keep it.
+
+### An acceptance is current, not permanent
+
+A recorded acceptance holds until a real encounter contradicts it. It is not permanent authority, and superseding it is normal rather than a failure of the earlier gate.
+
+Film-room's ADR-0042 is the worked example (§ 8). A prototype direction had been approved and recorded; later operator encounters found the composition wrong in real use; the new decision superseded the layout and the visual authority **while explicitly preserving** the interaction behavior, source safety, and stored operator decisions that still worked. On the implementation left behind, its own words: "Preservation is not approval to continue that composition."
+
+Two rules follow. **Supersede narrowly** — name which claims the encounter overturns and which survive, because a supersession that takes everything discards working behavior along with the bad layout. **Preserving is not endorsing** — keeping superseded work for reference is not permission to keep building on it, and the record has to say which it is.
 
 ## 6. Tests assert semantics; a test that pins unreviewed copy is a lock
 
@@ -283,6 +352,10 @@ Marketing captures are the vendor's best frame under the vendor's chosen conditi
 | [`org-reviewer-authoring.md`](org-reviewer-authoring.md) | The reviewer shipped with this pattern follows the ADR-0002 `review()` contract; a consumer that wants a stricter screen gate writes its own reviewer under a different name rather than shadowing this one. |
 | [`methodology-amendments-convention.md`](methodology-amendments-convention.md) | How a consumer files what it learns running this pattern. |
 | [`global-rules/audit-discipline.md`](global-rules/audit-discipline.md) | Extended, not contradicted. Audit discipline says resolve the canonical source. § 1 says which source is canonical for a rendered surface. |
+| film-room `decisions/0042-product-and-desktop-review-rebaseline.md` Decision 2 | **The role boundary, stated by a consumer.** "Blueprint remains the source of governance and evidence discipline. It is not the art director or the source of human product approval." That is the ceiling on everything in this pattern: it sequences the work and demands the receipts. It does not choose the direction, and a gate passing is not a person approving. Its context is the supersession rule in § 5. |
+| forge-site `playbook/3.5-design-brief.md` § Purpose | **The same gap on a marketing site.** "Sites pass token review and still read as boilerplate, because token decisions (forge-brand) don't constrain page composition, signature visual moves, imagery direction, motion, or iconography." Different stack, different artifact, identical shape: a conformance check that passes while the composition nobody specified gets made implicitly at build time. |
+| design-qa `design-qa-program.RECOVERED.md:103` § The missing layer: art direction | **Why a defect scanner needs a direction above it.** That program maps five layers of design intent and finds layer 4, art direction for a surface, empty — which is what made several of its own questions undecidable. It notes that naming category leaders as references "is arguably the opposite of art direction — it asks the surface to look like the category." design-qa enforces an approved direction; it never chooses one. Neither does this gate. |
+| `docs/case-studies/design-system-audit.md` § The 15 dimensions | **Completeness is not coherence.** Those fifteen dimensions prove a design system is complete — color, type, icons, spacing, components, accessibility, responsiveness, data formatting. Every one can be specified and applied consistently while the screen is still incoherent, characterless, or undesirable. A completeness audit and a judged review answer different questions, and a green audit is not evidence for the second. |
 | film-room `decisions/0010-desktop-design-pass.md` item 5 | **The internal reference implementation of the `rethink` path.** It reads: "Human gates run for real. G1 = operator picks from 2–3 developed design directions served at `/design` on live APIs (the mock-pass pattern)." Two things transfer. The directions are *developed* and served *live*, not sketched — the operator judges the thing rather than a picture of it. And the pick is a human gate that runs, which is what § 2c means by naming the human who chose. |
 | `prototype-smoke-runner.md:36` | **The methodology's own admission of this gap.** It captures a screenshot per page and then says: "Their existence is the artifact; the agent doesn't visually inspect them but operators can." That is the honest ceiling of a smoke runner — and "operators can" was the whole gate, offered without a step that makes anyone do it. This pattern is that step. The smoke runner keeps producing the captures; the cold review is what turns them from an artifact into a verdict. |
 | `render-judged` agent (`~/.claude/agents/render-judged.md`) | The judged tier already exists for **assets** — "nothing mechanical catches a wrong answer here," so a person judges appearance and wording. This pattern extends that same tier from an asset to a screen. Its rule that "a second copy of a gate is how a gate goes stale" is why the reviewer `.md` points here instead of restating the protocol. |

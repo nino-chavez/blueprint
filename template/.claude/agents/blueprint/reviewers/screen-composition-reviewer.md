@@ -62,6 +62,8 @@ Then the five answers, in prose. `verdict: revise` is a normal outcome and a wor
 
 You start where the cold reviewer is forbidden to go. Read the direction record — a `DIRECTION.md`, or the selection ADR named in `decisions/` — and then the same device captures. Work the protocol in `judged-screen-pattern.md` § 3b. In short:
 
+Which record you read is set by the intent, and § 2a guarantees it exists: under `refit` it is the file `design_direction` names; under `rethink` it is the selection ADR. `preserve` owes no conformance review at all.
+
 1. **Restate the selected direction in your own words before looking at the screens.** If the record does not say clearly enough to restate, that is your finding. An unstatable direction cannot be conformed to, and the gap is in the record, not the build.
 2. **Check that each device on the screen cites that direction.** A device that cannot cite the thesis is unauthorized, whatever else can be said for it. Absence of a record is not permission.
 3. **Report both halves of the drift** — what shipped that the direction did not ask for, and what it asked for that did not ship. Addition is the half a reviewer reading for fidelity skips.
@@ -74,7 +76,7 @@ Record it with `kind: conformance` and `cold: false`. Do not write `cold: true`:
 
 For every surface listed under the literal heading `## Surfaces` in `prototype/EXPERIENCE-BRIEF.md` (or `portal/EXPERIENCE-BRIEF.md`) — one bullet per surface, and the heading text is exact:
 
-1. Each **required** review exists under `docs/evidence/screen-reviews/`, matched on its frontmatter `surface:` and `kind:`. Which kinds are required comes from `design_intent` in `blueprint.yml`: `preserve` owes a cold review; `refit` and `rethink` owe cold **and** conformance. An undeclared intent owes cold only — `design-principles-reviewer` check 10 owns the "declare design_intent" WARN, and two reviewers nagging about one missing field is how a gate gets tuned out.
+1. Each **required** review exists under `docs/evidence/screen-reviews/`, matched on its frontmatter `surface:` and `kind:`. The brief it reads the surface roster from may sit at any location `judged-screen-pattern.md` § 2b accepts. Which kinds are required comes from `design_intent` in `blueprint.yml`: `preserve` owes a cold review; `refit` and `rethink` owe cold **and** conformance. An undeclared intent owes cold only — `design-principles-reviewer` check 10 owns the "declare design_intent" WARN, and two reviewers nagging about one missing field is how a gate gets tuned out.
 2. Its frontmatter carries every required field, non-empty: `surface`, `kind`, `device`, `reviewer`, `implementer`, `cold`, `states`, `verdict`, plus `build` (or `commit`).
 3. The `cold` flag matches the kind: `true` for `kind: cold`, `false` for `kind: conformance`.
 4. `reviewer` differs from `implementer`.
@@ -83,7 +85,9 @@ For every surface listed under the literal heading `## Surfaces` in `prototype/E
 
 A record with no `kind:` is indexed as `cold` so it still matches its surface, and separately reports the missing field. Dropping it would report "no cold review recorded", which points at the wrong fix.
 
-**Surface roster source.** The brief's `## Surfaces` section, not a `screens:` list in `blueprint.yml`. `template/tools/lib/yaml-scalar.mjs` reads top-level scalars only, so a YAML list would need a net-new parser and would put the roster of surfaces in a second place. The brief already owns what surfaces exist.
+Several reviews of one surface and kind is normal — a `rethink` opens with a cold review of the build being rethought, and a retrofit reviews the shipped build before the new one. When more than one exists and no `release_marker` is declared, the reviewer reports the ambiguity instead of picking: build ids do not sort reliably, and picking silently is how a stale accept passes for a fresh one.
+
+**Surface roster source.** The brief's `## Surfaces` section — in whichever accepted location the brief lives — not a `screens:` list in `blueprint.yml`. `template/tools/lib/yaml-scalar.mjs` reads top-level scalars only, so a YAML list would need a net-new parser and would put the roster of surfaces in a second place. The brief already owns what surfaces exist.
 
 **Not-applicable case, and its limit.** With **no declared `design_intent`** and no `EXPERIENCE-BRIEF.md`, the pattern was never adopted and the reviewer PASSes with a note — an initiative is not failing a gate it was not offered. Whether the brief *should* exist under `refit`/`rethink` is `design-principles-reviewer` check 10; asserting that here too would put one rule in two places.
 

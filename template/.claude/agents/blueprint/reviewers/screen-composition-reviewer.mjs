@@ -154,6 +154,12 @@ const KINDS = ['cold', 'conformance'];
 // owns the "declare design_intent" WARN, and two reviewers nagging about one
 // missing field is how a gate gets tuned out.
 const REQUIRED_KINDS_BY_INTENT = { preserve: ['cold'], refit: ['cold', 'conformance'], rethink: ['cold', 'conformance'] };
+// Accepted brief locations — judged-screen-pattern.md § 2b owns this set.
+const BRIEF_PATHS = [
+  ['prototype', 'EXPERIENCE-BRIEF.md'],
+  ['portal', 'EXPERIENCE-BRIEF.md'],
+  ['docs', 'design', 'experience-brief.md'],
+];
 
 async function listReviewFiles(dir) {
   try {
@@ -195,12 +201,9 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
   // Absent brief → not applicable. Whether the brief SHOULD exist is
   // design-principles-reviewer check 10; duplicating that finding here would put
   // one rule in two places.
-  const briefCandidates = [
-    path.join(artifactsRoot, 'prototype', 'EXPERIENCE-BRIEF.md'),
-    path.join(artifactsRoot, 'portal', 'EXPERIENCE-BRIEF.md'),
-  ];
   let briefPath = null;
-  for (const p of briefCandidates) {
+  for (const parts of BRIEF_PATHS) {
+    const p = path.join(artifactsRoot, ...parts);
     if (await exists(p)) {
       briefPath = p;
       break;
@@ -224,7 +227,7 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
     }
     findings.push({
       severity: sev,
-      location: 'prototype/EXPERIENCE-BRIEF.md (or portal/EXPERIENCE-BRIEF.md)',
+      location: 'prototype/EXPERIENCE-BRIEF.md (or portal/, or docs/design/experience-brief.md)',
       message: `design_intent is '${intentLabel}' but there is no EXPERIENCE-BRIEF.md, so no surface roster exists — nothing declares which surfaces need a cold review, and this gate would pass a build no one judged.`,
       remediation:
         'Add a `## Surfaces` list naming one surface per bullet. Under `preserve` that section can be the whole brief; `refit` and `rethink` owe the rest of it too (design-principles-reviewer check 10).',
@@ -253,6 +256,7 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
   // Keyed by surface AND kind — one surface can owe two reviews asking different
   // questions, and a conformance pass must never satisfy the cold requirement.
   const byKey = new Map();
+  const collisions = new Map();
   const malformed = [];
   const keyOf = (surface, kind) => `${String(surface).toLowerCase()}::${kind}`;
   for (const f of files) {
@@ -274,11 +278,35 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
     // sorts after today-12), and with no marker declared nothing else catches a
     // stale pick, so the marker is what makes this deterministic.
     const prev = byKey.get(key);
-    if (prev && releaseMarker) {
-      const recorded = (e) => (e.fm.build !== undefined && String(e.fm.build).trim() !== '' ? e.fm.build : e.fm.commit);
-      if (markerMatches(releaseMarker, recorded(prev)) && !markerMatches(releaseMarker, recorded({ fm }))) continue;
+    if (prev) {
+      collisions.set(key, (collisions.get(key) || 1) + 1);
+      if (releaseMarker) {
+        const recorded = (e) => (e.fm.build !== undefined && String(e.fm.build).trim() !== '' ? e.fm.build : e.fm.commit);
+        if (markerMatches(releaseMarker, recorded(prev)) && !markerMatches(releaseMarker, recorded({ fm }))) continue;
+      }
     }
     byKey.set(key, { file: f, fm, kind });
+  }
+
+  // A surface accumulates several cold reviews over its life — a `rethink`
+  // starts with one against the build being rethought (§ 2c step 1), and a
+  // retrofit reviews the shipped build before the new one (§ 9). That is
+  // correct. Ambiguity about WHICH ONE the gate is reading is not: without a
+  // release_marker the last file in readdir order wins, and build ids do not
+  // sort reliably. Report it rather than pick, because picking silently is how
+  // a stale accept passes for a fresh one.
+  if (!releaseMarker) {
+    for (const [key, n] of collisions) {
+      const [surface, kind] = key.split('::');
+      findings.push({
+        severity: sev,
+        location: REVIEW_DIR,
+        message: `Surface '${surface}' has ${n} '${kind}' reviews recorded and blueprint.yml declares no release_marker — nothing identifies which one is current, so this gate would read whichever sorts last.`,
+        remediation:
+          'Declare release_marker in blueprint.yml (a build number or commit sha). Several reviews per surface is expected across builds; ambiguity about which is current is not.',
+        reference: `${PATTERN_REF} § 2c`,
+      });
+    }
   }
   for (const f of malformed) {
     findings.push({
@@ -586,6 +614,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await fs.rm(dir, { recursive: true, force: true });
   }
 
+  // Fixture 2e — the docs/design/ brief location is accepted (§ 2b).
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: preserve\n');
+    await writeFile(dir, 'docs/design/experience-brief.md', BRIEF);
+    await writeFile(dir, 'docs/evidence/screen-reviews/today-12-cold.md', goodReview());
+    await writeFile(dir, 'docs/evidence/screen-reviews/settings-12-cold.md', goodReview({ surface: 'settings' }));
+    const res = await review({ targetDir: dir });
+    check('docs/design/experience-brief.md → PASS', res.status === 'PASS');
+    check('summary names the docs/design brief', /docs\/design\/experience-brief\.md/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
   // Fixture 2d — an unrecognized intent reports the SAME label
   // design-principles-reviewer reports, so one file never gets two words.
   {
@@ -713,6 +754,23 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const res = await review({ targetDir: dir });
     check('marker-matching review beats readdir order → PASS', res.status === 'PASS');
     check('summary reports current=2/2', /current=2\/2/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 7c — two cold reviews for one surface and NO release_marker: the
+  // gate cannot tell which is current, so it says so instead of picking. This
+  // is the § 2c step 1 / § 9 case, where an older cold review legitimately
+  // coexists with the current one.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', BRIEF);
+    await writeFile(dir, 'docs/evidence/screen-reviews/today-12-cold.md', goodReview({ build: '12' }));
+    await writeFile(dir, 'docs/evidence/screen-reviews/today-9-cold.md', goodReview({ build: '9' }));
+    await writeFile(dir, 'docs/evidence/screen-reviews/settings-12-cold.md', goodReview({ surface: 'settings' }));
+    const res = await review({ targetDir: dir });
+    check('two cold reviews + no marker → WARN', res.status === 'WARN');
+    check('ambiguity finding names the count', res.findings.some((f) => /has 2 'cold' reviews recorded and blueprint\.yml declares no release_marker/.test(f.message)));
     await fs.rm(dir, { recursive: true, force: true });
   }
 
