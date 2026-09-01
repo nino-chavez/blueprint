@@ -34,6 +34,7 @@ A 200 response from curl is not enough. A green `@smoke` Playwright suite is not
    At minimum: the front door (`index.html`), every page in `_meta/index.json` (portal shell) or `prototypes/<slice>/pages/` (prototype shell), and any page modified since the last smoke run.
 
    Screenshots land in `.smoke-screenshots/` (gitignored). Their existence is the artifact; the agent doesn't visually inspect them but operators can.
+   Judging them is a separate gate: `screen-composition-reviewer` (judged tier, cold reviewer, `docs/methodology/judged-screen-pattern.md` § 3). This runner never becomes that gate.
 
 6. **JS class output ↔ CSS coverage check (per invariant I-5).** Walk the JS shell files in `portal/` or `prototype/` (specifically `proto-nav.js`, `_portal-shell.js`, `chat-widget.js`, `proto-annotate.js`, any other shell modules). Extract class-name string literals. Diff against CSS selectors in the shipping stylesheet (`shared.css` or equivalent). BLOCK on any JS-emitted class without a matching CSS rule unless explicitly allow-listed.
 
