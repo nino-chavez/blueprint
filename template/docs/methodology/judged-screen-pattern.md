@@ -2,13 +2,26 @@
 
 **Status: promotion candidate (Minder native iOS 2026-09-01; design-qa web program 2026-07; blog 11-variant portal 2026-05-23). Pattern promotion-ready; the `.mjs` reviewer's mechanical half ships now, the judged half is a protocol.**
 
+**Promotion criterion:** the executable gate stays WARN by default until a second product has run it end to end — declared a design intent, authored the brief, and recorded both reviews. One product's experience is a hypothesis about what the gate should block. A gate promoted to BLOCK on one instance inherits that instance's blind spots, which is the failure `ui-rendering-contract-tier.md` § "Authoring discipline" names. A consumer that wants blocking behavior before then opts in per initiative with `screen_review_policy: strict`.
+
 Three consumers reached the same failure from different stacks. This pattern is the shared fix.
 
-## 1. Every gate verifies text or source; for a screen the canonical source is the rendered frame
+## 1. Authority belongs to the claim, not to the artifact — and no gate held the appearance claim
 
 Blueprint's gates read artifacts. A reviewer greps a spec, resolves a citation, counts rules in `DESIGN.md`, or confirms a test passed. Each one is honest about what it reads. None of them look at the screen.
 
-That is a gap, not an oversight, and it has a precise shape. `global-rules/audit-discipline.md` tells a reviewer to "grep the actual file, read the actual code." For a rendered surface that instruction resolves to the wrong artifact. Source is evidence of **intent**. The screen is the **result**. A reviewer can verify every rule in the source, correctly, and still be looking at something other than what the user sees.
+The fix is not "UI claims are settled by screenshots." That overcorrects, and it is wrong about three of the four claims a screen makes. **Each claim has its own canonical source:**
+
+| The claim | Settled by | Not by |
+|---|---|---|
+| Appearance and composition — what it looks like, what competes, what the eye finds | The rendered frame on the target device | Source, tests, a design file, a simulator capture |
+| Interaction — what happens when the user acts | Observed behavior on the target device | A screenshot, or the handler's source |
+| Accessibility — whether it is reachable and legible | The accessibility tree, plus observed behavior with the assistive technology | A screenshot, or an ARIA attribute in source |
+| Implementation — what the code does, and whether the rule was followed | Source and tests | A screenshot |
+
+A screenshot is evidence for exactly one row. Reading a static frame as proof that a control works, or that a screen reader can reach it, is the same authority bleed in the other direction — and it is easier to commit, because a capture feels more like ground truth than a grep does.
+
+The gap this pattern closes is the first row, which no gate held. `global-rules/audit-discipline.md` tells a reviewer to "grep the actual file, read the actual code." For an appearance claim that resolves to the wrong artifact. Source is evidence of **intent**. The frame is the **result**. A reviewer can verify every rule in the source, correctly, and still be describing a screen other than the one that shipped.
 
 Minder — a greenfield native-iOS consumer — shipped a Today screen that a zero-context reply beat from a single screenshot. Every gate was green. The artifacts say why:
 
@@ -31,11 +44,31 @@ This is not a native-iOS problem, and it is not one consumer's taste.
 
 That is the breadth pass `ui-rendering-contract-tier.md` § "Authoring discipline" requires before a single-slice finding becomes a template. Three consumers, three stacks, one gap.
 
-## 2. Stage 2 gains two artifacts: an experience brief and three divergent concepts
+## 2. Stage 2 declares a design intent, and the intent decides what Stage 2 owes
 
-`confident-preview-rule.md` points variant deliberation upstream to Stage 2. This section is where that pointer now lands.
+`confident-preview-rule.md` points variant deliberation upstream to Stage 2. This section is where that pointer now lands — but not for every change, because most changes do not deserve a concept exercise.
 
-### 2a. The experience brief states the user's situation before anyone draws
+### 2a. `design_intent` says how much design work this change is
+
+Declare it as a top-level scalar in `blueprint.yml`:
+
+```yaml
+design_intent: refit   # preserve | refit | rethink
+```
+
+| Intent | Means | Stage 2 owes |
+|---|---|---|
+| `preserve` | The existing approved direction stands. This change works inside it. | A pointer to the approved direction record — `design_direction:` in `blueprint.yml`, naming a `DIRECTION.md` or an ADR that exists, plus a surface roster. **No brief beyond that roster, no concepts.** |
+| `refit` | Change the presentation; the named behavior stays. | The experience brief (§ 2b), including the object / action / state matrix. **No concepts.** |
+| `rethink` | The direction itself is the question. | The brief, **three divergent whole-screen concepts** (§ 2c), and a selection ADR that names the human who chose. |
+
+**Why this field exists.** Without it the pattern fails in one of two directions, and both were live. Skip divergence entirely and Stage 2 has nowhere to put it, which is how eleven variants surfaced in Stage 3 on the blog initiative. Mandate three concepts for every change and a one-line copy fix owes a design exercise, which is the ceremony that gets a methodology ignored rather than followed. The intent is the operator's declaration of which situation this is, made once, in a place both reviewers read.
+
+**Undeclared is not `preserve`.** A missing `design_intent` reads as undeclared and WARNs. Defaulting silently to the cheapest intent would let every change opt out of design work by saying nothing, which is the behavior the field exists to make visible.
+
+**Every intent owes the surface roster**, including `preserve`. The roster is the `## Surfaces` list in `EXPERIENCE-BRIEF.md` (§ 2b), and it is the only part of the brief `preserve` owes — a `preserve` brief may be that one section and nothing else. Without it nothing declares which surfaces exist, and the cold review § 3 requires under every intent has no roster to be required against. Declaring an intent is what adopts the pattern; from that point a missing roster is a gap the reviewer reports. An initiative with no declared intent has not adopted the pattern, and the reviewer stays quiet.
+
+### 2b. The experience brief states the user's situation before anyone draws
 
 Write it at `prototype/EXPERIENCE-BRIEF.md` (or `portal/EXPERIENCE-BRIEF.md`, matching whichever shell the initiative uses). It is authored before the first concept and it is the document the screen review reads the job questions from.
 
@@ -68,7 +101,9 @@ The matrix is what prevents "Mark not done." A calendar event owned by an extern
 
 **Relationship to `DIRECTION.md`.** The brief is the upstream half — it says what the surface is for, before anything is drawn. A `DIRECTION.md` ledger is the downstream record of the devices that shipped and which part of the thesis each one cites. A consumer with both writes the brief first and keeps the ledger current; a consumer with neither starts with the brief.
 
-### 2b. Three divergent concepts, one ADR, then Stage 3
+### 2c. Three divergent concepts and a human selection — `rethink` only
+
+This subsection applies when `design_intent: rethink`. Under `refit` or `preserve` it does not.
 
 Author three whole-screen concepts. Not three treatments of one layout — three takes on how the job gets done. Render each on the same representative states so they are comparable.
 
@@ -87,27 +122,64 @@ The canonical state set:
 
 A project prunes this list, and records the reason next to the pruned state. A surface with no external source has no "changed by source" state, and saying so is the work. Pruning silently is not.
 
-Converge with an ADR in `decisions/` before Stage 3 begins. The ADR names the chosen concept, names the rejected ones, and says what the choice buys. This is exactly the artifact `confident-preview-rule.md` § "When deliberation is appropriate" already asks for; the concepts are the deliberation it presumed had happened somewhere.
+Converge with an ADR in `decisions/` before Stage 3 begins. The ADR names the chosen concept, names the rejected ones, says what the choice buys, and **names the human who chose**. A selection an agent made for itself is not a selection; it is the agent's first draft with a decision record attached. This is the artifact `confident-preview-rule.md` § "When deliberation is appropriate" already asks for — the concepts are the deliberation it presumed had happened somewhere.
+
+The internal reference implementation is film-room's ADR-0010 item 5 (§ 8), which serves developed directions at a route on live data and has the operator pick. Serving them live rather than as static comps is what makes the choice real: the operator judges the thing, not a picture of it.
 
 **What it means:** one confident preview reaches stakeholders, and the convergence that produced it is now a real Stage 2 activity rather than an assumption.
 
-## 3. The gate is a cold review of device captures, and nothing else satisfies it
+### 2d. The order of work
 
-The judged screen review is the gate this pattern adds. It is judged, not mechanical, and it is deliberately outside the oracle model the five DoD gates use.
+Each step's output is the next step's input, and the two reviews sit at the end because neither can run before there is something rendered to judge.
 
-### Who reviews
+```
+product truth        what is actually true of the domain and the data
+  ↓
+design_intent        preserve | refit | rethink          (§ 2a)
+  ↓
+experience brief     the job, the surfaces, the object / action / state matrix   (§ 2b, refit + rethink)
+  ↓
+concepts + human selection ADR                            (§ 2c, rethink only)
+  ↓
+DESIGN.md + implementation
+  ↓
+blind cold review    does this screen work on sight?      (§ 3a)
+  ↓
+direction-conformance review   did we build the selected idea?   (§ 3b)
+  ↓
+physical behavior acceptance                              (§ 5)
+```
+
+## 3. The gate is two reviews asking different questions, and neither proves the other
+
+The judged screen review is the gate this pattern adds. It is judged, not mechanical, and it is deliberately outside the oracle model the five DoD gates use. It comes in two kinds:
+
+| Kind | Asks | The reviewer reads |
+|---|---|---|
+| **Blind cold** (`kind: cold`) | Does this screen work on sight? | The screens. The brief's five job questions. Nothing else. |
+| **Direction conformance** (`kind: conformance`) | Did we build the selected idea? | The direction record and the selection ADR, then the screens. |
+
+**Neither substitutes for the other, in either direction.** A screen can execute the chosen direction faithfully and still be hard to read — conformance passes, cold fails. A screen can read beautifully and be a different product than the one selected — cold passes, conformance fails. Collapsing them into one review loses whichever question the reviewer was not holding, and a reviewer holding both at once is not cold, because the direction record is exactly the context the cold review exists to exclude.
+
+They also cannot be the same pass by construction: the cold reviewer is disqualified from the conformance review the moment they read the direction record. Run cold first. A cold review that happens after the conformance read is not recoverable.
+
+**When each is required.** The cold review is required for every surface, under every intent — a `preserve` change still ships a frame nobody judged. The conformance review is additionally required under `refit` and `rethink`, because those are the intents where a selected direction exists to conform to. Under `preserve` the direction was approved earlier and the pointer in `blueprint.yml` is the record.
+
+### 3a. The blind cold review
+
+#### Who reviews
 
 A reviewer who has **not** read `DESIGN.md`, the PRD, the experience brief's rationale, or the implementation. Cold. They may read the brief's five job questions — that is the standard they judge against — and nothing else.
 
 The reviewer is never the implementer. It may be a second model, a second session, or a person. The requirement is only that the reviewer arrives without the context that makes a weak screen look justified. Context is what the person shipping already has, and it is precisely what stops them from seeing the frame.
 
-### What is reviewed
+#### What is reviewed
 
 Device captures, one per representative state. A real device for native. A real viewport for web. Not a simulator screenshot passed off as a device capture, not a component in isolation, not a design file.
 
 Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per state named for that state. Keeping them next to the review is what lets a later reader check the verdict against what was actually judged; a review pointing at captures that have since moved or been regenerated is a claim with no evidence behind it.
 
-### How it is judged
+#### How it is judged
 
 The reviewer answers, in order:
 
@@ -117,18 +189,19 @@ The reviewer answers, in order:
 4. **What can be removed, combined, demoted, or disclosed?** Every element gets tested against these four, and "keep as is" is a verdict that has to be earned.
 5. **Classify every element** as one of: correct, usable but weak, appealing but wrong, unnecessary, defect. The middle three are the ones a passing test suite cannot distinguish from correct.
 
-### What is written down
+#### What is written down
 
 A file at `docs/evidence/screen-reviews/<surface>-<build>.md` with this frontmatter:
 
 ```yaml
 ---
 surface: today                    # the surface reviewed
+kind: cold                        # cold | conformance
 build: 12                         # build number, or a commit sha
 device: iPhone 15 Pro, iOS 18.2   # real device / real viewport
 reviewer: <who judged>            # a person, model, or session id
 implementer: <who built it>       # must differ from reviewer
-cold: true                        # reviewer had not read spec, brief rationale, or source
+cold: true                        # true for kind: cold, false for kind: conformance
 states: [active, upcoming, empty, failure, largest-text]
 verdict: accept                   # accept | revise
 ---
@@ -136,13 +209,29 @@ verdict: accept                   # accept | revise
 
 Then the answers to the five questions above, in prose.
 
+Name the file `<surface>-<build>-<kind>.md`, so the two reviews of one build do not collide. The frontmatter is what the mechanical half matches on; the filename is a convenience for the reader.
+
 **Passing tests and source verification never satisfy this item.** A green suite says the code does what the code was told to do. A source check says the rules were followed. Neither has looked at the frame. When a review is recorded as `accept` on the strength of either one, the gate has been skipped, not passed.
+
+### 3b. The direction-conformance review
+
+This reviewer starts where the cold reviewer is forbidden to go. Read the direction record — a `DIRECTION.md`, or the selection ADR from § 2c — and then the same device captures.
+
+One question, in three parts:
+
+1. **Which direction was selected, and what does it claim?** State it in your own words before looking at the screens. If the record does not say clearly enough to restate, that is the finding: an unstatable direction cannot be conformed to, and the gap is in the record, not the build.
+2. **Does each device on the screen cite that direction?** This is `DIRECTION.md`'s ledger discipline: a device that cannot cite the thesis is unauthorized, whatever else can be said for it. Absence of a record is not permission.
+3. **What shipped that the direction did not ask for, and what did it ask for that did not ship?** Both halves. Drift shows up as addition more often than omission, and addition is the half a conformance reviewer skips when they are reading for fidelity rather than for excess.
+
+Record it the same way, with `kind: conformance` and `cold: false`. A conformance review claiming `cold: true` has misunderstood its job — it read the direction record, which is the point.
+
+**A conformance pass is not an appearance verdict.** "It matches the ADR" says the team built what it chose. Whether what it chose reads well on the device is the cold review's question, and the cold review is the one that gets skipped when a conformance pass is in hand.
 
 ### How it relates to the DoD ladder
 
 `dod-verification-ladder-pattern.md` builds five gates on mechanically answerable oracles — a registry parse, a presence check, a recorded test result. Its honesty comes from every gate resolving to something a machine can check.
 
-This gate has no such oracle, and pretending otherwise would be the failure the ladder exists to prevent, inverted. So it sits **outside** the ladder rather than as a sixth gate. What is mechanical here is only the **record**: does a review file exist for this surface, is it cold, is the reviewer someone other than the implementer, does it accept, is it current with the build. That is what `screen-composition-reviewer.mjs` checks. The judgment inside the file is not machine-checkable and the reviewer does not pretend to check it.
+This gate has no such oracle, and pretending otherwise would be the failure the ladder exists to prevent, inverted. So it sits **outside** the ladder rather than as a sixth gate. What is mechanical here is only the **record**: does each required review exist for this surface, does its `kind` carry the matching `cold` value, is the reviewer someone other than the implementer, does it accept, is it current with the build. That is what `screen-composition-reviewer.mjs` checks. The judgment inside the file is not machine-checkable and the reviewer does not pretend to check it.
 
 ## 4. Closeout asks what came off, not only what went on
 
@@ -164,7 +253,9 @@ A consumer that runs a physical-evidence ladder inserts one rung:
 | **new** | **the rendered whole has been judged by someone who did not build it** |
 | … | the artifact's behavior is accepted |
 
-A consumer running a physical-evidence ladder already has names for the outer two rungs; slot the new one between them under whatever those names are. Those are three different claims. Installing proves it launches. Accepting behavior proves it does the thing. Neither one has judged the frame, and without the middle rung a ladder walks straight past the only question this pattern is about.
+A consumer running a physical-evidence ladder already has names for the outer two rungs; slot the new one between them under whatever those names are. Those are three different claims.
+
+**Which reviews satisfy the new rung is set by `design_intent` — see § 3.** Under `preserve` it is the blind cold review; under `refit` and `rethink` it is cold and then conformance, in that order. The rung is one step on the ladder and up to two reviews inside it; § 3 owns the count, so this table does not restate it. Installing proves it launches. Accepting behavior proves it does the thing. Neither one has judged the frame, and without the middle rung a ladder walks straight past the only question this pattern is about.
 
 ## 6. Tests assert semantics; a test that pins unreviewed copy is a lock
 
@@ -192,6 +283,8 @@ Marketing captures are the vendor's best frame under the vendor's chosen conditi
 | [`org-reviewer-authoring.md`](org-reviewer-authoring.md) | The reviewer shipped with this pattern follows the ADR-0002 `review()` contract; a consumer that wants a stricter screen gate writes its own reviewer under a different name rather than shadowing this one. |
 | [`methodology-amendments-convention.md`](methodology-amendments-convention.md) | How a consumer files what it learns running this pattern. |
 | [`global-rules/audit-discipline.md`](global-rules/audit-discipline.md) | Extended, not contradicted. Audit discipline says resolve the canonical source. § 1 says which source is canonical for a rendered surface. |
+| film-room `decisions/0010-desktop-design-pass.md` item 5 | **The internal reference implementation of the `rethink` path.** It reads: "Human gates run for real. G1 = operator picks from 2–3 developed design directions served at `/design` on live APIs (the mock-pass pattern)." Two things transfer. The directions are *developed* and served *live*, not sketched — the operator judges the thing rather than a picture of it. And the pick is a human gate that runs, which is what § 2c means by naming the human who chose. |
+| `prototype-smoke-runner.md:36` | **The methodology's own admission of this gap.** It captures a screenshot per page and then says: "Their existence is the artifact; the agent doesn't visually inspect them but operators can." That is the honest ceiling of a smoke runner — and "operators can" was the whole gate, offered without a step that makes anyone do it. This pattern is that step. The smoke runner keeps producing the captures; the cold review is what turns them from an artifact into a verdict. |
 | `render-judged` agent (`~/.claude/agents/render-judged.md`) | The judged tier already exists for **assets** — "nothing mechanical catches a wrong answer here," so a person judges appearance and wording. This pattern extends that same tier from an asset to a screen. Its rule that "a second copy of a gate is how a gate goes stale" is why the reviewer `.md` points here instead of restating the protocol. |
 
 ## 9. Retrofitting a consumer that already shipped
@@ -199,8 +292,9 @@ Marketing captures are the vendor's best frame under the vendor's chosen conditi
 Minder is the worked example. The order matters — the cold review comes before the concepts, because reviewing what shipped tells you what the concepts have to beat.
 
 1. **File the amendment entry.** Per `methodology-amendments-convention.md`, so the consumer's adoption is on the record.
-2. **Write the experience brief and the object/action/state matrix** for the surface, against what shipped. The matrix usually finds the interaction defects on its own — an action with no owner, a state with no reverse.
-3. **Run the cold screen review on the shipped build.** A reviewer who has not read the code, on real device captures, across the representative states. Record it under `docs/evidence/screen-reviews/`. Expect `verdict: revise`; that is the point of running it.
-4. **Author three divergent concepts** on the same states, informed by the review.
-5. **Write the selection ADR** in `decisions/`.
-6. **Implement the chosen concept — removing the obsolete UI and its tests rather than layering.** A retrofit that only adds reproduces the additive closeout that caused the problem. The tests pinning unreviewed copy come out in this step, not later.
+2. **Write the experience brief and the object / action / state matrix** for the surface, against what shipped. The matrix usually finds the interaction defects on its own — an action with no owner, a state with no reverse.
+3. **Run the blind cold review on the shipped build.** A reviewer who has not read the code, on real device captures, across the representative states. Record it with `kind: cold`. Expect `verdict: revise`; that is the point of running it.
+4. **Now declare `design_intent`,** informed by what the cold review found. This is the one step whose order differs from a greenfield run: greenfield declares the intent before there is anything to look at, and a retrofit has a shipped build to read first. A cold review that finds the composition sound and the presentation tired is a `refit`. One that finds the screen is answering the wrong question is a `rethink`. Declaring before reading is guessing.
+5. **If `rethink`: author the concepts and the selection ADR,** with a human making the pick. If `refit`: skip to the next step — the brief plus the cold review's findings are the direction.
+6. **Implement, removing the obsolete UI and its tests rather than layering.** A retrofit that only adds reproduces the additive closeout that caused the problem. The tests pinning unreviewed copy come out in this step, not later.
+7. **Run both reviews on the new build** — cold first, then conformance against the direction you selected.

@@ -32,7 +32,7 @@ Stage 2 (design-principles). This is the place to walk through variants, weigh t
 - `decisions/NNNN-*.md` ADRs — discrete decisions ("we chose X over Y because Z") with the rejected alternative named
 - Optional: `research/design-explorations/` — sketches, mockups, exploration artifacts kept for reference but never linked from the portal
 
-The two artifacts that give this deliberation somewhere to happen are the **experience brief** (`prototype/EXPERIENCE-BRIEF.md`) and the **divergent whole-screen concepts** converged by a selection ADR — see `judged-screen-pattern.md` § 2, which is where this rule's "upstream in Stage 2" now points.
+The artifacts that give this deliberation somewhere to happen are the **experience brief** (`prototype/EXPERIENCE-BRIEF.md`) and the **divergent whole-screen concepts** converged by a selection ADR — see `judged-screen-pattern.md` § 2, which is where this rule's "upstream in Stage 2" now points. That pattern gates them on a declared `design_intent`, so the concepts are owed when the direction itself is the question and not on every change.
 
 The portal links to the *decisions*, not the *explorations*. The strategy drawer (Pattern B) or the strategy panel (Pattern A) cites ADRs. The deliberation lives in those ADRs.
 

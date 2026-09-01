@@ -155,6 +155,10 @@ try {
   const aYml = await fs.readFile(path.join(aTarget, "blueprint.yml"), "utf8").catch(() => "");
   if (/^pilot_profile_policy: required$/m.test(aYml)) ok("Pattern A stamp writes pilot_profile_policy: required");
   else bad("Pattern A stamp writes pilot_profile_policy: required", "policy line missing from stamped blueprint.yml");
+  // Stamped EMPTY on purpose (judged-screen-pattern.md § 2a): an undeclared
+  // design_intent WARNs, and must never be read as `preserve`.
+  if (/^design_intent: ""/m.test(aYml)) ok("Pattern A stamp writes an empty design_intent");
+  else bad("Pattern A stamp writes an empty design_intent", "design_intent line missing from stamped blueprint.yml");
   if (await fs.stat(path.join(aTarget, "apps", "portal", "package.json")).catch(() => null)) ok("Pattern A portal shell present");
   else bad("Pattern A portal shell present", "apps/portal/package.json missing");
 

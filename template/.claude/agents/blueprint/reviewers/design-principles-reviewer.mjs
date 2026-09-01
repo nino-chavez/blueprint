@@ -116,6 +116,9 @@ const CONCEPT_DIRS = [
 // A selection ADR names the chosen concept AND the rejected ones.
 const ADR_CONCEPT_WORDS = ['concept', 'divergent'];
 const ADR_SELECTION_WORDS = ['chose', 'chosen', 'selected', 'rejected', 'alternatives considered'];
+// Attribution — who made the pick. This matches a LINE, never a human: an agent
+// can write "the operator chose". The finding text says exactly that.
+const ADR_ATTRIBUTION_WORDS = ['operator', 'selected by', 'chosen by', 'decided by', 'human'];
 
 // Variant-shaped page names — convergence violation if found in the planned page
 // list. Mirrors the regex set named in the .md (-a/-b/-c suffix, -variant-,
@@ -206,16 +209,16 @@ async function findSelectionAdr(decisionsDir) {
   try {
     files = (await fs.readdir(decisionsDir)).filter((f) => f.endsWith('.md'));
   } catch {
-    return null;
+    return { file: null, attributed: false };
   }
   for (const f of files.sort()) {
     const text = (await read(path.join(decisionsDir, f))) || '';
     const lower = text.toLowerCase();
     if (ADR_CONCEPT_WORDS.some((w) => lower.includes(w)) && ADR_SELECTION_WORDS.some((w) => lower.includes(w))) {
-      return f;
+      return { file: f, attributed: ADR_ATTRIBUTION_WORDS.some((w) => lower.includes(w)) };
     }
   }
-  return null;
+  return { file: null, attributed: false };
 }
 
 export default async function review({ targetDir, blueprintYml }) {
@@ -470,10 +473,39 @@ export default async function review({ targetDir, blueprintYml }) {
     }
   }
 
-  // ── 10. Experience brief + object/action/state matrix (judged-screen) ───────
-  // WARN, never BLOCK: judged-screen-pattern.md is a PROMOTION CANDIDATE, and a
-  // gate that blocks before its pattern is ratified punishes in-flight work for
-  // a discipline it has not been offered yet. Promote to BLOCK with the pattern.
+  // ── 10 + 11. Judged-screen artifacts, routed by design_intent ───────────────
+  // WARN, never BLOCK: judged-screen-pattern.md is a PROMOTION CANDIDATE whose
+  // gate stays WARN until a second product has run it end to end. Blocking on
+  // one instance inherits that instance's blind spots.
+  //
+  // The intent decides what Stage 2 owes, so a one-line copy fix does not owe a
+  // concept exercise and a genuine redesign cannot skip one:
+  //   preserve → design_direction points at a record that EXISTS; no brief.
+  //   refit    → brief + matrix; no concepts.
+  //   rethink  → brief + matrix + >=2 concepts + a selection ADR.
+  const designIntentRaw =
+    (blueprintYml && typeof blueprintYml.design_intent === 'string'
+      ? blueprintYml.design_intent
+      : readTopLevelYamlScalar((await read(path.join(artifactsRoot, 'blueprint.yml'))) || '', 'design_intent')) || '';
+  const designIntent = designIntentRaw.trim().toLowerCase();
+  const KNOWN_INTENTS = ['preserve', 'refit', 'rethink'];
+  const intentDeclared = KNOWN_INTENTS.includes(designIntent);
+  const designIntentState = intentDeclared ? designIntent : designIntentRaw.trim() ? `unknown (${designIntentRaw.trim()})` : 'undeclared';
+
+  if (!intentDeclared) {
+    findings.push({
+      severity: 'WARN',
+      location: 'blueprint.yml',
+      message: designIntentRaw.trim()
+        ? `design_intent is '${designIntentRaw.trim()}' — not one of preserve | refit | rethink. (WARN: judged-screen-pattern.md is a promotion candidate.)`
+        : 'No design_intent declared — nothing says how much design work this change is, so neither reviewer can tell a copy fix from a redesign. Undeclared is not `preserve`. (WARN: judged-screen-pattern.md is a promotion candidate.)',
+      remediation:
+        'Declare design_intent in blueprint.yml: preserve (approved direction stands; set design_direction), refit (change presentation, keep behavior; author the brief), or rethink (the direction is the question; brief + concepts + selection ADR).',
+      reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
+    });
+  }
+
+  // ── 10. preserve → a direction record that exists ───────────────────────────
   const briefCandidates = [
     path.join(artifactsRoot, 'prototype', 'EXPERIENCE-BRIEF.md'),
     path.join(artifactsRoot, 'portal', 'EXPERIENCE-BRIEF.md'),
@@ -486,55 +518,109 @@ export default async function review({ targetDir, blueprintYml }) {
     }
   }
   const briefText = briefPath ? (await read(briefPath)) || '' : '';
-  let experienceBriefState;
-  if (!briefPath) {
-    experienceBriefState = 'missing';
-    findings.push({
-      severity: 'WARN',
-      location: 'prototype/EXPERIENCE-BRIEF.md (or portal/EXPERIENCE-BRIEF.md)',
-      message:
-        'No EXPERIENCE-BRIEF.md — Stage 2 has no record of the user\'s situation and job, so the screen review has no standard to judge against. (WARN: judged-screen-pattern.md is a promotion candidate.)',
-      remediation:
-        'Author the experience brief before the first concept: the job in five questions, five character attributes, five anti-goals, a density target, hierarchy / content / motion / platform principles, and the object / action / state matrix.',
-      reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
-    });
-  } else {
-    const lowerBrief = briefText.toLowerCase();
-    const hasMatrix =
-      MATRIX_PHRASES.some((phrase) => lowerBrief.includes(phrase)) || MATRIX_TABLE_HEADER.test(briefText);
-    experienceBriefState = hasMatrix ? 'present' : 'present-no-matrix';
-    if (!hasMatrix) {
+
+  let experienceBriefState = briefPath ? 'present' : 'missing';
+  let directionState = 'n/a';
+
+  if (designIntent === 'preserve') {
+    const declared = (
+      readTopLevelYamlScalar((await read(path.join(artifactsRoot, 'blueprint.yml'))) || '', 'design_direction') || ''
+    ).trim();
+    if (!declared) {
+      directionState = 'missing';
       findings.push({
         severity: 'WARN',
-        location: path.relative(targetDir, briefPath),
+        location: 'blueprint.yml',
         message:
-          'EXPERIENCE-BRIEF.md has no object / action / state matrix — nothing records who owns each object the screen shows, so an interaction can be invented from a boolean at implementation time. (WARN: judged-screen-pattern.md is a promotion candidate.)',
+          'design_intent is `preserve` but no design_direction is declared — nothing names the approved direction this change claims to work inside. (WARN: judged-screen-pattern.md is a promotion candidate.)',
         remediation:
-          'Add the matrix: one row per object with owner, valid actions, states, and reverse action. Write the owner column first — an object owned by an external source grants no local action.',
+          'Set design_direction to the repo-relative path of the approved direction record (a DIRECTION.md or a decisions/ ADR).',
         reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
       });
+    } else if (!(await exists(path.join(artifactsRoot, declared)))) {
+      directionState = 'dangling';
+      findings.push({
+        severity: 'WARN',
+        location: 'blueprint.yml',
+        message: `design_direction points at '${declared}', which does not exist — a pointer to a deleted direction record is not an approved direction. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
+        remediation: 'Point design_direction at a record that exists, or change design_intent if the direction is genuinely open.',
+        reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
+      });
+    } else {
+      directionState = 'present';
     }
   }
 
-  // ── 11. Divergent concepts + selection ADR (judged-screen) ──────────────────
-  // Same WARN rationale as check 10.
-  let conceptCount = countSectionBullets(briefText, 'Concepts');
-  for (const parts of CONCEPT_DIRS) {
-    conceptCount = Math.max(conceptCount, await countFilesIn(path.join(artifactsRoot, ...parts)));
+  // ── 10. refit + rethink → the brief, carrying the matrix ────────────────────
+  const briefRequired = designIntent === 'refit' || designIntent === 'rethink';
+  if (briefRequired) {
+    if (!briefPath) {
+      findings.push({
+        severity: 'WARN',
+        location: 'prototype/EXPERIENCE-BRIEF.md (or portal/EXPERIENCE-BRIEF.md)',
+        message: `design_intent is \`${designIntent}\` but there is no EXPERIENCE-BRIEF.md — Stage 2 has no record of the user's situation and job, so the screen review has no standard to judge against. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
+        remediation:
+          'Author the experience brief: the job in five questions, a `## Surfaces` list, five character attributes, five anti-goals, a density target, hierarchy / content / motion / platform principles, and the object / action / state matrix.',
+        reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2b',
+      });
+    } else {
+      const lowerBrief = briefText.toLowerCase();
+      const hasMatrix =
+        MATRIX_PHRASES.some((phrase) => lowerBrief.includes(phrase)) || MATRIX_TABLE_HEADER.test(briefText);
+      experienceBriefState = hasMatrix ? 'present' : 'present-no-matrix';
+      if (!hasMatrix) {
+        findings.push({
+          severity: 'WARN',
+          location: path.relative(targetDir, briefPath),
+          message:
+            'EXPERIENCE-BRIEF.md has no object / action / state matrix — nothing records who owns each object the screen shows, so an interaction can be invented from a boolean at implementation time. (WARN: judged-screen-pattern.md is a promotion candidate.)',
+          remediation:
+            'Add the matrix: one row per object with owner, valid actions, states, and reverse action. Write the owner column first — an object owned by an external source grants no local action.',
+          reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2b',
+        });
+      }
+    }
   }
-  const selectionAdr = await findSelectionAdr(path.join(artifactsRoot, 'decisions'));
-  if (conceptCount < 2 || !selectionAdr) {
+
+  // ── 11. rethink → divergent concepts + a selection ADR ──────────────────────
+  let conceptCount = 0;
+  let selectionAdr = null;
+  let attribution = null;
+  if (designIntent === 'rethink') {
+    conceptCount = countSectionBullets(briefText, 'Concepts');
+    for (const parts of CONCEPT_DIRS) {
+      conceptCount = Math.max(conceptCount, await countFilesIn(path.join(artifactsRoot, ...parts)));
+    }
+    const adr = await findSelectionAdr(path.join(artifactsRoot, 'decisions'));
+    selectionAdr = adr.file;
+    attribution = adr.attributed;
     const missingBits = [];
     if (conceptCount < 2) missingBits.push(`only ${conceptCount} divergent concept(s) recorded (need at least 2)`);
     if (!selectionAdr) missingBits.push('no selection ADR in decisions/');
-    findings.push({
-      severity: 'WARN',
-      location: 'decisions/ + prototype/concepts/ (or a `## Concepts` list in the brief)',
-      message: `Stage 2 convergence is unevidenced — ${missingBits.join('; ')}. confident-preview-rule.md sends variant deliberation upstream to Stage 2; without a record, the convergence it presumes never happened. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
-      remediation:
-        'Author whole-screen concepts on the same representative states, then converge with an ADR in decisions/ naming the chosen concept, the rejected ones, and what the choice buys.',
-      reference: 'design-principles-reviewer.md#11-divergent-concepts; docs/methodology/judged-screen-pattern.md § 2b',
-    });
+    if (missingBits.length) {
+      findings.push({
+        severity: 'WARN',
+        location: 'decisions/ + prototype/concepts/ (or a `## Concepts` list in the brief)',
+        message: `design_intent is \`rethink\` but Stage 2 convergence is unevidenced — ${missingBits.join('; ')}. confident-preview-rule.md sends variant deliberation upstream to Stage 2; without a record, the convergence it presumes never happened. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
+        remediation:
+          'Author whole-screen concepts on the same representative states, then converge with an ADR in decisions/ naming the chosen concept, the rejected ones, what the choice buys, and who chose.',
+        reference: 'design-principles-reviewer.md#11-divergent-concepts; docs/methodology/judged-screen-pattern.md § 2c',
+      });
+    } else if (!attribution) {
+      // Scope honesty: this sees whether an attribution LINE exists. It cannot
+      // tell a human selector from an agent that wrote "the operator chose" —
+      // claiming otherwise would be the authority bleed this pattern is about,
+      // reproduced inside its own reviewer.
+      findings.push({
+        severity: 'WARN',
+        location: `decisions/${selectionAdr}`,
+        message:
+          'The selection ADR does not attribute the choice to anyone. This check sees whether an attribution line is present; it cannot verify a human made the selection. (WARN: judged-screen-pattern.md is a promotion candidate.)',
+        remediation:
+          'Name who chose, in the ADR. A selection an agent made for itself is the agent\'s first draft with a decision record attached — see judged-screen-pattern.md § 2c and film-room decisions/0010 item 5.',
+        reference: 'design-principles-reviewer.md#11-divergent-concepts; docs/methodology/judged-screen-pattern.md § 2c',
+      });
+    }
   }
 
   // ── Report line (mirrors the .md "How to report" block) ──────────────────────
@@ -545,7 +631,9 @@ export default async function review({ targetDir, blueprintYml }) {
     `testing=${testing.missing.length ? 'incomplete' : 'present'}; ` +
     `invariants=${invariants.present.length}/4; confident-preview=${cpState}; ` +
     `three-pass=${threePassState}; peer-vs-modifier=${peerVsModifierState}; back-door-native=${backDoorNativeState}; ` +
-    `experience-brief=${experienceBriefState}; concepts=${conceptCount}/adr=${selectionAdr ? 'present' : 'absent'}`;
+    `design-intent=${designIntentState}; direction=${directionState}; ` +
+    `experience-brief=${briefRequired ? experienceBriefState : 'not-required'}; ` +
+    `concepts=${designIntent === 'rethink' ? `${conceptCount}/adr=${selectionAdr ? 'present' : 'absent'}` : 'not-required'}`;
   return finalize(findings, summary, startedAt);
 }
 
@@ -578,7 +666,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // Checks 10/11 (judged-screen) artifacts. Any fixture asserting PASS needs
   // these, since a missing brief or unevidenced convergence is a WARN.
-  async function writeJudgedScreenArtifacts(dir) {
+  async function writeJudgedScreenArtifacts(dir, intent = 'rethink') {
+    const yml = await fs.readFile(path.join(dir, 'blueprint.yml'), 'utf8').catch(() => '');
+    if (!/^design_intent:/m.test(yml)) await writeFile(dir, 'blueprint.yml', `${yml}design_intent: ${intent}\n`);
     await writeFile(
       dir,
       'prototype/EXPERIENCE-BRIEF.md',
@@ -605,7 +695,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await writeFile(
       dir,
       'decisions/0001-screen-concept-selection.md',
-      '# Concept selection\n\nWe chose concept-b. concept-a and concept-c were rejected.\n',
+      '# Concept selection\n\nThe operator chose concept-b. concept-a and concept-c were rejected.\n',
     );
   }
 
@@ -645,7 +735,7 @@ one confident take per route. See docs/methodology/confident-preview-rule.md.
     const dir = await mkTmp();
     await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ntier: 1\n');
     await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
-    await writeJudgedScreenArtifacts(dir);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
     const res = await review({ targetDir: dir });
     check('complete greenfield → PASS', res.status === 'PASS');
     check('complete greenfield → zero findings', res.findings.length === 0);
@@ -687,7 +777,7 @@ one confident take per route. See docs/methodology/confident-preview-rule.md.
     const dir = await mkTmp();
     await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
     await writeFile(dir, 'portal/DESIGN.md', COMPLETE_DESIGN);
-    await writeJudgedScreenArtifacts(dir);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
     const res = await review({ targetDir: dir });
     check('portal/DESIGN.md found → PASS', res.status === 'PASS');
     check('portal path in summary', /portal\/DESIGN\.md/.test(res.metadata.targetSummary));
@@ -793,34 +883,103 @@ Stakeholder review surface, one confident take per route.
     await fs.rm(dir, { recursive: true, force: true });
   }
 
-  // Fixture 10 — checks 10/11: a complete DESIGN.md with NO judged-screen
-  // artifacts is WARN (never BLOCK — the pattern is a promotion candidate).
+  // Fixture 10 — no design_intent at all → WARN (never BLOCK), and undeclared is
+  // NOT read as preserve.
   {
     const dir = await mkTmp();
     await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
     await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
     const res = await review({ targetDir: dir });
-    check('no experience brief / concepts → WARN, not BLOCKED', res.status === 'WARN');
-    check(
-      'experience-brief finding present',
-      res.findings.some((f) => f.severity === 'WARN' && /No EXPERIENCE-BRIEF\.md/.test(f.message)),
-    );
-    check(
-      'divergent-concepts finding present',
-      res.findings.some((f) => f.severity === 'WARN' && /Stage 2 convergence is unevidenced/.test(f.message)),
-    );
+    check('undeclared design_intent → WARN, not BLOCKED', res.status === 'WARN');
+    check('declare-intent finding present', res.findings.some((f) => /No design_intent declared/.test(f.message)));
     check('no BLOCK findings from checks 10/11', !res.findings.some((f) => f.severity === 'BLOCK'));
-    check('summary reports experience-brief=missing', /experience-brief=missing/.test(res.metadata.targetSummary));
-    check('summary reports adr=absent', /adr=absent/.test(res.metadata.targetSummary));
+    check('summary reports design-intent=undeclared', /design-intent=undeclared/.test(res.metadata.targetSummary));
+    check(
+      'undeclared does not demand a brief',
+      !res.findings.some((f) => /no EXPERIENCE-BRIEF/.test(f.message)) && /experience-brief=not-required/.test(res.metadata.targetSummary),
+    );
     await fs.rm(dir, { recursive: true, force: true });
   }
 
-  // Fixture 10b — brief present but the object/action/state matrix is absent.
+  // Fixture 10b — an unrecognized intent value is named back.
   {
     const dir = await mkTmp();
-    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: redesign\n');
     await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
-    await writeJudgedScreenArtifacts(dir);
+    const res = await review({ targetDir: dir });
+    check('unknown intent → WARN naming the value', res.findings.some((f) => /design_intent is 'redesign'/.test(f.message)));
+    check('summary reports the unknown value', /design-intent=unknown \(redesign\)/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10c — preserve with a direction record that exists → PASS, no brief
+  // and no concepts demanded.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: preserve\ndesign_direction: "DIRECTION.md"\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeFile(dir, 'DIRECTION.md', '# Direction\n\nThesis: the product does its job live.\n');
+    const res = await review({ targetDir: dir });
+    check('preserve + existing direction → PASS', res.status === 'PASS');
+    check('preserve demands no brief', /experience-brief=not-required/.test(res.metadata.targetSummary));
+    check('preserve demands no concepts', /concepts=not-required/.test(res.metadata.targetSummary));
+    check('summary reports direction=present', /direction=present/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10d — preserve pointing at a record that does not exist → WARN.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: preserve\ndesign_direction: "DIRECTION.md"\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    const res = await review({ targetDir: dir });
+    check('preserve + dangling direction → WARN', res.status === 'WARN');
+    check('dangling finding names the path', res.findings.some((f) => /points at 'DIRECTION\.md', which does not exist/.test(f.message)));
+    check('summary reports direction=dangling', /direction=dangling/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10e — preserve with no design_direction at all → WARN.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: preserve\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    const res = await review({ targetDir: dir });
+    check('preserve without design_direction → WARN', res.status === 'WARN');
+    check('missing-direction finding present', res.findings.some((f) => /no design_direction is declared/.test(f.message)));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10f — refit demands the brief but NOT concepts.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: refit\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    const res = await review({ targetDir: dir });
+    check('refit without brief → WARN', res.status === 'WARN');
+    check('refit names the intent in the finding', res.findings.some((f) => /design_intent is `refit` but there is no EXPERIENCE-BRIEF/.test(f.message)));
+    check('refit demands no concepts', !res.findings.some((f) => /convergence is unevidenced/.test(f.message)));
+    check('summary reports concepts=not-required', /concepts=not-required/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10g — refit with a brief carrying the matrix → PASS.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: refit\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'refit');
+    const res = await review({ targetDir: dir });
+    check('refit + brief with matrix → PASS', res.status === 'PASS');
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10h — brief present but the object/action/state matrix is absent.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: refit\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'refit');
     const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
     await writeFile(
       dir,
@@ -834,12 +993,24 @@ Stakeholder review surface, one confident take per route.
     await fs.rm(dir, { recursive: true, force: true });
   }
 
-  // Fixture 11 — concepts on disk (not in the brief) satisfy check 11.
+  // Fixture 11 — rethink without concepts → WARN naming the intent.
   {
     const dir = await mkTmp();
-    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
     await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
-    await writeJudgedScreenArtifacts(dir);
+    const res = await review({ targetDir: dir });
+    check('rethink without concepts → WARN', res.status === 'WARN');
+    check('convergence finding present', res.findings.some((f) => /design_intent is `rethink` but Stage 2 convergence is unevidenced/.test(f.message)));
+    check('summary reports adr=absent', /adr=absent/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 11b — concepts on disk (not in the brief) satisfy check 11.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
     const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
     await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', brief.replace(/## Concepts[\s\S]*$/, ''));
     await writeFile(dir, 'prototype/concepts/concept-a.md', 'stacked list\n');
@@ -847,6 +1018,21 @@ Stakeholder review surface, one confident take per route.
     const res = await review({ targetDir: dir });
     check('concepts on disk → PASS', res.status === 'PASS');
     check('summary counts 2 concepts', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 11c — a selection ADR with no attribution WARNs, and the message
+  // says what the check actually saw (a line, not a human).
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    await writeFile(dir, 'decisions/0001-screen-concept-selection.md', '# Concept selection\n\nconcept-b won. concept-a and concept-c were rejected.\n');
+    const res = await review({ targetDir: dir });
+    check('unattributed selection ADR → WARN', res.status === 'WARN');
+    const af = res.findings.find((f) => /does not attribute the choice/.test(f.message));
+    check('attribution finding disclaims what it proved', af && /cannot verify a human made the selection/.test(af.message));
     await fs.rm(dir, { recursive: true, force: true });
   }
 

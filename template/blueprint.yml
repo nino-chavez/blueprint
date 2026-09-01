@@ -52,6 +52,37 @@ pilot_profile:
                                     # naming them prevents accidental drift
                                     # e.g., ["Player searching for team", "Coach managing roster"]
 
+# ──────────────────────────────────────────────────────────────────
+# Design intent (judged-screen-pattern.md § 2a — PROMOTION CANDIDATE)
+# How much design work this change is. The intent decides what Stage 2
+# owes, so that a one-line copy fix does not owe a concept exercise and a
+# genuine redesign cannot skip one.
+#   preserve = the approved direction stands; this change works inside it.
+#              Requires design_direction below. No brief, no concepts.
+#   refit    = change the presentation, preserve the named behavior.
+#              Requires prototype/EXPERIENCE-BRIEF.md. No concepts.
+#   rethink  = the direction itself is the question. Requires the brief,
+#              3 divergent whole-screen concepts, and a selection ADR that
+#              names the human who chose.
+# Undeclared is NOT preserve — it WARNs. Defaulting silently to the
+# cheapest intent would let any change opt out by saying nothing.
+# Reviewers: design-principles-reviewer (checks 10/11),
+#            screen-composition-reviewer (which reviews are required).
+# ──────────────────────────────────────────────────────────────────
+design_intent: ""                   # preserve | refit | rethink
+design_direction: ""                # REQUIRED when design_intent: preserve —
+                                    # repo-relative path to the approved direction
+                                    # record (a DIRECTION.md or a decisions/ ADR).
+                                    # The file must exist; a pointer to a deleted
+                                    # record is the drift this catches.
+
+# Screen-review policy (judged-screen-pattern.md — PROMOTION CANDIDATE)
+# screen-composition-reviewer is WARN by default while the pattern is a
+# promotion candidate. Declare `strict` to make its findings BLOCK.
+# This is a declared scalar, not a CLI flag: `blueprint review` forwards no
+# argv to a reviewer, so --strict could never arrive.
+screen_review_policy: ""            # "" (warn) | strict
+
 # Execution depth
 execution:
   depth: standard                   # lean | standard | thorough

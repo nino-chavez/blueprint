@@ -226,11 +226,19 @@ L4 cannot be authored without L5 (the audit). Without an L4 dictionary, every pa
 
 Canonical example at `template/methodology/design/EXAMPLE-design-system.md` (from blueprint-redesign's own design-system definition).
 
-### Experience brief and divergent concepts (promotion candidate)
+### Design intent (promotion candidate)
 
-Stage 2 also produces two artifacts that the five rules and the dictionary do not cover. An **experience brief** at `prototype/EXPERIENCE-BRIEF.md` states the user's situation and job, the character and anti-goals of the surface, and an object / action / state matrix naming who owns every object the screen shows. Then **divergent whole-screen concepts** on the same representative states, converged by an ADR in `decisions/` before Stage 3 begins. This is where `confident-preview-rule.md` sends variant deliberation; until now Stage 2 had nowhere to receive it.
+Stage 2 also declares **how much design work this change is**, as `design_intent` in `blueprint.yml`. The intent decides what else Stage 2 owes, so a one-line copy fix does not owe a design exercise and a genuine redesign cannot skip one.
 
-Both are marked **promotion candidate** — `design-principles-reviewer` checks 10 and 11 WARN on their absence rather than blocking. Full rule: `template/docs/methodology/judged-screen-pattern.md`.
+| Intent | Stage 2 owes |
+|---|---|
+| `preserve` | A pointer to the approved direction record. |
+| `refit` | An **experience brief** at `prototype/EXPERIENCE-BRIEF.md` — the user's situation and job, and an object / action / state matrix naming who owns every object the screen shows. |
+| `rethink` | The brief, **divergent whole-screen concepts**, and a selection ADR naming the human who chose. |
+
+`rethink` is where `confident-preview-rule.md` sends variant deliberation; until now Stage 2 had nowhere to receive it. Undeclared is not `preserve` — it warns.
+
+Marked **promotion candidate**: `design-principles-reviewer` checks 10 and 11 WARN rather than blocking. Full rule: `template/docs/methodology/judged-screen-pattern.md`.
 
 ### Testing baseline
 
@@ -325,7 +333,7 @@ Stage 4 is designed for external review. The reason this matters: the agent's mo
 For solo initiatives with no second-operator reviewer, the gate degrades to:
 
 1. **Mechanical verification of every ratified claim** — file existence, grep counts, structural matches. Self-fact-check is bounded to mechanical claims because the author can honestly evaluate them.
-2. **Judgment claims carry-forward to ratification gates** — claims like "does the prose actually read as Solution Architecture register?" or "is the design system complete enough?" cannot be self-judged. Each ratifiable artifact's `status: ratified` requires a named reviewer; for solo dogfoods, the reviewer is the next consumer initiative that exercises the artifact. For a screen, the named reviewer is the cold screen review — a second model, session, or person judging device captures without having read the spec or the source — which a solo initiative can run today rather than deferring to a consumer it may never get (`template/docs/methodology/judged-screen-pattern.md`).
+2. **Judgment claims carry-forward to ratification gates** — claims like "does the prose actually read as Solution Architecture register?" or "is the design system complete enough?" cannot be self-judged. Each ratifiable artifact's `status: ratified` requires a named reviewer; for solo dogfoods, the reviewer is the next consumer initiative that exercises the artifact. For a screen, the named reviewer is the blind cold screen review — a second model, session, or person judging device captures without having read the spec or the source — which a solo initiative can run today rather than deferring to a consumer it may never get. Whether the build matches the direction that was selected is a separate review with a separate reviewer (`template/docs/methodology/judged-screen-pattern.md` § 3).
 
 Canonical example at `template/methodology/design/EXAMPLE-stage4-fact-check.md` (from blueprint-redesign's own Stage 4 run).
 

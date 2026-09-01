@@ -27,15 +27,20 @@ When auditing high-stakes claims (citations, implementation state, coverage), us
 
 Mechanical tools are not perfect, but they prevent circular audits by construction: they resolve to first-order evidence, not second-order claims.
 
-## The canonical source for a rendered surface is the rendered frame
+## The canonical source depends on the claim, and for a rendered surface that is four different sources
 
-The rule above says resolve the canonical source. For a screen, that source is not the code.
+"Resolve the canonical source" needs a second question for anything rendered: **canonical for which claim?** One surface makes four, and they do not share an oracle.
 
-Source and tests are evidence of **intent**. Grepping Swift or CSS proves the rules were followed; running the suite proves the code does what it was told. Neither has looked at what the user sees. A reviewer can verify every layout, color, and card rule in source, correctly, and be describing a screen other than the one that shipped.
+| The claim | Canonical source |
+|---|---|
+| Appearance and composition | The rendered frame on the target device |
+| Interaction | Observed behavior on the target device |
+| Accessibility | The accessibility tree, plus observed behavior |
+| Implementation | Source and tests |
 
-So for a rendered surface, resolving to ground truth means a **device capture** — a real device for native, a real viewport for web — judged by someone who did not build it. A source check offered as a verdict on a screen is the same circular audit this file exists to prevent, one level out: it verifies conformance to the intent rather than the result.
+Grepping Swift or CSS settles the last row only. It proves the rule was followed, which is evidence of **intent**, not of the result — a reviewer can verify every layout, color, and card rule in source, correctly, and be describing a screen other than the one that shipped. A screenshot has the same problem inverted: it settles the first row and nothing else, so reading one as proof that a control works or that a screen reader can reach it is this same failure pointed the other way.
 
-Full rule and the gate that enforces it: [`../judged-screen-pattern.md`](../judged-screen-pattern.md).
+Full rule and the gate that enforces it: [`../judged-screen-pattern.md`](../judged-screen-pattern.md) § 1.
 
 ## Application to reviewer agents
 
