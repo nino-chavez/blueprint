@@ -93,6 +93,30 @@ const CONFIDENT_PREVIEW = {
   ],
 };
 
+// Judged-screen pattern (promotion candidate) — checks 10 and 11.
+// The object/action/state matrix is what prevents an interaction being invented
+// from a boolean at implementation time. Matched by its name or by a table
+// header carrying Object + Owner, since projects render it either way.
+const MATRIX_PHRASES = [
+  'object / action / state',
+  'object/action/state',
+  'object, action, state',
+  'object-action-state',
+  'action / state matrix',
+  'action/state matrix',
+];
+const MATRIX_TABLE_HEADER = /^\s*\|[^\n]*\bobject\b[^\n]*\bowner\b[^\n]*\|/im;
+
+// Concept records — a `## Concepts` list in the brief, or concept files on disk.
+const CONCEPT_DIRS = [
+  ['prototype', 'concepts'],
+  ['portal', 'concepts'],
+  ['research', 'design-explorations'],
+];
+// A selection ADR names the chosen concept AND the rejected ones.
+const ADR_CONCEPT_WORDS = ['concept', 'divergent'];
+const ADR_SELECTION_WORDS = ['chose', 'chosen', 'selected', 'rejected', 'alternatives considered'];
+
 // Variant-shaped page names — convergence violation if found in the planned page
 // list. Mirrors the regex set named in the .md (-a/-b/-c suffix, -variant-,
 // -v\d.) plus the explicit examples (home-a, dashboard-modern, dashboard-classic).
@@ -148,6 +172,50 @@ function variantShapedNames(names) {
     if (VARIANT_NAME_LITERALS.includes(n) || VARIANT_NAME_PATTERNS.some((re) => re.test(n))) hits.push(n);
   }
   return hits;
+}
+
+// Count list bullets under a named `## <heading>` section. Line scan, not a
+// section regex — a "next heading or end of input" lookahead is the shape that
+// goes subtly wrong (JS has no \\Z).
+function countSectionBullets(text, heading) {
+  if (!text) return 0;
+  const lines = text.split(/\r?\n/);
+  const re = new RegExp(`^##[ \\t]+${heading}[ \\t]*$`, 'i');
+  const start = lines.findIndex((l) => re.test(l));
+  if (start === -1) return 0;
+  let n = 0;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^##[ \t]/.test(lines[i])) break;
+    if (/^[ \t]*[-*][ \t]+\S/.test(lines[i])) n += 1;
+  }
+  return n;
+}
+
+async function countFilesIn(dir) {
+  try {
+    const entries = await fs.readdir(dir);
+    return entries.filter((f) => !f.startsWith('_') && /\.(md|html|png|jpg|jpeg|svg|pdf)$/i.test(f)).length;
+  } catch {
+    return 0;
+  }
+}
+
+// A selection ADR in decisions/ — names concepts and names a choice among them.
+async function findSelectionAdr(decisionsDir) {
+  let files;
+  try {
+    files = (await fs.readdir(decisionsDir)).filter((f) => f.endsWith('.md'));
+  } catch {
+    return null;
+  }
+  for (const f of files.sort()) {
+    const text = (await read(path.join(decisionsDir, f))) || '';
+    const lower = text.toLowerCase();
+    if (ADR_CONCEPT_WORDS.some((w) => lower.includes(w)) && ADR_SELECTION_WORDS.some((w) => lower.includes(w))) {
+      return f;
+    }
+  }
+  return null;
 }
 
 export default async function review({ targetDir, blueprintYml }) {
@@ -402,6 +470,73 @@ export default async function review({ targetDir, blueprintYml }) {
     }
   }
 
+  // ── 10. Experience brief + object/action/state matrix (judged-screen) ───────
+  // WARN, never BLOCK: judged-screen-pattern.md is a PROMOTION CANDIDATE, and a
+  // gate that blocks before its pattern is ratified punishes in-flight work for
+  // a discipline it has not been offered yet. Promote to BLOCK with the pattern.
+  const briefCandidates = [
+    path.join(artifactsRoot, 'prototype', 'EXPERIENCE-BRIEF.md'),
+    path.join(artifactsRoot, 'portal', 'EXPERIENCE-BRIEF.md'),
+  ];
+  let briefPath = null;
+  for (const p of briefCandidates) {
+    if (await exists(p)) {
+      briefPath = p;
+      break;
+    }
+  }
+  const briefText = briefPath ? (await read(briefPath)) || '' : '';
+  let experienceBriefState;
+  if (!briefPath) {
+    experienceBriefState = 'missing';
+    findings.push({
+      severity: 'WARN',
+      location: 'prototype/EXPERIENCE-BRIEF.md (or portal/EXPERIENCE-BRIEF.md)',
+      message:
+        'No EXPERIENCE-BRIEF.md — Stage 2 has no record of the user\'s situation and job, so the screen review has no standard to judge against. (WARN: judged-screen-pattern.md is a promotion candidate.)',
+      remediation:
+        'Author the experience brief before the first concept: the job in five questions, five character attributes, five anti-goals, a density target, hierarchy / content / motion / platform principles, and the object / action / state matrix.',
+      reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
+    });
+  } else {
+    const lowerBrief = briefText.toLowerCase();
+    const hasMatrix =
+      MATRIX_PHRASES.some((phrase) => lowerBrief.includes(phrase)) || MATRIX_TABLE_HEADER.test(briefText);
+    experienceBriefState = hasMatrix ? 'present' : 'present-no-matrix';
+    if (!hasMatrix) {
+      findings.push({
+        severity: 'WARN',
+        location: path.relative(targetDir, briefPath),
+        message:
+          'EXPERIENCE-BRIEF.md has no object / action / state matrix — nothing records who owns each object the screen shows, so an interaction can be invented from a boolean at implementation time. (WARN: judged-screen-pattern.md is a promotion candidate.)',
+        remediation:
+          'Add the matrix: one row per object with owner, valid actions, states, and reverse action. Write the owner column first — an object owned by an external source grants no local action.',
+        reference: 'design-principles-reviewer.md#10-experience-brief; docs/methodology/judged-screen-pattern.md § 2a',
+      });
+    }
+  }
+
+  // ── 11. Divergent concepts + selection ADR (judged-screen) ──────────────────
+  // Same WARN rationale as check 10.
+  let conceptCount = countSectionBullets(briefText, 'Concepts');
+  for (const parts of CONCEPT_DIRS) {
+    conceptCount = Math.max(conceptCount, await countFilesIn(path.join(artifactsRoot, ...parts)));
+  }
+  const selectionAdr = await findSelectionAdr(path.join(artifactsRoot, 'decisions'));
+  if (conceptCount < 2 || !selectionAdr) {
+    const missingBits = [];
+    if (conceptCount < 2) missingBits.push(`only ${conceptCount} divergent concept(s) recorded (need at least 2)`);
+    if (!selectionAdr) missingBits.push('no selection ADR in decisions/');
+    findings.push({
+      severity: 'WARN',
+      location: 'decisions/ + prototype/concepts/ (or a `## Concepts` list in the brief)',
+      message: `Stage 2 convergence is unevidenced — ${missingBits.join('; ')}. confident-preview-rule.md sends variant deliberation upstream to Stage 2; without a record, the convergence it presumes never happened. (WARN: judged-screen-pattern.md is a promotion candidate.)`,
+      remediation:
+        'Author whole-screen concepts on the same representative states, then converge with an ADR in decisions/ naming the chosen concept, the rejected ones, and what the choice buys.',
+      reference: 'design-principles-reviewer.md#11-divergent-concepts; docs/methodology/judged-screen-pattern.md § 2b',
+    });
+  }
+
   // ── Report line (mirrors the .md "How to report" block) ──────────────────────
   const cpState = !cpAcknowledged ? 'missing' : variantPages.length ? 'violated-by-planned-variants' : 'acknowledged';
   const summary =
@@ -409,7 +544,8 @@ export default async function review({ targetDir, blueprintYml }) {
     `${designRel}; visual=${visual.present.length}/5; ` +
     `testing=${testing.missing.length ? 'incomplete' : 'present'}; ` +
     `invariants=${invariants.present.length}/4; confident-preview=${cpState}; ` +
-    `three-pass=${threePassState}; peer-vs-modifier=${peerVsModifierState}; back-door-native=${backDoorNativeState}`;
+    `three-pass=${threePassState}; peer-vs-modifier=${peerVsModifierState}; back-door-native=${backDoorNativeState}; ` +
+    `experience-brief=${experienceBriefState}; concepts=${conceptCount}/adr=${selectionAdr ? 'present' : 'absent'}`;
   return finalize(findings, summary, startedAt);
 }
 
@@ -438,6 +574,39 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const fp = path.join(dir, rel);
     await fs.mkdir(path.dirname(fp), { recursive: true });
     await fs.writeFile(fp, content, 'utf8');
+  }
+
+  // Checks 10/11 (judged-screen) artifacts. Any fixture asserting PASS needs
+  // these, since a missing brief or unevidenced convergence is a WARN.
+  async function writeJudgedScreenArtifacts(dir) {
+    await writeFile(
+      dir,
+      'prototype/EXPERIENCE-BRIEF.md',
+      `# Experience brief
+
+## Surfaces
+- home
+
+## The job, in five questions
+1. What is happening now?
+
+## Object / action / state matrix
+
+| Object | Owner | Valid actions | States | Reverse action |
+|---|---|---|---|---|
+| Task | the user | complete, edit | open, done | reopen |
+
+## Concepts
+- concept-a — a single stacked list
+- concept-b — a two-column split
+- concept-c — a timeline
+`,
+    );
+    await writeFile(
+      dir,
+      'decisions/0001-screen-concept-selection.md',
+      '# Concept selection\n\nWe chose concept-b. concept-a and concept-c were rejected.\n',
+    );
   }
 
   // A complete, passing DESIGN.md fixture.
@@ -476,6 +645,7 @@ one confident take per route. See docs/methodology/confident-preview-rule.md.
     const dir = await mkTmp();
     await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ntier: 1\n');
     await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir);
     const res = await review({ targetDir: dir });
     check('complete greenfield → PASS', res.status === 'PASS');
     check('complete greenfield → zero findings', res.findings.length === 0);
@@ -517,6 +687,7 @@ one confident take per route. See docs/methodology/confident-preview-rule.md.
     const dir = await mkTmp();
     await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
     await writeFile(dir, 'portal/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir);
     const res = await review({ targetDir: dir });
     check('portal/DESIGN.md found → PASS', res.status === 'PASS');
     check('portal path in summary', /portal\/DESIGN\.md/.test(res.metadata.targetSummary));
@@ -619,6 +790,63 @@ Stakeholder review surface, one confident take per route.
     await writeFile(dir, 'blueprint.yml', 'project:\n  name: "x"\n');
     const res = await review({ targetDir: dir });
     check('no variant key → still gates (BLOCKED on missing DESIGN.md)', res.status === 'BLOCKED');
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10 — checks 10/11: a complete DESIGN.md with NO judged-screen
+  // artifacts is WARN (never BLOCK — the pattern is a promotion candidate).
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    const res = await review({ targetDir: dir });
+    check('no experience brief / concepts → WARN, not BLOCKED', res.status === 'WARN');
+    check(
+      'experience-brief finding present',
+      res.findings.some((f) => f.severity === 'WARN' && /No EXPERIENCE-BRIEF\.md/.test(f.message)),
+    );
+    check(
+      'divergent-concepts finding present',
+      res.findings.some((f) => f.severity === 'WARN' && /Stage 2 convergence is unevidenced/.test(f.message)),
+    );
+    check('no BLOCK findings from checks 10/11', !res.findings.some((f) => f.severity === 'BLOCK'));
+    check('summary reports experience-brief=missing', /experience-brief=missing/.test(res.metadata.targetSummary));
+    check('summary reports adr=absent', /adr=absent/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 10b — brief present but the object/action/state matrix is absent.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir);
+    const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
+    await writeFile(
+      dir,
+      'prototype/EXPERIENCE-BRIEF.md',
+      brief.replace(/## Object \/ action \/ state matrix[\s\S]*?(?=## Concepts)/, ''),
+    );
+    const res = await review({ targetDir: dir });
+    check('brief without matrix → WARN', res.status === 'WARN');
+    check('matrix finding present', res.findings.some((f) => /no object \/ action \/ state matrix/.test(f.message)));
+    check('summary reports present-no-matrix', /experience-brief=present-no-matrix/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 11 — concepts on disk (not in the brief) satisfy check 11.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir);
+    const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', brief.replace(/## Concepts[\s\S]*$/, ''));
+    await writeFile(dir, 'prototype/concepts/concept-a.md', 'stacked list\n');
+    await writeFile(dir, 'prototype/concepts/concept-b.md', 'two-column split\n');
+    const res = await review({ targetDir: dir });
+    check('concepts on disk → PASS', res.status === 'PASS');
+    check('summary counts 2 concepts', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
     await fs.rm(dir, { recursive: true, force: true });
   }
 

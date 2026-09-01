@@ -12,6 +12,7 @@
 | Acceptance criteria | DoD verification ladder (G1–G5, named oracles) |
 | Non-functional requirements | authored — the one field with no upstream pattern yet |
 | Off-happy-path UI states | ui-rendering-contract-tier (loading/error/empty) |
+| Rendered surface accepted | judged-screen-pattern (a cold screen review with `verdict: accept`) |
 | Decision links | decisions/ index |
 | Owner | named person per feature, not per project |
 
