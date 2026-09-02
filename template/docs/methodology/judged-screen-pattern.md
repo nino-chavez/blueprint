@@ -211,7 +211,9 @@ The reviewer is never the implementer. It may be a second model, a second sessio
 
 Device captures, one per representative state. A real device for native. A real viewport for web. Not a simulator screenshot passed off as a device capture, not a component in isolation, not a design file.
 
-Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per state named for that state. Keeping them next to the review is what lets a later reader check the verdict against what was actually judged; a review pointing at captures that have since moved or been regenerated is a claim with no evidence behind it.
+Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per state named for that state.
+
+The capture set carries a manifest, and the manifest records the device's accessibility state before the run: text size, Increase Contrast, Bold Text, Reduce Motion, and appearance. On a device the operator holds, ask; on a simulator, read it (`xcrun simctl ui <udid> content_size` / `increase_contrast`) and write the answer down before and after. The reason is a measured one: Minder's first physical capture of build 13 (2026-09-01) ran with Increase Contrast on, nothing in the run reported it, and the operator mentioned it only afterward; the whole set was recaptured. Its simulator evidence for builds 10 through 12 had the same defect the other way round, a simulator left at Accessibility XXXL for three days. A capture whose accessibility state is unknown is a capture of an unknown screen, and a reviewer cannot tell an intended accessibility state from an accidental one. Keeping them next to the review is what lets a later reader check the verdict against what was actually judged; a review pointing at captures that have since moved or been regenerated is a claim with no evidence behind it.
 
 #### How it is judged
 
