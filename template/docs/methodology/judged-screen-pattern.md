@@ -156,6 +156,8 @@ Converge with an ADR in `decisions/` before Stage 3 begins. The ADR names the ch
 
 The internal reference implementation is film-room's ADR-0010 item 5 (§ 8), which serves developed directions at a route on live data and has the operator pick. Serving them live rather than as static comps is what makes the choice real: the operator judges the thing, not a picture of it.
 
+**Claude Design (`/design` in Claude Code) is an accepted Phase 1 render vehicle for a static surface** — a landing page, a marketing page, a one-pager, a deck — where the concepts have no data states to serve and a comp is the thing itself. Put the three concepts on one canvas, and give each an appearance tweak so the light and dark captures the gate wants come from the same artboard. It is not accepted for an app screen: the canvas cannot show the dense, empty, failure, or changed-by-source states above, and a static comp of those is exactly the "picture of it" the previous paragraph rules out. Two rules carry over unchanged. The system a concept is built on comes from the brand kit or `DESIGN.md`, never from a reference screenshot fed to the tool (§ 2c item 3 is how prior art enters). And a comment thread on the canvas is not the cold review; the record is still written to the protocol in § 3, at the build it judged. (Added 2026-09-01 after Rogoff's "Claude Design is Insane", whose three-versions-on-one-artboard step is this section with the ADR and the human removed.)
+
 **What it means:** one confident preview reaches stakeholders, and the convergence that produced it is now a real Stage 2 activity rather than an assumption.
 
 ### 2d. The order of work
