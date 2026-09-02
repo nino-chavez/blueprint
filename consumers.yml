@@ -151,3 +151,10 @@ consumers:
     methodology_version: "0.7.0"      # pinned at init-day 2026-07-28 (spawn ADR 0001; greenfield successor to se-docs-frontdoor write side)
     owner: nino-chavez
     synced_at: "2026-07-28"
+
+  - repo: nino-chavez/minder         # apps/minder — native iOS; first judged-screen (wave 102) pilot, design_intent: rethink
+    pattern: null                     #   no portal; Blueprint used for methodology, reviewers, and closeout only
+    methodology_version: null         # blueprint.yml carries no pin; reviewers restamped by hand at 8cf2cf0 / 58f1d7c (2026-09-01)
+    owner: nino-chavez
+    synced_at: "2026-09-01"
+
