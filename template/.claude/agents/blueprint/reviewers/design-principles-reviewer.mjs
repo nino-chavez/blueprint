@@ -101,6 +101,8 @@ const MATRIX_PHRASES = [
   'object / action / state',
   'object/action/state',
   'object, action, state',
+  'object, action, and state',
+  'object, action and state',
   'object-action-state',
   'action / state matrix',
   'action/state matrix',
@@ -203,10 +205,25 @@ function countSectionBullets(text, heading) {
   return n;
 }
 
+// One concept record is one file, or one directory holding at least one such
+// file — projects that keep a CONCEPT.md, a composition, and its renders
+// together use a folder per concept. A README describing the set is not a
+// concept.
+const CONCEPT_FILE = /\.(md|html|png|jpg|jpeg|svg|pdf)$/i;
 async function countFilesIn(dir) {
   try {
-    const entries = await fs.readdir(dir);
-    return entries.filter((f) => !f.startsWith('_') && /\.(md|html|png|jpg|jpeg|svg|pdf)$/i.test(f)).length;
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    let n = 0;
+    for (const e of entries) {
+      if (e.name.startsWith('_') || /^readme\./i.test(e.name)) continue;
+      if (e.isDirectory()) {
+        const inner = await fs.readdir(path.join(dir, e.name)).catch(() => []);
+        if (inner.some((f) => CONCEPT_FILE.test(f))) n += 1;
+      } else if (CONCEPT_FILE.test(e.name)) {
+        n += 1;
+      }
+    }
+    return n;
   } catch {
     return 0;
   }
@@ -1060,6 +1077,33 @@ Stakeholder review surface, one confident take per route.
     const res = await review({ targetDir: dir });
     check('concepts on disk → PASS', res.status === 'PASS');
     check('summary counts 2 concepts', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 11b2 — a folder per concept counts once each; the set's README
+  // is not a concept; the direction record's "Object, action, and state"
+  // heading is the matrix.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
+    await writeFile(
+      dir,
+      'prototype/EXPERIENCE-BRIEF.md',
+      brief.replace(/## Object \/ action \/ state matrix[\s\S]*?(?=## Concepts)/, '').replace(/## Concepts[\s\S]*$/, ''),
+    );
+    await writeFile(dir, 'DIRECTION.md', '# Direction\n\n## Object, action, and state matrix\n\n| Thing | Who | Actions |\n|---|---|---|\n| a | b | c |\n');
+    await writeFile(dir, 'docs/design/concepts/README.md', 'The set.\n');
+    await writeFile(dir, 'docs/design/concepts/alpha/CONCEPT.md', 'stacked list\n');
+    await writeFile(dir, 'docs/design/concepts/alpha/01-alpha.png', 'x');
+    await writeFile(dir, 'docs/design/concepts/beta/CONCEPT.md', 'two-column split\n');
+    await writeFile(dir, 'docs/design/concepts/gamma/notes.txt', 'not a record\n');
+    const res = await review({ targetDir: dir });
+    check('folder-per-concept → PASS', res.status === 'PASS');
+    check('summary counts 2 concept folders, not the README or the empty folder', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    check('"Object, action, and state" heading in DIRECTION.md is the matrix', !res.findings.some((f) => /no object \/ action \/ state matrix/.test(f.message)));
     await fs.rm(dir, { recursive: true, force: true });
   }
 
