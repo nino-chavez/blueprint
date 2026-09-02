@@ -122,15 +122,45 @@ export function extractSurfaces(briefText) {
   }
   const out = [];
   for (const m of body.join('\n').matchAll(/^[ \t]*[-*][ \t]+(.+?)[ \t]*$/gm)) {
-    const name = m[1]
-      .replace(/`/g, '')
-      .replace(/^(["'])(.*)\1$/, '$2')
-      .split(/\s+[—–-]\s+/)[0] // allow "today — the default tab"
-      .trim()
-      .toLowerCase();
+    const name = surfaceNameFromBullet(m[1]);
     if (name) out.push(name);
   }
   return [...new Set(out)];
+}
+
+/**
+ * A roster bullet carries a NAME and usually a description of the surface. Take
+ * the name only — matching a review against a whole prose sentence never
+ * succeeds, and the failure looks like a missing review rather than a parse bug.
+ *
+ * Accepted forms (judged-screen-pattern.md § 2a):
+ *   - **Today.** The day, from the current moment forward…   → bold text wins
+ *   - Today: The day, from the current moment forward…       → text before the ':'
+ *   - Today — the default tab                                → text before ' — '
+ *   - Today - the default tab                                → text before ' - '
+ *   - today                                                  → the whole bullet
+ *
+ * Only a SPACED hyphen separates a name from a gloss, so a hyphenated name
+ * ("Add-activity review sheet") survives intact. Backticks and wrapping quotes
+ * are stripped, a trailing period is dropped, and the result is lowercased —
+ * `surface:` in a review's frontmatter is matched case-insensitively, so a
+ * roster reading "Today" finds a record reading "today" and the reverse.
+ */
+export function surfaceNameFromBullet(raw) {
+  let t = String(raw || '').trim();
+  const bold = t.match(/^\*\*(.+?)\*\*/);
+  if (bold) {
+    t = bold[1];
+  } else {
+    const split = t.match(/^([^:]*?)(?::| — | – | - )/);
+    if (split) t = split[1];
+  }
+  return t
+    .replace(/`/g, '')
+    .replace(/^(["'])(.*)\1$/, '$2')
+    .replace(/\.+$/, '')
+    .trim()
+    .toLowerCase();
 }
 
 // A declared release marker and a recorded build match when they are equal, or
@@ -161,10 +191,18 @@ const BRIEF_PATHS = [
   ['docs', 'design', 'experience-brief.md'],
 ];
 
+// The review directory holds more than review records: a README explaining the
+// frontmatter contract, and a captures/ subtree of device images. Neither is a
+// record, and warning about them trains a reader to ignore this reviewer.
+// Non-recursive by design — every subdirectory (captures/ included) is skipped.
 async function listReviewFiles(dir) {
   try {
-    const entries = await fs.readdir(dir);
-    return entries.filter((f) => f.endsWith('.md') && !f.startsWith('_')).sort();
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isFile())
+      .map((e) => e.name)
+      .filter((f) => f.endsWith('.md') && !f.startsWith('_') && f.toLowerCase() !== 'readme.md')
+      .sort();
   } catch {
     return [];
   }
@@ -261,7 +299,11 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
   const keyOf = (surface, kind) => `${String(surface).toLowerCase()}::${kind}`;
   for (const f of files) {
     const fm = parseFrontmatter(await read(path.join(reviewDirAbs, f)));
-    if (!fm || !fm.surface) {
+    // No frontmatter block at all → prose in the reviews folder, not a record.
+    // Skip it silently. A file that DOES open with a block but names no surface
+    // is a genuinely malformed record, and that still reports.
+    if (!fm) continue;
+    if (!fm.surface) {
       malformed.push(f);
       continue;
     }
@@ -312,7 +354,7 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
     findings.push({
       severity: sev,
       location: `${REVIEW_DIR}/${f}`,
-      message: 'Screen-review file has no parseable frontmatter, or no `surface:` field — it cannot be matched to a declared surface.',
+      message: 'Screen-review file opens with a frontmatter block but names no `surface:` — it cannot be matched to a declared surface.',
       remediation: `Give the file the fixed frontmatter block: ${REQUIRED_FIELDS.join(', ')}, plus build (or commit).`,
       reference: `${PATTERN_REF} § 3`,
     });
@@ -851,11 +893,99 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   check('parseFrontmatter strips comments', parseFrontmatter('---\nbuild: 12  # ship\n---\n').build === '12');
   check('parseFrontmatter returns null without a block', parseFrontmatter('# no frontmatter\n') === null);
 
+  // Fixture 14 — the directory holds a README and a captures/ subtree beside the
+  // records. Neither is a review; neither may produce a finding. (First real run
+  // against Minder warned "no parseable frontmatter" on README.md.)
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', BRIEF);
+    await writeFile(dir, 'docs/evidence/screen-reviews/today-12-cold.md', goodReview());
+    await writeFile(dir, 'docs/evidence/screen-reviews/settings-12-cold.md', goodReview({ surface: 'settings' }));
+    await writeFile(dir, 'docs/evidence/screen-reviews/README.md', '# Screen reviews\n\nOne file per reviewed surface per build.\n');
+    await writeFile(dir, 'docs/evidence/screen-reviews/captures/build13/01.md', 'not a record\n');
+    const res = await review({ targetDir: dir });
+    check('README.md + captures/ ignored → PASS', res.status === 'PASS');
+    check('no finding mentions README', !res.findings.some((f) => /README/i.test(f.location + f.message)));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 14b — a file that DOES open with a frontmatter block but names no
+  // surface is a real malformed record and still reports.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\n');
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', BRIEF);
+    await writeFile(dir, 'docs/evidence/screen-reviews/today-12-cold.md', goodReview());
+    await writeFile(dir, 'docs/evidence/screen-reviews/settings-12-cold.md', goodReview({ surface: 'settings' }));
+    await writeFile(dir, 'docs/evidence/screen-reviews/orphan.md', '---\nkind: cold\nbuild: 12\n---\n\nbody\n');
+    const res = await review({ targetDir: dir });
+    check('frontmatter without surface → still reported', res.findings.some((f) => /names no `surface:`/.test(f.message)));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Fixture 15 — a Minder-shaped roster: prose intro, `Name: description`
+  // bullets that wrap across lines, and a hyphenated surface name. The reviewer
+  // must match on the NAME, not the sentence. (First real run looked for a
+  // review whose surface equalled the whole first line of the bullet.)
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: preserve\ndesign_direction: "DIRECTION.md"\n');
+    await writeFile(dir, 'DIRECTION.md', '# Direction\n');
+    await writeFile(
+      dir,
+      'docs/design/experience-brief.md',
+      `# Experience brief
+
+## Surfaces
+
+The two surfaces this brief governs. A screen-composition reviewer reads this list.
+
+- Today: The day, from the current moment forward. The only surface the Thesis is
+  written about, and the only one all three concepts compose in full.
+- Add-activity review sheet: The confirmation boundary between typed, pasted, or
+  dictated input and saved data.
+
+## The job, in five questions
+1. What is happening now?
+`,
+    );
+    // Frontmatter says "Today" with a capital T; the roster says "Today:" — both
+    // sides normalize, so the match holds either way.
+    await writeFile(dir, 'docs/evidence/screen-reviews/today-13-cold.md', goodReview({ surface: 'Today', build: '13' }));
+    const res = await review({ targetDir: dir });
+    check('prose bullets parse to names', /surfaces=2/.test(res.metadata.targetSummary));
+    check('Today matched despite the description', /reviewed=1\/2/.test(res.metadata.targetSummary));
+    check(
+      'the unreviewed surface is named, not quoted as a sentence',
+      res.findings.some((f) => /'add-activity review sheet' has no blind cold review/.test(f.message)),
+    );
+    check(
+      'no finding quotes the prose',
+      !res.findings.some((f) => /from the current moment forward/.test(f.message)),
+    );
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
   // Unit — surface extraction.
   check('extractSurfaces reads bullets', JSON.stringify(extractSurfaces('## Surfaces\n- today\n- `settings`\n')) === '["today","settings"]');
   check('extractSurfaces stops at next heading', JSON.stringify(extractSurfaces('## Surfaces\n- today\n\n## Job\n- not-a-surface\n')) === '["today"]');
   check('extractSurfaces drops trailing gloss', JSON.stringify(extractSurfaces('## Surfaces\n- today — the default tab\n')) === '["today"]');
   check('extractSurfaces returns [] with no section', extractSurfaces('# brief\n').length === 0);
+
+  // Unit — every accepted bullet form resolves to the same name.
+  check('bullet form: bold', surfaceNameFromBullet('**Today.** The day, from now forward.') === 'today');
+  check('bullet form: colon', surfaceNameFromBullet('Today: The day, from now forward.') === 'today');
+  check('bullet form: em dash', surfaceNameFromBullet('Today — the default tab') === 'today');
+  check('bullet form: spaced hyphen', surfaceNameFromBullet('Today - the default tab') === 'today');
+  check('bullet form: bare', surfaceNameFromBullet('today') === 'today');
+  check('bullet form: code span', surfaceNameFromBullet('`settings`') === 'settings');
+  check(
+    'a hyphenated NAME survives (only a spaced hyphen splits)',
+    surfaceNameFromBullet('Add-activity review sheet: the confirmation boundary') === 'add-activity review sheet',
+  );
+  check('bold wins over a colon inside the description', surfaceNameFromBullet('**Today.** Now: and next.') === 'today');
+  check('multi-word bare name is kept whole', surfaceNameFromBullet('Calendar setup') === 'calendar setup');
 
   // Unit — release-marker matching.
   check('markerMatches exact', markerMatches('12', '12'));
