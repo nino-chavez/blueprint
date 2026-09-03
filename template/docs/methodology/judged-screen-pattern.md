@@ -35,6 +35,80 @@ A fourth symptom shows the same root reaching into interaction. A read-only cale
 
 **What it means:** a gate that reads source can prove a screen conforms. It can never judge whether the screen is good. Those need different oracles, and Blueprint had only the first.
 
+### The sharper case: every source-level check passed on a feature that rendered nowhere
+
+The Minder case above is a taste failure — the rules were followed and the screen
+was still weak. That version of the argument has an escape hatch: a reader can
+answer "then write better rules." The following case closes it, because the code
+was not merely rule-conformant. It was correct in every unit anyone tested, and
+the feature did not exist on screen at all.
+
+Minder's Today screen added a "more below" scroll cue: a scrim and a chevron shown
+only when content extends past the viewport. It never rendered. Not on one state —
+on every screen, on every build, from the commit that introduced it until the one
+that fixed it.
+
+Three checks reported it working, and each was blind for a different reason:
+
+| Check | Verdict | Why it could not see the defect |
+|---|---|---|
+| Source review — twice, including an independent conformance pass | Correct | The overlay is attached to the right view, at the right alignment, gated on the right predicate. All true. Composition is not readable from the parts. |
+| Unit tests on the predicate | Pass | The arithmetic was never wrong. It was being handed a zero. A pure function under test cannot see what its caller passes it in production. |
+| A UI test asserting the affected control | Pass | It asserted `isHittable` on the primary action. A button sliced in half by the screen edge is still hittable. The assertion was true and the screen was wrong. |
+
+The cause was a measurement that silently returned its default. The content height
+was reported through a SwiftUI preference emitted from inside a `.background(...)`
+modifier on the scroll's content stack, and the `onPreferenceChange` on the
+ScrollView received the key's default value of `0` rather than a measured height.
+A `contentHeight > 0` guard — written to mean "not measured yet" — then held the
+cue off permanently. **A guard against unmeasured geometry is indistinguishable
+from a guard against absent content**, and that is what made the failure silent
+rather than loud.
+
+The diagnostic that found it was rendering the live values into the frame itself:
+`ch=0 off=0 vp=651` — the viewport measured correctly, the content did not. That
+took one build. Static reading of the same code had already produced two confident
+"correct" verdicts.
+
+**What generalizes, beyond one framework's preference semantics:**
+
+1. **A defect can be invisible to source review, unit tests, and UI assertions
+   simultaneously, and it is not exotic when it is.** The common shape is a value
+   that fails to a plausible default rather than to an error. Nothing throws,
+   nothing logs, and every component behaves exactly as specified in isolation.
+2. **A "not yet measured" sentinel deserves suspicion proportional to what it
+   suppresses.** When the same value means both "no data yet" and "nothing to
+   show", a plumbing failure renders as a legitimate empty state forever.
+3. **An accessibility-tree assertion is not an appearance assertion.** `isHittable`,
+   `exists`, and frame intersection answer reachability. They are the right oracle
+   for the accessibility row of § 1's table and the wrong one for the appearance
+   row, and a suite full of them can be entirely green while the screen is wrong.
+4. **The capture is not a formality at the end of the work. It is the only check
+   that was capable of finding this.** A team that treats device capture as
+   documentation-after-the-fact will ship this class of defect and have four green
+   receipts explaining why they could not have.
+
+**Provenance.** Resolved at source on 2026-09-03 in Minder's `s7-marquee` worktree,
+branch `s7/marquee-today`. Defect introduced in `de3039b`, fixed in `dbd5d2a`; the
+authorizing ledger row is `DIRECTION.md` S7-15, which records the failure in the
+row itself rather than in a commit message alone. The passing UI assertion is
+`ios/Minder/MinderUITests/ScreenReviewCaptureUITests.swift`
+`testCapture08AccessibilityXXXL`, which asserts `today-lit-primary-action` hittable
+at `maxSwipes: 0`. The capture that found it is
+`docs/evidence/screen-reviews/captures/build15-sim/08-accessibility-xxxl-dark.png`;
+`build16-sim/` is the same state after the fix, and
+`build16-sim/geometry/geometry-08.txt` is the accessibility-tree dump that settled
+which rows sit below the fold.
+
+**One caveat, stated because this pattern's own rules require it.** What was
+measured is that the preference arrived as its default while the viewport measured
+correctly, and that moving the emitter into the primary content chain fixed it.
+That a `.background`-emitted preference *cannot* reach an ancestor's
+`onPreferenceChange` is the working explanation for that observation, not a
+verified framework rule — no vendor documentation was pulled. A consumer hitting
+similar symptoms should reproduce the measurement rather than trust the mechanism
+as stated here. The four generalizations above do not depend on it.
+
 ### The same shape on two other stacks
 
 This is not a native-iOS problem, and it is not one consumer's taste.
