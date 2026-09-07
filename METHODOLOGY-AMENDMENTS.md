@@ -4,6 +4,31 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-09-06 — Root release instructions must match the existing publisher
+
+**Trigger**: The audit amendment in PR #35 followed `.changeset/README.md` and
+added a root-package changeset. [Release run 34071248944](https://github.com/nino-chavez/blueprint/actions/runs/34071248944)
+failed because Changesets does not discover the publishable root package in
+the current workspace. `npm run changeset -- status` reproduced the failure.
+
+**Scope**: Bug-fix to existing source release instructions, following wave 104.
+
+**Status**: Release note moved to `CHANGELOG.md` under Unreleased. Package
+version, publisher, workflow, and consumer inputs remain unchanged.
+
+The canonical changelog and `bin/release-if-unpublished.mjs` already document
+the root release path. The 2026-06-10 amendment below records the same failure.
+The stale directory README sent this amendment back through the rejected path.
+Correct that instruction and remove the incompatible changeset. The earlier
+wave-104 entry's queued-changeset statement is superseded by this correction;
+package publication and pilot validation remain separate.
+
+**Freeze acknowledgment**: This repairs the approved amendment's release-note
+packaging. It changes no consumer files, pins, audit inputs, package version,
+or release implementation.
+
+---
+
 ## 2026-09-06 — A product experience audit needs observed journeys and independent design judgment
 
 **Trigger**: The Rally HQ audit request combined synthetic tournament roles,

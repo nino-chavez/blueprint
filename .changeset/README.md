@@ -1,18 +1,38 @@
 # Changesets
 
-This directory powers versioning + the changelog for the Blueprint methodology distribution. See the [Changesets docs](https://github.com/changesets/changesets) for the full workflow.
+Root CLI release notes belong in [CHANGELOG.md](../CHANGELOG.md#unreleased).
+Do not add a changeset for `@nino-chavez-labs/blueprint-cli`.
 
-## The Blueprint discipline (ADR-0007)
+## Root releases
 
-Every change that affects consumers adds a changeset:
+For each change that affects consumers, add its intent and any migration steps
+to the changelog's **Unreleased** section.
 
-```bash
-npm run changeset
-```
+When a root package release is approved:
 
-Pick the bump (patch / minor / major) and **write the consumer-facing intent** in the generated markdown. For a **breaking** change (major), the changeset body IS the migration guide — name what breaks and the exact migration step. This is why Blueprint uses Changesets over commit-parsing tools: the changelog is a stakeholder artifact, not a commit dump.
+1. Choose the semver bump and record the release scope in `CHANGELOG.md`.
+2. Update the root `package.json` version and matching root metadata in
+   `package-lock.json`.
+3. Merge through the normal review path. The [Release workflow](../.github/workflows/release.yml)
+   runs core tests, stamped template checks, and doctor before calling
+   [the root publisher](../bin/release-if-unpublished.mjs).
 
-- `npm run version` folds pending changesets into `CHANGELOG.md` + bumps `package.json`.
-- `npm run release` publishes (CI, on merge to `main`, via `.github/workflows/release.yml`).
+The publisher skips a version already on npm. A source-only amendment can
+therefore merge without publishing a package.
 
-Deprecations follow the staged Node model (doc-only → warn → removed-on-MAJOR) with a `BP-DEPR-NNN` code named in the changeset (ADR-0007). Removal of a deprecated primitive yields to the methodology-freeze cadence (ADR-0005): EOL slips to the next post-freeze MAJOR, never forcing a waiver mid-migration.
+## Legacy tooling
+
+ADR-0007 originally selected Changesets. The workspace layout excludes the
+publishable root CLI from Changesets' package discovery. A changeset naming
+that package stops the workflow before publication.
+
+`npm run changeset` and `npm run version` still invoke Changesets; they do not
+version the root CLI. The existing root publisher and changelog remain the
+release path. Replacing that tooling is a separate release-engineering decision.
+
+## Deprecations
+
+Record each `BP-DEPR-NNN` code and migration in the changelog. Deprecations
+progress from documentation to warnings, then removal in a major release.
+Under ADR-0005, removal waits for the next major release after the methodology
+freeze ends.
