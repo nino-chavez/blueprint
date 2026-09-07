@@ -15,38 +15,109 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+## 0.8.0
+
+Product experience auditing, rendered-screen review, and reader feedback now
+ship with the CLI. This release also includes changes from waves 91–104 that
+were not distributed in `0.7.0`. Read the upgrade notes: the document-quality
+reviewer can now block progression when a percentage breakdown lacks a
+derivation statement.
+
 ### Added
 
 - **Product experience audit procedure** (wave 104) — existing brownfield
-  research now covers observed role journeys, blind screen review, information
-  architecture, interaction design, Gestalt, art direction, accessibility, and
-  comparable products. Research paths, stage labels, and cold-review ordering
-  are aligned. The procedure remains a pilot; it adds no automatic gate,
-  schema field, or consumer migration.
-
-- **Writing-decision stack** (wave 101) — the reader-clarity pass now orders
-  evidence, reader/job, argument, cognitive load, voice, and surface mechanics;
-  keeps Mom Test, Diátaxis, Minto/SCQA, and local CTE shorthand in their proper
-  jurisdictions; and treats corpus metrics as diagnostics rather than prose
-  gates.
-
+  research covers observed role journeys, blind screen review, information
+  architecture, interaction design, Gestalt, art direction, accessibility,
+  and comparable products. `/blueprint-research` points to the procedure.
+  Capture records and separate blind/informed review preserve the evidence
+  behind each finding. This is a documented pilot, not a completed validation;
+  it adds no automatic gate, schema field, or consumer migration.
+- **Judged-screen review** (waves 102–103) — a new
+  `screen-composition-reviewer` and expanded `design-principles-reviewer`
+  distinguish `preserve`, `refit`, and `rethink` work. The procedure separates
+  cold review of rendered screens from review against an approved direction.
+  Source checks cannot substitute for observing the screen or its behavior.
+  Enforcement remains advisory by default; strict screen review is opt-in.
 - **Review and disposition loop** (wave 97) — `review-contract.json` binds a
   human/team review to an exact candidate, reader, asks, authority, capture
   adapter, automation boundary, disposition owner, and return path.
   `blueprint feedback` validates the contract plus candidate-pinned submissions
   and dispositions; `--gate` requires a real closed loop and durable
-  return-to-reader receipt.
-- **Renderer-independent examples and guidance** — the capability works with a
-  Blueprint portal, bespoke site, native product, document, meeting, Slack, or
-  an Atelier-style annotation substrate. Blueprint does not add a required
-  hosted feedback service.
+  return-to-reader receipt. Examples cover portals, native products, documents,
+  and meetings without requiring a hosted feedback service.
+- **Reader contracts and encounter review** (wave 96) — fresh stamps include
+  `reader-contract.json`. `encounter-audit-reviewer` checks declared sources,
+  reader paths, and language constraints, with `doctor` integration. Rendered
+  observation and human review remain separate requirements.
+- **Research-only initialization** (wave 98) — `blueprint init --variant=research`
+  creates an evidence tree and decision memo without a
+  portal. This uses the existing research variant.
+- **Writing guidance** (waves 95 and 101) — plain-language and Diátaxis guidance
+  distinguishes documentation jobs. The writing-decision stack orders
+  evidence, reader/job, argument, cognitive load, voice, and surface mechanics.
+  Corpus metrics remain diagnostics rather than prose gates.
 
 ### Changed
 
+- **Document-quality enforcement** (wave 99) — the Documents-stage gate in
+  every variant now runs `doc-quality-auditor`. Its derivation check can block
+  advancement; figure-attribution warnings allow advancement. See the precise
+  trigger and remedy below.
+- **Actor and handoff contracts** (waves 91–93) — handoff gates apply when
+  `actor-output.yml` declares a receiving actor: `kind: team`, or an outcome
+  beginning with `receive-` or `build-intake`. Without one, handoff is
+  not applicable. With one, declare a ready/issued `handoff-manifest` output
+  serving that actor. The manifest is authored manually; no handoff generator
+  ships in this release.
 - `blueprint doctor` validates a review loop when a consumer declares one.
   Stage feedback gates delegate to the same semantic validator; JSON directory
   presence alone cannot produce green. Existing Markdown capture/triage and
   consumers without `review-contract.json` are unchanged.
+- Fresh stamps use a neutral project logo (wave 94). Existing consumer artwork
+  stays in place unless the consumer restamps it or supplies a replacement.
+
+### Fixed
+
+- Top-level YAML routing now handles quotes and comments consistently. Nested
+  fields with the same name cannot select a different pipeline. Persona-fit
+  checks use the intended field meaning (wave 98).
+- Encounter review strips query strings and fragments from URLs before
+  checking visible path terminology (wave 100).
+- Root package-lock metadata now matches the CLI version.
+
+### Upgrade notes
+
+1. **Check document derivations before advancing.** `derivation-methodology`
+   blocks when a deliverable has at least two percentage figures, puts a
+   percentage beside an incompleteness marker (such as `uncategorized` or
+   `unverified`), and declares no derivation. Explain the source and calculation
+   in a `Methodology` heading/label or a deliberate declaration such as
+   `<!-- derivation: <source> — <how computed> -->`. The lint checks that a
+   declaration exists; a reviewer must still verify the calculation. It scans
+   deliverables, not the whole repository; `02-prescription.yml` is excluded.
+   `figure-attribution` findings remain warnings.
+2. **Expect advisory design findings.** Declare `design_intent` in
+   `blueprint.yml`. `preserve` needs an existing `design_direction` record;
+   `refit` also needs an experience brief; `rethink` needs a brief, three
+   divergent whole-screen concepts, and a human selection record. Follow the
+   judged-screen procedure for rendered review. `screen_review_policy: strict`
+   opts into blocking screen checks; the default remains advisory while the
+   pattern awaits broader validation. This does not authorize a redesign.
+3. **Contracts activate their own checks.** A declared reader contract or
+   review contract must have valid sources and records. Missing reader
+   contracts remain advisory during migration; absent review contracts keep
+   prior behavior. Receiving actors activate the handoff requirement above.
+
+The product audit pilot and judged-screen promotion are still open. Experimental
+`blueprint-steering/2` and `blueprint-source-influence/0` contracts remain held
+outside the public template and CLI. Installing this package does not promote
+those experiments or complete any consumer's audit.
+
+**Known limitation (#37):** `doctor` can fail on an untouched brownfield stamp
+because the terminology reviewer reads TSX comments and code as visible copy.
+The optional event panel also contains a `payload` label. This was reproduced
+in both `0.7.0` and this release; the generated portal builds successfully.
+The extraction and label fix is tracked separately.
 
 ## 0.6.0
 
