@@ -92,12 +92,19 @@ Override the per-initiative profile name (`--profile-name <initiative-slug>-blue
 
 | Command | Stage | What it does |
 |---|---|---|
-| `/blueprint-research` | Research / Diagnose | Codebase exploration, competitive analysis, market comparables |
+| `/blueprint-research` | Research / Diagnose | Current-state research, competitive analysis, and product experience audits |
 | `/blueprint-prototype` | Prototype | Build HTML pages, strategy/current-state panels, landing page |
 | `/blueprint-docs` | Documents | Generate strategy, feasibility, research, integration docs |
 | `/blueprint-validate` | Fact-Check | Reviewer-loop convergence + diagnose-loop structured fixes |
 | `/blueprint-deploy` | Deploy | Package and deploy to Vercel / Cloudflare Pages |
 | `/blueprint-triage` | Iterate | Triage stakeholder feedback through state machine |
+
+For a comprehensive audit of an existing product, `/blueprint-research` loads
+`$BLUEPRINT_HOME/template/docs/methodology/product-experience-audit.md`.
+It covers role-based frontend journeys, captured states, independent visual and
+interaction reviews, art direction, accessibility, and comparable products.
+Use the existing brownfield stages; the procedure adds no phase or automatic
+acceptance gate.
 
 ## Agents
 

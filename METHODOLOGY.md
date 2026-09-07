@@ -176,6 +176,21 @@ For greenfield variants: a planned surface map covering the same fields ahead of
 
 Canonical audit template at `template/methodology/design/audit-template.md`. Canonical example at `template/methodology/design/EXAMPLE-surface-audit.md` (from blueprint-redesign's own portal audit).
 
+### Product experience audit
+
+For a comprehensive audit of a live product, `/blueprint-research` runs the
+[product experience audit](template/docs/methodology/product-experience-audit.md).
+The procedure combines role-based frontend journeys, captured states, a fresh
+blind screen review, and informed reviews of IA, interaction, Gestalt, copy,
+visual styling, art direction, accessibility, and comparable products.
+
+Use the existing brownfield stages: capture in Stage 0; diagnose with evidence
+in Stage 1; prescribe changes in Stage 2; define the design direction in Stage 3.
+The surface/component inventory above remains one subtrack. The procedure adds
+no variant or executable gate. Its evidence and model-tier assignments require
+pilot validation before they become automatic checks. A website renovation
+playbook can call the same procedure during discovery rather than own a copy.
+
 ### Reference Quality Grading (added 2026-05-27 amendment)
 
 Stage 1 research routinely cites external references — apps, design systems, patterns — to ground design recommendations. The failure mode: selecting references by name-recognition (ESPN, Sofascore) and treating "popularity" as "quality." The result: recommendations inherit convention-track flaws (ad-clutter, accessibility gaps) because they were grounded in "what users recognize" not "what is actually good design."

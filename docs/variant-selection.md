@@ -42,7 +42,7 @@ Run this at project init. Answer in order; first "yes" wins.
 
 **Worked examples:**
 
-- **Rally HQ** — live tournament platform, but blueprint work targets unbuilt north-star surfaces (multi-format support, league standings, bracket export). Q1=yes, Q2=yes → **midstream**.
+- **Rally HQ, unbuilt surfaces** — blueprint work targeting new multi-format support, league standings, or bracket export is **midstream**. A separate audit of the existing tournament experience is **brownfield**. Choose by the initiative's job, not the product's name.
 - **website-nc-v3** — existing v2 site, blueprint work is an audit-driven redesign. Q1=yes, Q2=no (no in-flight build), Q3=yes → **brownfield**.
 - **Signal Dispatch blog** — live blog (275 items, RSS subscribers), blueprint work is UX/UI/CX audit. Q1=yes, Q2=no, Q3=yes → **brownfield**.
 - **the subscriptions initiative** — gated; revisit at session reopen.
@@ -116,6 +116,15 @@ Stage 7: Deploy + Iterate    → share-link is the brief if no prototype; the pr
 
 The numbered file convention (`01-` / `02-` / `03-`) is canonical for brownfield. It signals stage ordering at the filesystem level — a reader opening the directory sees diagnose before prescription before brief, with no guessing.
 
+For a comprehensive product, UI/UX, or creative-design audit, run
+`/blueprint-research` with the
+[product experience audit procedure](../template/docs/methodology/product-experience-audit.md).
+It captures real journeys and states before independent reviews of IA,
+interaction, Gestalt, copy, visual character, accessibility, and comparables.
+The diagnosis ends with evidenced gaps. Recommendations and replacement design
+directions follow in the existing Prescription and Design Brief stages.
+This is a procedure within brownfield, not another mode or phase.
+
 ### Research — strategy pipeline
 
 There is no product to build, prototype, or audit. The work starts from **input assets** (briefs, decks, datasets, dashboards) and ends in a **decision memo** someone acts on. The two failure modes this pipeline exists to prevent — both observed in the mrr-automation dogfood (`METHODOLOGY-AMENDMENTS.md` 2026-06-16) — are (a) synthesizing before grounding in *who the work is for*, and (b) producing product-shaped scaffolding (a portal, frontmatter ceremony, "axioms") that no stakeholder can use. The persona/JTBD gate fixes (a); the decision-memo-as-deliverable + `persona-fit-reviewer` fix (b).
@@ -178,9 +187,12 @@ Reviewer agents (next section) enforce these. Empty directories next to a stage 
 | 3 Prototype / Design Brief | Greenfield | Prototype shell + per-page `_meta/<id>.json` |
 | 3 Design Principles | Midstream | Inherited from existing product + delta noted |
 | 3 Design Brief | Brownfield | `03-design-brief.md` with visual + IA direction |
-| 4 Fact-Check | All | Ralph Wiggum convergence — all reviewer agents pass |
-| 5 Documents | All | At minimum the strategy doc; full package per variant |
-| 6 Deploy | All | Live URL + green CI gates |
+| 4 Fact-Check | Greenfield / Research | Evidence reconciliation and applicable reviewer convergence |
+| 5 Fact-Check | Midstream / Brownfield | Evidence reconciliation and applicable reviewer convergence; required even without a brownfield prototype |
+| 5 Documents / Decision Memo | Greenfield / Research | Deliverables defined by the selected variant |
+| 6 Documents | Midstream / Brownfield | Strategy package and variant-specific artifacts |
+| 6 Deploy / Deliver | Greenfield / Research | Deliver the declared reader output; hosting and CI checks where applicable |
+| 7 Deploy + Iterate | Midstream / Brownfield | Deliver the declared reader output; hosting and CI checks where applicable |
 
 ## Reviewer agents per variant
 
@@ -191,10 +203,10 @@ Reviewer agents enforce stage-completion gates. The single source of truth is `t
 | `research-completeness-reviewer` | Stage 1 → Stage 2 | ✓ (4 legs) | ✓ (2 legs) | ✓ (5 legs) |
 | `design-principles-reviewer` | Stage 2 → Stage 3 | ✓ | — | — |
 | `prescription-evidence-reviewer` | Stage 2 → Stage 3 | — | ✓ | ✓ |
-| `fact-check-loop-reviewer` | Stage 4 convergence | ✓ | ✓ | ✓ |
-| `doc-quality-auditor` | Stage 5 → Stage 6 | ✓ | ✓ | ✓ |
-| `terminology-linter` | Stage 5 → Stage 6 | ✓ | ✓ | ✓ |
-| `prototype-smoke-runner` | Stage 6 ship | ✓ | ✓ | ✓ (if Stage 4 ran) |
+| `fact-check-loop-reviewer` | Fact-Check convergence | Stage 4 | Stage 5 | Stage 5 |
+| `doc-quality-auditor` | Documents → delivery | Stage 5 → 6 | Stage 6 → 7 | Stage 6 → 7 |
+| `terminology-linter` | Documents → delivery | Stage 5 → 6 | Stage 6 → 7 | Stage 6 → 7 |
+| `prototype-smoke-runner` | Before prototype delivery | Stage 6 | Stage 7 | Stage 7 (if Stage 4 ran) |
 
 The `fact-check-loop-reviewer` is the orchestrator that fans out to `citation-checker` and `current-state-claim-verifier` (and any future fact-check sub-agents) and decides convergence. Naming convention: the *-reviewer suffix denotes a gate agent; the *-checker and *-verifier suffixes denote leaf sub-agents the orchestrator fans out to.
 
@@ -206,7 +218,7 @@ The `fact-check-loop-reviewer` is the orchestrator that fans out to `citation-ch
 
 2. **Convergence loop runtime** → **single orchestrator** initially. Reason: reviewers are currently read-only audit agents; worktree-per-reviewer would buy isolation against a failure mode that does not exist yet. Promote to worktree-per-reviewer when a reviewer gains write authority (e.g., a future auto-fix mode for terminology-linter).
 
-3. **Smoke-flake policy** → **block** for share-link-to-stakeholder paths (greenfield Stage 6, brownfield Stage 6 when a prototype shipped); **follow-up runs** for internal-only paths (midstream intermediate convergence loops where the prototype is not yet shared). Default is block. Reason: Blueprint's audience is VPs clicking Slack links — Codex's throughput argument doesn't transfer to that audience, but does transfer to mid-loop iteration.
+3. **Smoke-flake policy** → **block** for share-link-to-stakeholder paths (greenfield Stage 6, brownfield Stage 7 when a prototype shipped); **follow-up runs** for internal-only paths (midstream intermediate convergence loops where the prototype is not yet shared). Default is block. Reason: Blueprint's audience is VPs clicking Slack links — Codex's throughput argument doesn't transfer to that audience, but does transfer to mid-loop iteration.
 
 ## Variant declaration in `blueprint.yml`
 

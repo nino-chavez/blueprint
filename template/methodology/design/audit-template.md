@@ -13,6 +13,14 @@ related:
 
 # Cross-audit reconciliation — canonical Stage 1 design-discovery audit shape
 
+**Scope:** this template inventories surfaces and components. For an audit of
+the whole product experience, use it within the
+[product experience audit](../../docs/methodology/product-experience-audit.md),
+which also covers role-based journeys, blind screen review, IA, interaction,
+Gestalt, art direction, accessibility, and comparables. The non-goals below
+bound this inventory; they do not exclude those tracks from a comprehensive
+audit. Creating a new identity or system remains subsequent design work.
+
 ## The question
 
 The 2026-05-26 methodology amendment proposed a Stage 1 design-discovery sub-track that produces inventory-led artifacts (surface audit, component audit, content-type taxonomy, auth-boundary map) before Stage 2 design-system work begins. Three audits have been authored across three consumer initiatives independently:
