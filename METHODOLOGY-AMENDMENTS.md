@@ -4,6 +4,76 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-09-06 — A product experience audit needs observed journeys and independent design judgment
+
+**Trigger**: The Rally HQ audit request combined synthetic tournament roles,
+real event scenarios, a blind visual review, IA, interaction, Gestalt, styling,
+art direction, accessibility, and comparable products. The current surface
+inventory did not constitute that audit, and the research skill did not provide
+the missing execution order.
+
+**Scope**: Candidate for methodology promotion
+
+**Bucket**: template
+
+**Status**: Active — source amendment prepared; end-to-end pilot and release
+remain separate. No executable gate or consumer migration is included.
+
+The operator approved amending Blueprint after reviewing the ownership and
+execution analysis. The procedure belongs to the existing brownfield stages:
+capture, Diagnose, Prescription, and Design Brief. `/blueprint-research` already
+owns entry to Diagnose, so it can load the procedure without a second command.
+Forge-site can consume the same procedure during Recon.
+
+The amendment adds one canonical procedure and pointers from the methodology,
+variant guide, inventory template, research skill, researcher contract, and
+consumer charter. It makes role isolation, frontend evidence, cold/informed
+review separation, IA/interaction/Gestalt/art-direction scope, accessibility,
+comparable provenance, and completion limits explicit. Work is assigned by
+capability and effort through the host's current routing policy. It also aligns
+new brownfield comparative research with `research/competitive/`, the directory
+the existing reviewer requires.
+
+The scope was checked against a role-based web application, a native personal
+planning application, and a public business website. Those are portability
+cases for the procedure, not claims that three audits have passed. The existing
+judged-screen pattern supplies cross-product evidence for the evidence boundary;
+the complete combined procedure still requires pilot validation. Stable checks
+may later extend an existing reviewer; document presence cannot prove that an
+observed audit happened.
+
+**Freeze acknowledgment**: The operator explicitly requested this upstream
+amendment. Fleet and current Codex work were inspected: Rally HQ has active
+audit/rehearsal work. Fleet pins are not a live migration lock. Changes are
+isolated in the Blueprint worktree; no consumer files, pins, or environments
+were updated, and the in-flight audit retains its existing inputs.
+
+**Promotion**: This is a substantial template amendment. [RFC #34](https://github.com/nino-chavez/blueprint/issues/34)
+records the owner-approved scope before the implementation PR. The code-owner
+review required by `CONTRIBUTING.md` remains separate. A patch changeset queues
+the procedure for the next package release; no release has occurred.
+
+**Validation**: Core self-tests and stamper smoke checks pass. Package dry-run
+includes the procedure and its entry-point files. Documentation currency checks
+report no broken links or unknown CLI commands. The procedure's table structure
+and the append-only preservation of earlier records were checked. Doctor's
+warnings match the unchanged baseline; its informational unresolved paths here
+name prescribed consumer output directories, not missing source references.
+An independent protocol review identified and prompted fixes to stage labels,
+cold-review metadata and ordering, diagnostic versus acceptance records, native
+lifecycle coverage, and the boundary between audit and initiative completion.
+These checks validate the amendment's integration, not a completed product audit.
+
+**References**:
+- [Product experience audit procedure](template/docs/methodology/product-experience-audit.md)
+- [Brownfield variant](docs/variant-selection.md#brownfield--audit-pipeline)
+- [Existing inventory scope](template/methodology/design/audit-template.md)
+- [Judged-screen evidence and review boundaries](template/docs/methodology/judged-screen-pattern.md)
+- [Research entry point](template/.claude/skills/blueprint/research.md)
+- [Existing research completeness contract](template/.claude/agents/blueprint/reviewers/research-completeness-reviewer.md)
+
+---
+
 ## 2026-07-02 — Reviewer jurisdiction audit: every drift lint has a surface it doesn't cover, one is wired to no enforcement point, and nothing at all covers the consumer-shipped docs
 
 **Trigger**: Operator-directed audit after the same failure shape surfaced three times in one day (the entry below; the wave-72 labels that survived three weeks in the reader-path set; wave 75's release-not-gated-on-doctor): detection exists, but a surface sits outside its jurisdiction — or the detector runs into the void. Method: extracted each corpus-scanning reviewer's actual walk roots from its code, enumerated the tree's prose surfaces, diffed.

@@ -1,14 +1,37 @@
 ---
 name: blueprint-research
-description: Research phase of a Blueprint initiative. Produces competitive analysis, codebase exploration, and market comparables. Use during Stage 1 of a new Blueprint initiative when defining scope and identifying reference patterns.
+description: Research or Diagnose work for a Blueprint initiative. Produces current-state evidence, competitive analysis, and comparables. Runs comprehensive product experience audits within the existing brownfield stages.
 ---
 
 # /blueprint-research
 
-Research phase of a Blueprint initiative. Produces competitive analysis, codebase exploration, and market comparables.
+Research or Diagnose work for a Blueprint initiative. Follow the selected variant's stage and output contracts.
 
 ## When to use
 At the start of an initiative, or when new competitive/market context is needed.
+
+## Product experience audit
+
+When the request concerns the usability, workflows, IA, interaction, visual
+quality, or art direction of an existing product, first load
+`$BLUEPRINT_HOME/template/docs/methodology/product-experience-audit.md`.
+An audit-first initiative uses the existing `brownfield` variant. A scoped audit
+within a midstream initiative keeps that initiative's lifecycle.
+
+Use that procedure as the controlling sequence. Perform the applicable general
+research steps below where it places them. It owns live capture, role
+simulation, review isolation, coverage, and staged assignments.
+Preserve the cold review before consulting code, prior verdicts, or competitor
+designs. Where this session already has that context, use a fresh reviewer for
+the blind portion and disclose any isolation limit.
+
+For brownfield, write current-state evidence to `research/current-state/`, roles
+to `research/personas/`, journey analysis to `research/funnel/`, and comparisons
+to `research/competitive/`. `01-diagnose.md` at the initiative root cites all
+four. Stage 1 ends with named gaps; remedies go to `02-prescription.yml` and
+design direction to `03-design-brief.md` in the following stages. This skill is
+the entry point; it does not create an additional audit phase or claim that a
+mechanical reviewer has performed the observed reviews.
 
 ## What it does
 
@@ -28,41 +51,43 @@ At the start of an initiative, or when new competitive/market context is needed.
    - **R-4 Motion + micro-interaction** — hover/focus treatment, page transitions, optimistic UI, loading-state pattern (skeleton vs spinner)
    - **R-5 Onboarding / first-60-seconds** — empty canvas vs starter-kit; guided tour vs jump-into-product; where the IA reveals itself
    Document specific patterns with screenshots or descriptions; note what they do well and what they do poorly. If `blueprint.yml prototype.design_system: custom`, all five dimensions are mandatory.
-   Save to `research/competitive-analysis/` AND `research/visual-voice-motion-research.md` (or extend existing).
+   For brownfield, save to `research/competitive/`; for other variants, honor their declared research directories. Preserve and link existing `research/competitive-analysis/` material rather than duplicating it. Link visual/voice/motion observations from the synthesis; a separate `research/visual-voice-motion-research.md` is optional.
 
 4. **Analogous industry research** — For each industry in `research.analogous_industries`:
    - Search for how that industry solves the same problem
    - Look for call deflection / self-service resolution benchmarks
    - Find regulatory precedent if applicable
-   Save to `research/competitive-analysis/`.
+   Save beside the competitive analysis in the variant's research directory.
 
 5. **Pattern synthesis** — Compile all research into a comparables doc:
    - Organize by pattern category (not by source)
-   - For each pattern: what it is, who does it, how it maps, recommendation
-   - What to adopt, what to reject, and why
-   Save to `docs/content/research-comparables.md`.
+   - For each pattern: what it is, who does it, how it maps, and the evidence for that interpretation
+   - Keep brownfield adopt/reject decisions and remedies in the following prescription; other variants follow their synthesis contract
+   For brownfield, synthesize in `01-diagnose.md` with explicit references to all four research legs. Keep proposed remedies in the subsequent prescription. For other variants, use `docs/content/research-comparables.md` or their declared synthesizing artifact.
 
 ## Output files
 - `research/current-state/` — screenshots analysis, codebase findings
-- `research/competitive-analysis/` — per-competitor and per-industry analysis
-- `docs/content/research-comparables.md` — synthesized comparables doc
+- `research/competitive/` — brownfield per-competitor and per-industry analysis; other variants follow their declared directories
+- `research/personas/` and `research/funnel/` — brownfield roles/jobs and observed journeys
+- `01-diagnose.md` — brownfield diagnosis citing all four research legs
+- `docs/content/research-comparables.md` — comparables synthesis for variants using this document shape
 
 ## Specchain integration
 
 If `specchain.enabled` is true in blueprint.yml:
 - Use specchain's `project-discovery` pattern for codebase exploration (four-pass protocol: structure → patterns → data flow → integration points)
 - Governance principles from `specchain/governance/principles.md` apply to how findings are reported (scope minimization, traceability, boundary validation)
-- In squad mode, parallelize: one agent on codebase exploration, one on competitive research, one on cross-industry research
+- In squad mode, parallelize independent research. For experience audits, follow the protocol's capture-before-review order, fresh cold context, and shared-state ownership.
 - Write findings to STATE.md for session persistence across conversations
 
-If specchain is not available, the researcher agent performs all research sequentially using standard search and file reading tools.
+If specchain is not available, use the host's supported tools directly. Parallelism is optional; record any inability to obtain a fresh blind review rather than silently substituting an informed one.
 
 ## Quality checks
 - Every claim cites a source (URL, screenshot reference, or code path)
 - Patterns are organized by category, not by source
-- Each pattern has a concrete "adopt/reject" recommendation
+- Each pattern has evidence and a clear interpretation. Brownfield recommendations belong in the subsequent prescription.
 - **R-1 through R-5 each have at least one per-anchor finding** (per `$BLUEPRINT_HOME/docs/case-studies/design-system-audit.md`). A research pass that covers IA + behavior (R-1, R-2) but skips visual/motion/onboarding (R-3, R-4, R-5) is incomplete when `prototype.design_system: custom`.
-- The synthesis includes a cross-cutting patterns section + a "what's distinctive to one anchor" section + recommended Design Principles (DP-N entries)
+- The synthesis identifies cross-cutting patterns and what is distinctive to one anchor. Brownfield diagnosis ends with named gaps; Design Principles and selected direction belong in the subsequent design work.
 
 ## Output discipline
 

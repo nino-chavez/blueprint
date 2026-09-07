@@ -277,7 +277,7 @@ They also cannot be the same pass by construction: the cold reviewer is disquali
 
 #### Who reviews
 
-A reviewer who has **not** read `DESIGN.md`, the PRD, the experience brief's rationale, or the implementation. Cold. They may read the brief's five job questions — that is the standard they judge against — and nothing else.
+A reviewer who has **not** read `DESIGN.md`, the PRD, the experience brief's rationale, or the implementation. Cold. They may read the brief's five job questions and the capture manifest's factual settings — capture ID, device/viewport, appearance, text size, contrast, and motion settings. Keep evaluative captions, lifecycle answers, and prior findings outside this packet. The questions state the job; the metadata identifies what was rendered without explaining its intended hierarchy.
 
 The reviewer is never the implementer. It may be a second model, a second session, or a person. The requirement is only that the reviewer arrives without the context that makes a weak screen look justified. Context is what the person shipping already has, and it is precisely what stops them from seeing the frame.
 
@@ -285,7 +285,7 @@ The reviewer is never the implementer. It may be a second model, a second sessio
 
 Device captures, one per representative state. A real device for native. A real viewport for web. Not a simulator screenshot passed off as a device capture, not a component in isolation, not a design file.
 
-Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per state named for that state.
+Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per representative state. The canonical manifest retains the full state name. Give the cold reviewer neutral capture IDs or byte-identical aliases when a filename would reveal a lifecycle answer, such as `active.png` or `failure.png`. Keep the alias-to-original mapping with the record. Device and accessibility condition names may remain in the cold packet; findings and lifecycle answers may not.
 
 The capture set carries a manifest, and the manifest records the device's accessibility state before the run: text size, Increase Contrast, Bold Text, Reduce Motion, and appearance. On a device the operator holds, ask; on a simulator, read it (`xcrun simctl ui <udid> content_size` / `increase_contrast`) and write the answer down before and after. The reason is a measured one: Minder's first physical capture of build 13 (2026-09-01) ran with Increase Contrast on, nothing in the run reported it, and the operator mentioned it only afterward; the whole set was recaptured. Its simulator evidence for builds 10 through 12 had the same defect the other way round, a simulator left at Accessibility XXXL for three days. A capture whose accessibility state is unknown is a capture of an unknown screen, and a reviewer cannot tell an intended accessibility state from an accidental one. Keeping them next to the review is what lets a later reader check the verdict against what was actually judged; a review pointing at captures that have since moved or been regenerated is a claim with no evidence behind it.
 
@@ -440,12 +440,12 @@ Marketing captures are the vendor's best frame under the vendor's chosen conditi
 
 ## 9. Retrofitting a consumer that already shipped
 
-Minder is the worked example. The order matters — the cold review comes before the concepts, because reviewing what shipped tells you what the concepts have to beat.
+Minder is the worked example. The order matters — the cold review comes before the evaluative brief and the concepts, because reviewing what shipped tells you what the concepts have to beat. A comprehensive brownfield audit can supply this baseline through the [product experience audit](product-experience-audit.md); its diagnostic verdicts become gate evidence only through the canonical surface/build records in § 3.
 
 1. **File the amendment entry.** Per `methodology-amendments-convention.md`, so the consumer's adoption is on the record.
-2. **Write the experience brief and the object / action / state matrix** for the surface, against what shipped. The matrix usually finds the interaction defects on its own — an action with no owner, a state with no reverse.
-3. **Run the blind cold review on the shipped build.** A reviewer who has not read the code, on real device captures, across the representative states. Record it with `kind: cold`. Expect `verdict: revise`; that is the point of running it.
-4. **Now declare `design_intent`,** informed by what the cold review found. This is the one step whose order differs from a greenfield run: greenfield declares the intent before there is anything to look at, and a retrofit has a shipped build to read first. A cold review that finds the composition sound and the presentation tired is a `refit`. One that finds the screen is answering the wrong question is a `rethink`. Declaring before reading is guessing.
+2. **Prepare the neutral job questions, surface roster, and capture settings.** Keep rationale, proposed hierarchy, and character out of the cold reviewer's packet. This is enough to scope the initial review; the evaluative brief follows it.
+3. **Run the blind cold review on the shipped build.** A reviewer who has not read the code judges real device captures across the representative states. Record it with `kind: cold`, at the build reviewed. Let the evidence determine `accept` or `revise`; do not prescribe the verdict in the brief.
+4. **Declare `design_intent` and complete the experience brief,** informed by that review. Greenfield declares intent before there is anything to look at; retrofit reads what shipped first. In brownfield, Stage 2 Prescription declares the scalar in `blueprint.yml`, and Stage 3 Design Brief fulfills its brief/concept obligations. Complete the object / action / state matrix from observed behavior: ownership and reversibility cannot be inferred from screenshots. A sound composition with tired presentation may warrant `refit`; a screen answering the wrong question may warrant `rethink`. Record the evidence for the choice.
 5. **If `rethink`: author the concepts and the selection ADR,** with a human making the pick. If `refit`: skip to the next step — the brief plus the cold review's findings are the direction.
 6. **Implement, removing the obsolete UI and its tests rather than layering.** A retrofit that only adds reproduces the additive closeout that caused the problem. The tests pinning unreviewed copy come out in this step, not later.
 7. **Run both reviews on the new build** — cold first, then conformance against the direction you selected.
