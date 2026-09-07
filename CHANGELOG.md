@@ -17,6 +17,13 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Added
 
+- **Product experience audit procedure** (wave 104) — existing brownfield
+  research now covers observed role journeys, blind screen review, information
+  architecture, interaction design, Gestalt, art direction, accessibility, and
+  comparable products. Research paths, stage labels, and cold-review ordering
+  are aligned. The procedure remains a pilot; it adds no automatic gate,
+  schema field, or consumer migration.
+
 - **Writing-decision stack** (wave 101) — the reader-clarity pass now orders
   evidence, reader/job, argument, cognitive load, voice, and surface mechanics;
   keeps Mom Test, Diátaxis, Minto/SCQA, and local CTE shorthand in their proper
