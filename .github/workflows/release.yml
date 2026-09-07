@@ -3,15 +3,14 @@ name: Release
 # Publishes the Blueprint methodology distribution to npm
 # (@nino-chavez-labs/blueprint-cli).
 #
-# Dormant until the BLUEPRINT_NPM_TOKEN secret is set. The secret is named
-# project-specifically (NOT the generic NPM_TOKEN) so it can't clash with an
-# org-level or another project's NPM_TOKEN secret; it's mapped to the NPM_TOKEN
-# env var the changesets action reads (see the env: block below).
+# npm authenticates this GitHub-hosted job through a trusted publisher connection:
+# owner nino-chavez, repository blueprint, workflow release.yml, no environment.
+# The connection must allow direct npm publish before this workflow is merged.
+# No long-lived npm token is required.
 #
 # The changesets action opens a "Version Packages" PR when pending changesets
-# exist; with no pending changesets it runs the publish command, shipping any
-# unpublished version (the first publish of 0.1.0). Trigger via workflow_dispatch
-# (Actions → Release → Run workflow) once the secret is set, or any push to main.
+# exist; with no pending changesets it runs the root package publish command.
+# Trigger via workflow_dispatch or a push to main after the trust is configured.
 
 on:
   push:
@@ -23,7 +22,6 @@ concurrency: release-${{ github.ref }}
 permissions:
   contents: write       # push the version PR + tags
   pull-requests: write  # open the version PR
-  id-token: write       # npm provenance
 
 jobs:
   # Release gates (wave 86). The npm artifact ships template/ — including the
@@ -65,15 +63,19 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [core-tests, template-health]
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write  # npm trusted publishing and provenance; release job only
     steps:
       - uses: actions/checkout@v4
-      # NOTE: no `registry-url:` here on purpose. setup-node's registry-url writes
-      # an .npmrc keyed on NODE_AUTH_TOKEN and pins NPM_CONFIG_USERCONFIG to it —
-      # which made npm publish ANONYMOUSLY (404) because we auth via NPM_TOKEN, not
-      # NODE_AUTH_TOKEN. We write the auth line explicitly below instead.
+      # OIDC requires npm >=11.5.1; pin npm below instead of relying on Node's bundle.
+      # No registry-url or token-backed .npmrc: npm obtains a short-lived OIDC token.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+      - name: Install npm for trusted publishing
+        run: npm install --global npm@11.19.1 --no-audit --no-fund
       # Publish only from a healthy tree. doctor.yml runs the same gate on every
       # push, but as a separate workflow nothing tied its result to the publish
       # path — a failing main could still ship to npm (wave 75). Dependency-free,
@@ -81,10 +83,6 @@ jobs:
       - name: blueprint doctor (release gate)
         run: node bin/blueprint.mjs doctor
       - run: npm install --no-audit --no-fund
-      - name: Authenticate to npm
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> "$HOME/.npmrc"
-        env:
-          NPM_TOKEN: ${{ secrets.BLUEPRINT_NPM_TOKEN }}
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
@@ -92,9 +90,3 @@ jobs:
           publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Project-scoped secret → also exposed as NPM_TOKEN for the changesets
-          # action's own npm calls. The real auth is the ~/.npmrc written above.
-          NPM_TOKEN: ${{ secrets.BLUEPRINT_NPM_TOKEN }}
-          # Provenance is OFF: npm provenance requires a PUBLIC source repo, and
-          # nino-chavez/blueprint is private — leaving it on fails the publish.
-          # Re-enable (publishConfig.provenance + this var) if the repo goes public.
