@@ -4,6 +4,93 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-09-09 — First reference-research report leaves design benefit unmeasured
+
+**Trigger**: The consumer returned its bounded inspiration report after the
+source amendment below was prepared.
+
+**Scope**: Candidate for methodology promotion
+
+**Bucket**: template
+
+**Status**: Active
+
+The Rally HQ dossier records two proposed adaptations, no changed product
+decision, and no measured target-screen improvement. It rejects a composition
+inference from unloaded media and keeps a font directory as a discovery lead.
+This is a completed research report, not a validated design adaptation or
+proof that the optional procedure improves design outcomes. Keep the procedure
+advisory and retain the separate reviewer-RFC follow-up below.
+
+The report itself was read for this update. Its underlying captures were not
+independently re-reviewed in this source-change session, so the observations
+remain attributed to the consumer report.
+
+**References**:
+- Rally HQ, `codex/refit-inspiration-spike-20260909` worktree,
+  `docs/design/creative-refit/inspiration-spike/RESULT.md`, read 2026-09-09.
+- The bounded design-reference amendment immediately below.
+
+---
+
+## 2026-09-09 — Bounded design-reference research should preserve the declared intent
+
+**Trigger**: A consumer refit requested a parallel inspiration spike. The
+shared frontend skill required three whole-screen concepts unconditionally,
+while Blueprint's judged-screen pattern reserves that obligation for `rethink`.
+
+**Scope**: Candidate for methodology promotion
+
+**Bucket**: template
+
+**Status**: Active
+
+The prepared source changes apply the existing question-per-reference method
+to an optional bounded search. `/blueprint-research` routes the request into
+the current initiative's brief instead of restarting diagnosis or a complete
+competitive audit. The judged-screen pattern owns the method; design skills
+can supply discovery resources and consume the resulting research record.
+Resources, font tags, awards, and other brands' palettes do not select the
+consumer's direction.
+
+The external frontend skill is being aligned with Blueprint's existing intent
+contract. The source guidance remains an advisory pilot. It adds no required
+artifact, taxonomy value, stage, schema field, or blocking gate. Consumer
+research must report which decision changed and separate an observed result
+from an unmeasured expectation. End-to-end usefulness has not yet been shown.
+
+**Reviewer follow-up, not implemented**: `research-reference-grader.md`
+currently accepts a design award, design-press citation, or owner-authored
+design-system documentation as sufficient for its Quality classification.
+Those sources can warrant investigation but cannot alone prove that a specific
+screen's appearance or interaction works for the consumer's job. Review the
+rubric against the claim-to-source boundaries in the judged-screen pattern.
+Changing classifications or what passes/blocks requires a separate reviewer
+RFC under `CONTRIBUTING.md`; this amendment changes no reviewer behavior.
+
+**Freeze acknowledgment**: The operator explicitly authorized these scoped
+skill and Blueprint improvements on 2026-09-09. `blueprint fleet` was inspected;
+its pins are historical mirrors, not migration locks. The active consumer task
+confirmed no migration/restamp in that task. Source edits are isolated in a
+worktree, with no consumer pins, generated files, or environments changed.
+This is not evidence about every other consumer's activity.
+
+**Promotion and distribution**: Source changes are prepared for review, not
+merged or published. Complete the consumer pilot and attach its durable
+evidence before claiming improved design outcomes. A release wave and consumer
+sync note belong to promotion; do not restamp an active consumer for this
+research trial.
+
+**References**:
+- [Existing design-intent obligations and targeted guidance](template/docs/methodology/judged-screen-pattern.md)
+- [Research entry point](template/.claude/skills/blueprint/research.md)
+- [Existing reference grader](template/.claude/agents/blueprint/reviewers/research-reference-grader.md)
+- [Contribution and reviewer-RFC route](CONTRIBUTING.md)
+- Consumer evidence is owned by the active Rally HQ refit initiative; the
+  pilot report and consumer amendment remain pending at authoring time.
+
+---
+
 ## 2026-09-06 — Root release instructions must match the existing publisher
 
 **Trigger**: The audit amendment in PR #35 followed `.changeset/README.md` and

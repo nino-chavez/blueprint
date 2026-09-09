@@ -15,6 +15,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+- `/blueprint-research` can run a bounded design-reference search within an
+  existing initiative. Advisory guidance connects inspected examples to a
+  specific screen/state, proposed adaptation, and comparison of the result.
+  A refit retains its approved direction and does not gain a three-concept
+  requirement. No reviewer gate, schema, stage, or consumer migration changes.
+  The first consumer research report is complete; design benefit remains
+  unmeasured.
+
 ## 0.8.0
 
 Product experience auditing, rendered-screen review, and reader feedback now
