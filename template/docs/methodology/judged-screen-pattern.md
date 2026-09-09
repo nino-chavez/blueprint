@@ -189,6 +189,28 @@ The matrix is what prevents "Mark not done." A calendar event owned by an extern
 
 **Relationship to `DIRECTION.md`.** The brief is the upstream half — it says what the surface is for, before anything is drawn. A `DIRECTION.md` ledger is the downstream record of the devices that shipped and which part of the thesis each one cites. A consumer with both writes the brief first and keeps the ledger current; a consumer with neither starts with the brief.
 
+### Targeted reference research within the declared intent
+
+**Advisory pilot.** This applies the existing question-per-reference principle to a bounded design question. It adds no required artifact, concept exercise, schema field, or review gate. Consult it when the brief leaves a meaningful typography, composition, density, or interaction choice unresolved; skip a new search when existing evidence already answers the question.
+
+Start with the affected job, screen, and state. Finish any required blind baseline review before introducing references to its reviewer. Under `preserve`, use references only to resolve an implementation detail within the direction. Under `refit`, keep the approved identity and named behavior; research presentation choices the brief leaves open. Under `rethink`, reference research feeds the divergent concepts below. Research does not itself authorize a change of intent.
+
+Use `/blueprint-research` for the bounded question without restarting the initiative. In brownfield, candidate adaptations feed the existing Stage 2 Prescription or Stage 3 Design Brief as appropriate; they do not become findings about the current product merely because a reference looks promising.
+
+Search by the problem, including useful examples outside the product's industry. A directory, award, or design article can lead to an example. Inspect the original screen or interaction before recommending a transfer. Record access limits; a marketing image can suggest composition but cannot prove live behavior or usability. The claim-to-source boundaries in § 1 still apply.
+
+For each selected reference, keep a short record of:
+
+- **Question:** the decision it helps make for the target job, screen, and state.
+- **Source and observation:** original URL, inspection date, capture or behavior receipt, and the inspected role/state, viewport/device, and access limits where relevant. Separate what was seen from what the source claims.
+- **Transfer:** the specific principle or behavior worth borrowing, the proposed adaptation, and the approved constraints it must respect. A font's personality label or a category's common palette is a discovery prompt, not evidence of an audience response.
+- **Check:** what would count as improvement on the target screen, using real content and relevant states. Keep appearance, interaction, accessibility, and implementation checks separate.
+- **Disposition:** retain the proposed, adopted, or rejected status and reason; link the owning prescription or design decision when a choice is made. Record observed results separately from an unmeasured expectation.
+
+Keep the record in the initiative's existing research location and link it from the brief; a new record normally belongs under `research/design-references/`. Do not duplicate an existing reference dossier or move one during active work just to match this suggested path. Organize the synthesis by the question being answered, not by website. Parallel research can use a shared brief and separate artifact ownership; it does not interrupt unrelated implementation or contaminate a blind review.
+
+Stop when the evidence supports the bounded decision or shows what cannot yet be judged. Reference count and tool adoption are not outcomes. Report which decision changed and what the target comparison showed; if no reference helped, record that. The first consumer trial supplies evidence for later amendment review, not an automatic reason to make this pilot mandatory.
+
 ### 2c. Three divergent concepts and a human selection — `rethink` only
 
 This subsection applies when `design_intent: rethink`. Under `refit` or `preserve` it does not.
@@ -201,7 +223,7 @@ This subsection applies when `design_intent: rethink`. Under `refit` or `preserv
 
    This is a real record, not a scratch note: same protocol, same frontmatter, `kind: cold`, at **the build it judged** — the old one. So a surface accumulates several cold reviews over its life, which is correct and expected. What is not acceptable is ambiguity about which one the gate is reading: once more than one review exists for a surface and kind, `release_marker` must be declared so the current record is identifiable. The reviewer reports the ambiguity rather than picking, because picking silently is how a stale accept passes for a fresh one.
 2. The experience brief and the object / action / state matrix (§ 2b).
-3. **Curated prior art, one question per reference.** Name what you are asking each reference — how it handles density, how it opens, how it fails — not "here is a site we like." A reference list with no question attached asks the surface to look like the category, which is the opposite of art direction.
+3. **Curated prior art, one question per reference.** Use the [targeted reference research guidance](#targeted-reference-research-within-the-declared-intent) above. Name what you are asking each reference — how it handles density, how it opens, how it fails — not "here is a site we like." A reference list with no question attached asks the surface to look like the category, which is the opposite of art direction.
 4. Three concepts, rendered on the same representative states.
 5. A named human selection, with the rejected concepts preserved rather than deleted. Preservation is not approval to continue them; it keeps the comparison auditable.
 
