@@ -4,6 +4,113 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-09-19 — blueprint-dispatch should become a pointer into dispatch-wave, not be retired or left duplicated
+
+**Trigger**: blueprint-dispatch (`template/.claude/skills/blueprint/dispatch.md`) and dispatch-wave (`~/.claude/skills/dispatch-wave/SKILL.md`) fire on the same four operator phrases, and a clause-by-clause read shows dispatch-wave has gained general dispatch discipline blueprint-dispatch never received while blueprint-dispatch still carries Blueprint-only mechanics dispatch-wave does not reach.
+
+**Scope**: Candidate for methodology promotion
+**Bucket**: template
+**Status**: Active — the convention's Status enum (`Active | Superseded by <date> | Promoted to methodology`) has no "proposed" value; `Active` is the closest fit, but this entry is a proposal awaiting Nino's decision, not a shipped fix. No file outside this entry has changed.
+
+### What is proposed
+
+Rewrite `template/.claude/skills/blueprint/dispatch.md` so its body becomes a short pointer to dispatch-wave for every clause dispatch-wave covers as well or better, plus the Blueprint-only clauses inline: mandatory `check.sh`, the `wave-digest`/`handoff-template`/`agent-output-discipline-pattern` cross-references, the worktree-isolation escape valve. Name, frontmatter trigger, and file location stay unchanged — only the body collapses from a duplicate procedure to a pointer plus the delta. This is not "narrow the trigger": both skills keep firing on the same words, and a blueprint-stamped session sees blueprint-dispatch's clauses layered on dispatch-wave's, not a choice between them.
+
+### Contract parity table
+
+Quotes are verbatim; `BD` = `template/.claude/skills/blueprint/dispatch.md`, `DW` = `skills/dispatch-wave/SKILL.md` in the public `agentic-ways-of-working` repo, published 2026-09-19 at `1c769a5` with the same line numbering as the copy these quotes were taken from (see Provenance note below — this is not the path named in the dispatch brief).
+
+| Clause | BD (line) | DW (line) | Verdict |
+|---|---|---|---|
+| Pre-flight count | "ALL FOUR pre-flight conditions" (L14) | "Answer YES to all five" (L10) | dispatch-wave stronger (+1 condition) |
+| Pre-flight 1 — ≥2 artifacts | "≥2 artifacts with target file paths named in-thread" (L16) | "≥2 artifacts with target file paths named in-thread." (L14) | same |
+| Pre-flight 2 — specs complete | "Vague briefs (\"implement X\") produce shallow generic work" (L17) | "If specs are vague, dispatching produces shallow generic work" (L15) | same |
+| Pre-flight 3 — file scopes / check.sh | "run `template/tools/parallel-dispatch-check/check.sh` to verify mechanically before dispatching" (L18) | "If a tool exists in the project (`tools/parallel-dispatch-check/check.sh` if blueprint-stamped), run it. Otherwise check by inspection." (L16) | dispatch-wave weaker (mandatory → conditional) |
+| Pre-flight 4 — no mid-flight synthesis | "dispatch it to Opus or do inline" (L19) | "if an artifact needs judgment calls only the orchestrator can make, do it inline" (L17) | dispatch-wave weaker (drops the Opus-escalation option) |
+| Pre-flight 5 — brief set matches the ask | not present | "The brief set matches the ask, not the repo... open the rendered artifact yourself before writing the briefs" (L18) | dispatch-wave only |
+| Blueprint config vocabulary | grep for `blueprint\.yml\|BLUEPRINT_HOME\|stage` in dispatch.md: zero hits | not present | neither — blueprint-dispatch's Blueprint-specificity is four tool/doc paths, not config coupling |
+| Brief field 1 — goal + audience | "what the artifact is, who reads it cold" (L35) | "what the artifact is, who reads it cold." (L24) | same |
+| Brief field 2 — READ-FIRST | "Orchestrator reads these first to confirm they exist and match memory." (L36) | "include a canonical worked example of the target artifact type alongside any rulebook — agents resolve borderline calls by analogy" (L25) | dispatch-wave stronger |
+| Brief field 3 — output structure | "Embed the analysis; don't say \"include the analysis.\"" (L37) | "Don't say \"include the analysis\"; embed the analysis." (L26) | same |
+| Brief field 4 — cross-references | "forward-links to files being written in parallel" (L38) | "forward-links to files being written in parallel" (L27) | same |
+| Brief field 5 — don't-do list | "project-specific don'ts from CLAUDE.md" (L39) | "the repo's agent instructions (`CLAUDE.md` or `AGENTS.md`)" (L28) | dispatch-wave stronger (AGENTS.md too) |
+| Brief field 6 — voice + length | "natural-fit range, not a target" (L40) | "natural-fit range, not a target" (L29) | same |
+| Brief field 7 — reporting expectations | "Canonical rule + tier dial: `template/docs/methodology/agent-output-discipline-pattern.md`." (L41) | "file path, line count, cross-refs they couldn't resolve, judgment calls" (L30) | blueprint-dispatch only (the pointer; base field is same) |
+| Brief field 8 — cleanup before reporting | not present | "every process, tab and fixture the agent starts is the agent's to stop" (L31) | dispatch-wave only |
+| Prior-not-spec deviation clause | not present | "mark the proposal as a **prior, not a spec**... license evidence-based deviation with a mandatory justifying quote" (L33) | dispatch-wave only |
+| Model selection | "Sonnet — execution-from-complete-brief... Opus — judgment-bearing dispatch." (L44–45) | "Sonnet: execution-from-complete-brief... Opus: judgment-bearing dispatch." (L37–39) | same |
+| Dispatch mechanics — TaskCreate + in_progress | "Mark each artifact task `in_progress` with the agent ID as owner" (L47) | "Mark each artifact task `in_progress` with the agent ID as owner" (L44) | same |
+| Dispatch mechanics — subagent type | not present | "Use `general-purpose` subagent type unless a more specific agent fits the brief." (L46) | dispatch-wave only |
+| Dispatch mechanics — single message / run_in_background | "Launch parallel agents in a single message with multiple Agent tool calls and `run_in_background: true`." (L49) | "Launch all parallel agents in a single message with multiple Agent tool calls. `run_in_background: true` for each." (L45) | same |
+| Inline-work rule | "mechanical mirror-edits, workflow/config updates that artifacts depend on... Don't take on work that overlaps an agent's file scope." (L51) | "Mechanical mirror-edits (new file modeled exactly on existing file with field swaps)." / "Don't take on work that overlaps an agent's file scope." (L53, L57) | same |
+| Post-flight 1 — shared content | "agents will sometimes invent details that don't match each other" (L54) | "Agents will sometimes invent details that don't match." (L63) | same |
+| Post-flight 2 — forward-links | "Verify **forward-link targets** now exist and resolve." (L55) | "Verify **forward-link targets** now exist. ... need to resolve after all returns." (L64) | same |
+| Post-flight 3 — frontmatter | "Spot-check **frontmatter conformance** against project lint rules." (L56) | "Spot-check **frontmatter conformance** if the project has lint rules" (L65) | same |
+| Post-flight 4 — mechanical lint | "Run any **mechanical lint** the project provides (frontmatter-lint, hive-meta-validator, schema validators)." (L57) | identical wording (L66) | same |
+| Post-flight 5 — verify against remote, not the report | not present | "Completion reports are self-attestation... the compare call is the grep." (L67) | dispatch-wave only |
+| Post-flight 6 — verify resource cleanup | not present | "\"I stopped my server\" is self-attestation too. Kill what it left and say so." (L68) | dispatch-wave only |
+| Commit — stage specific files | "Stage **specific files** with `git add path1 path2` — never `git add -A`." (L61) | same clause + "(catches unrelated working-tree changes)" (L76) | same |
+| Commit — Co-Authored-By source | "per project CLAUDE.md template" (L62) | "per the repo's agent instructions (`CLAUDE.md` or `AGENTS.md`)" (L78) | dispatch-wave stronger |
+| Commit — push to integration branch / fast-forward | "Push to integration branch (`dev`...) per the project's pattern-1 local-integration workflow. Fast-forward from remote before committing if behind." (L63) | "Push to `dev` per pattern 1... Fast-forward from `origin/dev` before committing if behind." (L79) | same |
+| Commit — pre-push hook note | not present | "Don't fight pre-push hook warnings about issue numbers... they're informational." (L80) | dispatch-wave only |
+| Skip conditions | "The work is a few minutes of mechanical pattern-matched editing." (L25, 4 bullets total) | "Work needs orchestrator synthesis mid-execution (do inline)." (L86, 5 bullets total) | dispatch-wave only (extra bullet; the other 4 match) |
+| Guardrail — check.sh is non-negotiable | "the mechanical overlap check is the difference between this skill and ad-hoc dispatch — don't skip it" (L73) | not present as its own guardrail (only the conditional pre-flight-3 wording) | blueprint-dispatch only |
+| Guardrail — worktree-isolation escape valve | "assumes non-overlapping file scopes are sufficient isolation for additive new files; cross-edits of existing files still need worktrees" (L74) | not present anywhere in the file | blueprint-dispatch only |
+| Guardrail — doesn't generate briefs | "The orchestrator constructs the briefs from the planning thread; this skill is the workflow around dispatch, not a brief-generator." (L76) | not stated as an explicit guardrail | blueprint-dispatch only |
+| Guardrail — doesn't commit mid-thread | "Commit happens at end-of-wave, not after each agent return." (L77) | not stated as an explicit guardrail | blueprint-dispatch only |
+| Reference — `wave-digest/digest.mjs` | "post-wave filter for the methodology log" (L90) | not present | blueprint-dispatch only |
+| Reference — `handoff-template.md` | "precursor to multi-agent dispatch" (L91) | not present | blueprint-dispatch only |
+| Worked-example commit | "blueprint-example commit `09036602`" (L10, L92) | names no repo or hash; describes the example and says Blueprint's dispatch skill cites the same one (L100) | same example; the pre-publication copy named a different repo for the same hash, fixed at publication |
+| Cross-skill invocation — research-scope bullet | "`/blueprint-research` produces a research scope that decomposes into independent corpora" (L84) | not present (expected — skill-name-specific) | blueprint-dispatch only |
+
+### What would be lost, and whether dispatch-wave already reaches it
+
+- **Mandatory `check.sh` framing** — not actually lost. dispatch-wave's conditional clause ("if blueprint-stamped, run it") fires the same script inside a blueprint-stamped repo; only the "don't skip it" emphasis disappears.
+- **`wave-digest/digest.mjs`, `handoff-template.md`, `agent-output-discipline-pattern.md` pointers** — dispatch-wave never mentions any of the three. Must be added.
+- **Worktree-isolation escape valve** — dispatch-wave has no equivalent (its only "worktree" hit is an unrelated cleanup grep). Partially adjacent to Nino's global worktree-mandatory rule, but that rule governs concurrent sessions, not same-session parallel agents with disjoint scopes. Must be added or explicitly deferred with a note.
+- **Research-scope cross-skill bullet** — Blueprint-specific by construction; stays regardless of the option chosen.
+
+### Chosen option and why
+
+**Pointer** (option 1). dispatch-wave is not a strict superset — the second reviewer's objection holds exactly where the table shows a real gap: mandatory-vs-conditional `check.sh` and four template-internal cross-references. But every clause where the two say the same thing, or where dispatch-wave says it better (five-condition pre-flight, cleanup field, prior-not-spec clause, remote-verified post-flight), is duplication that has already drifted once. One consumer initiative's own amendment log recorded this asymmetry — but that session *wrote* dispatch-wave's pre-flight step 5 (its own line 61 lists that file as a downstream artifact it updated), so it is the gap's origin, not an independent confirmation. That entry deferred fixing blueprint-dispatch: "Both are promotion targets once a second consumer shows the same shape." This entry comes from Blueprint's own repo, not a second external consumer, so it does not by itself clear that bar — whether it counts is Nino's call. A pointer body keeps every "blueprint-dispatch only" row as literal text — nothing Codex flagged is deleted — while retiring the duplicated rows as prose that drifts again if left standing. This is the clause table's argument; the brief's 24-vs-2 invocation counts are not cited above and did not inform the choice.
+
+### Blocker found when applying this, and cleared the same day (2026-09-19)
+
+The pointer could not ship as first written: this repo is public, `template/` references no private path, and `dispatch-wave` then existed only in a private repo. A pointer would have stamped a dangling reference into every outside consumer.
+
+Cleared: `dispatch-wave` is now published at https://github.com/nino-chavez/agentic-ways-of-working/blob/main/skills/dispatch-wave/SKILL.md (`1c769a5`), scrubbed of project names and private paths. Edit 1 below can point there. It must still keep every Blueprint-only clause inline, so the stamped skill works where `dispatch-wave` is not installed.
+
+What still gates edit 1 is this repo's own rule, not a missing dependency: a `template/` change is a methodology change. It needs the operator's freeze waiver, a wave entry with its consumer-sync command, and a PR under the `main-protection` ruleset; merging to `main` runs the npm publisher. `blueprint fleet` on 2026-09-19: 16 consumers, 6 behind, 10 unpinned, none marked mid-migration, one with an external owner.
+
+### Follow-up edits if accepted (mechanical once approved)
+
+1. `template/.claude/skills/blueprint/dispatch.md` — replace pre-flight, brief-construction, model-selection, dispatch-mechanics, inline-work, and commit sections with a pointer to dispatch-wave's SKILL.md by path (not by copy). Keep "What this skill does NOT do" intact, the `check.sh`-mandatory sentence, the `wave-digest`/`handoff-template`/`agent-output-discipline-pattern` references, and the research-scope bullet. Add one sentence on worktree isolation (defer to `working-style.md`, or restate the clause verbatim).
+2. `docs/patterns/skill-categories-pattern.md:25,44,46,102` — four `/blueprint-dispatch` mentions; no rewording needed, classification unchanged.
+3. `template/docs/methodology/product-experience-audit.md:306` — one forward-link; verify it still resolves.
+4. No change to `WAVE-LOG.md` or any stamped consumer copy — consumers re-stamp on their own cadence.
+
+### Consumers found
+
+In this repo (excluding `.worktrees/`): `WAVE-LOG.md`, `template/.claude/skills/blueprint/dispatch.md`, `template/docs/methodology/product-experience-audit.md`, `docs/patterns/skill-categories-pattern.md` — 4 files. Outside this repo: the stamped skill file exists in 11 distinct consumer initiatives on the author's machine (presence only; names withheld because several are private). One of them carries the amendment-log entry cited below.
+
+### What was NOT checked
+
+Whether any stamped initiative's `dispatch.md` has diverged from the template (presence only was grepped, not content). Whether dispatch-wave's 24-vs-2 invocation counts are accurate — not re-derived, not used in the recommendation. Whether any consumer has actually hit the overlap-check gap the second reviewer's objection protects against. No skill file, reviewer, or stamped consumer was opened for edit.
+
+**References**:
+- `template/.claude/skills/blueprint/dispatch.md` — blueprint-dispatch, full file read
+- https://github.com/nino-chavez/agentic-ways-of-working/blob/main/skills/dispatch-wave/SKILL.md — dispatch-wave, full file read before publication (see Provenance note)
+- `template/docs/methodology/methodology-amendments-convention.md` — entry shape this amendment follows
+- `docs/patterns/amendment-classification-pattern.md` — 4-bucket taxonomy (`template` bucket chosen)
+- One consumer initiative's own `METHODOLOGY-AMENDMENTS.md` already names this gap and deferred the fix until a second consumer showed the same shape; this entry is that second instance
+- A same-day tooling review by three independent agent reviewers, who each flagged the trigger overlap
+
+**Provenance note**: the parity table was built from the pre-publication copy of dispatch-wave. The published file has the same 100 lines; its wording differs only where project names and private paths were removed, and in the worked-example reference (row above). No clause-level verdict in the table depends on the removed text.
+
+**Lint note**: `template/.claude/agents/blueprint/reviewers/stateful-claim-lint-reviewer.mjs:52` explicitly excludes `METHODOLOGY-AMENDMENTS.md` (`EXCLUDE_FILES`), and `frontmatter-lint` is scoped to `docs/**`, which this file is outside. No project lint covers this file; confirmed by reading both tools, not assumed.
+
+---
+
 ## 2026-09-06 — Root release instructions must match the existing publisher
 
 **Trigger**: The audit amendment in PR #35 followed `.changeset/README.md` and
