@@ -313,6 +313,11 @@ async function replaceLogo(logoSrc, target, dryRun, log) {
 // instead of the npm registry (where they do not exist). Without this, a
 // freshly-stamped portal can't `npm install`. skip-if-exists, like
 // writeBlueprintYml — never clobber an operator-customized workspace root.
+const PORTAL_TOOLCHAIN_OVERRIDES = {
+  "@astrojs/language-server": "2.17.0",
+  "@astrojs/compiler": "2.13.1",
+};
+
 async function writeWorkspaceRoot({ target, name, dryRun, log }) {
   const dst = path.join(target, "package.json");
   const existing = await readMaybe(dst);
@@ -329,6 +334,13 @@ async function writeWorkspaceRoot({ target, name, dryRun, log }) {
       build: "npm run build -w apps/portal",
       typecheck: "npm run typecheck -w apps/portal",
     },
+    // The portal ships no lockfile, so `astro check` runs on whatever its
+    // transitive checker resolves to that day. 2026-09-19: language-server
+    // 2.17.0 (published 09-16) began rejecting markup 2.16.10 had let through,
+    // and template-health went red with no commit. npm reads `overrides` only
+    // from the install root, which is this file. Keep in step with the exact
+    // astro / @astrojs/check / typescript versions in apps/portal/package.json.
+    overrides: PORTAL_TOOLCHAIN_OVERRIDES,
   };
   if (dryRun) {
     log.skipped.push("package.json (workspace root; dry-run; would write)");

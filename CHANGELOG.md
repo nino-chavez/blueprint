@@ -15,6 +15,16 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+### Fixed
+
+- **Stamped portals pin their typecheck toolchain** (wave 106) — a new
+  `@astrojs/language-server` release turned a freshly stamped portal's
+  `astro check` red with no change on our side. `astro`, `@astrojs/check` and
+  `typescript` are now exact versions, and the stamper writes an `overrides`
+  block pinning the transitive checker. Already-stamped initiatives do not get
+  the block on restamp: add it to your root `package.json` by hand, or commit a
+  lockfile. See wave 106 for the exact lines.
+
 ### Changed
 
 - **`/blueprint-dispatch` points at `dispatch-wave`** (wave 105) — the general
