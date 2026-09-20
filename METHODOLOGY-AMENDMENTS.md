@@ -80,9 +80,9 @@ The pointer could not ship as first written: this repo is public, `template/` re
 
 Cleared: `dispatch-wave` is now published at https://github.com/nino-chavez/agentic-ways-of-working/blob/main/skills/dispatch-wave/SKILL.md (`1c769a5`), scrubbed of project names and private paths. Edit 1 below can point there. It must still keep every Blueprint-only clause inline, so the stamped skill works where `dispatch-wave` is not installed.
 
-What still gates edit 1 is this repo's own rule, not a missing dependency: a `template/` change is a methodology change. It needs the operator's freeze waiver, a wave entry with its consumer-sync command, and a PR under the `main-protection` ruleset; merging to `main` runs the npm publisher. `blueprint fleet` on 2026-09-19: 16 consumers, 6 behind, 10 unpinned, none marked mid-migration, one with an external owner.
+Edit 1 is applied in the same change as this entry, as wave 105: the operator granted the freeze waiver for this `template/` edit on 2026-09-19. `blueprint fleet` that day: 16 consumers, 6 behind, 10 unpinned, none marked mid-migration, one with an external owner. No version bump, so merging publishes nothing.
 
-### Follow-up edits if accepted (mechanical once approved)
+### Edits (1 applied with this entry; 2-4 needed no change)
 
 1. `template/.claude/skills/blueprint/dispatch.md` — replace pre-flight, brief-construction, model-selection, dispatch-mechanics, inline-work, and commit sections with a pointer to dispatch-wave's SKILL.md by path (not by copy). Keep "What this skill does NOT do" intact, the `check.sh`-mandatory sentence, the `wave-digest`/`handoff-template`/`agent-output-discipline-pattern` references, and the research-scope bullet. Add one sentence on worktree isolation (defer to `working-style.md`, or restate the clause verbatim).
 2. `docs/patterns/skill-categories-pattern.md:25,44,46,102` — four `/blueprint-dispatch` mentions; no rewording needed, classification unchanged.

@@ -15,6 +15,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+### Changed
+
+- **`/blueprint-dispatch` points at `dispatch-wave`** (wave 105) — the general
+  parallel-dispatch workflow now has one owner, the public `dispatch-wave`
+  skill. The stamped skill keeps its name and trigger, a one-screen outline, and
+  every clause Blueprint makes stricter: the overlap checker stays mandatory.
+  No action needed; an already-stamped copy keeps working as it is.
+
 ## 0.8.0
 
 Product experience auditing, rendered-screen review, and reader feedback now
