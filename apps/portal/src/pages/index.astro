@@ -67,15 +67,26 @@ const DEEPER = [
     <div class="mx-auto mb-6 max-w-xl text-left">
       <CommandBlock command={INSTALL} client:visible />
     </div>
-    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[12px] uppercase tracking-wide">
+    <!-- Two-tier CTA row (cold-review D1): the row used to read as one
+         filled button next to four plain-text links carrying three
+         differently-meaning arrows — an unstated visual hierarchy. Quickstart
+         and Watch the demo are both real next-steps, so both are buttons now
+         (filled primary / outlined secondary, the same outline treatment the
+         Contribute section already uses for its own secondary action below).
+         What is this? / npm / github stay quiet text — wayfinding, not asks.
+         Arrow glyphs are unchanged (↓ same-page anchor, → internal page,
+         ↗ external) — no rule renames them; only the visual weight changed. -->
+    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 font-mono text-[12px] uppercase tracking-wide">
       {/* bg-brand-strong, not bg-brand: white-on-brand measures 4.42:1 — under
           AA for this 12px label (agency audit 2026-06-11, same pair as the
           small-link rule). */}
       <a href="#quickstart" class="rounded-md bg-brand-strong px-4 py-2 text-background no-underline transition-opacity hover:opacity-90">Quickstart ↓</a>
-      <a href="/demo" class="text-contrast-500 hover:text-brand">Watch the demo →</a>
-      <a href="#in-30-seconds" class="text-contrast-500 hover:text-brand">What is this? ↓</a>
-      <a href={NPM_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">npm ↗</a>
-      <a href={REPO_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">github ↗</a>
+      <a href="/demo" class="rounded-md border border-contrast-200 px-4 py-2 text-contrast-500 no-underline transition-colors hover:border-brand/60 hover:text-brand">Watch the demo →</a>
+      <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+        <a href="#in-30-seconds" class="text-contrast-500 hover:text-brand">What is this? ↓</a>
+        <a href={NPM_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">npm ↗</a>
+        <a href={REPO_URL} target="_blank" rel="noreferrer" class="text-contrast-500 hover:text-brand">github ↗</a>
+      </div>
     </div>
   </section>
 
