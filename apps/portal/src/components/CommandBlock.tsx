@@ -34,11 +34,19 @@ export function CommandBlock({ command, prompt = '$', label }: CommandBlockProps
           {label}
         </p>
       )}
-      <div className="flex items-center gap-3 rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3">
+      <div className="flex items-start gap-3 rounded-lg border border-contrast-200 bg-contrast-100/60 px-4 py-3 sm:items-center">
         {/* min-w-0: a flex child defaults to min-width:auto and refuses to shrink
             below its nowrap content, which silently disables overflow-x-auto and
-            drags the whole page wide on mobile (WCAG 1.4.10). */}
-        <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-foreground">
+            drags the whole page wide on mobile (WCAG 1.4.10).
+            Below sm: no scrollbar is reachable on a touch viewport, so a nowrap
+            line just gets clipped by the box edge — the command reads truncated
+            mid-word with the Copy button flush against the cut (cold-review D2).
+            Wrap it instead: break-all so a single long flag/package-name token
+            still wraps rather than forcing width, and items-start so Copy stays
+            pinned to the first line instead of drifting to the wrapped block's
+            vertical center. At sm+ there's room, so the line reverts to the
+            original single-line-with-scroll behavior, unchanged. */}
+        <code className="min-w-0 flex-1 whitespace-normal break-all font-mono text-sm text-foreground sm:overflow-x-auto sm:whitespace-nowrap sm:break-normal">
           {prompt && <span className="select-none text-contrast-400">{prompt} </span>}
           {command}
         </code>
