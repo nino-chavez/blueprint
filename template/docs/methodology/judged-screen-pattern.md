@@ -205,6 +205,8 @@ This subsection applies when `design_intent: rethink`. Under `refit` or `preserv
 4. Three concepts, rendered on the same representative states.
 5. A named human selection, with the rejected concepts preserved rather than deleted. Preservation is not approval to continue them; it keeps the comparison auditable.
 
+**How to run Phase 1 in practice** — the working procedure behind steps 1–5, including how candidates get built and captured comparably, how prior art enters as questions rather than references, and how a rejected candidate still contributes through a graft — is `redesign-evaluation-pattern.md`. This section states what Phase 1 owes; that pattern states how two consumers actually produced it.
+
 **Phase 2 — System.** How the selected direction becomes buildable. The chosen direction converts into tokens, components, templates, motion rules, and `prototype/DESIGN.md`. This is the layer the design-system audit measures, and it is downstream of a direction — a complete system built with no direction selected is the boilerplate outcome forge-site names in § 8.
 
 **Only then production implementation.** Blueprint governs the sequence and demands the evidence. It is not the art director, and no gate in it is a person approving (§ 8, film-room ADR-0042 Decision 2).
@@ -349,15 +351,29 @@ Record it the same way, with `kind: conformance` and `cold: false`. A conformanc
 
 This gate has no such oracle, and pretending otherwise would be the failure the ladder exists to prevent, inverted. So it sits **outside** the ladder rather than as a sixth gate. What is mechanical here is only the **record**: does each required review exist for this surface, does its `kind` carry the matching `cold` value, is the reviewer someone other than the implementer, does it accept, is it current with the build. That is what `screen-composition-reviewer.mjs` checks. The judgment inside the file is not machine-checkable and the reviewer does not pretend to check it.
 
-## 4. Closeout asks what came off, not only what went on
+## 4. A slice states its debt when it opens, and closeout asks what came off
 
-Slice closeout is additive today: it records what the slice added and what now passes. Twenty-seven such closeouts sum to a screen nobody designed.
+Slice closeout was additive-only: it recorded what the slice added and what now passes. Twenty-seven such closeouts sum to a screen nobody designed. The gap ran in both directions — nothing at open time asked what the addition cost, and nothing at close time asked what it should have removed. One before/after pair now brackets every slice.
 
-Every slice closeout gains one line:
+**At slice open, before implementation, write the debt line:**
+
+> **Adds:** what is new. **Decisions:** what the addition forces — a fill, a border, a radius, a shadow, or a second widget. **Earns them:** why, or what removal pays for them.
+
+A slice with no debt line has not stated what its addition costs, and "earns them" is the load-bearing part: a decision that cannot name what pays for it is the accretion this section exists to stop before it starts.
+
+**At close, every slice closeout gains one line:**
 
 > **Removed / combined / demoted / disclosed:** … If nothing, why.
 
-"If nothing, why" is the load-bearing half. A slice that adds without subtracting may be correct; a slice that cannot say why is accreting.
+"If nothing, why" is the load-bearing half on this side. A slice that adds without subtracting may be correct; a slice that cannot say why is accreting.
+
+**A per-screen object-box style count is an optional measure to record beside both lines, not a new required field.** Count the distinct object-box styles on the rendered screen — fill, border, radius, or shadow combinations, excluding controls (links, buttons, fields, tabs, anything pill-shaped) — at phone and desktop width, before and after the slice. A ceiling of 2 (one recipe, plus a dialog if one is open) is the target one shipped consumer used; a different product may set its own ceiling, but "too many boxes" is not itself a check — a count is. Record the count in the review body next to the debt line and the closeout line; `screen-composition-reviewer.mjs` does not read it and this pattern does not ask it to.
+
+**A count that has not been checked against a real frame is not evidence.** One consumer's first script excluded controls by size alone and returned 12 on a frame whose real count was 6 — a wide button and a search field both counted as boxes. Whatever a measuring script reports, open the frame it measured and confirm the number against what a person sees before trusting it, the same discipline § 3a already requires of the cold review itself.
+
+**Promotion status differs by claim, because the evidence differs.** Two consumers independently reached "the screen is built from too many boxes, and nothing said when it was done," and one converged on a rule the other adopted: a screen carries one object-box recipe. That rule — one recipe per screen, checked by eye — is promoted here on second-instance evidence. The debt line and the mechanical style count are one consumer's fix so far; the second consumer applied the recipe rule without running a count ("one panel recipe; checked by eye"). Both stay in this pattern as the documented practice, and the ceiling number and the counting script remain a candidate pending a second product actually running the measurement, per the promotion criterion at the top of this document.
+
+**Provenance.** Rally HQ's card-debt remediation (`docs/design/card-debt-2026-09-21/PLAN.md`, finding F14, commit `f6ef7493`) is the origin of the debt line, the ceiling of 2, and `measure.js` (commit `61826554`) — including the 12-vs-6 miscount, corrected the same session. The rule reached a second product on 630 Volleyball's site: PR #172 ("Visual direction D … one box recipe", merged `9cce4716`) states "Every 2–8px ink bar and the decorative red bars become 1px lines, in both the theme and the plugin," and the direction record for that port (`review/visual-directions-20260923/DIRECTION.md`, commit `58b34440`) scores it against the source principle as "Applied — one panel recipe; checked by eye on Girls only" — confirming the rule transferred and the count did not. Rally HQ's own style guide (`src/routes/style-guide/+page.svelte` §12, "Object boxes and weight") renders the shipped recipe as documentation, and its later audit (`docs/design/style-audit-2026-09-22/AUDIT.md`, commit `862800c6`) reports "The box rule has a check. At most two object-box styles per screen, counted by `measure.js`."
 
 ## 5. Six acceptance states, one new ladder rung, and no collapsing them into "done"
 
@@ -425,6 +441,7 @@ Marketing captures are the vendor's best frame under the vendor's chosen conditi
 | Pattern | Relationship |
 |---|---|
 | [`confident-preview-rule.md`](confident-preview-rule.md) | It sends variant deliberation upstream to Stage 2. § 2 is the artifact that was missing at the other end of that pointer. |
+| [`redesign-evaluation-pattern.md`](redesign-evaluation-pattern.md) | The working procedure behind § 2c's Phase 1 — how candidates get built on the real product, captured comparably, and converged on with a named human choice. |
 | [`ui-rendering-contract-tier.md`](ui-rendering-contract-tier.md) | **Complementary, and deliberately not overlapping.** That pattern asks whether the non-happy-path states were specified and whether they render — mechanical, per state. This one asks whether the rendered whole is any good — judged, across states. A surface can pass the contract tier on all six states and still fail this gate. Its authoring-discipline lesson is why § 1 carries three consumers rather than one. |
 | [`dod-verification-ladder-pattern.md`](dod-verification-ladder-pattern.md) | The five gates are mechanical oracles. This gate is outside that model by construction — see § 3, "How it relates to the DoD ladder." Only the review record is machine-checkable. |
 | [`org-reviewer-authoring.md`](org-reviewer-authoring.md) | The reviewer shipped with this pattern follows the ADR-0002 `review()` contract; a consumer that wants a stricter screen gate writes its own reviewer under a different name rather than shadowing this one. |
