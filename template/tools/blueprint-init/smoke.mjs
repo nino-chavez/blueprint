@@ -37,6 +37,9 @@
  *      portal-free package.json runs, doctor/reader/runner gates hold, no stamped
  *      file passes a prototype gate; a Tier 1 re-stamp names the files to edit;
  *      research + --logo exits 0; the tier-ladder doc agrees
+ *  14. A stamp copies source, not workstation files: no .DS_Store, .pyc or
+ *      __pycache__ arrives from a template copy seeded with a stray for each
+ *      skip rule, and the stamped text passes `git diff --check`
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
  * Exit: 0 = all green; 1 = any failure (each failure printed).
@@ -820,6 +823,86 @@ try {
   check(/\*\*No portal yet\.\*\*/.test(ladder) && /\| \*\*Brownfield\*\* \| Doc-only audit, no portal needed/.test(ladder)
     && /^### Moving from Tier 0 to Tier 1$/m.test(ladder),
   "tier-ladder doc: Tier 0 is pre-portal, as stamped, and it explains moving to Tier 1");
+
+  // 14 — wave 117. A consumer's fresh stamp carried .DS_Store and
+  // __pycache__/*.pyc. git ignores both, but copyTree walks the disk, so a stamp
+  // run from a checkout ($BLUEPRINT_HOME) copied whatever sat beside the source.
+  // Every directory of a template copy gets a .DS_Store, a loose .pyc, and a
+  // __pycache__/ holding a .pyc plus the <name>.pyc.<id> temp file CPython's
+  // bytecode writer leaves when killed mid-write, so each skip rule has a
+  // stray only it catches. Stamps from that copy must hold none of them. The
+  // scan is its own readdir; the stamper's walk() would skip exactly what it
+  // is looking for. The same fresh stamps must pass `git diff --check`, so a
+  // consumer's first commit clears a whitespace hook on files the methodology
+  // owns.
+  try {
+    const copyRoot = path.join(tmp, "stray-methodology");
+    const notCopied = new Set(["node_modules", ".git", "dist", "dist-story", ".astro"]);
+    await fs.cp(path.join(BLUEPRINT_ROOT, "template"), path.join(copyRoot, "template"), {
+      recursive: true,
+      filter: (src) => !notCopied.has(path.basename(src)),
+    });
+    const listTree = async (dir, acc = { dirs: [], files: [] }) => {
+      acc.dirs.push(dir);
+      for (const e of await fs.readdir(dir, { withFileTypes: true })) {
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) await listTree(p, acc);
+        else acc.files.push(p);
+      }
+      return acc;
+    };
+    // .DS_Store's own magic bytes. The NULs make git treat every stray as
+    // binary, so a leaked one cannot also fail the whitespace check.
+    const strayBytes = Buffer.from([0, 0, 0, 1, 0x42, 0x75, 0x64, 0x31]);
+    const seedDirs = (await listTree(path.join(copyRoot, "template"))).dirs;
+    for (const dir of seedDirs) {
+      await fs.mkdir(path.join(dir, "__pycache__"), { recursive: true });
+      await fs.writeFile(path.join(dir, ".DS_Store"), strayBytes);
+      await fs.writeFile(path.join(dir, "stray.pyc"), strayBytes);
+      await fs.writeFile(path.join(dir, "__pycache__", "stray.cpython-314.pyc"), strayBytes);
+      await fs.writeFile(path.join(dir, "__pycache__", "stray.cpython-314.pyc.4413177392"), strayBytes);
+    }
+    const stampRoots = [".claude", "tools/lib", "apps/portal", "packages", "portal"];
+    const unseeded = [];
+    for (const r of stampRoots) {
+      if (!(await fs.stat(path.join(copyRoot, "template", r, "__pycache__")).catch(() => null))) unseeded.push(r);
+    }
+    check(seedDirs.length > 0 && unseeded.length === 0,
+      `seeded strays into ${seedDirs.length} directories of a template copy, every copied root included`, `unseeded: ${unseeded.join(", ")}`);
+
+    const git = (cwd, ...args) => execFile("git", ["-c", "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab", ...args], { cwd });
+    for (const [label, flags] of [
+      ["Pattern A", ["--portal-type=initiative"]],
+      ["Pattern B", ["--variant=brownfield", "--tier=1", "--portal-type=review"]],
+    ]) {
+      const slug = `smoke-strays-${label.slice(-1).toLowerCase()}`;
+      const dst = path.join(tmp, slug);
+      await execFile(process.execPath, [
+        path.join(copyRoot, "template", "tools", "blueprint-init", "stamp.mjs"),
+        "--mode=stamp",
+        `--name=${slug}`,
+        ...flags,
+        `--target=${dst}`,
+      ]);
+      const tree = await listTree(dst);
+      const arrived = [...tree.dirs, ...tree.files]
+        .map((p) => path.relative(dst, p))
+        .filter((rel) => rel.split("/").some((part) => part === ".DS_Store" || part === "__pycache__" || part.endsWith(".pyc")));
+      const count = (test) => arrived.filter(test).length;
+      const kinds = `${count((rel) => path.basename(rel) === ".DS_Store")} .DS_Store, ` +
+        `${count((rel) => path.basename(rel) === "__pycache__")} __pycache__, ${count((rel) => rel.endsWith(".pyc"))} .pyc`;
+      check(tree.files.length > 0 && arrived.length === 0,
+        `${label} stamp from the seeded copy: no .DS_Store, __pycache__ or .pyc among ${tree.files.length} files`,
+        `${kinds} arrived, e.g. ${arrived.slice(0, 3).join(", ")}`);
+      await git(dst, "init", "-q");
+      await git(dst, "add", "-A");
+      const whitespace = await git(dst, "diff", "--cached", "--check").then(() => "", (e) => e.stdout || e.message);
+      const hits = whitespace.split("\n").filter((line) => /:\d+: /.test(line));
+      check(whitespace === "", `${label} stamp passes git diff --check`, `${hits.length} line(s): ${hits.slice(0, 3).join(" | ")}`);
+    }
+  } catch (err) {
+    bad("stamps carry no workstation files", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
 } finally {
   await fs.rm(tmp, { recursive: true, force: true });
 }
