@@ -17,6 +17,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **`cited-url-lint` can no longer print "clean" over nothing** (wave 108) — run
+  from an initiative, a relative directory resolved inside the template, so the
+  lint scanned the wrong tree, found no citations, and passed. Relative paths now
+  resolve against the working directory, and the summary names the directory it
+  scanned. A scan that checks nothing says `nothing was checked`, and
+  `--fail-on-empty` makes that exit 3. Unknown flags exit 2, and a failed HEAD is
+  retried as GET. Run it from the project root: the allowlist and report paths
+  follow the working directory too.
 - **Stamped portals pin their typecheck toolchain** (wave 106) — a new
   `@astrojs/language-server` release turned a freshly stamped portal's
   `astro check` red with no change on our side. `astro`, `@astrojs/check` and
