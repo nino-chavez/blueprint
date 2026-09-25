@@ -32,14 +32,27 @@ import { pathToFileURL } from 'node:url';
 import { resolveReviewer } from './reviewer-registry.mjs';
 import { parseManifest } from './actor-output.mjs';
 import { evaluateReviewLoop } from './review-loop.mjs';
-import { readTopLevelYamlScalar } from './yaml-scalar.mjs';
+import { readTopLevelYamlScalar, splitFrontmatter } from './yaml-scalar.mjs';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
 const isFile = (p) => existsSync(p) && statSync(p).isFile();
 const ls = (p) => (isDir(p) ? readdirSync(p) : []);
 const read = (p) => (isFile(p) ? readFileSync(p, 'utf8') : '');
-const mdCount = (p) => ls(p).filter((f) => f.endsWith('.md') && read(join(p, f)).trim().length > 40).length;
+// A template is not an artifact. Blueprint marks one with a `_` filename prefix
+// (persona-fit-reviewer and the audit ingesters already skip `_TEMPLATE.md`);
+// a document can also declare `template: true` in its frontmatter. The stamped
+// decisions/_TEMPLATE.md relies on its name alone: a copy keeps the template's
+// frontmatter, so a marker there would hide every ADR made from it. The
+// account projection's decisions index uses this same test.
+export function isTemplateDoc(name, text = '') {
+  return name.startsWith('_') || readTopLevelYamlScalar(splitFrontmatter(text).frontmatter, 'template') === 'true';
+}
+const mdCount = (p) => ls(p).filter((f) => {
+  if (!f.endsWith('.md')) return false;
+  const text = read(join(p, f));
+  return text.trim().length > 40 && !isTemplateDoc(f, text);
+}).length;
 const anyContains = (p, re) => ls(p).some((f) => f.endsWith('.md') && re.test(read(join(p, f))));
 
 // Layout tolerance (calibrated against the real consumer fleet, 2026-07-08):
@@ -1015,6 +1028,15 @@ async function selftest() {
     s = deriveStageStatus({ root: fx });
     s2 = s.stages.find((x) => x.id === 2).gates.find((g) => g.gate === 'research-legs');
     assert(s2.state === 'pass', 'populated leg subdirs pass research-legs');
+
+    // Stage 3 counts decisions, not templates: the stamped _TEMPLATE.md and a
+    // frontmatter-marked template do not pass it; a real ADR does.
+    const decisionsGate = () => deriveStageStatus({ root: fx }).stages.find((x) => x.id === 3).gates.find((g) => g.gate === 'decisions');
+    mk('decisions/_TEMPLATE.md', `---\nadr: NNNN\n---\n# ADR-NNNN — <title>\n${LONG}\n`);
+    mk('decisions/0000-template.md', `---\ntemplate: true\n---\n# Template\n${LONG}\n`);
+    assert(decisionsGate().state === 'absent', 'templates alone do NOT pass the decisions gate');
+    mk('decisions/0001-real.md', `---\nadr: 0001\n---\n# ADR-0001 — A real call\n${LONG}\n`);
+    assert(decisionsGate().state === 'pass' && decisionsGate().evidence.endsWith(': 1 artifacts'), 'a real ADR passes; templates are not counted');
 
     // multi-root: empty root research/ must NOT shadow populated blueprint/research/
     rmSync(fx, { recursive: true, force: true });
