@@ -5,7 +5,7 @@ canonical: true
 # Decision 11 — Tier 0 stamps no portal, and every stamp gets the reviewer runner
 
 **Date**: 2026-09-25
-**Status**: Proposed — implemented on branch `fix/tier0-portal-runner-contract`, based on `main` after #48 (wave 109) and #49 (wave 110) merged. Awaiting operator ratification; not pushed.
+**Status**: Accepted — operator ratified both decisions as recommended ("ratify decision 11", 2026-09-25). Implemented on branch `fix/tier0-portal-runner-contract`, based on `main` after #48 (wave 109) and #49 (wave 110) merged.
 **Wave**: 113
 
 ## Summary
