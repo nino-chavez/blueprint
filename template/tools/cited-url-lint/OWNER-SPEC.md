@@ -39,7 +39,7 @@ No mechanical lint existed for this class of error. This tool fills that gap.
   - one verdict:
     - `clean — N unique URLs resolved`, only when every unique URL has a verdict and none is broken
     - file:line + HTTP status (or error) for each broken citation
-    - `<reason> — nothing was checked`, when no URL got a verdict: 0 citations found, every citation allowlisted, or `--offline` with no cached result for any of them
+    - `<reason> — nothing was checked`, when no URL got a verdict: 0 citations found (naming any files the allowlist skipped), every citation allowlisted, or `--offline` with no cached result for any of them
     - `no broken citations among V checked URLs; Z not checked`, when `--offline` could check only some
 - Exit 0 (no broken citations, including both "not checked" verdicts), 1 (broken URLs found), 2 (invocation error: unknown flag, more than one directory, bad `--max-cache-age-days`, no markdown files), 3 (nothing was checked and `--fail-on-empty` was passed)
 - Cache file updated in place, only when a URL was freshly checked
@@ -67,7 +67,7 @@ No mechanical lint existed for this class of error. This tool fills that gap.
 ## Danger zones
 
 - **A green result over nothing.** A scan that finds no citations, or checks none of them, is not clean. The tool says `nothing was checked` and never `clean` in that case, and a gate should pass `--fail-on-empty` so the exit code carries it too. Before 2026-09-25 a relative `<directory>` resolved against the tool's own project, and a run from an initiative scanned the template's `research/` (7 files, 0 citations) and printed `clean`. This is the self-attestation the citation-correctness pattern exists to catch.
-- **False positives from bot-blocked hosts.** Some hosts (Cloudflare-protected, some documentation sites) reject non-browser clients. The tool retries any failed HEAD as GET, which clears servers that mishandle HEAD. It does not impersonate a browser, so a host that filters on User-Agent still fails. Allowlist those rather than disabling the check. Measured cases are in the field notes below.
+- **False positives from bot-blocked hosts.** Some hosts (Cloudflare-protected, some documentation sites) reject non-browser clients. The tool retries any failed HEAD as GET, whether it returned an error status, timed out, or dropped the connection. That clears servers that mishandle HEAD. It does not impersonate a browser, so a host that filters on User-Agent still fails. Allowlist those rather than disabling the check. Measured cases are in the field notes below.
 - **Cache staleness.** If a URL silently changes meaning (200 OK but returning a different page), this tool will not catch it. The check is *resolution*, not *content correctness*. For content correctness, deeper verification is the right tool.
 - **Network flakiness in CI.** Egress restrictions and rate-limited hosts can produce error states that aren't real failures. The 7-day cache window avoids re-hitting those hosts, but it also keeps a transient failure for the whole window; refresh with `--max-cache-age-days=0`. For tight CI, use `--offline`.
 
@@ -96,7 +96,7 @@ The order stays. A reader cannot follow a truncated URL either, so the finding i
 | `northdata.com`, `www.northdata.com` | HEAD 404, GET 200 | Server mishandles HEAD | Retried as GET |
 | `support.optimizely.com/hc/en-us/articles/35021463311501` | HEAD 404, GET 200 | Server mishandles HEAD | Retried as GET |
 | `partners.bigcommerce.com/directory/` | 406 to HEAD and GET | Rejects every User-Agent tried except a full browser string, including curl's and a self-identifying `cited-url-lint/1.0` | Allowlist. The tool does not impersonate a browser |
-| `catalyst.dev/docs/getting-started`, `trylexsis.com/blogs/top-nosto-alternatives-shopify-2026` | Timed out on 2026-09-24; 200 in 0.6–3.5 s on 2026-09-25 | Transient. The old 10 s budget was shared by HEAD and the GET retry | 15 s per request since 2026-09-25 |
+| `catalyst.dev/docs/getting-started`, `trylexsis.com/blogs/top-nosto-alternatives-shopify-2026` | Timed out on 2026-09-24; 200 in 0.6–3.5 s on 2026-09-25 | Transient. The old 10 s budget was shared by HEAD and the GET retry | 15 s per request, and a HEAD that times out is retried as GET, since 2026-09-25 |
 | 7 URLs on `contentful.com` and `ninetailed.io` | 429 to every request shape | Rate limiting. The 50 ms throttle is global, not per host | Re-run later, or allowlist |
 
 A browser User-Agent would have fixed one of these URLs. Retrying HEAD as GET fixed four, on three sites.

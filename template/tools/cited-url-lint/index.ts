@@ -229,15 +229,16 @@ function extractCitations(file: string, baseDir: string): Citation[] {
 
 async function checkUrl(url: string): Promise<CacheEntry> {
   const checked_at = new Date().toISOString();
+  const request = (method: 'HEAD' | 'GET') =>
+    fetch(url, { method, redirect: 'follow', signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
   try {
     // HEAD first to skip the body. Some servers fail HEAD but serve GET
     // (measured 2026-09-25: salesforce.com HEAD 500, northdata.com HEAD 404,
-    // both GET 200), and a reader's browser sends GET — so any HEAD failure
-    // is retried as GET. Each request gets its own timeout.
-    let res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-    if (res.status >= 400) {
-      res = await fetch(url, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-    }
+    // both GET 200), and a reader's browser sends GET — so a HEAD that errors,
+    // times out, or drops the connection is retried as GET. Each request gets
+    // its own timeout.
+    const head = await request('HEAD').catch(() => undefined);
+    const res = head && head.status < 400 ? head : await request('GET');
     return { status: res.status, checked_at };
   } catch (e) {
     return { status: 'error', error: (e as Error).message, checked_at };
@@ -279,9 +280,13 @@ export async function run(args: string[], ctx: RunContext): Promise<number> {
   const cache = loadCache(cachePath);
 
   const allCitations: Citation[] = [];
+  let allowlistedFiles = 0;
   for (const f of files) {
     const rel = relative(ctx.cwd, f);
-    if (allowlist.files.has(rel)) continue;
+    if (allowlist.files.has(rel)) {
+      allowlistedFiles++;
+      continue;
+    }
     allCitations.push(...extractCitations(f, ctx.cwd));
   }
 
@@ -356,7 +361,8 @@ export async function run(args: string[], ctx: RunContext): Promise<number> {
   if (verified === 0) {
     const reason =
       allCitations.length === 0
-        ? `0 citations found under ${absTarget}`
+        ? `0 citations found under ${absTarget}` +
+          (allowlistedFiles > 0 ? ` (${allowlistedFiles} of ${files.length} files allowlisted)` : '')
         : uniqueUrls.size === 0
           ? `all ${allCitations.length} citations under ${absTarget} are allowlisted`
           : `none of ${uniqueUrls.size} unique URLs has a cached result (--offline)`;

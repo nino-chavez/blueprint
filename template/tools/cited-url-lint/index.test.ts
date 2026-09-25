@@ -104,7 +104,9 @@ describe('relative paths resolve against the caller, not the tool', () => {
 
     writeFileSync(join(root, '.cited-url-lint-allowlist'), 'research/real.md\n');
     const fileAllowed = await lint(root, ['research', '--offline'], cached);
-    expect(fileAllowed.out).toContain('0 citations found under');
+    expect(fileAllowed.out).toContain(
+      `0 citations found under ${join(root, 'research')} (1 of 1 files allowlisted) — nothing was checked`
+    );
     expect(fileAllowed.code).toBe(0);
   });
 });
@@ -173,9 +175,14 @@ describe('checking URLs over the network', () => {
   let server: Server;
   let base: string;
   beforeEach(async () => {
-    // /page fails HEAD but serves GET, as salesforce.com and northdata.com did; /gone fails both.
+    // /page fails HEAD but serves GET, as salesforce.com and northdata.com did.
+    // /drops-head drops the connection on HEAD, so fetch throws. /gone fails both.
     server = createServer((req, res) => {
-      res.statusCode = req.url === '/page' && req.method === 'GET' ? 200 : 404;
+      if (req.url === '/drops-head' && req.method === 'HEAD') {
+        req.socket.destroy();
+        return;
+      }
+      res.statusCode = req.method === 'GET' && (req.url === '/page' || req.url === '/drops-head') ? 200 : 404;
       res.end();
     });
     await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
@@ -186,12 +193,12 @@ describe('checking URLs over the network', () => {
     await new Promise<void>((done) => server.close(() => done()));
   });
 
-  it('retries a failed HEAD as GET, and still reports a URL that fails both', async () => {
-    const root = project({ 'research/real.md': `One: ${base}/page\nTwo: ${base}/gone\n` });
+  it('retries as GET a HEAD that errors or drops the connection, and still reports a URL that fails both', async () => {
+    const root = project({ 'research/real.md': `One: ${base}/page\nTwo: ${base}/gone\nThree: ${base}/drops-head\n` });
     const r = await lint(root, ['research']);
-    expect(r.out).toContain('0 from cache, 2 freshly checked');
+    expect(r.out).toContain('0 from cache, 3 freshly checked');
     expect(r.out).toContain('research/real.md:2  HTTP 404');
-    expect(r.out).not.toContain('research/real.md:1');
+    expect(r.out).not.toMatch(/research\/real\.md:[13]\b/);
     expect(r.code).toBe(1);
   });
 });
