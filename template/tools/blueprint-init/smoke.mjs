@@ -18,8 +18,11 @@
  *   4. portal-review-conformance-reviewer over the stamped tree → not BLOCKED
  *   5. No deploy-fatal placeholders in the stamped portal (wrangler.toml)
  *   6. Stamped Pattern B tree → FULL doctor; both conformance reviewers executed
+ *   6b. The stamped runner runs the Review Portal reviewers doctor runs, no others
  *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present; every
- *      package.json script target exists; the brief names `npm run derive`
+ *      package.json script target exists; the brief names `npm run derive`;
+ *      `npm run reviewers` runs the stamped runner, which runs the portal
+ *      reviewers doctor runs (none, on a fresh stamp)
  *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
  *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
  *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
@@ -80,6 +83,28 @@ async function briefRefreshCommand(root) {
   return { cmd, resolves: false, detail: `unrecognized command: ${cmd}` };
 }
 
+// Every stamp carries tools/run-reviewers.mjs, and it must run exactly the portal
+// reviewers `blueprint doctor` runs (decisions/11, wave 113): both read
+// tools/lib/portal-reviewer-routing.mjs. Before, it ran all three on every
+// non-research stamp — 11 BLOCKs on a fresh Initiative Portal stamp.
+const PORTAL_REVIEWERS = ["portal-initiative-conformance-reviewer", "portal-chrome-canonical-reviewer", "portal-review-conformance-reviewer"];
+async function runStampedReviewers(root, { viaNpm = false } = {}) {
+  const [cmd, args] = viaNpm
+    ? ["npm", ["run", "--silent", "reviewers"]]
+    : [process.execPath, [path.join(root, "tools", "run-reviewers.mjs")]];
+  const { code, out } = await execFile(cmd, args, { cwd: root })
+    .then((r) => ({ code: 0, out: `${r.stdout}${r.stderr}` }), (e) => ({ code: e.code, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }));
+  const rows = [...out.matchAll(/^\s+\[(\w+)\s*\] (\S+)/gm)].map(([, status, name]) => ({ status, name }));
+  return {
+    code,
+    out,
+    portal: rows.map((r) => r.name).filter((n) => PORTAL_REVIEWERS.includes(n)).sort(),
+    errors: rows.filter((r) => r.status === "ERROR").map((r) => r.name),
+  };
+}
+const doctorPortalReviewers = (doc) => PORTAL_REVIEWERS.filter((n) =>
+  doc.checks.some((c) => c.name === "portal-conformance" && c.status !== "skip" && (c.detail || "").includes(n))).sort();
+
 const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "blueprint-smoke-"));
 const target = path.join(tmp, "smoke-initiative");
 
@@ -112,6 +137,7 @@ try {
     ".claude/agents/lib/initiative-root.mjs",
     "tools/lib/cost-dial.mjs",
     "tools/lib/review-loop.mjs",
+    "tools/lib/portal-reviewer-routing.mjs",
     "tools/run-reviewers.mjs",
   ]) {
     if (await fs.stat(path.join(target, rel)).catch(() => null)) ok(`stamped: ${rel}`);
@@ -154,9 +180,11 @@ try {
   // conformance reviewers demonstrably EXECUTED (wave 86 — doctor used to key
   // conformance on apps/portal existing, so Pattern B trees were never
   // doctor-covered; a skipped reviewer must read as a failure here, not green).
+  const { runDoctor } = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "doctor.mjs")).href);
+  let bDoctor = null;
   try {
-    const { runDoctor } = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "doctor.mjs")).href);
     const doc = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: target });
+    bDoctor = doc;
     const conf = doc.checks.filter((c) => c.name === "portal-conformance");
     for (const reviewer of ["portal-chrome-canonical-reviewer", "portal-review-conformance-reviewer"]) {
       const row = conf.find((c) => (c.detail || "").includes(reviewer));
@@ -171,6 +199,21 @@ try {
     else ok(`doctor over stamped Pattern B tree: ${doc.status}`);
   } catch (err) {
     bad("doctor over stamped Pattern B tree", err.message);
+  }
+
+  // 6b — decisions/11: the stamped runner runs the portal reviewers doctor runs.
+  // It used to add the Initiative Portal reviewer, which BLOCKs here.
+  try {
+    const run = await runStampedReviewers(target);
+    check(run.errors.length === 0, "Pattern B runner: no reviewer ERRORs", run.errors.join(", "));
+    check(run.portal.join() === "portal-chrome-canonical-reviewer,portal-review-conformance-reviewer",
+      "Pattern B runner runs the two Review Portal reviewers and not the Initiative Portal one", run.portal.join(", ") || "none");
+    if (bDoctor) {
+      check(run.portal.join() === doctorPortalReviewers(bDoctor).join(), "Pattern B runner and doctor run the same portal reviewers",
+        `runner [${run.portal.join(", ")}] doctor [${doctorPortalReviewers(bDoctor).join(", ")}]`);
+    }
+  } catch (err) {
+    bad("Pattern B stamped runner", err.message);
   }
 
   // 7 — Pattern A REAL stamp (was dry-run-only; the npm artifact ships this
@@ -203,6 +246,25 @@ try {
   check(aMissing.length === 0, "Pattern A package.json scripts all point at stamped files", aMissing.join(", "));
   const aRefresh = await briefRefreshCommand(aTarget);
   check(aRefresh.resolves && aRefresh.cmd === "npm run derive", "Pattern A brief's refresh command is its npm derive script", aRefresh.detail);
+
+  // 7a — decisions/11: Initiative Portal stamps carry the runner too (the
+  // adaptive-commerce-content amendment of 2026-07-23 found it missing), and it
+  // runs the portal reviewers doctor runs. On a fresh stamp that is none: the
+  // actor-output manifest is the contract, and there is no Review Portal.
+  try {
+    const aPkg = JSON.parse(await fs.readFile(path.join(aTarget, "package.json"), "utf8"));
+    check(aPkg.scripts?.reviewers === "node tools/run-reviewers.mjs", "Pattern A package.json offers `npm run reviewers`", JSON.stringify(aPkg.scripts));
+    const run = await runStampedReviewers(aTarget, { viaNpm: true });
+    check(/variant=greenfield\b/.test(run.out) && !/Missing script|Cannot find module/.test(run.out),
+      `Pattern A \`npm run reviewers\` executes the stamped runner (exit ${run.code})`, run.out.trim().split("\n").slice(0, 3).join(" | "));
+    check(run.errors.length === 0, "Pattern A runner: no reviewer ERRORs", run.errors.join(", "));
+    const aDoctor = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: aTarget });
+    check(run.portal.length === 0 && doctorPortalReviewers(aDoctor).length === 0,
+      "Pattern A runner and doctor both run no portal reviewer on a fresh stamp",
+      `runner [${run.portal.join(", ")}] doctor [${doctorPortalReviewers(aDoctor).join(", ")}]`);
+  } catch (err) {
+    bad("Pattern A stamped runner", err.message);
+  }
 
   // 7b — actor-output contract from birth (decisions/05, wave 89): a fresh stamp
   // carries the intrinsic manifest, its derived outputs exist, the gate verdict

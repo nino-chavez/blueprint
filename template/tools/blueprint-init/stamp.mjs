@@ -284,6 +284,44 @@ async function copyTree({ src, dst, subs, dryRun, log }) {
   }
 }
 
+// The imposition layer — installed into EVERY stamped initiative, whichever
+// branch of main() stamps it:
+//   .claude/                 SessionStart hook + reviewer agents (settings.json
+//                            is project-level)
+//   tools/lib/               what those reviewers import via ../../../../tools/lib/*;
+//                            without it a reviewer ERRORs when run from the
+//                            initiative (Phase-3 fix)
+//   tools/run-reviewers.mjs  runs the reviewers that apply to this initiative
+// History, and why this is one function: the 2026-06-16 install-gap fix
+// (08e8a9c) wired .claude + tools/lib for Initiative Portal stamps. The runner
+// shipped the same day for research only (d82963d). Wave 85 (c0b6aa7) copied
+// all three into the Review Portal branch, believing Initiative Portal stamps
+// already had the runner; they never did (decisions/11, wave 113).
+async function installImpositionLayer({ target, subs, dryRun, log }) {
+  await copyTree({
+    src: path.join(BLUEPRINT_ROOT, "template/.claude"),
+    dst: path.join(target, ".claude"),
+    subs,
+    dryRun,
+    log,
+  });
+  await copyTree({
+    src: path.join(BLUEPRINT_ROOT, "template/tools/lib"),
+    dst: path.join(target, "tools/lib"),
+    subs,
+    dryRun,
+    log,
+  });
+  if (!dryRun) {
+    await fs.mkdir(path.join(target, "tools"), { recursive: true });
+    await fs.copyFile(
+      path.join(BLUEPRINT_ROOT, "template/tools/run-reviewers.mjs"),
+      path.join(target, "tools/run-reviewers.mjs")
+    );
+  }
+  log.copied.push("tools/run-reviewers.mjs");
+}
+
 async function renameLogo(target, dryRun, log) {
   const src = path.join(target, "apps/portal/public/project-logo.png");
   const dst = path.join(target, "apps/portal/public/project-logo.png");
@@ -324,6 +362,9 @@ const PORTAL_TOOLCHAIN_OVERRIDES = {
 // Regenerates derived/ (actor-output.yml outputs). The recovery brief tells the
 // reader to run `npm run derive` when this script is present.
 const DERIVE_SCRIPT = "node tools/lib/account-derive.mjs --root .";
+// Every stamp carries the runner (installImpositionLayer), so every root
+// package.json the stamper writes offers it (decisions/11).
+const REVIEWERS_SCRIPT = "node tools/run-reviewers.mjs";
 
 async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
   const dst = path.join(target, "package.json");
@@ -338,7 +379,7 @@ async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
       private: true,
       scripts: {
         derive: DERIVE_SCRIPT,
-        reviewers: "node tools/run-reviewers.mjs",
+        reviewers: REVIEWERS_SCRIPT,
       },
     }
     : {
@@ -350,6 +391,7 @@ async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
         build: "npm run build -w apps/portal",
         typecheck: "npm run typecheck -w apps/portal",
         derive: DERIVE_SCRIPT,
+        reviewers: REVIEWERS_SCRIPT,
       },
       // The portal ships no lockfile, so `astro check` runs on whatever its
       // transitive checker resolves to that day. 2026-09-19: language-server
@@ -359,7 +401,7 @@ async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
       // astro / @astrojs/check / typescript versions in apps/portal/package.json.
       overrides: PORTAL_TOOLCHAIN_OVERRIDES,
     };
-  const label = variant === "research" ? "package.json (derive + reviewers scripts; no portal)" : "package.json (workspace root)";
+  const label = variant === "research" ? "package.json (derive + reviewers scripts; no portal)" : "package.json (workspace root; derive + reviewers scripts)";
   if (dryRun) {
     log.skipped.push(`${label}; dry-run; would write`);
     return;
@@ -1311,33 +1353,8 @@ async function main() {
     // stamp crashed on ReferenceError. Block-scoped log fixes it.
     const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
     const portalDirOverride = args["portal-dir"] || null;
-    // Wave 85: the imposition layer (.claude reviewers + tools/lib +
-    // run-reviewers) is installed into EVERY stamped initiative — the
-    // 2026-06-16 install-gap fix wired it for Pattern A only, so Pattern B
-    // consumers got a portal with no stage gates.
     const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
-    await copyTree({
-      src: path.join(BLUEPRINT_ROOT, "template/.claude"),
-      dst: path.join(target, ".claude"),
-      subs,
-      dryRun,
-      log,
-    });
-    await copyTree({
-      src: path.join(BLUEPRINT_ROOT, "template/tools/lib"),
-      dst: path.join(target, "tools/lib"),
-      subs,
-      dryRun,
-      log,
-    });
-    if (!dryRun) {
-      await fs.mkdir(path.join(target, "tools"), { recursive: true });
-      await fs.copyFile(
-        path.join(BLUEPRINT_ROOT, "template/tools/run-reviewers.mjs"),
-        path.join(target, "tools/run-reviewers.mjs")
-      );
-    }
-    log.copied.push("tools/run-reviewers.mjs");
+    await installImpositionLayer({ target, subs, dryRun, log });
     await stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log });
     await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
     await writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log });
@@ -1380,27 +1397,7 @@ async function main() {
     );
   }
 
-  // Imposition layer — installed into EVERY stamped initiative so the SessionStart
-  // hook + reviewer agents are present (fixes the install gap; see
-  // METHODOLOGY-AMENDMENTS 2026-06-16). settings.json is project-level.
-  await copyTree({
-    src: path.join(BLUEPRINT_ROOT, "template/.claude"),
-    dst: path.join(target, ".claude"),
-    subs,
-    dryRun,
-    log,
-  });
-
-  // Reviewer infra the stamped .claude reviewers import via ../../../../tools/lib/*
-  // (cost-dial, registry, doctor). Without this a reviewer with a module-level
-  // tools/lib import ERRORs when run from the initiative (Phase-3 fix).
-  await copyTree({
-    src: path.join(BLUEPRINT_ROOT, "template/tools/lib"),
-    dst: path.join(target, "tools/lib"),
-    subs,
-    dryRun,
-    log,
-  });
+  await installImpositionLayer({ target, subs, dryRun, log });
 
   if (variant === "research") {
     // Research variant: deliverable is a decision memo, not a portal. Scaffold the
@@ -1477,17 +1474,16 @@ async function scaffoldResearch({ target, dryRun, log }) {
     "research/prior-art",
     "decisions",
     "docs",
-    "tools",
   ];
   for (const d of dirs) {
     if (!dryRun) await fs.mkdir(path.join(target, d), { recursive: true });
     log.copied.push(`${d}/ (dir)`);
   }
+  // tools/run-reviewers.mjs comes with the imposition layer, like every stamp's.
   const files = [
     ["template/research/personas-and-jtbd.template.md", "research/personas-and-jtbd.md"],
     ["template/research/decision-memo.template.md", "docs/decision-memo.md"],
     ["template/research/decision-record.template.md", "decisions/_TEMPLATE.md"],
-    ["template/tools/run-reviewers.mjs", "tools/run-reviewers.mjs"],
   ];
   for (const [src, dst] of files) {
     if (!dryRun) await fs.copyFile(path.join(BLUEPRINT_ROOT, src), path.join(target, dst));

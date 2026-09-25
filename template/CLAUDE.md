@@ -121,7 +121,7 @@ Four workhorse agents under `.claude/agents/blueprint/`:
 
 Variant-aware gates that block premature stage completion. Full roster + behavior: `.claude/agents/blueprint/reviewers/README.md`.
 
-This table is prose documentation; the machine-readable mapping lives in the stage model (`tools/lib/stage-model.mjs` gate `reviewer:` fields — ADR-0009). Where a gate carries that mapping, `blueprint stage advance` runs the reviewer itself and records the result with an input fingerprint (fresh PASSes are reused; changed inputs force a rerun). Currently machine-wired: Stage 0 → 1 (`pilot-profile-lock-reviewer`); the rest run manually until each mapping is calibrated against the fleet.
+This table is prose documentation; the machine-readable mapping lives in the stage model (`tools/lib/stage-model.mjs` gate `reviewer:` fields — ADR-0009). Where a gate carries that mapping, `blueprint stage advance` runs the reviewer itself and records the result with an input fingerprint (fresh PASSes are reused; changed inputs force a rerun). Currently machine-wired: Stage 0 → 1 (`pilot-profile-lock-reviewer`); the rest run manually until each mapping is calibrated against the fleet. To run every executable gate that applies to this initiative at once, use `npm run reviewers`. A Review Portal stamp has no `package.json`, so use `node tools/run-reviewers.mjs` there. The runner skips another portal type's conformance reviewers by the same rule `blueprint doctor` uses.
 
 | Gate | Reviewer(s) |
 |---|---|

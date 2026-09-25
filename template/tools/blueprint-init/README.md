@@ -250,12 +250,24 @@ header, so a scaffold never carries a value the operator didn't see.
   packages/
     ui/                     # copied from template/packages/ui/ with substitutions
     design-tokens/          # copied from template/packages/design-tokens/ with substitutions
+  .claude/                  # reviewer agents + SessionStart hook
+  tools/lib/                # what the reviewers import
+  tools/run-reviewers.mjs   # runs the reviewers that apply here (`npm run reviewers`)
   blueprint.yml             # variant + tier + pattern written; rest stays default
   reader-contract.json      # reader job + rendered encounter → copy source map
-  package.json              # workspace root: dev, build, typecheck (apps/portal) + derive
+  package.json              # workspace root: dev, build, typecheck (apps/portal) + derive, reviewers
   actor-output.yml          # intrinsic actor-output manifest (maintainer + next-agent)
   derived/                  # recovery brief + boot packet; `npm run derive` regenerates
 ```
+
+Every stamp, research and Review Portal included, carries the same imposition
+layer: `.claude/`, `tools/lib/` and `tools/run-reviewers.mjs` (decisions/11). The
+runner runs only the reviewers that apply to the initiative. It skips a portal
+type's conformance reviewers by the same rule `blueprint doctor` uses
+(`tools/lib/portal-reviewer-routing.mjs`). On a fresh stamp it still exits 1,
+because the pilot-profile and stage gates block until the work exists. A Review
+Portal stamp writes no `package.json`, so run `node tools/run-reviewers.mjs`
+there.
 
 Both Pattern A and Pattern B stamps write `reader-contract.json` unless the target already has one. The default is deliberately small: it names the likely reader and job, points at the stamped portal output and its copy-bearing sources, and leaves project-specific allowed or denied terms empty. Refine it when the first real surface replaces the scaffold. `blueprint doctor` validates the contract and inspects available rendered HTML; a missing render warns, while a missing declared source or an explicitly denied rendered term blocks.
 

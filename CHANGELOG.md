@@ -17,6 +17,16 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **Every stamp carries the reviewer runner, and it skips portal gates that
+  cannot apply** (wave 113) — Initiative Portal stamps now get
+  `tools/run-reviewers.mjs` and `npm run reviewers`, like research and Review
+  Portal stamps. For non-research variants the runner used to run all three
+  portal conformance reviewers, so a fresh Initiative Portal stamp got 11 BLOCKs
+  from Review Portal gates. It now runs the portal reviewers `blueprint doctor`
+  runs, decided by one shared helper, `tools/lib/portal-reviewer-routing.mjs`.
+  For an existing initiative, copy the runner to `tools/` and the helper to
+  `tools/lib/`, and add the `reviewers` script by hand: the stamper never
+  overwrites an existing `package.json`. See decisions/11.
 - **The citation-lint instructions work from an initiative** (wave 110) — the
   fact-check reviewer, the citation-correctness pattern and audit discipline
   said to run `tools/cited-url-lint/`, which the stamper never creates. They
