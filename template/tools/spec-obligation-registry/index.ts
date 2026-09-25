@@ -26,6 +26,9 @@
  * Pure core (no IO); `main()` runs `validate` (CI gate) or `list` (table view).
  */
 
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -329,6 +332,19 @@ function main(): void {
   process.exit(1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run only when executed directly, so tests can import the core. Real paths on
+// both sides: comparing import.meta.url to argv as strings misses a symlinked
+// path (macOS /var -> /private/var) or one containing a space, and the gate
+// would exit 0 having validated nothing.
+function invokedDirectly(): boolean {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (invokedDirectly()) {
   main();
 }

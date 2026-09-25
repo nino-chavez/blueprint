@@ -26,9 +26,10 @@
  *
  * Any input flag may be omitted; absent inputs contribute no runs.
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, realpathSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ScenarioResults, ScenarioRun } from '../state-derive/types.ts';
 
 const AC_RE = /\bUS-\d+\.\d+/g;
@@ -181,7 +182,19 @@ function main(): void {
   console.log(`  runs: ${runs.length}  ·  ACs: ${acs.size}  ·  passed-ACs: ${passed.size}  ·  failed-ACs: ${failed.size}  ·  as_of ${commit.slice(0, 8) || '(no git)'}`);
 }
 
-// Run as CLI when invoked directly (tsx index.ts ...).
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run as CLI when invoked directly (tsx index.ts ...). Real paths on both sides:
+// comparing import.meta.url to argv as strings misses a symlinked path (macOS
+// /var -> /private/var) or one containing a space, and the tool would exit 0
+// having written no results.
+function invokedDirectly(): boolean {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (invokedDirectly()) {
   main();
 }
