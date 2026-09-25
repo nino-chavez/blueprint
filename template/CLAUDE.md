@@ -190,6 +190,12 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=<absolute path to initiative root>
 ```
 
+Tier 0 is pre-portal, so `--tier=0` stamps no portal of either type. Midstream
+cannot start at Tier 0. `--portal-type` still records which portal the
+initiative will use at Tier 1. To move up, re-run the stamper with `--tier=1`:
+see "Moving from Tier 0 to Tier 1" in
+`$BLUEPRINT_HOME/docs/portal-and-tier-ladder.md`.
+
 Research initial stamps are portal-free, so omit `--portal-type` and
 `--pattern`:
 

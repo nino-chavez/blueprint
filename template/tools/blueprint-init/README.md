@@ -85,6 +85,38 @@ therefore has no workspaces: `npm run derive` regenerates `derived/`, and
 `derived/` before the target usually has a commit, so run `npm run derive`
 again after the first commit.
 
+## Usage — Tier 0 (pre-portal)
+
+Tier 0 is pre-portal for every variant (decisions/11). Greenfield and brownfield
+can start there; midstream cannot. `--portal-type` records the portal the
+initiative will use at Tier 1, and nothing is copied for it yet:
+
+```bash
+node template/tools/blueprint-init/stamp.mjs \
+  --mode=stamp \
+  --name=my-audit \
+  --variant=brownfield \
+  --tier=0 \
+  --portal-type=review \
+  --target=/path/to/new/initiative
+```
+
+```text
+.claude/ + tools/lib/ + tools/run-reviewers.mjs
+blueprint.yml           # tier: 0, portal_type, pilot_profile to fill
+reader-contract.json    # surface: docs/, sourced from blueprint.yml + decisions/
+actor-output.yml
+package.json            # scripts: derive, reviewers — no workspaces
+decisions/
+derived/
+```
+
+It does not create `apps/portal/`, `packages/` or `blueprint/portal/`, and it
+ignores `--logo`. To move to Tier 1, re-run the stamper with `--tier=1` and the
+same flags. The stamp keeps your `blueprint.yml`, `package.json` and
+`reader-contract.json`, and warns about the first two. The hand edits are in
+`docs/portal-and-tier-ladder.md` § "Moving from Tier 0 to Tier 1".
+
 ## Usage — initial stamp (Pattern B)
 
 Pattern B scaffolding creates a Review Portal at `blueprint/portal/` (or a custom path declared in `blueprint.yml`):
@@ -237,6 +269,9 @@ Every default the stamp applies is echoed on a `defaulted:` line in the run
 header, so a scaffold never carries a value the operator didn't see.
 
 ## What the stamper writes (Pattern A product variants)
+
+At Tier 1 or 2. A Tier 0 stamp writes no `apps/portal/` or `packages/` (see
+"Usage — Tier 0 (pre-portal)").
 
 ```
 <target>/

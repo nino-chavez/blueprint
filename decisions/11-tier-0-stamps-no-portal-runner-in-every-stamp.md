@@ -51,7 +51,7 @@ The stamper copied a portal at every tier for every variant except research. Sta
 - It gets the same root `package.json` as a research stamp: `derive` and `reviewers` scripts, no workspaces. No `npm install` is needed.
 - `blueprint.yml` keeps `pilot_profile`, `portal_type` (the portal type the initiative will use at Tier 1) and the `portal:` block.
 - `reader-contract.json` points at `docs/`. A missing rendered root is a WARN, and nothing BLOCKs.
-- The `prototype-shell` gate no longer passes on a fresh Tier 0 stamp.
+- Greenfield's `portal-shell` gate no longer passes on a fresh Tier 0 stamp. Brownfield's prototype stage is optional, so an absent `prototype-shell` reads "pass (optional)" either way.
 - Existing Tier 0 consumers do not change. The stamper never re-runs itself, and `blueprint upgrade` only bumps the version pin (`template/tools/lib/upgrade.mjs`: "v1 is pin-bump only").
 - **The cost is moving to Tier 1.** It becomes a re-stamp plus hand edits, where today it is one edit. This was measured on a simulated portal-free Tier 0 initiative, committed, then re-stamped with `--tier=1`:
   - The re-stamp exits 0 and adds `apps/` and `packages/`.
@@ -172,7 +172,7 @@ Each of these is real, but none belongs to this decision:
 - Review Portal stamps write no `package.json`.
 - A re-stamp overwrites `.claude/**` and `tools/lib/**`, including an operator's `.claude/settings.json`.
 - `portal-chrome-canonical-reviewer` treats `apps/portal` as a Review Portal location. That produced the 10 BLOCKs. The routing sidesteps it for the runner; the reviewer itself is unchanged.
-- A fresh Initiative Portal stamp fails `terminology-linter` on its own vendored `ArchaeologyChat.tsx` ("payload", "endpoint").
+- A fresh Initiative Portal stamp fails `terminology-linter` on its own vendored `ArchaeologyChat.tsx` ("payload", "endpoint"), so at Tier 1 it fails `blueprint doctor`. This reproduces on `main` (`26e524b`). No CI job runs doctor over a stamped Initiative Portal. After this change it no longer happens at Tier 0, because there is no portal there.
 - The same consumer amendment asked to keep `.DS_Store`, `__pycache__` and `*.pyc` out of `copyTree`, and to check stamped text for trailing whitespace.
 
 ## What would change this

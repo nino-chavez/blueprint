@@ -30,6 +30,10 @@
  *      its package.json scripts run; derived/ skips the decision template and is
  *      rerun after the first commit; Stage 3 is not started until a real ADR exists
  *  12. Methodology-amendment templates share one canonical field shape
+ *  13. Tier 0 is pre-portal (decisions/11): no portal on either portal type, the
+ *      portal-free package.json runs, doctor/reader/runner gates hold, no stamped
+ *      file passes a prototype gate; a Tier 1 re-stamp names the files to edit;
+ *      research + --logo exits 0; the tier-ladder doc agrees
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
  * Exit: 0 = all green; 1 = any failure (each failure printed).
@@ -636,6 +640,117 @@ try {
   } catch (err) {
     bad("amendment entry shape", err.message);
   }
+
+  // 13 — decisions/11: Tier 0 is pre-portal for every variant. The stamper used
+  // to copy a portal at Tier 0, where both portal reviewers skip it, and the
+  // portal file then passed a prototype gate nobody worked for (decisions/11).
+  const exists = (p) => fs.stat(p).then(() => true, () => false);
+  const sm13 = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "stage-model.mjs")).href);
+  const encounter13 = await import(new URL("../lib/encounter-audit.mjs", import.meta.url).href);
+  for (const [label, variant, portalType] of [
+    ["greenfield Initiative Portal", "greenfield", "initiative"],
+    ["brownfield Review Portal", "brownfield", "review"],
+  ]) {
+    const t0 = path.join(tmp, `smoke-tier0-${variant}`);
+    try {
+      const stamp0 = await execFile(process.execPath, [
+        STAMP, "--mode=stamp", `--name=smoke-tier0-${variant}`, `--variant=${variant}`, "--tier=0", `--portal-type=${portalType}`, `--target=${t0}`,
+      ]);
+      check(/stamping pre-portal \(Tier 0\) scaffold/.test(stamp0.stdout), `Tier 0 ${label}: stamp names the pre-portal scaffold`, stamp0.stdout.split("\n")[0]);
+      const portalDirs = [];
+      for (const rel of ["apps/portal", "packages", "blueprint/portal", "portal"]) if (await exists(path.join(t0, rel))) portalDirs.push(rel);
+      check(portalDirs.length === 0, `Tier 0 ${label}: no portal stamped`, portalDirs.join(", "));
+      const absent = [];
+      for (const rel of [".claude/agents/blueprint/reviewers", "tools/lib/portal-reviewer-routing.mjs", "tools/run-reviewers.mjs", "actor-output.yml", "reader-contract.json"]) {
+        if (!(await exists(path.join(t0, rel)))) absent.push(rel);
+      }
+      check(absent.length === 0, `Tier 0 ${label}: imposition layer and contracts present`, `missing ${absent.join(", ")}`);
+      const yml0 = await fs.readFile(path.join(t0, "blueprint.yml"), "utf8");
+      check(/^tier: 0$/m.test(yml0) && new RegExp(`^portal_type: ${portalType}$`, "m").test(yml0) && /^pilot_profile_policy: required$/m.test(yml0),
+        `Tier 0 ${label}: blueprint.yml keeps tier 0, the portal type for Tier 1, and the pilot-profile policy`);
+      const pkg0 = JSON.parse(await fs.readFile(path.join(t0, "package.json"), "utf8"));
+      check(!pkg0.workspaces && !pkg0.overrides && Object.keys(pkg0.scripts ?? {}).sort().join() === "derive,reviewers",
+        `Tier 0 ${label}: package.json has derive + reviewers only`, JSON.stringify(pkg0));
+      const missing0 = await missingScriptTargets(t0);
+      check(missing0.length === 0, `Tier 0 ${label}: package.json scripts all point at stamped files`, missing0.join(", "));
+      const derive0 = await execFile("npm", ["run", "--silent", "derive"], { cwd: t0 }).then(() => 0, (e) => e.code);
+      check(derive0 === 0, `Tier 0 ${label}: \`npm run derive\` runs`, `exit ${derive0}`);
+      const run0 = await runStampedReviewers(t0, { viaNpm: true });
+      check(new RegExp(`variant=${variant}\\b`).test(run0.out) && run0.errors.length === 0,
+        `Tier 0 ${label}: \`npm run reviewers\` runs with no reviewer ERRORs (exit ${run0.code})`,
+        run0.errors.join(", ") || run0.out.trim().split("\n").slice(0, 2).join(" | "));
+      const doc0 = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: t0 });
+      check(run0.portal.length === 0 && doctorPortalReviewers(doc0).length === 0, `Tier 0 ${label}: runner and doctor both run no portal reviewer`,
+        `runner [${run0.portal.join(", ")}] doctor [${doctorPortalReviewers(doc0).join(", ")}]`);
+      const fails0 = doc0.checks.filter((c) => c.status === "fail");
+      check(fails0.length === 0, `Tier 0 ${label}: full doctor has no fails (${doc0.status})`, fails0.map((c) => `${c.name}: ${c.detail}`).join(" | "));
+      const reader0 = await encounter13.auditReaderContract({ targetDir: t0 });
+      check(reader0.status !== "BLOCKED" && reader0.metadata.surfaces === 1, `Tier 0 ${label}: reader contract valid (${reader0.status})`,
+        reader0.findings.map((f) => f.message).join(" | "));
+      // Greenfield's portal-shell must not pass; brownfield's prototype stage is
+      // optional, and an absent optional gate reads pass "(optional)" by design.
+      const shell = sm13.deriveStageStatus({ root: t0 }).stages.flatMap((s) => s.gates).find((g) => /^(portal|prototype)-shell$/.test(g.gate));
+      check(shell && (shell.state !== "pass" || /\(optional\)$/.test(shell.evidence)), `Tier 0 ${label}: no stamped file satisfies the prototype gate`,
+        shell ? `${shell.gate}=${shell.state} — ${shell.evidence}` : "gate not found");
+    } catch (err) {
+      bad(`Tier 0 ${label} stamp`, (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+    }
+  }
+
+  // 13b — moving to Tier 1 re-runs the stamper at --tier=1. It adds the portal
+  // and, because package.json and blueprint.yml are preserved, names both.
+  try {
+    const t0 = path.join(tmp, "smoke-tier0-greenfield");
+    const restamp = await execFile(process.execPath, [
+      STAMP, "--mode=stamp", "--name=smoke-tier0-greenfield", "--variant=greenfield", "--tier=1", "--portal-type=initiative", `--target=${t0}`,
+    ]);
+    check(await exists(path.join(t0, "apps", "portal", "package.json")), "Tier 0 → 1 re-stamp adds apps/portal");
+    // The warning carries the keys to merge, from the stamper's own values.
+    check(/WARNINGS[\s\S]*package\.json was preserved without npm workspaces[^\n]*"workspaces":\["apps\/\*","packages\/\*"\][^\n]*"overrides"/.test(restamp.stdout)
+      && /blueprint\.yml was preserved with tier: 0, but this stamp ran with --tier=1/.test(restamp.stdout),
+    "Tier 0 → 1 re-stamp warns about the preserved package.json (with the keys to add) and tier",
+    restamp.stdout.split("\n").filter((l) => l.includes("!")).join(" | ") || "no warnings printed");
+  } catch (err) {
+    bad("Tier 0 → 1 re-stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
+  // The Review Portal path: it needs no workspaces, so only the tier warns, and
+  // after the documented edit full doctor has no fails.
+  try {
+    const t0 = path.join(tmp, "smoke-tier0-brownfield");
+    const restamp = await execFile(process.execPath, [
+      STAMP, "--mode=stamp", "--name=smoke-tier0-brownfield", "--variant=brownfield", "--tier=1", "--portal-type=review", `--target=${t0}`,
+    ]);
+    check(await exists(path.join(t0, "blueprint", "portal", "index.html")), "Tier 0 → 1 Review Portal re-stamp adds blueprint/portal");
+    check(/blueprint\.yml was preserved with tier: 0/.test(restamp.stdout) && !/package\.json was preserved without npm workspaces/.test(restamp.stdout),
+      "Tier 0 → 1 Review Portal re-stamp warns about the tier only", restamp.stdout.split("\n").filter((l) => l.includes("!")).join(" | ") || "no warnings printed");
+    const ymlPath = path.join(t0, "blueprint.yml");
+    await fs.writeFile(ymlPath, (await fs.readFile(ymlPath, "utf8")).replace(/^tier: 0$/m, "tier: 1"));
+    const doc1 = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: t0 });
+    const fails1 = doc1.checks.filter((c) => c.status === "fail");
+    check(fails1.length === 0 && doctorPortalReviewers(doc1).length === 2,
+      `Tier 0 → 1 Review Portal: with tier: 1 set, doctor runs both portal reviewers and has no fails (${doc1.status})`,
+      fails1.map((c) => `${c.name}: ${c.detail}`).join(" | ") || `portal reviewers [${doctorPortalReviewers(doc1).join(", ")}]`);
+  } catch (err) {
+    bad("Tier 0 → 1 Review Portal re-stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
+
+  // 13c — the logo belongs to a portal. Research + --logo used to exit 2 with
+  // ENOENT on apps/portal/public after writing most of the scaffold.
+  const logoFile = path.join(tmp, "smoke-logo.png");
+  await fs.writeFile(logoFile, "not really a png");
+  await execFile(process.execPath, [
+    STAMP, "--mode=stamp", "--name=smoke-research-logo", "--variant=research", "--tier=0", `--logo=${logoFile}`, `--target=${path.join(tmp, "smoke-research-logo")}`,
+  ]).then(
+    (r) => check(/--logo \S+ \(no portal in this stamp/.test(r.stdout), "research stamp with --logo exits 0 and reports the logo skipped", r.stdout.split("\n").slice(-3).join(" | ")),
+    (e) => bad("research stamp with --logo exits 0 and reports the logo skipped", (e.stderr || e.message).split("\n").slice(-2).join(" | ")),
+  );
+
+  // 13d — the doc and the stamper agree: Tier 0 is pre-portal, and the doc says
+  // how to move to Tier 1.
+  const ladder = await fs.readFile(path.join(BLUEPRINT_ROOT, "docs", "portal-and-tier-ladder.md"), "utf8");
+  check(/\*\*No portal yet\.\*\*/.test(ladder) && /\| \*\*Brownfield\*\* \| Doc-only audit, no portal needed/.test(ladder)
+    && /^### Moving from Tier 0 to Tier 1$/m.test(ladder),
+  "tier-ladder doc: Tier 0 is pre-portal, as stamped, and it explains moving to Tier 1");
 } finally {
   await fs.rm(tmp, { recursive: true, force: true });
 }

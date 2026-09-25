@@ -14,13 +14,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
+import { readTopLevelYamlScalar } from "../lib/yaml-scalar.mjs";
 const execFile = promisify(execFileCb);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BLUEPRINT_ROOT = path.resolve(__dirname, "..", "..", "..");
 
 // ── Variant × Tier matrix (kept in sync with docs/portal-and-tier-ladder.md) ──
-// true  = allowed and reasonable; false = blocked unless --force.
+// Each value labels the doc's cell. "blocked" makes main() refuse the stamp;
+// there is no override flag. Which cells get a portal is not in this table:
+// Tier 0 is pre-portal for every variant, and research never gets one
+// (stampsPortal in main(); decisions/11).
 const VARIANT_TIER_MATRIX = {
   greenfield: { 0: "exploration-only", 1: "default", 2: "if-product-day-one" },
   midstream:  { 0: "blocked", 1: "portal-only", 2: "default" },
@@ -347,14 +351,17 @@ async function replaceLogo(logoSrc, target, dryRun, log) {
 }
 
 // Write the root package.json. Every script in it must run against what this
-// stamp wrote. Every non-research variant stamps apps/portal + packages at every
-// tier, so it gets the workspace root: the four @blueprint/* "*" deps in
+// stamp wrote. A stamp that includes apps/portal + packages (a product variant
+// at Tier 1 or 2) gets the workspace root: the four @blueprint/* "*" deps in
 // apps/portal then resolve to the local workspace packages instead of the npm
 // registry (where they do not exist), and a fresh portal can `npm install`. A
-// research stamp has no portal, so it gets only the derive and reviewer
-// commands (wave 109: research stamps shipped portal scripts that failed with
-// "No workspaces found"). skip-if-exists, like writeBlueprintYml — never
-// clobber an operator-customized root.
+// portal-free stamp (research, or any variant at Tier 0 — decisions/11) gets
+// only the derive and reviewer commands (wave 109: research stamps shipped
+// portal scripts that failed with "No workspaces found"). skip-if-exists, like
+// writeBlueprintYml — never clobber an operator-customized root. But when this
+// stamp adds a portal to a root that cannot install it, say so: re-stamping a
+// Tier 0 initiative at Tier 1 used to leave a portal whose build failed, and
+// nothing said why.
 const PORTAL_TOOLCHAIN_OVERRIDES = {
   "@astrojs/language-server": "2.17.0",
   "@astrojs/compiler": "2.13.1",
@@ -366,14 +373,49 @@ const DERIVE_SCRIPT = "node tools/lib/account-derive.mjs --root .";
 // package.json the stamper writes offers it (decisions/11).
 const REVIEWERS_SCRIPT = "node tools/run-reviewers.mjs";
 
-async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
+// What an Initiative Portal needs in the root package.json. One owner for a
+// fresh workspace root and for the keys a re-stamp tells the operator to add.
+function portalWorkspaceKeys() {
+  return {
+    workspaces: ["apps/*", "packages/*"],
+    scripts: {
+      dev: "npm run dev -w apps/portal",
+      build: "npm run build -w apps/portal",
+      typecheck: "npm run typecheck -w apps/portal",
+    },
+    // The portal ships no lockfile, so `astro check` runs on whatever its
+    // transitive checker resolves to that day. 2026-09-19: language-server
+    // 2.17.0 (published 09-16) began rejecting markup 2.16.10 had let through,
+    // and template-health went red with no commit. npm reads `overrides` only
+    // from the install root, which is this file. Keep in step with the exact
+    // astro / @astrojs/check / typescript versions in apps/portal/package.json.
+    overrides: PORTAL_TOOLCHAIN_OVERRIDES,
+  };
+}
+
+async function writeWorkspaceRoot({ target, name, stampsPortal, dryRun, log }) {
   const dst = path.join(target, "package.json");
   const existing = await readMaybe(dst);
   if (existing) {
     log.skipped.push("package.json (already exists; preserved)");
+    if (stampsPortal) {
+      let workspaces = null;
+      try {
+        const parsed = JSON.parse(existing).workspaces;
+        workspaces = Array.isArray(parsed) ? parsed : parsed?.packages ?? [];
+      } catch { /* unparseable: nothing reliable to say */ }
+      if (workspaces && !(workspaces.includes("apps/*") && workspaces.includes("packages/*"))) {
+        log.warnings.push(
+          `package.json was preserved without npm workspaces for apps/* and packages/*, so apps/portal's ` +
+          `@blueprint/* packages will not install. Merge these keys into it: ${JSON.stringify(portalWorkspaceKeys())} ` +
+          `($BLUEPRINT_HOME/docs/portal-and-tier-ladder.md § "Moving from Tier 0 to Tier 1").`
+        );
+      }
+    }
     return;
   }
-  const pkg = variant === "research"
+  const keys = portalWorkspaceKeys();
+  const pkg = !stampsPortal
     ? {
       name,
       private: true,
@@ -385,23 +427,11 @@ async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
     : {
       name: `${name}-workspace`,
       private: true,
-      workspaces: ["apps/*", "packages/*"],
-      scripts: {
-        dev: "npm run dev -w apps/portal",
-        build: "npm run build -w apps/portal",
-        typecheck: "npm run typecheck -w apps/portal",
-        derive: DERIVE_SCRIPT,
-        reviewers: REVIEWERS_SCRIPT,
-      },
-      // The portal ships no lockfile, so `astro check` runs on whatever its
-      // transitive checker resolves to that day. 2026-09-19: language-server
-      // 2.17.0 (published 09-16) began rejecting markup 2.16.10 had let through,
-      // and template-health went red with no commit. npm reads `overrides` only
-      // from the install root, which is this file. Keep in step with the exact
-      // astro / @astrojs/check / typescript versions in apps/portal/package.json.
-      overrides: PORTAL_TOOLCHAIN_OVERRIDES,
+      workspaces: keys.workspaces,
+      scripts: { ...keys.scripts, derive: DERIVE_SCRIPT, reviewers: REVIEWERS_SCRIPT },
+      overrides: keys.overrides,
     };
-  const label = variant === "research" ? "package.json (derive + reviewers scripts; no portal)" : "package.json (workspace root; derive + reviewers scripts)";
+  const label = !stampsPortal ? "package.json (derive + reviewers scripts; no portal)" : "package.json (workspace root; derive + reviewers scripts)";
   if (dryRun) {
     log.skipped.push(`${label}; dry-run; would write`);
     return;
@@ -415,6 +445,15 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
   const existing = await readMaybe(dst);
   if (existing) {
     log.skipped.push("blueprint.yml (already exists; preserved)");
+    // A re-stamp at another tier (Tier 0 → 1 is the usual one) keeps the old
+    // declaration, and at tier: 0 the portal conformance reviewers skip.
+    const declared = readTopLevelYamlScalar(existing, "tier");
+    if (declared != null && declared !== tier) {
+      log.warnings.push(
+        `blueprint.yml was preserved with tier: ${declared}, but this stamp ran with --tier=${tier}. ` +
+        `Set tier: ${tier} in blueprint.yml${declared === "0" ? " — at tier: 0 the portal conformance reviewers skip the portal" : ""}.`
+      );
+    }
     return;
   }
   const header = [
@@ -515,10 +554,13 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
     "",
     "# ──────────────────────────────────────────────────────────────────",
     "# Portal harness config (Initiative Portal). Read by apps/portal/src/lib/portal-config.ts.",
-    "# Tier-0 default: ZERO data sources wired. The portal builds green and shows the",
+    "# Stamped default: ZERO data sources wired. The portal builds green and shows the",
     "# decisions catalog + strategy excerpts; every optional substrate section hides.",
     "# Wire a source = set its path to a repo-relative file that exists, then rebuild.",
     "# A typo'd path simply keeps the section hidden — it never crashes the build.",
+    ...(tier === "0"
+      ? ["# Tier 0 is pre-portal: this stamp wrote no portal, so this block waits for Tier 1."]
+      : []),
     "# ──────────────────────────────────────────────────────────────────",
     "portal:",
     `  repo_url: "${repoUrl}"`,
@@ -564,7 +606,7 @@ async function writeBlueprintYml({ target, name, variant, tier, portalType, tagl
 // plain-language pass can audit the built encounter instead of grepping only
 // component prose. Consumers may split this into multiple surfaces as their
 // audiences diverge.
-async function writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log }) {
+async function writeReaderContract({ target, name, displayName, variant, portalType, stampsPortal, dryRun, log }) {
   const dst = path.join(target, "reader-contract.json");
   if (await readMaybe(dst)) {
     log.skipped.push("reader-contract.json (already exists; preserved)");
@@ -589,6 +631,25 @@ async function writeReaderContract({ target, name, displayName, variant, portalT
       name: "decision memo",
       renderedRoots: ["docs/decision-memo.md"],
       sourceRoots: ["research", "blueprint.yml"],
+      allowTerms: [],
+      denyTerms: [],
+    };
+  } else if (!stampsPortal) {
+    // Tier 0 is pre-portal (decisions/11): the reader reads documents. Both
+    // source roots exist once the stamp finishes (decisions/ is created with
+    // the actor-output manifest); docs/ is absent until written, which the
+    // encounter audit reports as a WARN, not a BLOCK.
+    defaults = {
+      reader: `A stakeholder evaluating ${displayName}`,
+      job: "Understand what the initiative found, what it recommends, and what to decide next",
+      assumedKnowledge: [],
+      plainness: "lay",
+      precisionLocks: ["facts", "numbers", "citations", "decision status"],
+    };
+    surface = {
+      name: "initiative documents",
+      renderedRoots: ["docs"],
+      sourceRoots: ["blueprint.yml", "decisions"],
       allowTerms: [],
       denyTerms: [],
     };
@@ -792,6 +853,10 @@ function printReport(log) {
   console.log(`  banner (example content; REPLACE_FOR_PROJECT header added):\n${fmt(log.banner)}`);
   console.log(`  renamed / replaced:\n${fmt(log.renamed)}`);
   console.log(`  skipped:\n${fmt(log.skipped)}`);
+  if (log.warnings && log.warnings.length) {
+    console.log(`  WARNINGS (the stamp finished; these need a hand edit):`);
+    for (const w of log.warnings) console.log(`    ! ${w}`);
+  }
   if (log.mechanicalCheck && log.mechanicalCheck.length) {
     console.log(`  UNEXPECTED RESIDUAL STRINGS (stamper bug — fix template/tools/blueprint-init/stamp.mjs):`);
     for (const o of log.mechanicalCheck) console.log(`    ! ${o.file} :: ${o.token}`);
@@ -1232,7 +1297,7 @@ async function modeRestampChrome(args) {
   const targetStat = await fs.stat(target).catch(() => null);
   if (!targetStat || !targetStat.isDirectory()) fail(`--target must exist and be a directory: ${target}`);
 
-  const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
+  const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], warnings: [], mechanicalCheck: [] };
   if (portalType === "review") {
     await restampChromePatternB({ target, dryRun, acceptOverwrite, portalDirOverride, log });
   } else {
@@ -1346,23 +1411,28 @@ async function main() {
       `add any justified reader surface separately after the research scaffold exists`
     );
   }
-  if (portalType === "review") {
+  // One answer to "does this stamp include a portal?", used by every step that
+  // depends on it. Tier 0 is pre-portal for every variant (docs/portal-and-tier-
+  // ladder.md § Tier 0; decisions/11) and research never gets one. A Tier 0
+  // product stamp still records portal_type: the portal it will use at Tier 1.
+  const stampsPortal = variant !== "research" && tier !== "0";
+  if (portalType === "review" && stampsPortal) {
     // AMENDMENT 1 (2026-06-27): Pattern B initial stamp now implemented.
     // Wave 85 (ai-enablement consumer, 9 defects): the outer Pattern A
     // `const log` sits in its temporal dead zone here — every fresh Pattern B
     // stamp crashed on ReferenceError. Block-scoped log fixes it.
-    const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
+    const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], warnings: [], mechanicalCheck: [] };
     const portalDirOverride = args["portal-dir"] || null;
     const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
     await installImpositionLayer({ target, subs, dryRun, log });
     await stampPatternB({ target, name, displayName, repoUrl, tagline, theme, dryRun, portalDirOverride, log });
     await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
-    await writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log });
+    await writeReaderContract({ target, name, displayName, variant, portalType, stampsPortal, dryRun, log });
     await writeActorOutputManifest({ target, name, dryRun, log });
     if (!dryRun) await mechanicalCheck({ target, name, log });
     printReport(log);
     if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
-    if (!dryRun) printNextSteps({ variant, portalType, target, derived: log.derived });
+    if (!dryRun) printNextSteps({ variant, portalType, stampsPortal, target, derived: log.derived });
     return;
   }
 
@@ -1373,9 +1443,11 @@ async function main() {
   if (!targetStat && !dryRun) await fs.mkdir(target, { recursive: true });
 
   const subs = substitutions({ name, displayName, repoUrl, tagline, theme });
-  const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], mechanicalCheck: [] };
+  const log = { copied: [], stamped: [], banner: [], renamed: [], skipped: [], warnings: [], mechanicalCheck: [] };
 
-  const scaffoldLabel = variant === "research" ? "research decision/evidence" : "Initiative Portal";
+  const scaffoldLabel = variant === "research"
+    ? "research decision/evidence"
+    : stampsPortal ? "Initiative Portal" : "pre-portal (Tier 0)";
   console.log(`blueprint-init: stamping ${scaffoldLabel} scaffold into ${target}${targetStat ? "" : " (created)"}`);
   console.log(`  variant=${variant} tier=${tier} (${VARIANT_TIER_MATRIX[variant][tier]})`);
   console.log(`  name=${name} display-name="${displayName}"`);
@@ -1404,6 +1476,12 @@ async function main() {
     // research pipeline; skip the portal (opt-in later as optional provenance per
     // docs/variant-selection.md § Research).
     await scaffoldResearch({ target, dryRun, log });
+  } else if (!stampsPortal) {
+    // Tier 0 (decisions/11): the imposition layer, blueprint.yml, the reader
+    // contract and the actor-output manifest, and no portal. Moving to Tier 1
+    // re-runs this stamper with --tier=1 (docs/portal-and-tier-ladder.md,
+    // "Moving from Tier 0 to Tier 1").
+    log.skipped.push(`apps/portal + packages (Tier 0 is pre-portal; re-stamp with --tier=1 when the initiative needs a portal)`);
   } else {
     await copyTree({
       src: path.join(BLUEPRINT_ROOT, "template/apps/portal"),
@@ -1422,27 +1500,31 @@ async function main() {
   }
   // Before writeActorOutputManifest: the derivation it runs reads this file to
   // name the refresh command in derived/recovery-brief.md.
-  await writeWorkspaceRoot({ target, name, variant, dryRun, log });
+  await writeWorkspaceRoot({ target, name, stampsPortal, dryRun, log });
   await renameLogo(target, dryRun, log);
-  if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
+  // The logo goes into the portal. With no portal, copying it failed with
+  // ENOENT after most of the scaffold was written (research + --logo exited 2).
+  if (logoSrc && stampsPortal) await replaceLogo(logoSrc, target, dryRun, log);
+  else if (logoSrc) log.skipped.push(`--logo ${logoSrc} (no portal in this stamp; pass it again when you stamp one)`);
   await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
-  await writeReaderContract({ target, name, displayName, variant, portalType, dryRun, log });
+  await writeReaderContract({ target, name, displayName, variant, portalType, stampsPortal, dryRun, log });
   await writeActorOutputManifest({ target, name, dryRun, log });
 
   if (!dryRun) await mechanicalCheck({ target, name, log });
   printReport(log);
 
   if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
-  if (!dryRun) printNextSteps({ variant, portalType, target, derived: log.derived });
+  if (!dryRun) printNextSteps({ variant, portalType, stampsPortal, target, derived: log.derived });
 }
 
 // First-five-minutes pointer, printed ONLY after a successful non-dry-run stamp
 // (wave 86 — stamped consumers never receive the hosted /learn route; the
 // stamped CLAUDE.md is the full onboarding map, this is just the on-ramp).
 // Variant-aware: research has no pilot_profile (personas/JTBD instead) and no
-// portal shell. `derived` carries the stamp-time derivation: a target with no
+// portal shell; a Tier 0 product stamp has the pilot profile and no portal
+// (decisions/11). `derived` carries the stamp-time derivation: a target with no
 // commit yet gets a derived/ that records none (wave 109), so say when to rerun.
-function printNextSteps({ variant, portalType, target, derived }) {
+function printNextSteps({ variant, portalType, stampsPortal, target, derived }) {
   console.log(`\n  next steps (shell is ready; content is not — that's the pipeline's job):`);
   if (variant === "research") {
     console.log(`    1. Catalog your input assets into research/sources/ (Stage 0: Inputs Intake).`);
@@ -1454,7 +1536,10 @@ function printNextSteps({ variant, portalType, target, derived }) {
     console.log(`       file) — \`blueprint stage advance\` blocks until it's populated.`);
     console.log(`    2. Run \`blueprint stage status --target=${target}\` to see the derived pipeline position.`);
     console.log(`    3. Open the initiative in your agent harness and run /blueprint-research (Stage 1).`);
-    if (portalType === "review") console.log(`    4. The portal shell ships placeholder pages by design — /blueprint-prototype fills them.`);
+    if (!stampsPortal) {
+      console.log(`    4. Tier 0 is pre-portal, so no portal was stamped. When the initiative needs one, move to Tier 1:`);
+      console.log(`       $BLUEPRINT_HOME/docs/portal-and-tier-ladder.md § "Moving from Tier 0 to Tier 1".`);
+    } else if (portalType === "review") console.log(`    4. The portal shell ships placeholder pages by design — /blueprint-prototype fills them.`);
     else console.log(`    4. apps/portal builds green with placeholder content by design — /blueprint-prototype fills it.`);
   }
   if (derived?.asOf === "no-git") {

@@ -65,6 +65,17 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Changed
 
+- **Tier 0 stamps no portal** (wave 113) — with a product variant, `--tier=0`
+  now stamps the reviewer layer, `blueprint.yml`, the reader contract and the
+  actor-output manifest, and no `apps/portal`, `packages/` or
+  `blueprint/portal`. That matches `docs/portal-and-tier-ladder.md`: Tier 0
+  is pre-portal. The `package.json` has only `derive` and `reviewers`, so
+  there is nothing to install. To move to Tier 1, re-run the stamper with
+  `--tier=1`. It now warns when the `package.json` or `tier:` it keeps needs
+  a hand edit; see "Moving from Tier 0 to Tier 1" in the tier-ladder doc. A
+  research stamp given `--logo` no longer exits 2. An existing Tier 0
+  initiative keeps the portal it was stamped with, and the ladder counts it as
+  Tier 1 or above. See decisions/11.
 - **`/blueprint-dispatch` points at `dispatch-wave`** (wave 105) — the general
   parallel-dispatch workflow now has one owner, the public `dispatch-wave`
   skill. The stamped skill keeps its name and trigger, a one-screen outline, and
