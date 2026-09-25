@@ -17,6 +17,15 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **The SessionStart hook finds an npm-installed CLI** (wave 115) — the hook's
+  last fallback looked under `npm root -g` for `@nino-chavez/blueprint-cli`, a
+  package that was never published. A session backed only by
+  `npm install -g @nino-chavez-labs/blueprint-cli` therefore got no methodology
+  context. The hook now looks for the published name, and its `--self-test`
+  fails if the hook and `package.json` disagree. The hook runs from wherever you
+  copied it, so a methodology pull does not update it: re-copy
+  `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/` and
+  to each initiative's `.claude/hooks/`.
 - **The citation-lint instructions work from an initiative** (wave 110) — the
   fact-check reviewer, the citation-correctness pattern and audit discipline
   said to run `tools/cited-url-lint/`, which the stamper never creates. They
