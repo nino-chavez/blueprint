@@ -23,6 +23,8 @@
  *      package.json script target exists; the brief names `npm run derive`;
  *      `npm run reviewers` runs the stamped runner, which runs the portal
  *      reviewers doctor runs (none, on a fresh stamp)
+ *   7d. Fresh Pattern A Tier 1 stamp → FULL doctor has no fails, and its
+ *      terminology check scanned the stamped portal
  *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
  *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
  *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
@@ -233,7 +235,8 @@ try {
       "--mode=stamp",
       "--name=smoke-test-a",
       "--display-name=Smoke Test A",
-      "--tagline=Pattern A smoke",
+      "--tagline=Initiative Portal smoke", // stamped into page copy: "Pattern A" would BLOCK terminology (wave 72)
+      "--tier=1",
       "--portal-type=initiative",
       `--target=${aTarget}`,
     ]);
@@ -312,6 +315,24 @@ try {
     else bad("intrinsic stamp: portal-derive is a clean no-op (no views declared)", `ok=${r.ok} views=${r.views?.length} wrote=${r.wrote} ${(r.errors ?? []).join(" | ")}`);
   } catch (err) {
     bad("portal derivation no-op on intrinsic stamp", err.message);
+  }
+
+  // 7d — the fresh Initiative Portal stamp passes FULL doctor (wave 118), as
+  // check 6 has required of the Review Portal stamp since wave 86. Before, its
+  // terminology check blocked on the vendored ArchaeologyChat component. The
+  // stamp is Tier 1 on purpose: decisions/11 makes Tier 0 portal-free, where a
+  // green doctor would prove nothing about the portal. The terminology row must
+  // show a scan that read files; a check that ran nothing is not a pass.
+  try {
+    const doc = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: aTarget });
+    const term = doc.checks.find((c) => c.name === "terminology");
+    const scanned = Number(/\bfiles=(\d+)/.exec(term?.detail ?? "")?.[1] ?? 0);
+    check(term && term.status !== "skip" && scanned > 0, "doctor's terminology check scanned the stamped Pattern A portal",
+      term ? `${term.status} — ${term.detail}` : "no terminology row");
+    const fails = doc.checks.filter((c) => c.status === "fail");
+    check(fails.length === 0, "doctor over stamped Pattern A tree has no fails", fails.map((c) => `${c.name}: ${c.detail}`).join(" | "));
+  } catch (err) {
+    bad("doctor over stamped Pattern A tree", err.message);
   }
 
   // 8 — pilot-gate integration (wave 86): a FRESH stamp must block advance on
