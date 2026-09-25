@@ -17,6 +17,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **A new initiative no longer gets your machine's `.DS_Store` or Python cache
+  files** (wave 117) — the stamper copied the methodology's folders as they sat
+  on disk, so a stamp from a Blueprint checkout carried Finder's `.DS_Store`
+  files and Python's `__pycache__/*.pyc`. It now skips anything with those
+  names, and any `.pyc`, whether it runs from a checkout or from the npm
+  package. Two canonical reviewer specs also lose three lines of trailing
+  whitespace, so a fresh stamp passes `git diff --check`. If an existing
+  initiative received these files, they are safe to delete.
 - **The `state-derive` and global-rules pointers name paths that exist** (wave
   116) — audit discipline said to use `tools/state-derive/`, which the stamper
   never installs. Running the template's copy by absolute path derives the
