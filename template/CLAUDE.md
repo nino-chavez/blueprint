@@ -121,7 +121,7 @@ Four workhorse agents under `.claude/agents/blueprint/`:
 
 Variant-aware gates that block premature stage completion. Full roster + behavior: `.claude/agents/blueprint/reviewers/README.md`.
 
-This table is prose documentation; the machine-readable mapping lives in the stage model (`tools/lib/stage-model.mjs` gate `reviewer:` fields — ADR-0009). Where a gate carries that mapping, `blueprint stage advance` runs the reviewer itself and records the result with an input fingerprint (fresh PASSes are reused; changed inputs force a rerun). Currently machine-wired: Stage 0 → 1 (`pilot-profile-lock-reviewer`); the rest run manually until each mapping is calibrated against the fleet.
+This table is prose documentation; the machine-readable mapping lives in the stage model (`tools/lib/stage-model.mjs` gate `reviewer:` fields — ADR-0009). Where a gate carries that mapping, `blueprint stage advance` runs the reviewer itself and records the result with an input fingerprint (fresh PASSes are reused; changed inputs force a rerun). Currently machine-wired: Stage 0 → 1 (`pilot-profile-lock-reviewer`); the rest run manually until each mapping is calibrated against the fleet. To run every executable gate that applies to this initiative at once, use `npm run reviewers`. A Review Portal stamp has no `package.json`, so use `node tools/run-reviewers.mjs` there. The runner skips another portal type's conformance reviewers by the same rule `blueprint doctor` uses.
 
 | Gate | Reviewer(s) |
 |---|---|
@@ -189,6 +189,12 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --portal-type=initiative|review|bespoke \
   --target=<absolute path to initiative root>
 ```
+
+Tier 0 is pre-portal, so `--tier=0` stamps no portal of either type. Midstream
+cannot start at Tier 0. `--portal-type` still records which portal the
+initiative will use at Tier 1. To move up, re-run the stamper with `--tier=1`:
+see "Moving from Tier 0 to Tier 1" in
+`$BLUEPRINT_HOME/docs/portal-and-tier-ladder.md`.
 
 Research initial stamps are portal-free, so omit `--portal-type` and
 `--pattern`:

@@ -14,6 +14,13 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readTopLevelYamlScalar } from './yaml-scalar.mjs';
+import {
+  REVIEW_PORTAL_REVIEWERS,
+  isActorOutputRoute,
+  planPortalReviewers,
+  readActorOutputState,
+  readPortalType,
+} from './portal-reviewer-routing.mjs';
 
 const libUrl = (home, name) => pathToFileURL(join(home, 'template', 'tools', 'lib', name)).href;
 
@@ -70,16 +77,11 @@ export async function runDoctor({ home, targetDir }) {
       const text = readFileSync(ymlPath, 'utf8');
       const tierValue = readTopLevelYamlScalar(text, 'tier');
       tier = tierValue != null && /^[0-9]+$/.test(tierValue) ? Number(tierValue) : null;
-      // Read portal_type (canonical, wave 72) with portal_pattern as deprecated fallback.
-      const ptNew = readTopLevelYamlScalar(text, 'portal_type');
-      const ptLegacy = readTopLevelYamlScalar(text, 'portal_pattern');
-      if (ptNew) {
-        portalPattern = ptNew.toLowerCase();
-      } else if (ptLegacy) {
-        portalPattern = ptLegacy.toLowerCase();
-        // Map legacy A/B values to new names for internal use
-        if (portalPattern === 'a') portalPattern = 'initiative';
-        else if (portalPattern === 'b') portalPattern = 'review';
+      // Read portal_type (canonical, wave 72) with portal_pattern as deprecated
+      // fallback; legacy A/B map to the current names.
+      const portalTypeDecl = readPortalType(text);
+      portalPattern = portalTypeDecl.value;
+      if (portalTypeDecl.legacy) {
         add('blueprint-yml', 'warn', 'blueprint.yml uses deprecated `portal_pattern:` field — rename to `portal_type:` with values initiative|review|bespoke (wave 72)', 'run: sed -i \'\' \'s/portal_pattern:/portal_type:/; s/portal_type: A/portal_type: initiative/; s/portal_type: B/portal_type: review/\' blueprint.yml');
       }
       if (tier == null) add('blueprint-yml', 'warn', 'blueprint.yml present but no `tier:` declared');
@@ -98,23 +100,20 @@ export async function runDoctor({ home, targetDir }) {
   //     explicit `migration: actor-output` mode is the ADR's hard error.
   let actorOutputRoute = false;
   {
-    const manifestPath = join(targetDir, 'actor-output.yml');
-    if (existsSync(manifestPath)) {
-      let ymlText = '';
-      try { ymlText = hasYml ? readFileSync(ymlPath, 'utf8') : ''; } catch { /* unreadable already reported by check 2 */ }
-      const hasLegacyKey = readTopLevelYamlScalar(ymlText, 'portal_type') != null
-        || readTopLevelYamlScalar(ymlText, 'portal_pattern') != null;
-      const migrationMode = readTopLevelYamlScalar(ymlText, 'migration') === 'actor-output';
-      if (hasLegacyKey && !migrationMode) {
+    // The route rule lives in portal-reviewer-routing.mjs, shared with the
+    // stamped tools/run-reviewers.mjs (decisions/11).
+    const aoState = readActorOutputState(targetDir);
+    if (aoState.manifest) {
+      if (aoState.ambiguous) {
         add('actor-output-routing', 'fail', 'both actor-output.yml and blueprint.yml portal_type declared with no `migration: actor-output` mode — ambiguous authority (decisions/05)', 'add `migration: actor-output` to blueprint.yml while converting, or remove one declaration');
       } else {
         try {
           const ao = await import(libUrl(home, 'actor-output.mjs'));
-          const r = ao.validateManifestFile(manifestPath, { root: targetDir });
+          const r = ao.validateManifestFile(aoState.manifestPath, { root: targetDir });
           const map = { PASS: 'pass', PENDING: 'warn', BLOCKED: 'fail' };
-          actorOutputRoute = r.verdict !== 'BLOCKED';
+          actorOutputRoute = isActorOutputRoute(aoState, r.verdict);
           add('actor-output-routing', map[r.verdict] || 'fail',
-            `${r.verdict} — ${r.errors.length} error(s), ${r.pendings.length} pending, ${r.warns.length} warn(s)${hasLegacyKey ? '; portal_type shim present (migration mode)' : ''}`,
+            `${r.verdict} — ${r.errors.length} error(s), ${r.pendings.length} pending, ${r.warns.length} warn(s)${aoState.hasLegacyKey ? '; portal_type shim present (migration mode)' : ''}`,
             r.verdict === 'PASS' ? undefined : 'run `node <home>/template/tools/lib/actor-output.mjs actor-output.yml --root .` for detail — PENDING is not green');
         } catch (e) {
           add('actor-output-routing', 'fail', `actor-output validation threw: ${e.message}`);
@@ -221,10 +220,14 @@ export async function runDoctor({ home, targetDir }) {
   //    the PRESENCE of a divergence ADR (its absence is the violation).
   //    Automated here on the 2nd bespoke instance (the methodology's own
   //    product-site portal), per the wave-46 "automate on the 2nd instance" trigger.
-  if (existsSync(join(targetDir, 'apps', 'portal'))) {
-    if (actorOutputRoute) {
+  //    Which portal reviewers apply is decided once, in
+  //    portal-reviewer-routing.mjs, which tools/run-reviewers.mjs also uses
+  //    (decisions/11).
+  const portalPlan = planPortalReviewers({ targetDir, portalType: portalPattern, actorOutputRoute });
+  if (portalPlan.initiative !== 'absent') {
+    if (portalPlan.initiative === 'skip') {
       add('portal-conformance', 'skip', 'actor-output route (decisions/05) — the manifest is the contract; legacy portal conformance not applicable');
-    } else if (portalPattern === 'bespoke') {
+    } else if (portalPlan.initiative === 'bespoke') {
       const adr = findDivergenceAdr(targetDir);
       if (adr) {
         add('portal-conformance', 'pass', `bespoke portal — divergence recorded in ${adr}; Initiative/Review Portal conformance not applicable`);
@@ -238,7 +241,7 @@ export async function runDoctor({ home, targetDir }) {
           const fn = (await import(pathToFileURL(reviewerPath).href)).default;
           const res = await fn({ targetDir, blueprintYml: { tier }, methodologyHome: home });
           const map = { PASS: 'pass', WARN: 'warn', BLOCKED: 'fail' };
-          add('portal-conformance', map[res.status] || 'warn', `${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''} (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? 'run `blueprint review portal-initiative-conformance-reviewer --target=<dir>` for details' : undefined);
+          add('portal-conformance', map[res.status] || 'warn', `portal-initiative-conformance-reviewer: ${res.status} — ${(res.metadata && res.metadata.targetSummary) || ''} (${(res.findings || []).length} finding(s))`, res.status === 'BLOCKED' ? 'run `blueprint review portal-initiative-conformance-reviewer --target=<dir>` for details' : undefined);
         } else {
           add('portal-conformance', 'skip', 'conformance reviewer not present in this methodology home');
         }
@@ -258,23 +261,22 @@ export async function runDoctor({ home, targetDir }) {
   //     'skip', never a silent green. Bespoke portals keep the divergence-ADR
   //     gate (only when the apps/portal branch didn't already run it).
   {
-    const patternBRoot = ['portal', join('blueprint', 'portal')].find((rel) =>
-      existsSync(join(targetDir, rel, 'index.html')) &&
-      (existsSync(join(targetDir, rel, '_meta', 'index.json')) || existsSync(join(targetDir, rel, 'proto-nav.js'))));
+    const patternBRoot = portalPlan.reviewPortalRoot;
     if (patternBRoot) {
       // NOT gated on actorOutputRoute: decisions/05 retired the Initiative
       // Portal IA contract (check 6) but the Review Portal chrome reviewers are
       // RENDERER conformance — mechanical receipts for the surviving
       // review-context output type — and renderer conformance stays in the
       // gate orchestration. (Smoke's wave-86 tripwires caught the over-skip.)
-      if (portalPattern === 'bespoke' && !actorOutputRoute) {
-        if (!existsSync(join(targetDir, 'apps', 'portal'))) {
+      if (portalPlan.reviewPortal === 'bespoke') {
+        if (!portalPlan.hasInitiativePortal) {
           const adr = findDivergenceAdr(targetDir);
           if (adr) add('portal-conformance', 'pass', `bespoke portal (Pattern B tree) — divergence recorded in ${adr}`);
           else add('portal-conformance', 'fail', 'portal_type: bespoke but no divergence ADR found in decisions/', 'write decisions/NNNN-portal-bespoke-*.md per docs/portal-and-tier-ladder.md');
         }
       } else {
-        for (const [name, warnOk] of [['portal-chrome-canonical-reviewer', false], ['portal-review-conformance-reviewer', true]]) {
+        for (const name of REVIEW_PORTAL_REVIEWERS) {
+          const warnOk = name === 'portal-review-conformance-reviewer';
           try {
             const reviewerPath = join(home, 'template', '.claude', 'agents', 'blueprint', 'reviewers', `${name}.mjs`);
             if (!existsSync(reviewerPath)) { add('portal-conformance', 'skip', `${name} not present in this methodology home`); continue; }
