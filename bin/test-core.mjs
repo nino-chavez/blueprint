@@ -43,6 +43,7 @@ const STEPS = [
   [`${LIB}/portal-derive.mjs`, ['--selftest'], /^selftest OK \(/m],
   [`${LIB}/encounter-audit.mjs`, ['--selftest'], /^encounter-audit self-test: PASS\b/m],
   [`${LIB}/invoked-directly.mjs`, ['--self-test'], /^invoked-directly self-test: PASS\b/m],
+  [`${LIB}/portal-reviewer-routing.mjs`, ['--selftest'], /^portal-reviewer-routing self-test: PASS\b/m],
   [`${REVIEWERS}/persona-fit-reviewer.mjs`, ['--selftest'], /^persona-fit-reviewer self-test: PASS\b/m],
   [`${REVIEWERS}/pilot-profile-lock-reviewer.mjs`, ['--selftest'], /^ALL PASS$/m],
   [`${REVIEWERS}/design-principles-reviewer.mjs`, ['--selftest'], /^All \d+ assertions passed\.$/m],

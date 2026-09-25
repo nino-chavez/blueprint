@@ -281,6 +281,18 @@ A Blueprint initiative occupies one tier at a time. The tier ladder applies inde
 - `decisions/` (ADRs, optional at this tier), `research/`, optional `prototype.md` for design-principle scratch
 - **No portal yet.** This tier is pre-portal. A bespoke or lightweight portal still counts as a portal: if a front door over multiple surfaces exists (with deploy config), the initiative is **≥ Tier 1**, however lightweight — see "When neither pattern fits the archetype." Do not stay at Tier 0 to dodge the pattern-conformance gate.
 - Expected duration: ≤ 1 week.
+- **What the stamper writes at Tier 0** (decisions/11, wave 113). It writes the imposition layer (`.claude/`, `tools/lib/`, `tools/run-reviewers.mjs`) and `blueprint.yml`. It also writes `reader-contract.json`, pointing at `docs/`, and `actor-output.yml` with `derived/`. The root `package.json` has only `derive` and `reviewers`. It writes no `apps/portal`, `packages/` or `blueprint/portal`, whichever `--portal-type` you pass. `blueprint.yml` still records `portal_type`: the portal the initiative will use at Tier 1. Stamps before wave 113 copied a portal at Tier 0.
+
+### Moving from Tier 0 to Tier 1
+
+When the initiative needs a portal, re-run the stamper on the same target. Pass `--tier=1` and the same `--name`, `--variant` and `--portal-type`. The stamper adds the portal and keeps your files, so four things need a hand edit. It warns about the first two.
+
+1. **`blueprint.yml`** keeps `tier: 0`. Set `tier: 1`. At Tier 0 the portal conformance reviewers skip the portal.
+2. **`package.json`** keeps the Tier 0 shape. An Initiative Portal needs npm workspaces for `apps/*` and `packages/*`, the `dev`, `build` and `typecheck` scripts, and the toolchain `overrides`. The re-stamp's warning prints those keys as JSON, taken from the stamper's own values; merge them in. Without the workspaces, the portal's `@blueprint/*` packages do not install. A Review Portal needs none of this, so the stamper does not warn about it.
+3. **`reader-contract.json`** keeps its Tier 0 surface. Add one for the portal: `apps/portal/dist` rendered from `apps/portal/src`, or the Review Portal directory.
+4. **`.claude/` and `tools/lib/`** are overwritten with the current template, as on any re-stamp. Commit first, then read the diff and restore any local edit, such as one to `.claude/settings.json`.
+
+This sequence was checked on 2026-09-25 by re-stamping committed Tier 0 initiatives of both portal types, and `smoke.mjs` check 13b repeats it on every run. After the edits, a Review Portal passes full `blueprint doctor` with no fails. An Initiative Portal still fails doctor's terminology check on its vendored portal code, as every fresh Tier 1 Initiative Portal stamp does (decisions/11, "Not fixed here").
 
 ### Tier 1 — Portal
 
