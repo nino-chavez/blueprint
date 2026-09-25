@@ -308,46 +308,64 @@ async function replaceLogo(logoSrc, target, dryRun, log) {
   log.renamed.push(`copied ${logoSrc} → apps/portal/public/project-logo.png`);
 }
 
-// Write the workspace-root package.json so the four @blueprint/* "*" deps in
-// apps/portal resolve to the local workspace packages (apps/*, packages/*)
-// instead of the npm registry (where they do not exist). Without this, a
-// freshly-stamped portal can't `npm install`. skip-if-exists, like
-// writeBlueprintYml — never clobber an operator-customized workspace root.
+// Write the root package.json. Every script in it must run against what this
+// stamp wrote. Every non-research variant stamps apps/portal + packages at every
+// tier, so it gets the workspace root: the four @blueprint/* "*" deps in
+// apps/portal then resolve to the local workspace packages instead of the npm
+// registry (where they do not exist), and a fresh portal can `npm install`. A
+// research stamp has no portal, so it gets only the derive and reviewer
+// commands (wave 109: research stamps shipped portal scripts that failed with
+// "No workspaces found"). skip-if-exists, like writeBlueprintYml — never
+// clobber an operator-customized root.
 const PORTAL_TOOLCHAIN_OVERRIDES = {
   "@astrojs/language-server": "2.17.0",
   "@astrojs/compiler": "2.13.1",
 };
+// Regenerates derived/ (actor-output.yml outputs). The recovery brief tells the
+// reader to run `npm run derive` when this script is present.
+const DERIVE_SCRIPT = "node tools/lib/account-derive.mjs --root .";
 
-async function writeWorkspaceRoot({ target, name, dryRun, log }) {
+async function writeWorkspaceRoot({ target, name, variant, dryRun, log }) {
   const dst = path.join(target, "package.json");
   const existing = await readMaybe(dst);
   if (existing) {
-    log.skipped.push("package.json (workspace root already exists; preserved)");
+    log.skipped.push("package.json (already exists; preserved)");
     return;
   }
-  const pkg = {
-    name: `${name}-workspace`,
-    private: true,
-    workspaces: ["apps/*", "packages/*"],
-    scripts: {
-      dev: "npm run dev -w apps/portal",
-      build: "npm run build -w apps/portal",
-      typecheck: "npm run typecheck -w apps/portal",
-    },
-    // The portal ships no lockfile, so `astro check` runs on whatever its
-    // transitive checker resolves to that day. 2026-09-19: language-server
-    // 2.17.0 (published 09-16) began rejecting markup 2.16.10 had let through,
-    // and template-health went red with no commit. npm reads `overrides` only
-    // from the install root, which is this file. Keep in step with the exact
-    // astro / @astrojs/check / typescript versions in apps/portal/package.json.
-    overrides: PORTAL_TOOLCHAIN_OVERRIDES,
-  };
+  const pkg = variant === "research"
+    ? {
+      name,
+      private: true,
+      scripts: {
+        derive: DERIVE_SCRIPT,
+        reviewers: "node tools/run-reviewers.mjs",
+      },
+    }
+    : {
+      name: `${name}-workspace`,
+      private: true,
+      workspaces: ["apps/*", "packages/*"],
+      scripts: {
+        dev: "npm run dev -w apps/portal",
+        build: "npm run build -w apps/portal",
+        typecheck: "npm run typecheck -w apps/portal",
+        derive: DERIVE_SCRIPT,
+      },
+      // The portal ships no lockfile, so `astro check` runs on whatever its
+      // transitive checker resolves to that day. 2026-09-19: language-server
+      // 2.17.0 (published 09-16) began rejecting markup 2.16.10 had let through,
+      // and template-health went red with no commit. npm reads `overrides` only
+      // from the install root, which is this file. Keep in step with the exact
+      // astro / @astrojs/check / typescript versions in apps/portal/package.json.
+      overrides: PORTAL_TOOLCHAIN_OVERRIDES,
+    };
+  const label = variant === "research" ? "package.json (derive + reviewers scripts; no portal)" : "package.json (workspace root)";
   if (dryRun) {
-    log.skipped.push("package.json (workspace root; dry-run; would write)");
+    log.skipped.push(`${label}; dry-run; would write`);
     return;
   }
   await fs.writeFile(dst, JSON.stringify(pkg, null, 2) + "\n", "utf8");
-  log.stamped.push("package.json (workspace root)");
+  log.stamped.push(label);
 }
 
 async function writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log }) {
@@ -650,6 +668,7 @@ async function writeActorOutputManifest({ target, name, dryRun, log }) {
     const { derive } = await import(new URL("../lib/account-derive.mjs", import.meta.url).href);
     const { proj } = derive(target);
     log.stamped.push(`derived/boot-packet.json + derived/recovery-brief.md (verdict ${proj.verdict.state})`);
+    log.derived = { asOf: proj.as_of, refresh: proj.refresh };
   } catch (e) {
     log.skipped.push(`derived outputs (derivation failed: ${e.message} — run account-derive.mjs manually)`);
   }
@@ -1326,7 +1345,7 @@ async function main() {
     if (!dryRun) await mechanicalCheck({ target, name, log });
     printReport(log);
     if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
-    if (!dryRun) printNextSteps({ variant, portalType, target });
+    if (!dryRun) printNextSteps({ variant, portalType, target, derived: log.derived });
     return;
   }
 
@@ -1404,7 +1423,9 @@ async function main() {
       log,
     });
   }
-  await writeWorkspaceRoot({ target, name, dryRun, log });
+  // Before writeActorOutputManifest: the derivation it runs reads this file to
+  // name the refresh command in derived/recovery-brief.md.
+  await writeWorkspaceRoot({ target, name, variant, dryRun, log });
   await renameLogo(target, dryRun, log);
   if (logoSrc) await replaceLogo(logoSrc, target, dryRun, log);
   await writeBlueprintYml({ target, name, variant, tier, portalType, tagline, repoUrl, dryRun, log });
@@ -1415,15 +1436,16 @@ async function main() {
   printReport(log);
 
   if (log.mechanicalCheck && log.mechanicalCheck.length) process.exit(1);
-  if (!dryRun) printNextSteps({ variant, portalType, target });
+  if (!dryRun) printNextSteps({ variant, portalType, target, derived: log.derived });
 }
 
 // First-five-minutes pointer, printed ONLY after a successful non-dry-run stamp
 // (wave 86 — stamped consumers never receive the hosted /learn route; the
 // stamped CLAUDE.md is the full onboarding map, this is just the on-ramp).
 // Variant-aware: research has no pilot_profile (personas/JTBD instead) and no
-// portal shell.
-function printNextSteps({ variant, portalType, target }) {
+// portal shell. `derived` carries the stamp-time derivation: a target with no
+// commit yet gets a derived/ that records none (wave 109), so say when to rerun.
+function printNextSteps({ variant, portalType, target, derived }) {
   console.log(`\n  next steps (shell is ready; content is not — that's the pipeline's job):`);
   if (variant === "research") {
     console.log(`    1. Catalog your input assets into research/sources/ (Stage 0: Inputs Intake).`);
@@ -1437,6 +1459,10 @@ function printNextSteps({ variant, portalType, target }) {
     console.log(`    3. Open the initiative in your agent harness and run /blueprint-research (Stage 1).`);
     if (portalType === "review") console.log(`    4. The portal shell ships placeholder pages by design — /blueprint-prototype fills them.`);
     else console.log(`    4. apps/portal builds green with placeholder content by design — /blueprint-prototype fills it.`);
+  }
+  if (derived?.asOf === "no-git") {
+    console.log(`    5. After the first commit, regenerate derived/ (it was generated before any commit existed):`);
+    console.log(`         ${derived.refresh}`);
   }
   console.log(`    Full map: the stamped CLAUDE.md at the initiative root.`);
 }
