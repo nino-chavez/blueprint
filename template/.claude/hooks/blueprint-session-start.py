@@ -27,6 +27,9 @@ path `~/Workspace/dev/tools/blueprint`, else an npm-installed
 Output protocol: Claude Code SessionStart hooks emit a JSON object on stdout
 with a `hookSpecificOutput.additionalContext` field. The content of that field
 is injected into the session as a user-visible system reminder.
+
+`--self-test` checks the npm fallback against the root package.json `name`;
+`npm run test:core` runs it.
 """
 from __future__ import annotations
 
@@ -41,6 +44,10 @@ CANONICAL_DOCS = [
     "docs/variant-selection.md",
     "docs/portal-and-tier-ladder.md",
 ]
+
+# The published npm package: the root package.json `name`. `--self-test` fails
+# when the two disagree.
+NPM_PACKAGE = "@nino-chavez-labs/blueprint-cli"
 
 
 def find_blueprint_yml(start: Path) -> Path | None:
@@ -100,7 +107,7 @@ def _npm_package_home() -> Path | None:
         return None
     if not root:
         return None
-    return Path(root) / "@nino-chavez" / "blueprint-cli"
+    return Path(root) / NPM_PACKAGE
 
 
 def _candidate_homes(initiative_root: Path | None):
@@ -221,9 +228,9 @@ def main() -> int:
                             "`$BLUEPRINT_HOME`, a `methodology_home:` field in this "
                             "initiative's blueprint.yml, the local dev path "
                             "`~/Workspace/dev/tools/blueprint`, then an npm-installed "
-                            "`@nino-chavez-labs/blueprint-cli`. None contained METHODOLOGY.md.\n\n"
+                            f"`{NPM_PACKAGE}`. None contained METHODOLOGY.md.\n\n"
                             "Fix: `export BLUEPRINT_HOME=/path/to/blueprint`, or "
-                            "`npm install -g @nino-chavez-labs/blueprint-cli`, or add "
+                            f"`npm install -g {NPM_PACKAGE}`, or add "
                             "`methodology_home: <path>` to blueprint.yml.\n"
                         ),
                     }
@@ -282,5 +289,69 @@ def main() -> int:
     return 0
 
 
+def _self_test() -> int:
+    """The npm fallback must find the package npm actually installs.
+
+    Lays out a fake global npm root holding a package named by the root
+    package.json, stubs `npm root -g` to print it, and resolves with no
+    BLUEPRINT_HOME, no methodology_home, and an empty HOME, so the npm candidate
+    is the only one that can match. package.json sits three directories above
+    this file in the methodology source and in the npm package; an installed
+    copy under ~/.claude/hooks/ has none, and the test fails rather than skips.
+    """
+    import shlex
+    import tempfile
+
+    def fail(why: str) -> int:
+        print(f"blueprint-session-start self-test: FAIL — {why}")
+        return 1
+
+    pkg_json = Path(__file__).resolve().parents[3] / "package.json"
+    try:
+        name = json.loads(pkg_json.read_text(encoding="utf-8"))["name"]
+    except Exception as exc:
+        return fail(f"cannot read the package name from {pkg_json}: {exc}")
+    if name != NPM_PACKAGE:
+        return fail(f"NPM_PACKAGE is {NPM_PACKAGE!r} but package.json names {name!r}")
+
+    saved = {k: os.environ.get(k) for k in ("PATH", "HOME", "BLUEPRINT_HOME")}
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        installed = t / "global" / name
+        installed.mkdir(parents=True)
+        (installed / "METHODOLOGY.md").write_text("# fixture\n", encoding="utf-8")
+        npm = t / "bin" / "npm"
+        npm.parent.mkdir()
+        npm.write_text(f"#!/bin/sh\necho {shlex.quote(str(t / 'global'))}\n", encoding="utf-8")
+        npm.chmod(0o755)
+        initiative = t / "initiative"
+        initiative.mkdir()
+        (initiative / "blueprint.yml").write_text("variant: greenfield\n", encoding="utf-8")
+        (t / "home").mkdir()
+        try:
+            os.environ["PATH"] = f"{npm.parent}{os.pathsep}{saved['PATH'] or ''}"
+            os.environ["HOME"] = str(t / "home")
+            os.environ.pop("BLUEPRINT_HOME", None)
+            got = resolve_blueprint_home(initiative)
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+        if got != installed.resolve():
+            return fail(f"npm fallback resolved {got}, expected {installed.resolve()}")
+    print("blueprint-session-start self-test: PASS")
+    return 0
+
+
 if __name__ == "__main__":
+    args = sys.argv[1:]
+    if args in (["--self-test"], ["--selftest"]):
+        sys.exit(_self_test())
+    if args:
+        # Claude Code passes no arguments. A mistyped flag must not fall through
+        # to main(), which exits 0 and would pass a test run that tested nothing.
+        print(f"blueprint-session-start: unknown arguments {args}; expected none or --self-test", file=sys.stderr)
+        sys.exit(2)
     sys.exit(main())
