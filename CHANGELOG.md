@@ -17,6 +17,19 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **A fresh Initiative Portal stamp passes `blueprint doctor`** (wave 118) —
+  doctor's terminology check failed on a new Initiative Portal because the
+  stamped archaeology chat, `apps/portal/src/components/ArchaeologyChat.tsx`,
+  used the words "payload" and "endpoint". The label a reader sees in its source
+  drawer now reads "raw data", and a code comment and a variable no longer use
+  either word. The stamper copies this file once, so if your copy still uses
+  those words, doctor keeps failing until you make the same three edits: the
+  `payload` label becomes `raw data`, the `payload` variable becomes `parsed`,
+  and the comment's "timeline endpoint" becomes "/timeline route". The same
+  applies if you copied the archaeology drop-in from `tools/archaeology/web/`.
+  If your `blueprint.yml` sets a `product_type` that names a developer tool,
+  those words are allowed and nothing fails. Review Portal initiatives are
+  unaffected.
 - **The SessionStart hook finds an npm-installed CLI** (wave 115) — the hook's
   last fallback looked under `npm root -g` for `@nino-chavez/blueprint-cli`, a
   package that was never published. A session backed only by
