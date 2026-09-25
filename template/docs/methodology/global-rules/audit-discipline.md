@@ -21,7 +21,7 @@ Self-attested verification is a candidate hypothesis, not evidence.
 
 When auditing high-stakes claims (citations, implementation state, coverage), use mechanical tools where available:
 
-- **Citations**: `tools/cited-url-lint/` — resolves claimed URLs, reports broken references.
+- **Citations**: `npx tsx "$BLUEPRINT_HOME/template/tools/cited-url-lint/index.ts" <dir> --fail-on-empty` from the initiative root (the stamper does not copy the lint into an initiative) — resolves claimed URLs, reports broken references. A scan that checked nothing exits 3, and nothing checked is not a pass ([`../citation-correctness-pattern.md`](../citation-correctness-pattern.md)).
 - **Implementation state**: `tools/state-derive/` — derives presence from artifacts, not from claims.
 - **Coverage matrices**: scenario-result artifacts (CI-generated) — ground truth for behavioral claims, never agent-predicted status.
 

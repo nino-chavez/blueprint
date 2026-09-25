@@ -17,6 +17,16 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **The citation-lint instructions work from an initiative** (wave 110) — the
+  fact-check reviewer, the citation-correctness pattern and audit discipline
+  said to run `tools/cited-url-lint/`, which the stamper never creates. They
+  now give
+  `npx tsx "$BLUEPRINT_HOME/template/tools/cited-url-lint/index.ts" <dir> --fail-on-empty`,
+  run from the initiative root, and say that a scan that checked nothing is
+  not a pass. Check that the first `cited-url-lint:` line names the directory
+  you meant: a copy older than wave 108 prints `clean` over the wrong tree.
+  Copy the updated `fact-check-loop-reviewer.md` into your
+  `.claude/agents/blueprint/reviewers/`, or restamp.
 - **Research stamps get scripts that run, and the decision template stops
   counting as a decision** (wave 109) — a research stamp's `package.json`
   carried portal scripts that failed with "No workspaces found". It now has only
