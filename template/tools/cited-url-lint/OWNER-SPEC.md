@@ -29,7 +29,7 @@ No mechanical lint existed for this class of error. This tool fills that gap.
 - `.cited-url-lint-allowlist` — read from the working directory; one entry per line:
   - bare path → skip that file entirely (relative to the working directory)
   - `allow-url:<url>` → skip that specific URL across all files
-  - `#` for comments
+  - `#` starts a comment when it opens the line or follows whitespace, so an entry can end in one: `allow-url:<url>  # requires auth`. A `#` right after other text is part of the entry, so a URL fragment stays: `allow-url:https://host/page#section` matches only that exact URL.
 - `.url-cache.json` beside the tool — persistent URL → {status, checked_at} cache; entries fresh within `--max-cache-age-days` (default 7). Keyed by URL alone, so every project run through one copy shares it. Gitignored, so a fresh checkout starts with no cache.
 
 ### Outputs
