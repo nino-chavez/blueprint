@@ -28,7 +28,8 @@
  *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
  *  11. Research real stamp: memo/evidence tree, no portal, inline-comment routing;
  *      its package.json scripts run; derived/ skips the decision template and is
- *      rerun after the first commit; Stage 3 is not started until a real ADR exists
+ *      rerun after the first commit; Stage 3 is not started until a real ADR exists;
+ *      Stages 0, 1 and 5 are not started until their stamped templates are filled
  *  12. Methodology-amendment templates share one canonical field shape
  *  13. Tier 0 is pre-portal (decisions/11): no portal on either portal type, the
  *      portal-free package.json runs, doctor/reader/runner gates hold, no stamped
@@ -523,6 +524,53 @@ try {
     const sm = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "stage-model.mjs")).href);
     const decisionsGate = () => sm.deriveStageStatus({ root: researchTarget }).stages.find((s) => s.id === 3).gates.find((g) => g.gate === "decisions");
     check(decisionsGate().state === "absent", "stage status: Stage 3 not started on a fresh research stamp", decisionsGate().evidence);
+
+    // 11c — wave 112. The research templates are filled in place, so the stamp
+    // plants the very files the Stage 0, 1 and 5 gates match. Each gate skips its
+    // file while a template placeholder line remains: a fresh stamp starts none
+    // of those stages, an edit that leaves the placeholders starts none either,
+    // and filling the files completes all three.
+    const researchStatus = () => sm.deriveStageStatus({ root: researchTarget });
+    const researchGate = (st, id) => st.stages.flatMap((s) => s.gates).find((g) => g.gate === id);
+    const plantedGates = [
+      [0, "sources-catalog", "research/sources/README.md"],
+      [1, "personas-jtbd", "research/personas-and-jtbd.md"],
+      [5, "decision-memo", "docs/decision-memo.md"],
+    ];
+    let status = researchStatus();
+    check(status.variant === "research", "stage status reads the fresh stamp as research", status.variant);
+    for (const [stage, id, rel] of plantedGates) {
+      const g = researchGate(status, id);
+      check(g?.state === "absent" && g.evidence.includes(`${rel} still holds a template placeholder`) && !status.stagesComplete.includes(stage),
+        `stage status: Stage ${stage} not started on a fresh research stamp (${rel} is still the template)`, g ? `${g.state}: ${g.evidence}` : "gate missing");
+    }
+    const legsGate = researchGate(status, "research-legs");
+    check(legsGate?.state === "absent", "stage status: the personas template is not a research leg", legsGate ? `${legsGate.state}: ${legsGate.evidence}` : "gate missing");
+    const stamped = (rel) => fs.readFile(path.join(researchTarget, rel), "utf8");
+    const write = (rel, text) => fs.writeFile(path.join(researchTarget, rel), text);
+    const memoStamp = await stamped("docs/decision-memo.md");
+    await write("docs/decision-memo.md", memoStamp.replace("\n\n", "\n\nserves: none\nserves_reason: the memo is not drafted yet, so no persona job traces to it.\n\n"));
+    const memoGate = researchGate(researchStatus(), "decision-memo");
+    check(memoGate?.state === "absent", "a serves line added to the unfilled memo does not start Stage 5", memoGate ? `${memoGate.state}: ${memoGate.evidence}` : "gate missing");
+    const catalogStamp = await stamped("research/sources/README.md");
+    const personasStamp = await stamped("research/personas-and-jtbd.md");
+    // A catalog grows by rows, so this fill keeps the stamped blank row.
+    await write("research/sources/README.md", catalogStamp.replace("| | | | | | |", "| Smoke brief | Operator | 2026-09-25 | Brief | research/sources/README.md | Read in full |\n| | | | | | |"));
+    await write("research/personas-and-jtbd.md", personasStamp
+      .replace("### <Persona name> (`<slug>`)", "### Smoke reader (`smoke-reader`)")
+      .replace("- **JOB-1:** When …, I need to …, so I can …", "- **JOB-1:** When a decision is due, I need the memo, so I can approve it."));
+    await write("docs/decision-memo.md", memoStamp
+      .replace("# Decision Memo — <Initiative>", "# Decision Memo — Smoke Research")
+      .replace("<One sentence: the specific decision or approval being requested.>", "Approve the smoke initiative."));
+    status = researchStatus();
+    for (const [stage, id, rel] of plantedGates) {
+      const g = researchGate(status, id);
+      check(g?.state === "pass" && status.stagesComplete.includes(stage), `stage status: Stage ${stage} completes once ${rel} is filled`,
+        g ? `${g.state}: ${g.evidence}; complete ${JSON.stringify(status.stagesComplete)}` : "gate missing");
+    }
+    const filledLegs = researchGate(status, "research-legs");
+    check(filledLegs?.state === "partial", "stage status: the filled personas file counts as a research leg", filledLegs ? `${filledLegs.state}: ${filledLegs.evidence}` : "gate missing");
+
     // An ADR copied from the template keeps its commented frontmatter lines. It
     // must index under its own H1 and count toward Stage 3.
     const decisionTemplate = await fs.readFile(path.join(researchTarget, "decisions", "_TEMPLATE.md"), "utf8");

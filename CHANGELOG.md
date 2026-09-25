@@ -27,6 +27,15 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
   For an existing initiative, copy the runner to `tools/` and the helper to
   `tools/lib/`, and add the `reviewers` script by hand: the stamper never
   overwrites an existing `package.json`. See decisions/11.
+- **A fresh research stamp no longer reports Stages 0, 1 and 5 complete**
+  (wave 112) — the stamper writes the source catalog, the personas file and the
+  decision memo as templates you fill in place, and `blueprint stage status`
+  counted each one as done on day one. Each of those stages now waits for real
+  content: an asset row in the catalog or an asset file beside it, a real persona
+  in place of the example, and the memo's own title and "The ask" line. Until
+  then the gate names the file and the line still holding a template placeholder.
+  Filled files read as before, and so does every other gate. Nothing to do in
+  your initiative: `stage status` loads the methodology's stage model.
 - **Self-tests and scripts no longer pass by never running** (wave 111) — the
   release gate had passed five library self-tests since July without running
   them: it gave them a flag they don't read, and counted their silent exit as a
