@@ -309,6 +309,8 @@ because the pilot-profile and stage gates block until the work exists. A Review
 Portal stamp writes no `package.json`, so run `node tools/run-reviewers.mjs`
 there.
 
+Every copied tree skips dependency, VCS and build directories (`node_modules`, `.git`, `dist`, `dist-story`, `.astro`) and three workstation leftovers: `.DS_Store`, `__pycache__/` and `*.pyc`. The skip matches names rather than asking git, so it works the same from a checkout and from the npm package, which has no `.git`. Anything else on disk inside a copied directory is copied, tracked or not.
+
 Both Pattern A and Pattern B stamps write `reader-contract.json` unless the target already has one. The default is deliberately small: it names the likely reader and job, points at the stamped portal output and its copy-bearing sources, and leaves project-specific allowed or denied terms empty. Refine it when the first real surface replaces the scaffold. `blueprint doctor` validates the contract and inspects available rendered HTML; a missing render warns, while a missing declared source or an explicitly denied rendered term blocks.
 
 ## Substitution table

@@ -211,11 +211,20 @@ const WALK_SKIP_DIRS = new Set([
   ".astro",
 ]);
 
+// Workstation files, never source (wave 117): Finder's .DS_Store and Python's
+// bytecode cache. .gitignore keeps them out of git, but walk() reads the disk,
+// so a stamp run from a checkout copied them into new initiatives. Matched by
+// name, not by asking git: the npm package has no .git, and under a consumer's
+// node_modules git answers from the consumer's .gitignore.
+function isWorkstationArtifact(name) {
+  return name === ".DS_Store" || name === "__pycache__" || name.endsWith(".pyc");
+}
+
 async function walk(dir) {
   const out = [];
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const e of entries) {
-    if (WALK_SKIP_DIRS.has(e.name)) continue;
+    if (WALK_SKIP_DIRS.has(e.name) || isWorkstationArtifact(e.name)) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...(await walk(p)));
     else out.push(p);

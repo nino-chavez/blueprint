@@ -21,7 +21,7 @@ You are the Foundation stage gate for Blueprint initiatives where `blueprint.yml
    - Type ramp contract (which text roles use which tokens)
    - Icon contract (one set, sizing scale)
    - Component-anatomy contract (canonical `FormField`, `PageContainer`, `state/{Loading,Empty,Error}`, entity-header)
-   
+
    If missing, BLOCK.
 
 6. **Verify Declaration 4 (Component-anatomy contracts) is present.** See Declaration 3 above — this is the architectural binding part. The spec must name exactly one canonical implementation per load-bearing primitive and tie each to an archetype so adoption is default, not exceptional. If missing, BLOCK.
@@ -29,7 +29,7 @@ You are the Foundation stage gate for Blueprint initiatives where `blueprint.yml
 7. **Verify Declaration 5 (Enforcement scaffold) is present.** The spec must declare:
    - **(a) Routes manifest** — a machine-readable file (YAML/JSON/TS) mapping every route to scope + archetype. Project should extend existing route-inventory infra (e.g. `surfaces.ts`) rather than invent parallel infrastructure. Acceptable forms: an explicit file location reference, or prose description naming the carrier infrastructure.
    - **(b) Design linter** — a build-gating check that fails when: (i) route missing manifest entry, (ii) entity-scope route renders account nav, (iii) tab subtree violates tab-vs-subtree rule, (iv) raw scale colors used instead of semantic tokens, (v) page hand-rolls a primitive with an anatomy contract.
-   
+
    If either (a) or (b) is missing, BLOCK.
 
 8. **Verify the linter is wired as a build gate.** The spec must state that the linter gates the build (CI or local pre-push). Textual evidence: "gates the build" / "CI gate" / "build failure when" or explicit reference to the linter configuration. If the linter is mentioned but not declared as a gate, BLOCK with note "Linter present but not declared as build gate."
