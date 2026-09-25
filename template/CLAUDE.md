@@ -248,7 +248,7 @@ Methodology principle: self-attestation is not verification. Audits must resolve
 
 When an artifact claims verification, pull the canonical source yourself and re-verify the claim independently. Use mechanical verification tools where available (cited-url-lint for citations, state-derive for implementation state, scenario-result artifacts for coverage). Circular audits are the failure mode this rule prevents.
 
-See `$BLUEPRINT_HOME/docs/methodology/global-rules/audit-discipline.md` for the full pattern.
+See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/audit-discipline.md` for the full pattern.
 
 ## Decision Bias — Default to Action, Not Confirmation
 
@@ -256,7 +256,7 @@ Methodology principle: agents should default to executing the next logical conti
 
 Override this bias only for destructive actions (force-push, delete, amend), ambiguous requests, or scope expansion. When the next step is obvious and already authorized, do not ask.
 
-See `$BLUEPRINT_HOME/docs/methodology/global-rules/decision-bias.md` for the full pattern.
+See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/decision-bias.md` for the full pattern.
 
 <!-- END blueprint-methodology-rules -->
 EOF
@@ -267,6 +267,8 @@ EOF
 ### Customization
 
 These are append-only managed sections — do not edit them. Local operator preferences (theme, keybindings, project-specific shortcuts) remain in `~/.claude/CLAUDE.md` outside the managed region; they are unaffected by methodology updates.
+
+Nothing rewrites an installed block: the hook checks only for the BEGIN marker, and re-running the command appends a second copy. To take an update, delete everything from `<!-- BEGIN blueprint-methodology-rules -->` through `<!-- END blueprint-methodology-rules -->`, then run the command again.
 
 ## Converter
 
