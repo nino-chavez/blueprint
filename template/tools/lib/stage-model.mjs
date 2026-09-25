@@ -29,6 +29,7 @@ import { join, resolve, isAbsolute, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import { invokedDirectly } from './invoked-directly.mjs';
 import { resolveReviewer } from './reviewer-registry.mjs';
 import { parseManifest } from './actor-output.mjs';
 import { evaluateReviewLoop } from './review-loop.mjs';
@@ -1140,7 +1141,7 @@ async function selftest() {
   console.log(`selftest OK (${GREENFIELD_MODEL.stages.length} stages, ${res.totalGates} gates, ${Object.keys(CHECK_KINDS).length} check kinds)`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   if (process.argv[2] === '--selftest') await selftest();
   else console.log(JSON.stringify(deriveStageStatus({ root: process.cwd() }), null, 2));
 }

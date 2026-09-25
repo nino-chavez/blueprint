@@ -17,6 +17,7 @@
 
 import { existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
+import { invokedDirectly } from '../../../tools/lib/invoked-directly.mjs';
 
 /**
  * Walk up from `start` to find the first `blueprint.yml`, return its parent.
@@ -48,7 +49,9 @@ export function findInitiativeRoot(start) {
 }
 
 // ── Self-test (node initiative-root.mjs --self-test) ────────────────────────
-if (process.argv.includes('--self-test')) {
+// Entry-guarded: without it, any process that imported this file with
+// --self-test in its own argv (doctor's self-test did) ran this one too.
+if (invokedDirectly(import.meta.url) && process.argv.includes('--self-test')) {
   const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
 

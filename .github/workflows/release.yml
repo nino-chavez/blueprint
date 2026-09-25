@@ -26,9 +26,11 @@ permissions:
 jobs:
   # Release gates (wave 86). The npm artifact ships template/ — including the
   # stampable portal — so publish must exercise the stamped output, not just
-  # doctor. Command lists live in `npm run test:core` (single source; doctor.yml
-  # runs the same script). portal-health (apps/portal) deliberately does NOT
-  # gate release: it is not in the npm `files` array; deploy-portal.yml owns it.
+  # doctor. The step list lives in bin/test-core.mjs, run as `npm run test:core`
+  # (single source; doctor.yml runs the same script). A step passes only if it
+  # exits 0 AND prints its pass line (wave 111). portal-health (apps/portal)
+  # deliberately does NOT gate release: it is not in the npm `files` array;
+  # deploy-portal.yml owns it.
   core-tests:
     runs-on: ubuntu-latest
     steps:
