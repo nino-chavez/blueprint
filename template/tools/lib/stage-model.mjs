@@ -49,6 +49,33 @@ const read = (p) => (isFile(p) ? readFileSync(p, 'utf8') : '');
 export function isTemplateDoc(name, text = '') {
   return name.startsWith('_') || readTopLevelYamlScalar(splitFrontmatter(text).frontmatter, 'template') === 'true';
 }
+// The research templates are filled in place: the stamper plants them at the
+// path their gate matches, so neither the name nor a frontmatter marker can
+// tell a filled file from an unfilled one. A marker would have to be removed by
+// hand, and a forgotten one travels into the deliverable. The template's own
+// placeholder lines are the marker instead: a gate lists them as `placeholders`,
+// and its file counts once none remain, so filling the file is what clears it.
+// Lines compare with whitespace removed, so a formatter re-padding the empty
+// catalog row still matches. A placeholder that is a table row stops counting
+// once another row of the file has text: a catalog grows by rows added around
+// its blank one. isTemplateDoc stays out of these gates: its `_` prefix names
+// real supporting research too (`research/_inventory.md`).
+const squash = (s) => s.replace(/\s+/g, '');
+const isRow = (l = '') => l.trim().startsWith('|');
+const hasText = (l) => /[^\s|:-]/.test(l);
+const isRule = (l) => isRow(l) && l.includes('-') && !hasText(l);
+export function placeholderLeft(text, placeholders = []) {
+  const wanted = new Set(placeholders.map(squash).filter(Boolean));
+  if (!wanted.size) return null;
+  const lines = text.split('\n');
+  // a row with text that is neither a header (the row above a |---| rule) nor a placeholder
+  const filledRow = lines.some((l, n) => isRow(l) && hasText(l) && !isRule(lines[n + 1]) && !wanted.has(squash(l)));
+  const i = lines.findIndex((l) => wanted.has(squash(l)) && !(isRow(l) && filledRow));
+  return i < 0 ? null : { line: i + 1, text: lines[i].trim() };
+}
+// A gate that declares no placeholders reads no file content.
+const unfilledIn = (file, placeholders) => (placeholders.length && file.endsWith('.md') ? placeholderLeft(read(file), placeholders) : null);
+const unfilledNote = (rel, left) => `${rel} still holds a template placeholder (line ${left.line}: ${left.text})`;
 const mdCount = (p) => ls(p).filter((f) => {
   if (!f.endsWith('.md')) return false;
   const text = read(join(p, f));
@@ -244,12 +271,22 @@ const CHECK_KINDS = {
       ? { state: 'pass', evidence: `${path} present` }
       : { state: 'absent', evidence: `${path} missing` },
 
-  'name-match': ({ dirs, pattern, missState = 'absent' }, c) => {
+  // A match still holding one of the gate's `placeholders` does not count; the
+  // evidence names it and its first remaining placeholder line.
+  'name-match': ({ dirs, pattern, placeholders = [], missState = 'absent' }, c) => {
     if (!Array.isArray(dirs) || !dirs.length || !pattern) return badParams('name-match', 'need dirs[] + pattern');
+    if (!Array.isArray(placeholders)) return badParams('name-match', 'placeholders must be an array');
     const re = new RegExp(pattern, 'i');
-    return dirs.some((d) => ls(join(c.root, d)).some((f) => re.test(f)))
+    const unfilled = [];
+    const counted = dirs.some((d) => ls(join(c.root, d)).some((f) => {
+      if (!re.test(f)) return false;
+      const left = unfilledIn(join(c.root, d, f), placeholders);
+      if (left) unfilled.push(unfilledNote(join(d, f), left));
+      return !left;
+    }));
+    return counted
       ? { state: 'pass', evidence: `${dirs.join('|')}: filename ~ /${pattern}/` }
-      : { state: missState, evidence: `${dirs.join('|')}: no filename ~ /${pattern}/` };
+      : { state: missState, evidence: unfilled.length ? unfilled.join('; ') : `${dirs.join('|')}: no filename ~ /${pattern}/` };
   },
 
   'manual': ({ evidence }) => ({ state: 'partial', evidence: evidence || 'not derivable from disk — needs assertion' }),
@@ -291,14 +328,22 @@ const CHECK_KINDS = {
     return { state: 'absent', evidence: `${dir}: none` };
   },
 
-  // pass if ANY listed path is a file OR any listed dir has ≥1 non-hidden file.
-  'any-exists': ({ paths = [], dirs = [], missState = 'absent' }, c) => {
+  // pass if ANY listed path is a file OR any listed dir has ≥1 non-hidden entry
+  // that does not still hold one of the gate's `placeholders`.
+  'any-exists': ({ paths = [], dirs = [], placeholders = [], missState = 'absent' }, c) => {
     if (!Array.isArray(paths) || !Array.isArray(dirs) || (!paths.length && !dirs.length)) return badParams('any-exists', 'need paths[] and/or dirs[]');
+    if (!Array.isArray(placeholders)) return badParams('any-exists', 'placeholders must be an array');
     const fileHits = paths.filter((p) => existsSync(join(c.root, p)));
-    const dirHits = dirs.filter((d) => ls(join(c.root, d)).some((f) => !f.startsWith('.'))).map((d) => `${d}/`);
+    const unfilled = [];
+    const dirHits = dirs.filter((d) => ls(join(c.root, d)).some((f) => {
+      if (f.startsWith('.')) return false;
+      const left = unfilledIn(join(c.root, d, f), placeholders);
+      if (left) unfilled.push(unfilledNote(join(d, f), left));
+      return !left;
+    })).map((d) => `${d}/`);
     const hits = [...fileHits, ...dirHits];
     return hits.length ? { state: 'pass', evidence: `present: ${hits.join(', ')}` }
-      : { state: missState, evidence: `none of: ${[...paths, ...dirs.map((d) => `${d}/`)].join(', ')}` };
+      : { state: missState, evidence: [`none of: ${[...paths, ...dirs.map((d) => `${d}/`)].join(', ')}`, ...unfilled].join('; ') };
   },
 
   // LAYOUT-TOLERANT research/diagnose gate (calibrated 2026-07-08 — the strict
@@ -309,14 +354,17 @@ const CHECK_KINDS = {
   // (e.g. research/sources for the research variant's Stage-0 intake). The
   // reviewer (`research-completeness-reviewer`) still enforces the RIGHT legs +
   // primary-source grounding; this gate answers only "did research happen".
-  'research-legs': ({ dir = 'research', min = 1, exclude = [] }, c) => {
+  'research-legs': ({ dir = 'research', min = 1, exclude = [], placeholders = [] }, c) => {
+    if (!Array.isArray(placeholders)) return badParams('research-legs', 'placeholders must be an array');
     const base = join(c.root, dir);
     if (!isDir(base)) return { state: 'absent', evidence: `${dir}/ not found (root or blueprint/)` };
     const skip = new Set(['readme.md', ...exclude.map((x) => x.toLowerCase())]);
     // a leg = a POPULATED subdir (not an empty stamp-time dir) OR a substantive
-    // top-level .md file — an empty research/problem-space/ is not research.
+    // top-level .md file — an empty research/problem-space/ is not research, and
+    // neither is a file still holding one of the gate's `placeholders`.
     const legs = ls(base).filter((f) => !f.startsWith('.') && !skip.has(f.toLowerCase()) &&
-      (isPopulatedDir(join(base, f)) || (f.endsWith('.md') && read(join(base, f)).trim().length > 40)));
+      (isPopulatedDir(join(base, f)) || (f.endsWith('.md') && read(join(base, f)).trim().length > 40
+        && !unfilledIn(join(base, f), placeholders))));
     if (legs.length >= min) return { state: 'pass', evidence: `${dir}/: ${legs.length} legs (${legs.slice(0, 4).join(', ')}${legs.length > 4 ? '…' : ''})` };
     if (legs.length > 0) return { state: 'partial', evidence: `${dir}/: ${legs.length} leg(s) (<${min})` };
     return { state: 'absent', evidence: `${dir}/: no legs` };
@@ -484,21 +532,32 @@ export const BROWNFIELD_MODEL = {
 // to build/audit; starts from input assets, ends in a decision memo. No app, so
 // Stage 0 is Inputs Intake (not sensor wiring). Personas/JTBD is a MANDATORY
 // Stage-1 gate. Portal optional (provenance-only) — the memo is the deliverable.
+//
+// The stamper plants the files Stages 0, 1 and 5 match, so each of those gates
+// lists the placeholder lines only its unfilled template holds (see
+// placeholderLeft): the empty row of the sources catalog stamp.mjs writes, and
+// lines of template/research/*.template.md. The persona and memo lines are ones
+// any real fill replaces; the catalog's empty row may stay once a real row is
+// listed beside it.
+const SOURCES_PLACEHOLDERS = ['| | | | | | |'];
+const PERSONAS_PLACEHOLDERS = ['### <Persona name> (`<slug>`)', '- **JOB-1:** When …, I need to …, so I can …'];
+const MEMO_PLACEHOLDERS = ['# Decision Memo — <Initiative>', '<One sentence: the specific decision or approval being requested.>'];
 export const RESEARCH_MODEL = {
   variant: 'research',
   stages: [
     { id: 0, name: 'Inputs Intake', gates: [
-      { id: 'sources-catalog', derivable: true, kind: 'any-exists', params: { dirs: ['research/sources'] } },
+      { id: 'sources-catalog', derivable: true, kind: 'any-exists', params: { dirs: ['research/sources'], placeholders: SOURCES_PLACEHOLDERS } },
     ] },
     { id: 1, name: 'Personas & JTBD', gates: [
-      { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas' } },
+      { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas', placeholders: PERSONAS_PLACEHOLDERS } },
     ] },
     { id: 2, name: 'Research', gates: [
       // layout-tolerant: ≥3 research legs (any names), excluding the Stage-0
       // `sources/` intake dir so it isn't counted as a research leg. The
       // research-completeness-reviewer enforces the specific legs +
       // primary-source grounding. (Uncalibrated — no local research consumer.)
-      { id: 'research-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 3, exclude: ['sources'] } },
+      // An unfilled personas template is not a leg; a filled one still counts.
+      { id: 'research-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 3, exclude: ['sources'], placeholders: PERSONAS_PLACEHOLDERS } },
     ] },
     { id: 3, name: 'Synthesis & Decisions', gates: [
       { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
@@ -507,7 +566,7 @@ export const RESEARCH_MODEL = {
       { id: 'cross-asset-reconciled', derivable: false, kind: 'manual', params: { evidence: 'cross-asset reconciliation + independent re-pull of any external claim' } },
     ] },
     { id: 5, name: 'Decision Memo', gates: [
-      { id: 'decision-memo', derivable: true, kind: 'name-match', params: { dirs: ['docs', '.'], pattern: 'decision-memo' }, reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' } },
+      { id: 'decision-memo', derivable: true, kind: 'name-match', params: { dirs: ['docs', '.'], pattern: 'decision-memo', placeholders: MEMO_PLACEHOLDERS }, reviewer: { name: 'doc-quality-auditor', onWarn: 'pass' } },
     ] },
     { id: 6, name: 'Deliver', gates: [
       { id: 'delivered', derivable: false, kind: 'manual', params: { evidence: 'memo shared where the audience is (portal optional, provenance-only)' } },
@@ -1038,6 +1097,65 @@ async function selftest() {
     assert(decisionsGate().state === 'absent', 'templates alone do NOT pass the decisions gate');
     mk('decisions/0001-real.md', `---\nadr: 0001\n---\n# ADR-0001 — A real call\n${LONG}\n`);
     assert(decisionsGate().state === 'pass' && decisionsGate().evidence.endsWith(': 1 artifacts'), 'a real ADR passes; templates are not counted');
+
+    // Stages 0, 1 and 5 count a stamped template once its placeholder lines are
+    // gone. Built from the real template text, so a template edit that drops a
+    // declared placeholder fails here, not in a consumer.
+    const tpl = (f) => read(join(process.cwd(), 'template', 'research', f));
+    const personasTpl = tpl('personas-and-jtbd.template.md');
+    const memoTpl = tpl('decision-memo.template.md');
+    for (const [text, list, f] of [[personasTpl, PERSONAS_PLACEHOLDERS, 'personas-and-jtbd'], [memoTpl, MEMO_PLACEHOLDERS, 'decision-memo']])
+      for (const p of list) assert(text.split('\n').filter((l) => squash(l) === squash(p)).length === 1, `${f} template holds its placeholder once: ${p}`);
+    rmSync(fx, { recursive: true, force: true });
+    mk('blueprint.yml', 'variant: research\n');
+    const catalog = '| Asset | Author | Date | Type | Where it lives | Verification status |\n|---|---|---|---|---|---|\n| | | | | | |\n';
+    mk('research/sources/README.md', `# Source assets\n\n${catalog}`);
+    mk('research/personas-and-jtbd.md', personasTpl);
+    mk('docs/decision-memo.md', memoTpl);
+    const gateOf = (id) => deriveStageStatus({ root: fx }).stages.flatMap((x) => x.gates).find((g) => g.gate === id);
+    for (const [id, file] of [['sources-catalog', 'research/sources/README.md'], ['personas-jtbd', 'research/personas-and-jtbd.md'], ['decision-memo', 'docs/decision-memo.md']])
+      assert(gateOf(id).state === 'absent' && gateOf(id).evidence.includes(`${file} still holds a template placeholder (line `), `an unfilled template does not pass ${id}`);
+    assert(gateOf('research-legs').state === 'absent', 'an unfilled personas template is not a research leg');
+    assert(!deriveStageStatus({ root: fx }).stagesComplete.some((id) => [0, 1, 5].includes(id)), 'unfilled templates complete no stage');
+    assert(CHECK_KINDS['name-match']({ dirs: ['docs'], pattern: 'decision-memo' }, { root: fx, yml: '' }).state === 'pass', 'a gate that declares no placeholders is unchanged');
+    // An edit that leaves the placeholders is not a fill: a serves line added to
+    // the memo, the catalog's empty row re-padded by a formatter.
+    mk('docs/decision-memo.md', memoTpl.replace('\n\n', '\n\nserves: none\nserves_reason: not drafted yet\n\n'));
+    mk('research/sources/README.md', `# Source assets\n\n${catalog.replace('| | | | | | |', '|   |  |     |  | |   |')}`);
+    assert(gateOf('decision-memo').state === 'absent' && gateOf('sources-catalog').state === 'absent', 'touching a template without filling it passes nothing');
+    mk('research/sources/brief.pdf', 'x');
+    assert(gateOf('sources-catalog').state === 'pass', 'a real input asset passes Stage 0 beside an unfilled catalog');
+    rmSync(join(fx, 'research', 'sources', 'brief.pdf'));
+    // A catalog grows by rows: a real row beside the blank one fills it.
+    const assetRow = '| Brief | Owner | 2026-09-25 | Brief | here | read in full |';
+    for (const [where, rows] of [['above', `${assetRow}\n| | | | | | |`], ['below', `| | | | | | |\n${assetRow}`]]) {
+      mk('research/sources/README.md', `# Source assets\n\n${catalog.replace('| | | | | | |', rows)}`);
+      assert(gateOf('sources-catalog').state === 'pass', `a catalog row ${where} the blank one passes Stage 0`);
+    }
+    // Filling each file passes its gate, and a filled personas file is a leg again.
+    mk('research/sources/README.md', `# Source assets\n\n${catalog.replace('| | | | | | |', assetRow)}`);
+    mk('research/personas-and-jtbd.md', personasTpl.replace('### <Persona name> (`<slug>`)', '### Buyer (`buyer`)')
+      .replace('- **JOB-1:** When …, I need to …, so I can …', '- **JOB-1:** When a renewal is due, I need the numbers, so I can decide.'));
+    mk('docs/decision-memo.md', memoTpl.replace('<Initiative>', 'Fixture').replace('<One sentence: the specific decision or approval being requested.>', 'Approve the fixture.'));
+    for (const id of ['sources-catalog', 'personas-jtbd', 'decision-memo']) assert(gateOf(id).state === 'pass', `a filled template passes ${id}`);
+    assert(gateOf('research-legs').state === 'partial', 'a filled personas file counts as a leg again');
+    // Each placeholder blocks on its own: fill the rest of its list and the gate
+    // still reads absent, naming the one left. The lines are literal, not the
+    // model's lists, so dropping one from the model fails here.
+    for (const [id, rel, text, list] of [
+      ['personas-jtbd', 'research/personas-and-jtbd.md', personasTpl, ['### <Persona name> (`<slug>`)', '- **JOB-1:** When …, I need to …, so I can …']],
+      ['decision-memo', 'docs/decision-memo.md', memoTpl, ['# Decision Memo — <Initiative>', '<One sentence: the specific decision or approval being requested.>']],
+    ]) {
+      for (const keep of list) {
+        mk(rel, list.filter((p) => p !== keep).reduce((t, p) => t.replace(p, 'filled'), text));
+        assert(gateOf(id).state === 'absent' && gateOf(id).evidence.includes(keep), `${id}: ${keep} blocks on its own`);
+      }
+    }
+    // A placeholder left beside real content still blocks, and names its line.
+    mk('research/personas-and-jtbd.md', '### Buyer (`buyer`)\n- **JOB-1:** When a renewal is due, I need the numbers.\n\n### <Persona name> (`<slug>`)\n');
+    assert(gateOf('personas-jtbd').state === 'absent' && gateOf('personas-jtbd').evidence.includes('(line 4: ### <Persona name>'), 'a leftover placeholder blocks and names its line');
+    assert(CHECK_KINDS['name-match']({ dirs: ['docs'], pattern: 'x', placeholders: 'nope' }, { root: fx, yml: '' }).evidence.includes('bad params'), 'non-array placeholders → bad params');
+    assert(placeholderLeft('a\n\n', ['  ']) === null, 'a blank placeholder matches nothing');
 
     // multi-root: empty root research/ must NOT shadow populated blueprint/research/
     rmSync(fx, { recursive: true, force: true });
