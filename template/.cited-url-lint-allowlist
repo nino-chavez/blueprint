@@ -5,7 +5,10 @@
 # - One entry per line
 # - Bare path (e.g., docs/example.md) skips the entire file
 # - allow-url:<url> skips a specific URL across all files
-# - Lines starting with # are comments
+# - A # that starts a line or follows whitespace starts a comment, so an
+#   entry can end in one, as in the examples below
+# - A # right after other text is part of the entry, so a URL fragment
+#   stays: allow-url:https://example.com/page#section matches only that URL
 # - Blank lines are ignored
 #
 # When to add an entry:

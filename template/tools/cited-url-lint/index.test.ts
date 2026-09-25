@@ -111,6 +111,46 @@ describe('relative paths resolve against the caller, not the tool', () => {
   });
 });
 
+describe('an allowlist entry can end in a comment (observed 2026-09-25)', () => {
+  // The template's own allowlist shows this form, so uncommenting its examples must work.
+  const cached = { [URL_ONE]: 403, [URL_TWO]: 200 };
+
+  it('skips a URL whose allow-url: line ends in a comment', async () => {
+    const root = project({
+      'research/real.md': TWO_CITATIONS,
+      '.cited-url-lint-allowlist': `allow-url:${URL_ONE}  # walled off from scripts\n`,
+    });
+    const r = await lint(root, ['research', '--offline'], cached);
+    expect(r.out).not.toContain('HTTP 403');
+    expect(r.out).toContain('cited-url-lint: clean — 1 unique URLs resolved');
+    expect(r.code).toBe(0);
+  });
+
+  it('skips a file whose path line ends in a comment after a tab', async () => {
+    const root = project({
+      'research/real.md': TWO_CITATIONS,
+      '.cited-url-lint-allowlist': 'research/real.md\t# file contains internal-only links\n',
+    });
+    const r = await lint(root, ['research', '--offline'], cached);
+    expect(r.out).toContain(
+      `0 citations found under ${join(root, 'research')} (1 of 1 files allowlisted) — nothing was checked`
+    );
+    expect(r.code).toBe(0);
+  });
+
+  it('keeps a # with no space before it as part of the URL, and matches it exactly', async () => {
+    const fragment = `${URL_ONE}#section`;
+    const root = project({
+      'research/real.md': `# Fixture\n\nSee ${fragment} and\n${URL_ONE}.\n`, // lines 3 and 4
+      '.cited-url-lint-allowlist': `allow-url:${fragment}  # anchor target is walled off\n`,
+    });
+    const r = await lint(root, ['research', '--offline'], { [fragment]: 403, [URL_ONE]: 404 });
+    expect(r.out).not.toContain('research/real.md:3'); // the entry kept its fragment
+    expect(r.out).toContain('research/real.md:4  HTTP 404'); // and allowlists nothing wider
+    expect(r.code).toBe(1);
+  });
+});
+
 describe('a scan that checks nothing never says "clean"', () => {
   it('0 citations: says so, exits 0, and exits 3 under --fail-on-empty', async () => {
     const root = project({ 'research/notes.md': '# No links here\n' });
