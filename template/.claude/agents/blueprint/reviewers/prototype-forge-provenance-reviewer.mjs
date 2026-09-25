@@ -37,6 +37,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'prototype-forge-provenance-reviewer';
 
@@ -536,20 +537,9 @@ async function runCheckB({ targetDir, findings, codeFiles, protoFiles }) {
 }
 
 // ── Self-test (node prototype-forge-provenance-reviewer.mjs) ─────────────────
-// Guard fires when this file is the entrypoint. Compare resolved real paths so a
-// /tmp→/private/tmp symlink (macOS) doesn't make the guard silently false.
-const _isMain = await (async () => {
-  try {
-    const self = new URL(import.meta.url).pathname;
-    const argv = process.argv[1] || '';
-    if (self === argv) return true;
-    const { realpathSync } = await import('node:fs');
-    return realpathSync(self) === realpathSync(argv);
-  } catch {
-    return import.meta.url === `file://${process.argv[1]}`;
-  }
-})();
-if (_isMain) {
+// Guard fires when this file is the entrypoint (real paths on both sides; see
+// tools/lib/invoked-directly.mjs).
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
   const assert = (cond, msg) => {
     if (!cond) {

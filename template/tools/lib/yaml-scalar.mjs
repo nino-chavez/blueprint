@@ -10,7 +10,7 @@
 // `key: scalar` entries, strips comments outside quotes, and removes a matching
 // pair of scalar quotes. Nested keys and block values are out of scope.
 
-import { pathToFileURL } from 'node:url';
+import { invokedDirectly } from './invoked-directly.mjs';
 
 export function stripYamlComment(value) {
   let quote = null;
@@ -115,8 +115,7 @@ function selftest() {
 }
 
 if (
-  process.argv[1]
-  && import.meta.url === pathToFileURL(process.argv[1]).href
+  invokedDirectly(import.meta.url)
   && (process.argv.includes('--selftest') || process.argv.includes('--self-test'))
 ) {
   selftest();
