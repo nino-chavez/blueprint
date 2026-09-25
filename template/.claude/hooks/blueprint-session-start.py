@@ -156,8 +156,9 @@ def _verify_global_rules(blueprint_home: Path) -> tuple[bool, str]:
     the installation reminder.
     """
     # Check if the two global-rules docs exist in the blueprint home
-    audit_doc = blueprint_home / "docs" / "methodology" / "global-rules" / "audit-discipline.md"
-    decision_doc = blueprint_home / "docs" / "methodology" / "global-rules" / "decision-bias.md"
+    rules_dir = blueprint_home / "template" / "docs" / "methodology" / "global-rules"
+    audit_doc = rules_dir / "audit-discipline.md"
+    decision_doc = rules_dir / "decision-bias.md"
     docs_present = audit_doc.is_file() and decision_doc.is_file()
     if not docs_present:
         return False, ""  # Docs should be present in blueprint home; skip warning if not

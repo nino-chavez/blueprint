@@ -22,7 +22,7 @@ Self-attested verification is a candidate hypothesis, not evidence.
 When auditing high-stakes claims (citations, implementation state, coverage), use mechanical tools where available:
 
 - **Citations**: `npx tsx "$BLUEPRINT_HOME/template/tools/cited-url-lint/index.ts" <dir> --fail-on-empty` from the initiative root (the stamper does not copy the lint into an initiative) — resolves claimed URLs, reports broken references. A scan that checked nothing exits 3, and nothing checked is not a pass ([`../citation-correctness-pattern.md`](../citation-correctness-pattern.md)).
-- **Implementation state**: `tools/state-derive/` — derives presence from artifacts, not from claims.
+- **Implementation state**: `state-derive` — derives presence from artifacts, not from claims. The stamper does not install it, and it reads its catalog and the repo root from its own location. From the initiative root, copy it in once with `cp -R "$BLUEPRINT_HOME/template/tools/state-derive" tools/`. Declare capabilities in `tools/state-derive/catalog/*.ts`, then run `npx tsx tools/state-derive/index.ts` from the same root. Run in place under `$BLUEPRINT_HOME`, it derives the template instead, writes its output there, and exits 0 ([`README`](../../../tools/state-derive/README.md)).
 - **Coverage matrices**: scenario-result artifacts (CI-generated) — ground truth for behavioral claims, never agent-predicted status.
 
 Mechanical tools are not perfect, but they prevent circular audits by construction: they resolve to first-order evidence, not second-order claims.

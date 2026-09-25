@@ -17,6 +17,19 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **The `state-derive` and global-rules pointers name paths that exist** (wave
+  116) — audit discipline said to use `tools/state-derive/`, which the stamper
+  never installs. Running the template's copy by absolute path derives the
+  template, writes its output there, and exits 0. Copy the tool into the
+  initiative instead: from its root,
+  `cp -R "$BLUEPRINT_HOME/template/tools/state-derive" tools/`, add
+  `tools/state-derive/catalog/*.ts`, then run `npx tsx tools/state-derive/index.ts`.
+  The global-rules block in `template/CLAUDE.md` pointed at
+  `$BLUEPRINT_HOME/docs/methodology/global-rules/`; the files live under
+  `template/`. The SessionStart hook checked the same wrong path, so it never
+  warned. It now warns when `~/.claude/CLAUDE.md` lacks the block. If you
+  installed the block, delete it from `BEGIN` through `END` and run the install
+  command again. Restamp, or copy the hook into `.claude/hooks/`, to get the check.
 - **The citation-lint instructions work from an initiative** (wave 110) — the
   fact-check reviewer, the citation-correctness pattern and audit discipline
   said to run `tools/cited-url-lint/`, which the stamper never creates. They
