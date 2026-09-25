@@ -17,6 +17,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **A `cited-url-lint` allowlist entry can end in a comment** (wave 114) — an
+  entry followed by a comment, such as `allow-url:<url>  # requires auth`, kept
+  the comment as part of the entry. It matched nothing, so the URL or file was
+  still checked. The template's own examples used that form. A `#` at the start
+  of a line or after whitespace now starts a comment. A `#` inside a URL is
+  kept, so `allow-url:https://host/page#section` still matches only that URL.
+  No change is needed unless a listed file path contains whitespace followed
+  by `#`.
 - **A fresh research stamp no longer reports Stages 0, 1 and 5 complete**
   (wave 112) — the stamper writes the source catalog, the personas file and the
   decision memo as templates you fill in place, and `blueprint stage status`
