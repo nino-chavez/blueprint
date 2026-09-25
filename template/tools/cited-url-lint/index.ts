@@ -23,7 +23,9 @@
  * Allowlist:
  *   Files listed in .cited-url-lint-allowlist (one URL per line, or one
  *   markdown-relative-path per line) are exempt. URLs starting with
- *   "allow-url:" skip per-URL; bare paths skip per-file.
+ *   "allow-url:" skip per-URL; bare paths skip per-file. A "#" that starts a
+ *   line or follows whitespace starts a comment, so an entry can end in one;
+ *   a "#" inside a URL (a fragment) stays part of the entry.
  *
  * Cache:
  *   `.url-cache.json` beside this file stores {url, status, checked_at}. It
@@ -141,8 +143,11 @@ function loadAllowlist(path: string): Allowlist {
   const out: Allowlist = { urls: new Set(), files: new Set() };
   if (!existsSync(path)) return out;
   for (const raw of readFileSync(path, 'utf8').split('\n')) {
-    const line = raw.trim();
-    if (!line || line.startsWith('#')) continue;
+    // A # that starts the line or follows whitespace starts a comment, so an
+    // entry can end in one. A # right after other text is a URL fragment
+    // (https://host/page#section) and stays part of the entry.
+    const line = raw.replace(/(^|\s)#.*/, '').trim();
+    if (!line) continue;
     if (line.startsWith('allow-url:')) {
       out.urls.add(line.slice('allow-url:'.length).trim());
     } else {
