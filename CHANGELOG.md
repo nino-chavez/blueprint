@@ -17,6 +17,16 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **The SessionStart hook says when it cannot find the global-rules docs**
+  (wave 119) — when the two rules docs were missing from the methodology home,
+  the hook skipped its check of `~/.claude/CLAUDE.md` without a word, so a
+  check that never ran looked like one that passed. That silence hid the wrong
+  path wave 116 fixed. The hook now adds one line saying the check did not run
+  and naming the folder it looked in, and it still exits 0. The "Global rules
+  not installed" warning is unchanged, and `--self-test` now runs the hook
+  through each case. The hook runs from wherever you copied it: re-copy
+  `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/`
+  and to each initiative's `.claude/hooks/`.
 - **A fresh Initiative Portal stamp passes `blueprint doctor`** (wave 118) —
   doctor's terminology check failed on a new Initiative Portal because the
   stamped archaeology chat, `apps/portal/src/components/ArchaeologyChat.tsx`,

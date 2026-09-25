@@ -262,7 +262,7 @@ See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/decision-bias.md` fo
 EOF
 ```
 
-**Auto-check**: The SessionStart hook verifies these rules are installed and emits a non-fatal warning if absent. Re-run the installation command above if you see the warning.
+**Auto-check**: The SessionStart hook verifies these rules are installed and emits a non-fatal warning if absent. Re-run the installation command above if you see the warning. The check reads the two rules docs from `$BLUEPRINT_HOME/template/docs/methodology/global-rules/`. If they are missing there, the hook says the check did not run and names the folder it looked in; update the methodology source, or point `BLUEPRINT_HOME` at a complete copy.
 
 ### Customization
 
