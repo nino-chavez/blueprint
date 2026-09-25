@@ -35,6 +35,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'portal-review-conformance-reviewer';
 
@@ -644,7 +645,7 @@ export default async function review({ targetDir, blueprintYml }) {
 // `node portal-review-conformance-reviewer.mjs` builds inline fixtures on disk,
 // runs the reviewer against each, and asserts the expected verdict. Exits non-zero
 // on any failure (matches the lib self-test pattern).
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
   const assert = (cond, msg) => {
     if (!cond) {
