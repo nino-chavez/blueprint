@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// `npm run test:core`: the library self-tests plus the stamp-then-gate smoke.
+// `npm run test:core`: the library self-tests, the stamp-then-gate smoke, and the
+// SessionStart hook's self-test.
 // doctor.yml and release.yml both run it; the step list below is the only copy.
 //
 // A step passes only when it exits 0 AND prints its own pass line. Exit 0 alone
@@ -49,7 +50,12 @@ const STEPS = [
   [`${REVIEWERS}/design-principles-reviewer.mjs`, ['--selftest'], /^All \d+ assertions passed\.$/m],
   [`${REVIEWERS}/screen-composition-reviewer.mjs`, ['--selftest'], /^All \d+ assertions passed\.$/m],
   ['template/tools/blueprint-init/smoke.mjs', [], /^smoke green\b/m],
+  ['template/.claude/hooks/blueprint-session-start.py', ['--self-test'], /^blueprint-session-start self-test: PASS\b/m],
 ];
+
+// A .py step runs under python3; every other step under the node running this
+// file. A machine without python3 fails that step: spawn reports "could not start".
+const interpreter = (script) => (script.endsWith('.py') ? 'python3' : 'node');
 
 // null means pass; anything else is the reason the step failed.
 function verdict(code, signal, stdout, pass) {
@@ -79,7 +85,8 @@ function run([script, args, pass]) {
       resolve(why);
     };
     // stdin 'ignore': a child that reads stdin must not wait on ours forever.
-    const child = spawn(process.execPath, [script, ...args], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    const bin = interpreter(script);
+    const child = spawn(bin === 'node' ? process.execPath : bin, [script, ...args], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     const timer = setTimeout(() => {
       timedOut = true;
       child.kill('SIGKILL');
@@ -112,7 +119,7 @@ const failures = readdirSync(join(ROOT, LIB))
   .map((rel) => `${rel}: has a self-test but no step in bin/test-core.mjs`);
 
 for (const step of STEPS) {
-  const cmd = ['node', step[0], ...step[1]].join(' ');
+  const cmd = [interpreter(step[0]), step[0], ...step[1]].join(' ');
   console.log(`\n── ${cmd}`);
   const why = await run(step);
   if (why) failures.push(`${cmd}: ${why}`);
