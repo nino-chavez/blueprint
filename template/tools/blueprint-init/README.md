@@ -85,6 +85,11 @@ therefore has no workspaces: `npm run derive` regenerates `derived/`, and
 `derived/` before the target usually has a commit, so run `npm run derive`
 again after the first commit.
 
+`research/sources/README.md`, `research/personas-and-jtbd.md` and
+`docs/decision-memo.md` are templates you fill in place. `blueprint stage status`
+counts each one once its placeholder lines are replaced; the catalog counts once
+it lists a real row. Until then it names the line still holding a placeholder.
+
 ## Usage — initial stamp (Pattern B)
 
 Pattern B scaffolding creates a Review Portal at `blueprint/portal/` (or a custom path declared in `blueprint.yml`):
