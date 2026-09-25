@@ -48,6 +48,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'prescription-jtbd-traceability-reviewer';
 
@@ -628,7 +629,7 @@ export default async function review({ targetDir, blueprintYml }) {
 }
 
 // ── Self-test (node prescription-jtbd-traceability-reviewer.mjs) ─────────────
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const assert = (cond, msg) => { if (!cond) { console.error(`FAIL: ${msg}`); process.exit(1); } };
   let n = 0;
   const ok = (cond, msg) => { assert(cond, msg); n++; };

@@ -36,6 +36,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'prescription-evidence-reviewer';
 
@@ -641,7 +642,7 @@ export default async function review({ targetDir }) {
 }
 
 // ── Self-test (node prescription-evidence-reviewer.mjs) ──────────────────────
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
   const os = await import('node:os');
   const assert = (cond, msg) => {

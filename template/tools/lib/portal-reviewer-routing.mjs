@@ -10,7 +10,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { invokedDirectly } from './invoked-directly.mjs';
 import { readTopLevelYamlScalar } from './yaml-scalar.mjs';
 
 export const INITIATIVE_PORTAL_REVIEWER = 'portal-initiative-conformance-reviewer';
@@ -136,8 +136,7 @@ function selftest() {
 }
 
 if (
-  process.argv[1]
-  && import.meta.url === pathToFileURL(process.argv[1]).href
+  invokedDirectly(import.meta.url)
   && (process.argv.includes('--selftest') || process.argv.includes('--self-test'))
 ) {
   selftest();

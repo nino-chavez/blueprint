@@ -47,6 +47,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'prototype-smoke-runner';
 
@@ -436,7 +437,7 @@ export default async function review({ targetDir, blueprintYml }) {
 // ── self-test ────────────────────────────────────────────────────────────────
 // `node prototype-smoke-runner.mjs` exercises the pure helpers + the full review()
 // against inline fixture dirs, and exits non-zero on the first failed assertion.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
   const assert = (cond, msg) => {
     if (!cond) {
