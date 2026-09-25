@@ -27,6 +27,16 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
   you meant: a copy older than wave 108 prints `clean` over the wrong tree.
   Copy the updated `fact-check-loop-reviewer.md` into your
   `.claude/agents/blueprint/reviewers/`, or restamp.
+- **Research stamps get scripts that run, and the decision template stops
+  counting as a decision** (wave 109) — a research stamp's `package.json`
+  carried portal scripts that failed with "No workspaces found". It now has only
+  `npm run derive` and `npm run reviewers`, and portal stamps gain
+  `npm run derive`. The recovery brief names a refresh command that exists in
+  your repo, and says to rerun it if it was written before your first commit.
+  `decisions/_TEMPLATE.md` no longer appears in the decisions list or counts
+  toward Stage 3. The stamper never overwrites an existing `package.json`, so
+  fix an earlier research stamp by hand and refresh its `tools/lib/`. See wave
+  109 for the exact lines.
 - **`cited-url-lint` can no longer print "clean" over nothing** (wave 108) — run
   from an initiative, a relative directory resolved inside the template, so the
   lint scanned the wrong tree, found no citations, and passed. Relative paths now

@@ -12,16 +12,20 @@
  * stamper's gates" a mechanical property:
  *
  *   1. Pattern B stamp into a temp dir → exit 0
- *   2. Imposition layer present (.claude reviewers + tools/lib + run-reviewers)
+ *   2. Imposition layer present (.claude reviewers + tools/lib + run-reviewers);
+ *      the recovery brief's refresh command runs with no package.json
  *   3. portal-chrome-canonical-reviewer over the stamped tree → PASS
  *   4. portal-review-conformance-reviewer over the stamped tree → not BLOCKED
  *   5. No deploy-fatal placeholders in the stamped portal (wrangler.toml)
  *   6. Stamped Pattern B tree → FULL doctor; both conformance reviewers executed
- *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present
+ *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present; every
+ *      package.json script target exists; the brief names `npm run derive`
  *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
  *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
  *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
- *  11. Research real stamp: memo/evidence tree, no portal, inline-comment routing
+ *  11. Research real stamp: memo/evidence tree, no portal, inline-comment routing;
+ *      its package.json scripts run; derived/ skips the decision template and is
+ *      rerun after the first commit; Stage 3 is not started until a real ADR exists
  *  12. Methodology-amendment templates share one canonical field shape
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
@@ -45,6 +49,36 @@ const bad = (label, detail) => {
   failures.push(label);
   console.error(`  ✗ ${label}${detail ? ` — ${detail}` : ""}`);
 };
+const check = (cond, label, detail) => (cond ? ok(label) : bad(label, detail));
+
+// Every script in a stamped package.json must run against what the stamp wrote:
+// each `node <file>` names a file and each `-w <dir>` a workspace that exists.
+// Wave 109: research stamps shipped `-w apps/portal` scripts and no apps/portal.
+async function missingScriptTargets(root) {
+  const scripts = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8")).scripts ?? {};
+  const missing = [];
+  for (const [name, cmd] of Object.entries(scripts)) {
+    for (const [, kind, rel] of cmd.matchAll(/(node|-w)\s+(\S+)/g)) {
+      const p = kind === "-w" ? path.join(root, rel, "package.json") : path.join(root, rel);
+      if (!(await fs.stat(p).catch(() => null))) missing.push(`${name} → ${rel}`);
+    }
+  }
+  return missing;
+}
+
+// The refresh command a stamped recovery brief prints must work in that stamp:
+// an npm script its package.json defines, or a node script that exists.
+async function briefRefreshCommand(root) {
+  const brief = await fs.readFile(path.join(root, "derived", "recovery-brief.md"), "utf8").catch(() => "");
+  const cmd = /rerun `([^`]+)` to refresh/.exec(brief)?.[1];
+  if (!cmd) return { cmd, resolves: false, detail: "brief names no refresh command" };
+  const pkg = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8").catch(() => "{}"));
+  const npmScript = /^npm run (\S+)$/.exec(cmd)?.[1];
+  if (npmScript) return { cmd, resolves: Boolean(pkg.scripts?.[npmScript]), detail: `${cmd}; scripts: ${Object.keys(pkg.scripts ?? {}).join(", ") || "none"}` };
+  const nodeFile = /^node (\S+)/.exec(cmd)?.[1];
+  if (nodeFile) return { cmd, resolves: Boolean(await fs.stat(path.join(root, nodeFile)).catch(() => null)), detail: cmd };
+  return { cmd, resolves: false, detail: `unrecognized command: ${cmd}` };
+}
 
 const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "blueprint-smoke-"));
 const target = path.join(tmp, "smoke-initiative");
@@ -83,6 +117,10 @@ try {
     if (await fs.stat(path.join(target, rel)).catch(() => null)) ok(`stamped: ${rel}`);
     else bad(`stamped: ${rel}`, "missing — imposition layer gap");
   }
+  // 2b — Pattern B writes no package.json, so its recovery brief must name a
+  // refresh command that works without one (wave 109).
+  const bRefresh = await briefRefreshCommand(target);
+  check(bRefresh.resolves, "Pattern B brief's refresh command runs in the stamp", bRefresh.detail);
 
   // 3+4 — the stamped output passes the stamped gates.
   process.env.BLUEPRINT_HOME = BLUEPRINT_ROOT;
@@ -161,6 +199,10 @@ try {
   else bad("Pattern A stamp writes an empty design_intent", "design_intent line missing from stamped blueprint.yml");
   if (await fs.stat(path.join(aTarget, "apps", "portal", "package.json")).catch(() => null)) ok("Pattern A portal shell present");
   else bad("Pattern A portal shell present", "apps/portal/package.json missing");
+  const aMissing = await missingScriptTargets(aTarget).catch((err) => [err.message]);
+  check(aMissing.length === 0, "Pattern A package.json scripts all point at stamped files", aMissing.join(", "));
+  const aRefresh = await briefRefreshCommand(aTarget);
+  check(aRefresh.resolves && aRefresh.cmd === "npm run derive", "Pattern A brief's refresh command is its npm derive script", aRefresh.detail);
 
   // 7b — actor-output contract from birth (decisions/05, wave 89): a fresh stamp
   // carries the intrinsic manifest, its derived outputs exist, the gate verdict
@@ -381,6 +423,63 @@ try {
       if (await fs.stat(path.join(researchTarget, rel)).catch(() => null)) bad(`research omits ${rel}`, "unexpected product scaffold");
       else ok(`research omits ${rel}`);
     }
+
+    // 11b — wave 109. The research package.json carries only commands this
+    // stamp can run, the brief names one of them, derived/ skips the decision
+    // template, Stage 3 reads not started until a real ADR exists, and the
+    // first-commit instruction the stamp prints actually works.
+    const researchPkg = JSON.parse(await fs.readFile(path.join(researchTarget, "package.json"), "utf8"));
+    check(!researchPkg.workspaces && !researchPkg.overrides && Object.keys(researchPkg.scripts ?? {}).sort().join() === "derive,reviewers",
+      "research package.json: derive + reviewers only, no portal workspaces", JSON.stringify(researchPkg));
+    const researchMissing = await missingScriptTargets(researchTarget);
+    check(researchMissing.length === 0, "research package.json scripts all point at stamped files", researchMissing.join(", "));
+    const npmRun = (script) => execFile("npm", ["run", "--silent", script], { cwd: researchTarget })
+      .then((r) => ({ code: 0, out: `${r.stdout}${r.stderr}` }), (e) => ({ code: e.code, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }));
+    const deriveRun = await npmRun("derive");
+    check(deriveRun.code === 0, "research `npm run derive` runs", `exit ${deriveRun.code} ${deriveRun.out.trim().split("\n").slice(-2).join(" | ")}`);
+    // A fresh stamp's reviewers BLOCK (empty research legs), so the runner exits
+    // 1. The check is that the script executes the runner, not that gates pass.
+    const reviewersRun = await npmRun("reviewers");
+    check(/variant=research\b/.test(reviewersRun.out) && !/Missing script|No workspaces found|Cannot find module/.test(reviewersRun.out),
+      `research \`npm run reviewers\` executes the reviewer runner (exit ${reviewersRun.code})`, reviewersRun.out.trim().split("\n").slice(0, 3).join(" | "));
+    const rRefresh = await briefRefreshCommand(researchTarget);
+    check(rRefresh.resolves && rRefresh.cmd === "npm run derive", "research brief's refresh command is its npm derive script", rRefresh.detail);
+    const packetOf = async () => JSON.parse(await fs.readFile(path.join(researchTarget, "derived", "boot-packet.json"), "utf8"));
+    const briefOf = () => fs.readFile(path.join(researchTarget, "derived", "recovery-brief.md"), "utf8");
+    const firstCommitLine = "derived before the first git commit";
+    let packet = await packetOf();
+    const rerunLine = (await briefOf()).includes(firstCommitLine);
+    check(packet.as_of === "no-git" && rerunLine, "brief derived before any commit says to rerun after the first commit",
+      `as_of=${packet.as_of}${packet.as_of === "no-git" ? "" : " (temp dir inside a git repo?)"}; rerun line ${rerunLine ? "present" : "missing"}`);
+    check(/After the first commit, regenerate derived\/[^\n]*\n\s+npm run derive/.test(researchStamp.stdout),
+      "stamp next steps say to regenerate derived/ after the first commit", researchStamp.stdout.trim().split("\n").slice(-4).join(" | "));
+    check(packet.decisions.length === 0, "derived decisions list skips decisions/_TEMPLATE.md", JSON.stringify(packet.decisions));
+    const sm = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "stage-model.mjs")).href);
+    const decisionsGate = () => sm.deriveStageStatus({ root: researchTarget }).stages.find((s) => s.id === 3).gates.find((g) => g.gate === "decisions");
+    check(decisionsGate().state === "absent", "stage status: Stage 3 not started on a fresh research stamp", decisionsGate().evidence);
+    // An ADR copied from the template keeps its commented frontmatter lines. It
+    // must index under its own H1 and count toward Stage 3.
+    const decisionTemplate = await fs.readFile(path.join(researchTarget, "decisions", "_TEMPLATE.md"), "utf8");
+    await fs.writeFile(path.join(researchTarget, "decisions", "0001-smoke.md"),
+      decisionTemplate.replace("adr: NNNN", "adr: 0001").replace(/^# ADR-NNNN — .*$/m, "# ADR-0001 — Smoke decision"));
+    await npmRun("derive");
+    packet = await packetOf();
+    check(packet.decisions.length === 1 && packet.decisions[0].title === "ADR-0001 — Smoke decision",
+      "an ADR copied from the template indexes under its own H1", JSON.stringify(packet.decisions));
+    check(decisionsGate().state === "pass", "a real ADR passes Stage 3", decisionsGate().evidence);
+    // The remedy the brief and next steps give: after the first commit, derive
+    // records it. Hooks are off so a machine-wide commit hook cannot fire here.
+    const git = (...args) => execFile("git", [
+      "-c", "user.name=smoke", "-c", "user.email=smoke@example.invalid",
+      "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", ...args,
+    ], { cwd: researchTarget });
+    await git("init", "-q");
+    await git("add", "-A");
+    await git("commit", "-qm", "smoke: first commit");
+    await npmRun("derive");
+    packet = await packetOf();
+    check(/^[0-9a-f]{7,}$/.test(packet.as_of) && !(await briefOf()).includes(firstCommitLine),
+      "after the first commit, `npm run derive` records it and drops the rerun line", `as_of=${packet.as_of}`);
     const researchYmlPath = path.join(researchTarget, "blueprint.yml");
     const researchYml = await fs.readFile(researchYmlPath, "utf8");
     await fs.writeFile(researchYmlPath, researchYml.replace(/^variant: research$/m, "variant: research # routing regression"));

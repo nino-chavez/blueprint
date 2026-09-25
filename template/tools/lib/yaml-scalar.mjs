@@ -73,6 +73,17 @@ export function readTopLevelYamlScalar(text, key) {
   return null;
 }
 
+// A markdown document's YAML frontmatter: the lines between a first-line `---`
+// and the next `---` line. Read a field with readTopLevelYamlScalar(frontmatter,
+// key). A document that does not open with `---` has none; `body` is then the
+// whole text.
+export function splitFrontmatter(markdown) {
+  const text = markdown ?? '';
+  const match = /^---[ \t]*\r?\n(?:([\s\S]*?)\r?\n)?---[ \t]*(?:\r?\n|$)/.exec(text);
+  if (!match) return { frontmatter: '', body: text };
+  return { frontmatter: match[1] ?? '', body: text.slice(match[0].length) };
+}
+
 function selftest() {
   let assertions = 0;
   const ok = (condition, label) => {
@@ -91,6 +102,14 @@ function selftest() {
   ok(readTopLevelYamlScalar('parent:\n  variant: research\n', 'variant') === null, 'nested key ignored');
   ok(readTopLevelYamlScalar('variant: null\n', 'variant') === null, 'null scalar');
   ok(readTopLevelYamlScalar('tier: 1\r\n', 'tier') === '1', 'CRLF input');
+
+  const doc = splitFrontmatter('---\nadr: 0001\n# serves: none   # a comment, not a heading\n---\n\n# ADR-0001 — Title\n');
+  ok(doc.frontmatter === 'adr: 0001\n# serves: none   # a comment, not a heading', 'frontmatter block extracted');
+  ok(doc.body.trimStart().startsWith('# ADR-0001 — Title'), 'body starts after the closing fence');
+  ok(splitFrontmatter('# Heading\n---\nnot: frontmatter\n---\n').frontmatter === '', 'no leading fence → no frontmatter');
+  ok(splitFrontmatter('---\n---\n# T\n').body === '# T\n', 'empty frontmatter');
+  ok(splitFrontmatter('---\nkey: v\n# no closing fence\n').frontmatter === '', 'unterminated fence → no frontmatter');
+  ok(readTopLevelYamlScalar(splitFrontmatter('---\r\ntemplate: true # marker\r\n---\r\nbody').frontmatter, 'template') === 'true', 'frontmatter field read (CRLF + comment)');
 
   console.log(`yaml-scalar self-test: PASS (${assertions} assertions)`);
 }
