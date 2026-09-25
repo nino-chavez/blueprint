@@ -12,12 +12,33 @@ You fan out to leaf sub-reviewers, collect their results, and decide convergence
 
 | Sub-reviewer | What it validates |
 |---|---|
-| `citation-checker` | Every market-research citation and strategy-panel claim resolves to a real source. **CRITICAL: Do NOT accept self-attestation.** When the artifact claims "verified against URL X," resolve X yourself and check directly — do not trust the artifact's verification note. Run `tools/cited-url-lint/` and verify all citations pass; if any 4xx, block and require fixing. Per `template/docs/methodology/citation-correctness-pattern.md` (anti-circular-audit guard). |
+| `citation-checker` | Every market-research citation and strategy-panel claim resolves to a real source. **CRITICAL: Do NOT accept self-attestation.** When the artifact claims "verified against URL X," resolve X yourself and check directly — do not trust the artifact's verification note. Run the citation lint as § Running the citation lint (below) shows, and verify all citations pass; if any is broken, block and require fixing. A run that checked nothing has not passed. Per `template/docs/methodology/citation-correctness-pattern.md` (anti-circular-audit guard). |
 | `current-state-claim-verifier` | Every "this is what exists today" claim matches a screenshot in `current-state/` or `research/current-state/` |
 | `codebase-claim-verifier` | Every claim about what's buildable / what exists in the source code matches the actual code (when codebase access is available) |
 | `hypothetical-demand-claim-checker` | Every future-tense demand claim ("users will/would want/love/pay…") is either anchored to past-specific evidence (analytics, tickets, quotes, recorded behavior) or appears in `docs/content/validation-script.md`'s assumptions table with evidence class `agent-hypothesis`. Unanchored + unlisted → BLOCK; listed → PASS (a hypothesis named as a hypothesis is honest). Per `template/docs/methodology/mom-test-validation-pattern.md` — wave 51 |
 
 Other reviewer agents (`research-completeness-reviewer`, `prescription-evidence-reviewer`, `design-principles-reviewer`, `doc-quality-auditor`, `terminology-linter`, `prototype-smoke-runner`) are NOT part of this loop — they gate other stages.
+
+## Running the citation lint
+
+The stamper does not copy the lint into an initiative, so there is no `tools/cited-url-lint/` here. Run the copy at `$BLUEPRINT_HOME` by absolute path, from the initiative root, once for each directory that holds the initiative's cited markdown (usually `research`, `docs` and `decisions`; skip any that does not exist):
+
+```bash
+npx tsx "$BLUEPRINT_HOME/template/tools/cited-url-lint/index.ts" research --fail-on-empty
+```
+
+`$BLUEPRINT_HOME` is the methodology source the SessionStart hook resolved and printed (a Blueprint checkout or the npm package); if your shell does not have it, substitute that path. Do not run the lint on `.`, which also lints the stamped `.claude/` methodology's own links. Run it online: `--offline` checks only cached URLs and can exit 0 on a partial scan.
+
+Read the output, not only the exit code:
+
+- **The first `cited-url-lint:` line must name the directory you meant**, ending `... unique URLs under <initiative-root>/research`. `npx` can print its own notices before and after the lint's lines; skip those. Check this before reading the exit code; until it holds, the result means nothing.
+  - Another directory: wrong working directory or argument. Fix it and rerun.
+  - No directory: the copy at `$BLUEPRINT_HOME` predates wave 108, which scanned the wrong tree, printed `clean`, and ignored `--fail-on-empty`. Update it and rerun.
+  - No `cited-url-lint:` line at all: the lint never ran. An unset `$BLUEPRINT_HOME` fails with `Cannot find module` and exit 1, the same code as a broken citation.
+- **Pass**: exit 0, and the last `cited-url-lint:` line reads `clean — N unique URLs resolved`.
+- **Exit 1**: at least one broken citation, meaning an HTTP error status or no connection. Block and require fixing. A verdict can come from the lint's cache, which keeps results for 7 days; if a failure looks wrong, rerun with `--max-cache-age-days=0` to check every URL fresh before blocking.
+- **Exit 3**: nothing was checked. The directory has no citations, every citation is allowlisted, or an offline run found nothing cached. That is not a pass. Point the scan at the right directory and rerun; if the directory really holds no citations, report "no citations in `<dir>`", never "verified".
+- **Exit 2**: bad invocation, or no markdown under that directory.
 
 ## Loop shape
 
