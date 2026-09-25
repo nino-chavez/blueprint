@@ -11,10 +11,13 @@
 // check never runs: from a checkout path containing a space, five more steps
 // exited 0 with no output. Only a line the test prints itself separates "ran
 // and passed" from "never ran". Every step runs even after one fails, so a run
-// names all of its failures at once. This script takes no arguments, so none
-// can be misspelled.
+// names all of its failures at once. A tools/lib file whose self-test has no
+// step also fails the run. This script takes no arguments, so none can be
+// misspelled.
 
 import { spawn } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -97,7 +100,16 @@ if (process.argv.length > 2) {
   process.exit(2);
 }
 
-const failures = [];
+// A tools/lib self-test with no step here stops running without a word: a new
+// lib nobody listed, or a row lost while resolving a merge conflict on this list.
+// Scoped to tools/lib, where every self-test is already a step.
+const listed = new Set(STEPS.map(([script]) => script));
+const failures = readdirSync(join(ROOT, LIB))
+  .filter((f) => f.endsWith('.mjs'))
+  .map((f) => `${LIB}/${f}`)
+  .filter((rel) => !listed.has(rel) && /['"]--self-?test['"]/.test(readFileSync(join(ROOT, rel), 'utf8')))
+  .map((rel) => `${rel}: has a self-test but no step in bin/test-core.mjs`);
+
 for (const step of STEPS) {
   const cmd = ['node', step[0], ...step[1]].join(' ');
   console.log(`\n── ${cmd}`);
@@ -106,7 +118,7 @@ for (const step of STEPS) {
 }
 
 if (failures.length) {
-  console.error(`\ntest:core FAILED: ${failures.length} of ${STEPS.length} steps`);
+  console.error(`\ntest:core FAILED (${failures.length}):`);
   for (const f of failures) console.error(`  ✗ ${f}`);
   process.exit(1);
 }

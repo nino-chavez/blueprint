@@ -21,13 +21,13 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
   release gate had passed five library self-tests since July without running
   them: it gave them a flag they don't read, and counted their silent exit as a
   pass. `npm run test:core` now passes a step only if it prints its own pass
-  line. Separately, scripts compared their own path as text, so from a path
-  containing a space, or when invoked by an absolute path that runs through a
-  symlink, they skipped their CLI or self-test and exited 0. They now compare
-  real paths, through the new `tools/lib/invoked-directly.mjs`. If you copy
-  reviewers into an initiative by hand, copy that file too. A CI step that ran
-  one of these scripts that way was passing without running; it now runs, and
-  may fail on problems it had hidden.
+  line, and fails if a library self-test has no step. Separately, scripts
+  compared their own path as text, so from a path containing a space, or when
+  invoked by an absolute path that runs through a symlink, they skipped their
+  CLI or self-test and exited 0. They now compare real paths, through the new
+  `tools/lib/invoked-directly.mjs`. If you copy reviewers into an initiative by
+  hand, copy that file too. A CI step that ran one of these scripts that way was
+  passing without running; it now runs, and may fail on problems it had hidden.
 - **The citation-lint instructions work from an initiative** (wave 110) — the
   fact-check reviewer, the citation-correctness pattern and audit discipline
   said to run `tools/cited-url-lint/`, which the stamper never creates. They
