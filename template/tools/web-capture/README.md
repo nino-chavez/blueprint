@@ -56,10 +56,11 @@ in the brief first (`judged-screen-pattern.md` § 2b), then check this state aga
   run the comparison, the run stops with an error rather than passing.
 - **Nothing extends past the screen edge.** Overflow is measured against the document's `clientWidth`. Up
   to five elements that cross an edge are listed by tag, class and position.
-- **Content that loads on scroll is loaded first.** Before measuring, the page is scrolled to its end one
-  screen at a time, at most 60 screens, and back to the top. Lazy images and sections revealed on scroll load
-  that way. The pass scrolls the window. A page that scrolls inside an inner element instead is not scrolled,
-  and a lazy image in that element is then flagged as not loaded.
+- **Content that loads on scroll is loaded first.** After any explicit theme is applied, the page is scrolled
+  to its end one screen at a time, and back to the top. Lazy images and sections revealed on scroll load that
+  way. The pass stops at 60 screens, and a pass that stops before the page end flags the state. The pass
+  scrolls the window. A page that scrolls inside an inner element instead is not scrolled, and a lazy image in
+  that element is then flagged as not loaded.
 - **Every image in the layout finished loading.** Images get up to ten seconds after the scroll pass. An image
   still pending, or one that cannot decode because its URL is broken, is counted, and up to five are listed by
   file name. An image outside the layout (`display: none`) is not counted.
@@ -82,13 +83,17 @@ sales-support page for a private initiative on 2026-09-26.
 - **A joined image keeps the first segment's canvas size.** Crops cut from it came out short until
   `+repage` reset the canvas.
 
-Two more were found by the automated review of the first version, not measured on that page:
+More were found by automated reviews of the first version and its fix, not measured on that page:
 - **A full-page shot does not scroll.** Lazy images and sections revealed on scroll could be missing while every
   other check passed.
+- **A capped scroll pass can stop short.** On a very long page it ended before the page end and still reported
+  the state as passing.
+- **The dark theme can change what the pass must visit.** Applied after the pass, it could show sections the
+  pass never reached.
 - **The fragment wrapper is written to a temporary folder.** A fragment's relative URLs resolved there and
   failed to load.
 
-`--selftest` rebuilds these failures in miniature. It prints one PASS or FAIL line for each of ten checks:
+`--selftest` rebuilds these failures in miniature. It prints one PASS or FAIL line for each of twelve checks:
 - the overflow check catches a 4 px overshoot;
 - the `innerWidth` test misses the same overshoot, which is why the check uses `clientWidth`;
 - a 9,500 CSS px page at 2x is joined from segments;
@@ -96,7 +101,9 @@ Two more were found by the automated review of the first version, not measured o
 - a single shot of the same page trips the wrap check;
 - a copy of the joined image 400 px short trips the size check;
 - with the scroll pass skipped, a lazy image 9,000 px down stays unloaded, which shows the test page defers it;
-- with the scroll pass, the same image loads;
+- with the scroll pass, it reaches the page end and the same image loads;
+- a pass stopped by its cap before the page end trips the scroll check;
+- in the dark state, a lazy image only the dark theme shows still loads;
 - a broken image trips the image check;
 - a wrapped fragment still loads its relative image.
 

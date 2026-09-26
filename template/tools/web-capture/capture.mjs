@@ -82,16 +82,22 @@ function pageUrl(page, fragment, tmp) {
 // A full-page shot does not scroll, so content that loads on scroll (loading="lazy" images, sections an
 // IntersectionObserver reveals) is missing unless something scrolls to it first. Scroll to the end one screen
 // at a time, then back to the top. Instant, because a page with smooth scrolling would animate every step.
-async function scrollPass(page) {
-  await page.evaluate(async () => {
-    for (let i = 0; i < 60; i++) {                   // capped: an infinite-scroll page keeps growing
-      const before = window.scrollY;
-      window.scrollBy({ top: window.innerHeight, behavior: 'instant' });
+// The pass is capped, since an infinite-scroll page keeps growing; it reports whether it reached the end, and
+// a pass stopped by the cap flags the state. Heights come from the scrolling element's clientHeight, not
+// window.innerHeight, for the same reason overflow uses clientWidth.
+async function scrollPass(page, cap = 60) {
+  return page.evaluate(async cap => {
+    const se = document.scrollingElement || document.documentElement;
+    for (let i = 0; i < cap; i++) {
+      const before = se.scrollTop;
+      window.scrollBy({ top: se.clientHeight, behavior: 'instant' });
       await new Promise(r => setTimeout(r, 100));
-      if (window.scrollY === before) break;           // the end of the page
+      if (se.scrollTop === before) break;             // the end of the page
     }
+    const reachedEnd = se.scrollTop + se.clientHeight >= se.scrollHeight - 1;
     window.scrollTo({ top: 0, behavior: 'instant' });
-  });
+    return reachedEnd;
+  }, cap);
 }
 
 // Rendered images get up to ten seconds to finish. One that does not is reported by measure(), not waited on.
@@ -195,13 +201,15 @@ async function capture(a) {
       const page = await ctx.newPage();
       await page.goto(url, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
-      if (!a.noPreload) await scrollPass(page);   // before the settle step, so reveal-on-scroll transitions finish
       if (st.explicitDark) {
         // A class is added to the root's classes; any other attribute is set. Replacing `class` would drop
         // the page's other root classes and capture a page no user sees.
         await page.evaluate(([k, v]) => k === 'class' ? document.documentElement.classList.add(...v.split(/\s+/).filter(Boolean))
           : document.documentElement.setAttribute(k, v), [attr, val]);
       }
+      // After the theme, which can change the layout the pass must visit; before the settle step, so
+      // reveal-on-scroll transitions finish with the theme's.
+      const scrollReachedEnd = a.noPreload ? null : await scrollPass(page, a.scrollCap);
       // Let the theme switch finish: finite transitions settle, bounded at two seconds.
       await page.evaluate(() => Promise.race([
         Promise.all(document.getAnimations().filter(an => an.effect?.getComputedTiming().iterations !== Infinity)
@@ -214,7 +222,7 @@ async function capture(a) {
       const segments = await shoot(page, file, st, m.height, a.singleShot);
       const c = complete(file, st, m);
       c.wrapsToTop = wrapCheck(file, segments);
-      receipt.states[id] = { ...m, segments, ...c };
+      receipt.states[id] = { ...m, scrollReachedEnd, segments, ...c };
       await ctx.close();
     }
   } finally { await browser.close(); fs.rmSync(tmp, { recursive: true, force: true }); }
@@ -238,6 +246,9 @@ async function selftest(a) {
   fs.copyFileSync(path.join(tmp, 'dot.png'), path.join(path.dirname(frag), 'dot.png'));
   fs.writeFileSync(lazy, `${head}<div style="height:9000px">spacer</div><img loading="lazy" src="dot.png" alt="lazy"></body>`);
   fs.writeFileSync(broken, `${head}<img src="missing.png" alt="missing" width="60" height="60"></body>`);
+  // Only the dark theme shows this section, so the scroll pass must run after the theme is applied.
+  const darkOnly = path.join(tmp, 'dark-only.html');
+  fs.writeFileSync(darkOnly, `${head}<style>.d{display:none}[data-theme=dark] .d{display:block}</style><p>top</p><div class="d"><div style="height:9000px"></div><img loading="lazy" src="dot.png" alt="dark only"></div></body>`);
   fs.writeFileSync(frag, '<p>A fragment with a relative image.</p><img src="dot.png" alt="relative">');
   const results = [];
   try {
@@ -255,12 +266,16 @@ async function selftest(a) {
     const short = path.join(tmp, 'short.png');   // 400 px short: far past the ±dpr the size check allows
     magick(path.join(tmp, 't', 'phone-light.png'), '-crop', `${s2.imageSize[0]}x${s2.imageSize[1] - 400}+0+0`, '+repage', short);
     results.push(['a copy 400 px short trips the size check', complete(short, STATES['phone-light'], s2).sizeOk === false]);
-    const one = (page, out, extra = {}) => capture({ ...a, page, out: path.join(tmp, out), states: ['desktop-light'], ...extra })
-      .then(r => r.states['desktop-light']);
+    const one = (page, out, extra = {}, state = 'desktop-light') => capture({ ...a, page, out: path.join(tmp, out), states: [state], ...extra })
+      .then(r => r.states[state]);
     const unscrolled = await one(lazy, 'l0', { noPreload: true });
     results.push(['without the scroll pass, a lazy image 9,000 px down stays unloaded (the fixture defers)', unscrolled.imagesNotLoaded === 1]);
     const scrolled = await one(lazy, 'l1');
-    results.push(['the scroll pass loads that lazy image before the shot', scrolled.imagesNotLoaded === 0]);
+    results.push(['the scroll pass reaches the page end and loads that lazy image', scrolled.scrollReachedEnd === true && scrolled.imagesNotLoaded === 0]);
+    const capped = await one(lazy, 'l2', { scrollCap: 2 });
+    results.push(['a scroll pass stopped by its cap before the page end trips the scroll check', capped.scrollReachedEnd === false]);
+    const dark = await one(darkOnly, 'd', {}, 'desktop-dark');
+    results.push(['the scroll pass runs after the dark theme, so a lazy image only it shows loads', dark.imagesNotLoaded === 0]);
     const missing = await one(broken, 'b');
     results.push(['a broken image trips the image check', missing.imagesNotLoaded === 1]);
     const wrapped = await one(frag, 'f', { fragment: true });
@@ -284,7 +299,8 @@ try {
 let bad = 0;
 for (const [id, s] of Object.entries(r.states)) {
   const flags = [s.overflowX && 'OVERFLOW ' + s.pastEdge.join(' '), !s.sizeOk && `SIZE ${s.imageSize} expected ${s.expected}`, s.wrapsToTop && 'WRAPS TO TOP',
-    s.imagesNotLoaded && `IMAGES NOT LOADED ${s.imagesNotLoaded}: ${s.unloadedImages.join(' ')}`].filter(Boolean);
+    s.imagesNotLoaded && `IMAGES NOT LOADED ${s.imagesNotLoaded}: ${s.unloadedImages.join(' ')}`,
+    s.scrollReachedEnd === false && 'SCROLL PASS STOPPED BEFORE THE PAGE END'].filter(Boolean);
   if (flags.length) bad++;
   console.log(`${id.padEnd(19)} ${String(s.screens).padStart(5)} screens  ${s.segments} segment(s)  fonts: ${s.fonts.join(', ') || 'none'}  ${flags.join('; ') || 'ok'}`);
 }
