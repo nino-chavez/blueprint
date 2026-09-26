@@ -26,6 +26,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
   review, uses the owner's own words as the cold review's test, and has every
   hand-off name its version and build. Nothing to migrate: the stamper does
   not install the tool, so run it from the methodology home.
+- **Bounded design-reference research stays within the declared intent**
+  (wave 122) — `/blueprint-research` can answer a specific typography,
+  composition, or interaction question without restarting the audit. The
+  advisory guidance ties inspected examples to a named screen or state, a
+  proposed adaptation, and a comparison of the result. A refit keeps its
+  approved direction and does not owe three whole-screen concepts. No reviewer
+  gate, schema, stage, or consumer migration changes. The first consumer
+  research report is complete; design benefit remains unmeasured.
 
 ### Fixed
 

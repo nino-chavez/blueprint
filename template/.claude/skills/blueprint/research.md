@@ -1,6 +1,6 @@
 ---
 name: blueprint-research
-description: Research or Diagnose work for a Blueprint initiative. Produces current-state evidence, competitive analysis, and comparables. Runs comprehensive product experience audits within the existing brownfield stages.
+description: Research or Diagnose work for a Blueprint initiative, including bounded design-reference research during an existing refit. Produces current-state evidence and comparables; runs product experience audits within the existing brownfield stages.
 ---
 
 # /blueprint-research
@@ -8,7 +8,17 @@ description: Research or Diagnose work for a Blueprint initiative. Produces curr
 Research or Diagnose work for a Blueprint initiative. Follow the selected variant's stage and output contracts.
 
 ## When to use
-At the start of an initiative, or when new competitive/market context is needed.
+At the start of an initiative, when new competitive/market context is needed, or when the current design brief leaves a specific reference question open.
+
+## Targeted design-reference research
+
+For a request such as "find typography or interaction inspiration for this refit," load `$BLUEPRINT_HOME/template/docs/methodology/judged-screen-pattern.md`, section "Targeted reference research within the declared intent." It owns the method and evidence boundaries. Resolve the existing intent, direction, brief, and relevant baseline before selecting references.
+
+Run only the bounded research needed for that question. This request does not automatically trigger the comprehensive audit below, repeat the full competitive analysis, or restart the initiative. The declared intent controls the scope; `refit` does not owe three whole-screen concepts. If diagnosis already exists, use it and put proposed adaptations into the current prescription/design brief rather than relabeling them as new observed defects.
+
+Use the host's design-resource catalog if available, then inspect original examples. Keep the research record at its existing path (or `research/design-references/` for new material) and link it from the owning brief. Apply the method's evidence and disposition checks; the full-audit coverage checks below apply only when that audit is in scope. Report which decision the research changed and any unmeasured result. With no useful reference, preserve the evidence limit rather than expanding the search indefinitely.
+
+For implementation, hand the linked findings to the existing design skill or designer. A request for inspiration alone does not authorize changing the product or approved identity.
 
 ## Product experience audit
 
