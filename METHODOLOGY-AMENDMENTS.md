@@ -4,6 +4,38 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-09-26 — Blueprint should point at decision-package for register-as-source, not restate it
+
+**Trigger**: A decision package that promotes into Blueprint carries `research-to-decision/` in as its evidence tree, and that tree now includes a register plus a generator the methodology has never heard of — `grep -rl 'research-to-decision\|decision-package' template/ docs/` returns nothing.
+
+**Scope**: Candidate for methodology promotion
+**Bucket**: template
+**Status**: Active — a proposal awaiting Nino's decision, not a shipped fix. No file outside this entry has changed, and no `template/` edit has landed, so the migration freeze is untouched.
+
+### The pattern, and what it costs to not have it
+
+A register is the single source for one set of numbered rows. It projects two ways: the document section a reader sees, and a per-owner tracker answering "who owes what, and is it done." Both derive from the same rows, so they cannot disagree.
+
+Measured on the CWC store-consolidation engagement, where the rows were hand-typed HTML instead:
+
+- Seven of twenty considerations asked the client for counts and audits against stores the vendor itself hosted. Every cell was accurate and sourced; the owner was implied by prose, so it could not be sorted or counted. A reviewer found it by asking what two unrelated cells meant — the process did not.
+- Re-assigning those seven took seven string replacements across five tables, plus a column header replaced in five places.
+- A stakeholder rebuilt the whole set by hand in a spreadsheet to see who owed what. **If someone retypes your table, the register was prose.** That is the cheapest available tell.
+
+The generator's `--check` mode is the part that makes the claim enforceable rather than aspirational: it regenerates in memory and diffs against the document on disk, so a hand edit surfaces as drift before the next generate silently overwrites it. Without it, "the register is the source" is an intention nobody can verify.
+
+### What is proposed
+
+One pointer in `template/docs/methodology/` naming the pattern, the `owner`-as-a-field rule, and `decision-package`'s `scripts/build-registers.py` — and deliberately **not** restating the procedure or vendoring the script.
+
+Blueprint should not own this. `decision-package` already does: it owns the `research-to-decision/` convention, it ships the generator as a bundled resource, and it already declares that it promotes *into* Blueprint. So a promoted initiative inherits the generator for free, and a second copy here would be the drift-with-a-delay the one-owner rule exists to prevent. Blueprint's zero references today are a real boundary, not a gap to fill by pushing the content across it.
+
+This is the second instance of that shape in seven days. See [[2026-09-19]] — blueprint-dispatch duplicating dispatch-wave, resolved the same way: pointer plus the Blueprint-only delta, not a retirement and not a duplicate. Two converging entries is the promotion threshold the amendments convention describes, so the pair may be worth authoring as one wave about when Blueprint points rather than restates.
+
+**References**:
+- `decision-package` skill (dotfiles): `82ac09c` portable generator, `381f681` the self-answerable sweep and `owner` as a field, `221cb63` reference repoint
+- Working instance (bc-shared-cart): `ee8317d` registers introduced, `56bced1` per-register projection config. Two registers, two documents, three trackers — one of which has no owner axis at all, which is what forced the config to be general rather than a second hardcoded script.
+
 ## 2026-09-19 — blueprint-dispatch should become a pointer into dispatch-wave, not be retired or left duplicated
 
 **Trigger**: blueprint-dispatch (`template/.claude/skills/blueprint/dispatch.md`) and dispatch-wave (`~/.claude/skills/dispatch-wave/SKILL.md`) fire on the same four operator phrases, and a clause-by-clause read shows dispatch-wave has gained general dispatch discipline blueprint-dispatch never received while blueprint-dispatch still carries Blueprint-only mechanics dispatch-wave does not reach.
