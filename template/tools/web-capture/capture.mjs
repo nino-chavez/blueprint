@@ -94,13 +94,14 @@ async function measure(page) {
 async function shoot(page, file, st, h, singleShot) {
   const [w] = st.vp;
   if (singleShot || h * st.dpr <= MAX_DEVICE_PX) {
-    await page.screenshot({ path: file, fullPage: true });
+    await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
     return 1;
   }
   const parts = [];
   for (let y = 0; y < h; y += SEGMENT_CSS_PX) {
     const part = `${file}.part${parts.length}.png`;
-    await page.screenshot({ path: part, fullPage: true, clip: { x: 0, y, width: w, height: Math.min(SEGMENT_CSS_PX, h - y) } });
+    await page.screenshot({ path: part, fullPage: true, animations: 'disabled',
+      clip: { x: 0, y, width: w, height: Math.min(SEGMENT_CSS_PX, h - y) } });
     parts.push(part);
   }
   magick(...parts, '-append', '+repage', file);   // +repage: a stitched image keeps the first part's canvas otherwise
@@ -115,26 +116,34 @@ function complete(file, st, m) {
   return { imageSize: [w, h], expected: want, sizeOk: w === want[0] && Math.abs(h - want[1]) <= st.dpr };
 }
 
-// Completeness, part 2: past 16,384 px the image does not repeat the page top.
-function wrapCheck(file) {
+// Completeness, part 2: a single shot taller than 16,384 px does not repeat the page top. A stitched image
+// cannot wrap, so the check runs on single shots only; there, two matching bands mean a wrap.
+function wrapCheck(file, segments) {
+  if (segments > 1) return false;
   const [w, h] = magick('identify', '-format', '%w %h', file).trim().split(' ').map(Number);
   if (h <= WRAP_PX + 400) return false;
   try {
     execFileSync('magick', ['compare', '-metric', 'AE',
       '(', file, '+repage', '-crop', `${w}x400+0+0`, '+repage', ')',
       '(', file, '+repage', '-crop', `${w}x400+0+${WRAP_PX}`, '+repage', ')', 'null:'], { stdio: 'pipe' });
-    return true;    // exit 0: identical, the capture repeats the page top
-  } catch { return false; }   // exit 1: the regions differ
+    return true;                        // exit 0: the band at 16,384 px repeats the page top
+  } catch (e) {
+    if (e.status === 1) return false;   // exit 1: the bands differ
+    throw new Error(`wrap check could not run (magick exit ${e.status}): ${String(e.stderr || e.message).trim()}`);
+  }
 }
 
 async function capture(a) {
+  if (a.fragment && /^https?:\/\//.test(a.page)) throw new Error('--artifact-fragment wraps a local fragment file; it cannot wrap a URL');
   const pw = loadPlaywright(a.playwright);
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'web-capture-'));
   const url = pageUrl(a.page, a.fragment, tmp);
   fs.mkdirSync(a.out, { recursive: true });
   const [attr, val] = a.darkAttr.split('=');
   const browser = await launch(pw);
-  const receipt = { page: a.page, url, taken: new Date().toISOString(), browser: browser.version(), states: {} };
+  const receipt = { page: /^https?:/.test(a.page) ? a.page : path.resolve(a.page),
+    wrappedIn: a.fragment ? 'artifact publish skeleton, as in capture.mjs' : null,
+    taken: new Date().toISOString(), browser: browser.version(), states: {} };
   try {
     for (const id of a.states) {
       const st = STATES[id];
@@ -144,12 +153,22 @@ async function capture(a) {
       const page = await ctx.newPage();
       await page.goto(url, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
-      if (st.explicitDark) await page.evaluate(([k, v]) => document.documentElement.setAttribute(k, v), [attr, val]);
+      if (st.explicitDark) {
+        // A class is added to the root's classes; any other attribute is set. Replacing `class` would drop
+        // the page's other root classes and capture a page no user sees.
+        await page.evaluate(([k, v]) => k === 'class' ? document.documentElement.classList.add(...v.split(/\s+/))
+          : document.documentElement.setAttribute(k, v), [attr, val]);
+      }
+      // Let the theme switch finish: finite transitions settle, bounded at two seconds.
+      await page.evaluate(() => Promise.race([
+        Promise.all(document.getAnimations().filter(an => an.effect?.getComputedTiming().iterations !== Infinity)
+          .map(an => an.finished.catch(() => {}))),
+        new Promise(r => setTimeout(r, 2000))]));
       const m = await measure(page);
       const file = path.join(a.out, `${id}.png`);
       const segments = await shoot(page, file, st, m.height, a.singleShot);
       const c = complete(file, st, m);
-      c.wrapsToTop = wrapCheck(file);
+      c.wrapsToTop = wrapCheck(file, segments);
       receipt.states[id] = { ...m, segments, ...c };
       await ctx.close();
     }
@@ -166,18 +185,19 @@ async function selftest(a) {
   const bands = Array.from({ length: 95 }, (_, i) => `<div style="height:100px;background:hsl(${i * 37 % 360} 60% 70%)">${i}</div>`).join('');
   fs.writeFileSync(tall, `<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0">${bands}</body>`);
   const results = [];
-  const r1 = await capture({ ...a, page: over, out: path.join(tmp, 'o'), states: ['phone-light'] });
-  const s1 = r1.states['phone-light'];
-  results.push(['overflow check catches 4 px past the edge (clientWidth)', s1.overflowX === true]);
-  results.push(['the innerWidth test would have missed it (why clientWidth)', s1.overflowByInnerWidth === false]);
-  const r2 = await capture({ ...a, page: tall, out: path.join(tmp, 't'), states: ['phone-light'] });
-  const s2 = r2.states['phone-light'];
-  results.push(['a 9,500 CSS px page at 2x is stitched from segments', s2.segments > 1]);
-  results.push(['the stitched image is the full size and does not wrap', s2.sizeOk && !s2.wrapsToTop]);
-  const r3 = await capture({ ...a, page: tall, out: path.join(tmp, 's'), states: ['phone-light'], singleShot: true });
-  const s3 = r3.states['phone-light'];
-  results.push(['a single shot of the same page trips the wrap check', s3.wrapsToTop === true]);
-  fs.rmSync(tmp, { recursive: true, force: true });
+  try {
+    const r1 = await capture({ ...a, page: over, out: path.join(tmp, 'o'), states: ['phone-light'] });
+    const s1 = r1.states['phone-light'];
+    results.push(['overflow check catches 4 px past the edge (clientWidth)', s1.overflowX === true]);
+    results.push(['the innerWidth test would have missed it (why clientWidth)', s1.overflowByInnerWidth === false]);
+    const r2 = await capture({ ...a, page: tall, out: path.join(tmp, 't'), states: ['phone-light'] });
+    const s2 = r2.states['phone-light'];
+    results.push(['a 9,500 CSS px page at 2x is stitched from segments', s2.segments > 1]);
+    results.push(['the stitched image is the full size and does not wrap', s2.sizeOk && !s2.wrapsToTop]);
+    const r3 = await capture({ ...a, page: tall, out: path.join(tmp, 's'), states: ['phone-light'], singleShot: true });
+    const s3 = r3.states['phone-light'];
+    results.push(['a single shot of the same page trips the wrap check', s3.wrapsToTop === true]);
+  } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
   for (const [name, ok] of results) console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}`);
   return results.every(([, ok]) => ok);
 }
@@ -187,8 +207,11 @@ if (a.help || (!a.selftest && (!a.page || !a.out))) {
   console.log('usage: capture.mjs --page <file|url> --out <dir> [--states a,b] [--dark-attr name=value] [--artifact-fragment] [--playwright <module>]\n       capture.mjs --selftest [--playwright <module>]');
   process.exit(a.help ? 0 : 2);
 }
-if (a.selftest) process.exit((await selftest(a)) ? 0 : 1);
-const r = await capture(a);
+let r;
+try {
+  if (a.selftest) process.exit((await selftest(a)) ? 0 : 1);
+  r = await capture(a);
+} catch (e) { console.error(`web-capture: ${e.message}`); process.exit(2); }
 let bad = 0;
 for (const [id, s] of Object.entries(r.states)) {
   const flags = [s.overflowX && 'OVERFLOW ' + s.pastEdge.join(' '), !s.sizeOk && `SIZE ${s.imageSize} expected ${s.expected}`, s.wrapsToTop && 'WRAPS TO TOP'].filter(Boolean);

@@ -22,8 +22,9 @@ check fails.
 - `--out` — the folder for `<state>.png` and `receipt.json`. It is created if missing.
 - `--states` — a comma-separated subset of the states below. The default is all six.
 - `--dark-attr` — the attribute that turns on the page's own dark theme. The default is `data-theme=dark`.
-- `--artifact-fragment` — wraps an HTML fragment in the skeleton a claude.ai artifact is published in,
-  so a fragment renders as it will there.
+  A `class=<name>` value adds the class to the root's classes rather than replacing them.
+- `--artifact-fragment` — wraps a local HTML fragment in the skeleton a claude.ai artifact is published in,
+  so a fragment renders as it will there. It refuses a URL.
 - `--playwright` — the path of the Playwright module to load. Without it, the script loads Playwright from
   the current project, or from `PLAYWRIGHT_MODULE`.
 - `--selftest` — builds two pages designed to trip the checks, and confirms that each check fails when it
@@ -49,11 +50,16 @@ in the brief first (`judged-screen-pattern.md` § 2b), then check this state aga
   segments of 6,000 CSS px, then joined with `magick -append +repage`.
 - **The image is the page's full size.** The width must equal the viewport, and the height must equal the
   page height, both at the state's pixel density.
-- **The image does not repeat the page top.** In any image taller than 16,384 px, the band at 16,384 px must
-  differ from the top band.
+- **The image does not repeat the page top.** In a single shot taller than 16,384 px, the band at 16,384 px
+  must differ from the top band. A joined image cannot wrap, so the check skips it. If ImageMagick cannot
+  run the comparison, the run stops with an error rather than passing.
 - **Nothing extends past the screen edge.** Overflow is measured against the document's `clientWidth`. Up
   to five elements that cross an edge are listed by tag, class and position.
 - **Loaded fonts, page length in screens, and the body's background colour** are recorded for each state.
+- **Nothing is captured mid-transition.** After the theme switch the script waits up to two seconds for
+  finite transitions to settle, and every screenshot freezes animations.
+- **The receipt names what can be reloaded:** the source file or URL, and whether it was wrapped in the
+  artifact skeleton.
 
 ### Why these checks
 
