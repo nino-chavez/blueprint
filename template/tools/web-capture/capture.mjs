@@ -32,7 +32,10 @@ function args(argv) {
     if (k === '--page') a.page = v();
     else if (k === '--out') a.out = v();
     else if (k === '--states') a.states = v().split(',');
-    else if (k === '--dark-attr') a.darkAttr = v();
+    else if (k === '--dark-attr') {
+      a.darkAttr = v();
+      if (!/^[^=\s]+=.*\S/.test(a.darkAttr || '')) throw new Error('--dark-attr needs name=value, such as data-theme=dark or class=dark');
+    }
     else if (k === '--artifact-fragment') a.fragment = true;
     else if (k === '--playwright') a.playwright = v();
     else if (k === '--single-shot') a.singleShot = true;   // disables segmenting; for the self-test only
@@ -156,7 +159,7 @@ async function capture(a) {
       if (st.explicitDark) {
         // A class is added to the root's classes; any other attribute is set. Replacing `class` would drop
         // the page's other root classes and capture a page no user sees.
-        await page.evaluate(([k, v]) => k === 'class' ? document.documentElement.classList.add(...v.split(/\s+/))
+        await page.evaluate(([k, v]) => k === 'class' ? document.documentElement.classList.add(...v.split(/\s+/).filter(Boolean))
           : document.documentElement.setAttribute(k, v), [attr, val]);
       }
       // Let the theme switch finish: finite transitions settle, bounded at two seconds.
@@ -202,7 +205,8 @@ async function selftest(a) {
   return results.every(([, ok]) => ok);
 }
 
-const a = args(process.argv.slice(2));
+let a;
+try { a = args(process.argv.slice(2)); } catch (e) { console.error(`web-capture: ${e.message}`); process.exit(2); }
 if (a.help || (!a.selftest && (!a.page || !a.out))) {
   console.log('usage: capture.mjs --page <file|url> --out <dir> [--states a,b] [--dark-attr name=value] [--artifact-fragment] [--playwright <module>]\n       capture.mjs --selftest [--playwright <module>]');
   process.exit(a.help ? 0 : 2);
