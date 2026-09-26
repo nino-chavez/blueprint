@@ -7,6 +7,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 
 const MAX_DEVICE_PX = 16000;   // Chrome paints at most 16,384 device px per screenshot; stay under it
 const SEGMENT_CSS_PX = 6000;   // clipped segment height when a page is taller than that
@@ -39,6 +40,7 @@ function args(argv) {
     else if (k === '--artifact-fragment') a.fragment = true;
     else if (k === '--playwright') a.playwright = v();
     else if (k === '--single-shot') a.singleShot = true;   // disables segmenting; for the self-test only
+    else if (k === '--no-preload') a.noPreload = true;     // skips the scroll pass; for the self-test only
     else if (k === '--selftest') a.selftest = true;
     else if (k === '-h' || k === '--help') a.help = true;
     else throw new Error(`unknown argument ${k}`);
@@ -65,23 +67,59 @@ function pageUrl(page, fragment, tmp) {
   if (/^https?:\/\//.test(page)) return page;
   let file = path.resolve(page);
   if (fragment) {
+    // The wrapper is written to a temporary folder, so a <base> keeps the fragment's relative URLs (styles,
+    // scripts, images, fonts) resolving against the fragment's own folder. The trailing slash makes the
+    // folder itself the base; without it, URLs resolve against its parent.
+    const base = `<base href="${pathToFileURL(path.dirname(file)).href}/">`;
+    const body = fs.readFileSync(file, 'utf8');
     file = path.join(tmp, 'wrapped.html');
-    fs.writeFileSync(file, ARTIFACT_SKELETON[0] + fs.readFileSync(path.resolve(page), 'utf8') + ARTIFACT_SKELETON[1]);
+    fs.writeFileSync(file, ARTIFACT_SKELETON[0].replace('<head>', '<head>' + base) + body + ARTIFACT_SKELETON[1]);
   }
-  return 'file://' + file;
+  return pathToFileURL(file).href;
+}
+
+// A full-page shot does not scroll, so content that loads on scroll (loading="lazy" images, sections an
+// IntersectionObserver reveals) is missing unless something scrolls to it first. Scroll to the end one screen
+// at a time, then back to the top. Instant, because a page with smooth scrolling would animate every step.
+async function scrollPass(page) {
+  await page.evaluate(async () => {
+    for (let i = 0; i < 60; i++) {                   // capped: an infinite-scroll page keeps growing
+      const before = window.scrollY;
+      window.scrollBy({ top: window.innerHeight, behavior: 'instant' });
+      await new Promise(r => setTimeout(r, 100));
+      if (window.scrollY === before) break;           // the end of the page
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
+}
+
+// Rendered images get up to ten seconds to finish. One that does not is reported by measure(), not waited on.
+async function settleImages(page) {
+  await page.waitForFunction(() => [...document.images].filter(i => i.getClientRects().length).every(i => i.complete),
+    null, { timeout: 10000 }).catch(() => {});
 }
 
 // Measures what a reviewer cannot see in a frame: fonts that loaded, sideways overflow against the document's
-// clientWidth (under mobile emulation window.innerWidth grows to fit overflow, so it hides it), page length.
+// clientWidth (under mobile emulation window.innerWidth grows to fit overflow, so it hides it), page length,
+// and images that never finished.
 async function measure(page) {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
     const cw = document.documentElement.clientWidth, past = [];
     for (const el of document.querySelectorAll('body *')) {
       const r = el.getBoundingClientRect();
       if (r.width && (r.right > cw + 0.5 || r.left < -0.5) && past.length < 5)
         past.push(`${el.tagName.toLowerCase()}${el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : ''} [${Math.round(r.left)},${Math.round(r.right)}]`);
     }
+    // An image counts when it is in the layout, whatever its size: an unloaded lazy image often lays out at
+    // 0 x 0. It is unfinished when still pending, or when it finished but cannot decode (a broken URL).
+    const unloaded = [];
+    for (const img of [...document.images].filter(i => i.getClientRects().length && (i.currentSrc || i.src))) {
+      if (!img.complete) { unloaded.push(img); continue; }
+      try { await img.decode(); } catch { unloaded.push(img); }
+    }
     return {
+      imagesNotLoaded: unloaded.length,
+      unloadedImages: unloaded.slice(0, 5).map(i => (i.currentSrc || i.src).split('/').pop().slice(0, 60)),
       fonts: [...new Set([...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, '')))],
       overflowX: document.documentElement.scrollWidth > cw,
       overflowByInnerWidth: document.documentElement.scrollWidth > window.innerWidth,
@@ -145,7 +183,7 @@ async function capture(a) {
   const [attr, val] = a.darkAttr.split('=');
   const browser = await launch(pw);
   const receipt = { page: /^https?:/.test(a.page) ? a.page : path.resolve(a.page),
-    wrappedIn: a.fragment ? 'artifact publish skeleton, as in capture.mjs' : null,
+    wrappedIn: a.fragment ? 'artifact publish skeleton, as in capture.mjs, with a <base> at the fragment\'s folder' : null,
     taken: new Date().toISOString(), browser: browser.version(), states: {} };
   try {
     for (const id of a.states) {
@@ -156,6 +194,7 @@ async function capture(a) {
       const page = await ctx.newPage();
       await page.goto(url, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
+      if (!a.noPreload) await scrollPass(page);   // before the settle step, so reveal-on-scroll transitions finish
       if (st.explicitDark) {
         // A class is added to the root's classes; any other attribute is set. Replacing `class` would drop
         // the page's other root classes and capture a page no user sees.
@@ -167,6 +206,8 @@ async function capture(a) {
         Promise.all(document.getAnimations().filter(an => an.effect?.getComputedTiming().iterations !== Infinity)
           .map(an => an.finished.catch(() => {}))),
         new Promise(r => setTimeout(r, 2000))]));
+      await settleImages(page);                      // after the theme switch, which can swap image sources
+      await page.evaluate(() => document.fonts.ready);
       const m = await measure(page);
       const file = path.join(a.out, `${id}.png`);
       const segments = await shoot(page, file, st, m.height, a.singleShot);
@@ -187,6 +228,15 @@ async function selftest(a) {
   fs.writeFileSync(over, '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0;padding:0 16px"><div style="margin-inline:-20px;height:40px;background:#ccc"></div>4 px past each edge</body>');
   const bands = Array.from({ length: 95 }, (_, i) => `<div style="height:100px;background:hsl(${i * 37 % 360} 60% 70%)">${i}</div>`).join('');
   fs.writeFileSync(tall, `<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0">${bands}</body>`);
+  // A real image file, not a data: URI, so a lazy image has a request to defer.
+  const head = '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0">';
+  const lazy = path.join(tmp, 'lazy.html'), broken = path.join(tmp, 'broken.html'), frag = path.join(tmp, 'frag', 'fragment.html');
+  magick('-size', '60x60', 'xc:#2a7a55', path.join(tmp, 'dot.png'));
+  fs.mkdirSync(path.dirname(frag));
+  fs.copyFileSync(path.join(tmp, 'dot.png'), path.join(tmp, 'frag', 'dot.png'));
+  fs.writeFileSync(lazy, `${head}<div style="height:9000px">spacer</div><img loading="lazy" src="dot.png" alt="lazy"></body>`);
+  fs.writeFileSync(broken, `${head}<img src="missing.png" alt="missing" width="60" height="60"></body>`);
+  fs.writeFileSync(frag, '<p>A fragment with a relative image.</p><img src="dot.png" alt="relative">');
   const results = [];
   try {
     const r1 = await capture({ ...a, page: over, out: path.join(tmp, 'o'), states: ['phone-light'] });
@@ -200,6 +250,19 @@ async function selftest(a) {
     const r3 = await capture({ ...a, page: tall, out: path.join(tmp, 's'), states: ['phone-light'], singleShot: true });
     const s3 = r3.states['phone-light'];
     results.push(['a single shot of the same page trips the wrap check', s3.wrapsToTop === true]);
+    const short = path.join(tmp, 'short.png');   // 400 px short: far past the ±dpr the size check allows
+    magick(path.join(tmp, 't', 'phone-light.png'), '-crop', `${s2.imageSize[0]}x${s2.imageSize[1] - 400}+0+0`, '+repage', short);
+    results.push(['a copy 400 px short trips the size check', complete(short, STATES['phone-light'], s2).sizeOk === false]);
+    const one = (page, out, extra = {}) => capture({ ...a, page, out: path.join(tmp, out), states: ['desktop-light'], ...extra })
+      .then(r => r.states['desktop-light']);
+    const unscrolled = await one(lazy, 'l0', { noPreload: true });
+    results.push(['without the scroll pass, a lazy image 9,000 px down stays unloaded (the fixture defers)', unscrolled.imagesNotLoaded === 1]);
+    const scrolled = await one(lazy, 'l1');
+    results.push(['the scroll pass loads that lazy image before the shot', scrolled.imagesNotLoaded === 0]);
+    const missing = await one(broken, 'b');
+    results.push(['a broken image trips the image check', missing.imagesNotLoaded === 1]);
+    const wrapped = await one(frag, 'f', { fragment: true });
+    results.push(['a wrapped fragment still loads its relative image (base URL kept)', wrapped.imagesNotLoaded === 0]);
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
   for (const [name, ok] of results) console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}`);
   return results.every(([, ok]) => ok);
@@ -218,7 +281,8 @@ try {
 } catch (e) { console.error(`web-capture: ${e.message}`); process.exit(2); }
 let bad = 0;
 for (const [id, s] of Object.entries(r.states)) {
-  const flags = [s.overflowX && 'OVERFLOW ' + s.pastEdge.join(' '), !s.sizeOk && `SIZE ${s.imageSize} expected ${s.expected}`, s.wrapsToTop && 'WRAPS TO TOP'].filter(Boolean);
+  const flags = [s.overflowX && 'OVERFLOW ' + s.pastEdge.join(' '), !s.sizeOk && `SIZE ${s.imageSize} expected ${s.expected}`, s.wrapsToTop && 'WRAPS TO TOP',
+    s.imagesNotLoaded && `IMAGES NOT LOADED ${s.imagesNotLoaded}: ${s.unloadedImages.join(' ')}`].filter(Boolean);
   if (flags.length) bad++;
   console.log(`${id.padEnd(19)} ${String(s.screens).padStart(5)} screens  ${s.segments} segment(s)  fonts: ${s.fonts.join(', ') || 'none'}  ${flags.join('; ') || 'ok'}`);
 }
