@@ -58,7 +58,8 @@ in the brief first (`judged-screen-pattern.md` § 2b), then check this state aga
   to five elements that cross an edge are listed by tag, class and position.
 - **Content that loads on scroll is loaded first.** Before measuring, the page is scrolled to its end one
   screen at a time, at most 60 screens, and back to the top. Lazy images and sections revealed on scroll load
-  that way.
+  that way. The pass scrolls the window. A page that scrolls inside an inner element instead is not scrolled,
+  and a lazy image in that element is then flagged as not loaded.
 - **Every image in the layout finished loading.** Images get up to ten seconds after the scroll pass. An image
   still pending, or one that cannot decode because its URL is broken, is counted, and up to five are listed by
   file name. An image outside the layout (`display: none`) is not counted.

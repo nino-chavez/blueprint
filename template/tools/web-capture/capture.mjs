@@ -69,11 +69,12 @@ function pageUrl(page, fragment, tmp) {
   if (fragment) {
     // The wrapper is written to a temporary folder, so a <base> keeps the fragment's relative URLs (styles,
     // scripts, images, fonts) resolving against the fragment's own folder. The trailing slash makes the
-    // folder itself the base; without it, URLs resolve against its parent.
-    const base = `<base href="${pathToFileURL(path.dirname(file)).href}/">`;
+    // folder itself the base; without it, URLs resolve against its parent. The replacement is a function
+    // because replace() reads `$&` or `$'` in a string as a pattern, and a folder name may contain them.
+    const base = `<base href="${`${pathToFileURL(path.dirname(file)).href}/`.replace(/&/g, '&amp;')}">`;
     const body = fs.readFileSync(file, 'utf8');
     file = path.join(tmp, 'wrapped.html');
-    fs.writeFileSync(file, ARTIFACT_SKELETON[0].replace('<head>', '<head>' + base) + body + ARTIFACT_SKELETON[1]);
+    fs.writeFileSync(file, ARTIFACT_SKELETON[0].replace('<head>', () => '<head>' + base) + body + ARTIFACT_SKELETON[1]);
   }
   return pathToFileURL(file).href;
 }
@@ -230,10 +231,11 @@ async function selftest(a) {
   fs.writeFileSync(tall, `<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0">${bands}</body>`);
   // A real image file, not a data: URI, so a lazy image has a request to defer.
   const head = '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0">';
-  const lazy = path.join(tmp, 'lazy.html'), broken = path.join(tmp, 'broken.html'), frag = path.join(tmp, 'frag', 'fragment.html');
+  // The fragment's folder name holds a space and `$&`, which a string replace() would read as a pattern.
+  const lazy = path.join(tmp, 'lazy.html'), broken = path.join(tmp, 'broken.html'), frag = path.join(tmp, 'frag $&', 'fragment.html');
   magick('-size', '60x60', 'xc:#2a7a55', path.join(tmp, 'dot.png'));
   fs.mkdirSync(path.dirname(frag));
-  fs.copyFileSync(path.join(tmp, 'dot.png'), path.join(tmp, 'frag', 'dot.png'));
+  fs.copyFileSync(path.join(tmp, 'dot.png'), path.join(path.dirname(frag), 'dot.png'));
   fs.writeFileSync(lazy, `${head}<div style="height:9000px">spacer</div><img loading="lazy" src="dot.png" alt="lazy"></body>`);
   fs.writeFileSync(broken, `${head}<img src="missing.png" alt="missing" width="60" height="60"></body>`);
   fs.writeFileSync(frag, '<p>A fragment with a relative image.</p><img src="dot.png" alt="relative">');
