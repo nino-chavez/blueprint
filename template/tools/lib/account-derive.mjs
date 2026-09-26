@@ -17,6 +17,8 @@ import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
 import { parseManifest, validateManifest } from './actor-output.mjs';
+import { isTemplateDoc } from './stage-model.mjs';
+import { splitFrontmatter } from './yaml-scalar.mjs';
 
 const SCHEMA = 'actor-output-boot/1';
 
@@ -28,6 +30,27 @@ function gitInfo(root) {
   } catch { return { commit: 'no-git', subjects: [] }; }
 }
 
+// The command that regenerates derived/ in THIS repo. The brief prints it, so it
+// must exist here: stamped initiatives shipped a brief that said `npm run derive`
+// with no such script (wave 109), and a Review Portal stamp has no package.json.
+export function refreshCommand(root) {
+  let scripts = {};
+  try { scripts = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).scripts ?? {}; } catch { /* no package.json */ }
+  if (/account-derive\.mjs/.test(scripts.derive ?? '')) return 'npm run derive';
+  if (existsSync(join(root, 'tools', 'lib', 'account-derive.mjs'))) return 'node tools/lib/account-derive.mjs --root .';
+  return 'node $BLUEPRINT_HOME/template/tools/lib/account-derive.mjs --root .';
+}
+
+// Entries in an account directory, leaving out hidden files and templates, so
+// the count agrees with the decisions index below.
+function entryCount(dir) {
+  return readdirSync(dir, { withFileTypes: true }).filter((e) => {
+    if (e.name.startsWith('.')) return false;
+    if (e.isFile() && e.name.endsWith('.md')) return !isTemplateDoc(e.name, readFileSync(join(dir, e.name), 'utf8'));
+    return !e.name.startsWith('_');
+  }).length;
+}
+
 function decisionsIndex(root, account) {
   const dirs = [].concat(account?.decisions ?? []).filter((d) => typeof d === 'string');
   const out = [];
@@ -35,7 +58,12 @@ function decisionsIndex(root, account) {
     const abs = resolve(root, d);
     if (!existsSync(abs)) continue;
     for (const f of readdirSync(abs).filter((f) => f.endsWith('.md')).sort()) {
-      const first = readFileSync(join(abs, f), 'utf8').split('\n').find((l) => l.startsWith('# '));
+      const text = readFileSync(join(abs, f), 'utf8');
+      if (isTemplateDoc(f, text)) continue;
+      // The title is the first H1 after the frontmatter: the decision template's
+      // frontmatter carries commented `# serves: …` lines, and an ADR copied
+      // from it keeps them.
+      const first = splitFrontmatter(text).body.split('\n').find((l) => l.startsWith('# '));
       out.push({ file: join(d, f), title: first ? first.slice(2).trim() : f });
     }
   }
@@ -55,7 +83,7 @@ export function deriveProjection(root, opts = {}) {
       if (typeof item !== 'string' || / /.test(item)) return { value: item, kind: 'note' };
       const abs = resolve(root, item);
       const exists = existsSync(abs);
-      return { path: item, exists, ...(exists && statSync(abs).isDirectory() ? { entries: readdirSync(abs).filter((f) => !f.startsWith('.')).length } : {}) };
+      return { path: item, exists, ...(exists && statSync(abs).isDirectory() ? { entries: entryCount(abs) } : {}) };
     });
   const actors = (m.actors ?? m.viewers ?? []).map((a) => ({
     id: a.id, kind: a.kind, evidence: a.evidence?.status,
@@ -67,6 +95,7 @@ export function deriveProjection(root, opts = {}) {
     initiative: m.initiative ?? 'unnamed',
     generated_at: new Date().toISOString(),
     as_of: git.commit,
+    refresh: refreshCommand(root),
     recent: git.subjects,
     account, actors, outputs,
     decisions: decisionsIndex(root, m.account),
@@ -84,8 +113,12 @@ export function renderRecoveryBrief(proj) {
   const L = [];
   L.push(`# ${proj.initiative} — recovery brief`);
   L.push('');
-  L.push(`Derived ${proj.generated_at} at commit \`${proj.as_of}\` — rerun \`npm run derive\` to refresh; never hand-edit.`);
+  L.push(`Derived ${proj.generated_at} at commit \`${proj.as_of}\` — rerun \`${proj.refresh}\` to refresh; never hand-edit.`);
   L.push('');
+  if (proj.as_of === 'no-git') {
+    L.push(`This brief was derived before the first git commit, so it records no commit. Run \`${proj.refresh}\` again after the first commit.`);
+    L.push('');
+  }
   L.push(`## Where things stand — manifest verdict: ${proj.verdict.state}`);
   L.push('');
   if (proj.verdict.errors.length) { L.push('Blocked:'); for (const e of proj.verdict.errors) L.push(`- ${e}`); }
@@ -142,6 +175,12 @@ function selftest() {
   const fx = mkdtempSync(join(tmpdir(), 'bp-account-derive-'));
   mkdirSync(join(fx, 'decisions'), { recursive: true });
   writeFileSync(join(fx, 'decisions', '01-thing.md'), '# Decision 01 — pick the thing\nbody');
+  // The stamped decision template, an ADR copied from it that kept its commented
+  // frontmatter lines, and a document that marks itself a template.
+  const templateFrontmatter = (adr) => `---\nadr: ${adr}\n# serves: none   # ONLY for infrastructure/provenance\n---\n\n`;
+  writeFileSync(join(fx, 'decisions', '_TEMPLATE.md'), `${templateFrontmatter('NNNN')}# ADR-NNNN — <decision title>\n`);
+  writeFileSync(join(fx, 'decisions', '02-copied.md'), `${templateFrontmatter('0002')}# ADR-0002 — keep the comments\n`);
+  writeFileSync(join(fx, 'decisions', '03-marked.md'), '---\ntemplate: true\n---\n# A marked template\n');
   writeFileSync(join(fx, 'HANDOFF.md'), 'state');
   writeFileSync(join(fx, 'actor-output.yml'), `
 initiative: fixture
@@ -170,13 +209,29 @@ outputs:
   const { proj, outDir } = derive(fx);
   ok(proj.schema === SCHEMA && proj.initiative === 'fixture', 'projection carries schema + initiative');
   ok(proj.verdict.state === 'PENDING' && proj.verdict.pendings.length === 1, 'verdict embedded (planned-only → PENDING)');
-  ok(proj.account.decisions[0].exists && proj.account.decisions[0].entries === 1, 'account resolved with entry counts');
-  ok(proj.decisions.length === 1 && proj.decisions[0].title.includes('pick the thing'), 'decisions indexed by title');
+  ok(proj.account.decisions[0].exists && proj.account.decisions[0].entries === 2, 'account entry count leaves templates out');
+  ok(proj.decisions.map((d) => d.file).join() === 'decisions/01-thing.md,decisions/02-copied.md', 'decisions index skips _TEMPLATE.md and template: true');
+  ok(proj.decisions[0].title.includes('pick the thing'), 'decisions indexed by title');
+  ok(proj.decisions[1].title === 'ADR-0002 — keep the comments', 'title is the H1, not a commented frontmatter line');
   const brief = readFileSync(join(outDir, 'recovery-brief.md'), 'utf8');
   ok(brief.includes('manifest verdict: PENDING') && brief.includes('PENDING is not green'), 'brief leads with the honest verdict');
   ok(brief.includes('never hand-edit'), 'brief declares itself derived');
+  ok(brief.includes(`rerun \`${proj.refresh}\` to refresh`), 'brief names the projection\'s refresh command');
   const packet = JSON.parse(readFileSync(join(outDir, 'boot-packet.json'), 'utf8'));
   ok(packet.schema === SCHEMA && packet.as_of != null, 'boot packet is schema-stamped JSON with as_of');
+  // the refresh command is one that exists in the repo being derived
+  ok(refreshCommand(fx) === 'node $BLUEPRINT_HOME/template/tools/lib/account-derive.mjs --root .', 'refresh: no script, no local copy → methodology-home form');
+  mkdirSync(join(fx, 'tools', 'lib'), { recursive: true });
+  writeFileSync(join(fx, 'tools', 'lib', 'account-derive.mjs'), '');
+  ok(refreshCommand(fx) === 'node tools/lib/account-derive.mjs --root .', 'refresh: stamped copy → node command');
+  writeFileSync(join(fx, 'package.json'), JSON.stringify({ scripts: { derive: 'node tools/state-derive/index.mjs' } }));
+  ok(refreshCommand(fx) === 'node tools/lib/account-derive.mjs --root .', 'refresh: a derive script that runs something else is not trusted');
+  writeFileSync(join(fx, 'package.json'), JSON.stringify({ scripts: { derive: 'node tools/lib/account-derive.mjs --root .' } }));
+  ok(refreshCommand(fx) === 'npm run derive', 'refresh: an account-derive npm script → npm run derive');
+  // a brief derived before the first commit says so; one with a commit does not
+  const firstCommitLine = 'derived before the first git commit';
+  ok(renderRecoveryBrief({ ...proj, as_of: 'no-git' }).includes(firstCommitLine), 'no-git brief asks for a rerun after the first commit');
+  ok(!renderRecoveryBrief({ ...proj, as_of: 'abc1234' }).includes(firstCommitLine), 'brief with a commit has no first-commit line');
   // rerunnable: second derivation overwrites cleanly
   derive(fx);
   ok(existsSync(join(outDir, 'boot-packet.json')), 'derivation is rerunnable');

@@ -44,6 +44,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 import { readTopLevelYamlScalar, stripYamlComment } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'screen-composition-reviewer';
 const REVIEW_DIR = path.join('docs', 'evidence', 'screen-reviews');
@@ -487,7 +488,7 @@ export default async function review({ targetDir, blueprintYml, strict } = {}) {
 // inline fixtures and exits non-zero on any failed assertion. Matches the libs'
 // guarded-main pattern.
 // ─────────────────────────────────────────────────────────────────────────────
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
 
   let passed = 0;

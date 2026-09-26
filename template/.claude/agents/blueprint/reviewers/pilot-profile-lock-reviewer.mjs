@@ -38,6 +38,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'pilot-profile-lock-reviewer';
 
@@ -441,7 +442,7 @@ export default async function review({ targetDir }) {
 // `node pilot-profile-lock-reviewer.mjs` exercises the parser + the gate against
 // inline fixtures and exits non-zero on the first failed assertion. Matches the
 // libs' guarded-self-test pattern.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const { mkdtempSync, writeFileSync, mkdirSync, rmSync } = await import('node:fs');
   const os = await import('node:os');
   let failures = 0;

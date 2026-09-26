@@ -15,13 +15,181 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
-- `/blueprint-research` can run a bounded design-reference search within an
-  existing initiative. Advisory guidance connects inspected examples to a
-  specific screen/state, proposed adaptation, and comparison of the result.
-  A refit retains its approved direction and does not gain a three-concept
-  requirement. No reviewer gate, schema, stage, or consumer migration changes.
-  The first consumer research report is complete; design benefit remains
-  unmeasured.
+### Added
+
+- **Capture a web page for review, and prove the capture is complete**
+  (wave 120) — `template/tools/web-capture/capture.mjs` shoots a page in six
+  states, joins a tall page from segments, and flags an image that is the
+  wrong size, repeats the page top, or has content past the screen edge.
+  `--selftest` makes each check fail once. The judged-screen pattern now asks
+  the brief for a theme policy and a length budget, checks captures before
+  review, uses the owner's own words as the cold review's test, and has every
+  hand-off name its version and build. Nothing to migrate: the stamper does
+  not install the tool, so run it from the methodology home.
+- **Bounded design-reference research stays within the declared intent**
+  (wave 122) — `/blueprint-research` can answer a specific typography,
+  composition, or interaction question without restarting the audit. The
+  advisory guidance ties inspected examples to a named screen or state, a
+  proposed adaptation, and a comparison of the result. A refit keeps its
+  approved direction and does not owe three whole-screen concepts. No reviewer
+  gate, schema, stage, or consumer migration changes. The first consumer
+  research report is complete; design benefit remains unmeasured.
+
+### Fixed
+
+- **`web-capture` no longer passes a capture with content missing below the
+  fold** (wave 121) — a full-page shot does not scroll, so lazy images and
+  sections revealed on scroll could be absent while every check passed. The
+  tool now scrolls each page to its end and back in the state's own theme,
+  flags a pass that stops short of the end, and flags any image in the layout
+  that did not finish loading. `--artifact-fragment` keeps the fragment's
+  relative URLs pointing at its own folder, and the self-test now makes the
+  size check fail once, as wave 120 claimed it did. Nothing to migrate.
+- **The SessionStart hook says when it cannot find the global-rules docs**
+  (wave 119) — when the two rules docs were missing from the methodology home,
+  the hook skipped its check of `~/.claude/CLAUDE.md` without a word, so a
+  check that never ran looked like one that passed. That silence hid the wrong
+  path wave 116 fixed. The hook now adds one line saying the check did not run
+  and naming the folder it looked in, and it still exits 0. The "Global rules
+  not installed" warning is unchanged, and `--self-test` now runs the hook
+  through each case. The hook runs from wherever you copied it: re-copy
+  `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/`
+  and to each initiative's `.claude/hooks/`.
+- **A fresh Initiative Portal stamp passes `blueprint doctor`** (wave 118) —
+  doctor's terminology check failed on a new Initiative Portal because the
+  stamped archaeology chat, `apps/portal/src/components/ArchaeologyChat.tsx`,
+  used the words "payload" and "endpoint". The label a reader sees in its source
+  drawer now reads "raw data", and a code comment and a variable no longer use
+  either word. The stamper copies this file once, so if your copy still uses
+  those words, doctor keeps failing until you make the same three edits: the
+  `payload` label becomes `raw data`, the `payload` variable becomes `parsed`,
+  and the comment's "timeline endpoint" becomes "/timeline route". The same
+  applies if you copied the archaeology drop-in from `tools/archaeology/web/`.
+  If your `blueprint.yml` sets a `product_type` that names a developer tool,
+  those words are allowed and nothing fails. Review Portal initiatives are
+  unaffected.
+- **A new initiative no longer gets your machine's `.DS_Store` or Python cache
+  files** (wave 117) — the stamper copied the methodology's folders as they sat
+  on disk, so a stamp from a Blueprint checkout carried Finder's `.DS_Store`
+  files and Python's `__pycache__/*.pyc`. It now skips anything with those
+  names, and any `.pyc`, whether it runs from a checkout or from the npm
+  package. Two canonical reviewer specs also lose three lines of trailing
+  whitespace, so a fresh stamp passes `git diff --check`. If an existing
+  initiative received these files, they are safe to delete.
+- **The `state-derive` and global-rules pointers name paths that exist** (wave
+  116) — audit discipline said to use `tools/state-derive/`, which the stamper
+  never installs. Running the template's copy by absolute path derives the
+  template, writes its output there, and exits 0. Copy the tool into the
+  initiative instead: from its root,
+  `cp -R "$BLUEPRINT_HOME/template/tools/state-derive" tools/`, add
+  `tools/state-derive/catalog/*.ts`, then run `npx tsx tools/state-derive/index.ts`.
+  The global-rules block in `template/CLAUDE.md` pointed at
+  `$BLUEPRINT_HOME/docs/methodology/global-rules/`; the files live under
+  `template/`. The SessionStart hook checked the same wrong path, so it never
+  warned. It now warns when `~/.claude/CLAUDE.md` lacks the block. If you
+  installed the block, delete it from `BEGIN` through `END` and run the install
+  command again. Restamp, or copy the hook into `.claude/hooks/`, to get the check.
+- **The SessionStart hook finds an npm-installed CLI** (wave 115) — the hook's
+  last fallback looked under `npm root -g` for `@nino-chavez/blueprint-cli`, a
+  package that was never published. A session backed only by
+  `npm install -g @nino-chavez-labs/blueprint-cli` therefore got no methodology
+  context. The hook now looks for the published name, and its `--self-test`
+  fails if the hook and `package.json` disagree. The hook runs from wherever you
+  copied it, so a methodology pull does not update it: re-copy
+  `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/` and
+  to each initiative's `.claude/hooks/`.
+- **A `cited-url-lint` allowlist entry can end in a comment** (wave 114) — an
+  entry followed by a comment, such as `allow-url:<url>  # requires auth`, kept
+  the comment as part of the entry. It matched nothing, so the URL or file was
+  still checked. The template's own examples used that form. A `#` at the start
+  of a line or after whitespace now starts a comment. A `#` inside a URL is
+  kept, so `allow-url:https://host/page#section` still matches only that URL.
+  No change is needed unless a listed file path contains whitespace followed
+  by `#`.
+- **Every stamp carries the reviewer runner, and it skips portal gates that
+  cannot apply** (wave 113) — Initiative Portal stamps now get
+  `tools/run-reviewers.mjs` and `npm run reviewers`, like research and Review
+  Portal stamps. For non-research variants the runner used to run all three
+  portal conformance reviewers, so a fresh Initiative Portal stamp got 11 BLOCKs
+  from Review Portal gates. It now runs the portal reviewers `blueprint doctor`
+  runs, decided by one shared helper, `tools/lib/portal-reviewer-routing.mjs`.
+  For an existing initiative, copy the runner to `tools/` and the helper to
+  `tools/lib/`, and add the `reviewers` script by hand: the stamper never
+  overwrites an existing `package.json`. See decisions/11.
+- **A fresh research stamp no longer reports Stages 0, 1 and 5 complete**
+  (wave 112) — the stamper writes the source catalog, the personas file and the
+  decision memo as templates you fill in place, and `blueprint stage status`
+  counted each one as done on day one. Each of those stages now waits for real
+  content: an asset row in the catalog or an asset file beside it, a real persona
+  in place of the example, and the memo's own title and "The ask" line. Until
+  then the gate names the file and the line still holding a template placeholder.
+  Filled files read as before, and so does every other gate. Nothing to do in
+  your initiative: `stage status` loads the methodology's stage model.
+- **Self-tests and scripts no longer pass by never running** (wave 111) — the
+  release gate had passed five library self-tests since July without running
+  them: it gave them a flag they don't read, and counted their silent exit as a
+  pass. `npm run test:core` now passes a step only if it prints its own pass
+  line, and fails if a library self-test has no step. Separately, scripts
+  compared their own path as text, so from a path containing a space, or when
+  invoked by an absolute path that runs through a symlink, they skipped their
+  CLI or self-test and exited 0. They now compare real paths, through the new
+  `tools/lib/invoked-directly.mjs`. If you copy reviewers into an initiative by
+  hand, copy that file too. A CI step that ran one of these scripts that way was
+  passing without running; it now runs, and may fail on problems it had hidden.
+- **The citation-lint instructions work from an initiative** (wave 110) — the
+  fact-check reviewer, the citation-correctness pattern and audit discipline
+  said to run `tools/cited-url-lint/`, which the stamper never creates. They
+  now give
+  `npx tsx "$BLUEPRINT_HOME/template/tools/cited-url-lint/index.ts" <dir> --fail-on-empty`,
+  run from the initiative root, and say that a scan that checked nothing is
+  not a pass. Check that the first `cited-url-lint:` line names the directory
+  you meant: a copy older than wave 108 prints `clean` over the wrong tree.
+  Copy the updated `fact-check-loop-reviewer.md` into your
+  `.claude/agents/blueprint/reviewers/`, or restamp.
+- **Research stamps get scripts that run, and the decision template stops
+  counting as a decision** (wave 109) — a research stamp's `package.json`
+  carried portal scripts that failed with "No workspaces found". It now has only
+  `npm run derive` and `npm run reviewers`, and portal stamps gain
+  `npm run derive`. The recovery brief names a refresh command that exists in
+  your repo, and says to rerun it if it was written before your first commit.
+  `decisions/_TEMPLATE.md` no longer appears in the decisions list or counts
+  toward Stage 3. The stamper never overwrites an existing `package.json`, so
+  fix an earlier research stamp by hand and refresh its `tools/lib/`. See wave
+  109 for the exact lines.
+- **`cited-url-lint` can no longer print "clean" over nothing** (wave 108) — run
+  from an initiative, a relative directory resolved inside the template, so the
+  lint scanned the wrong tree, found no citations, and passed. Relative paths now
+  resolve against the working directory, and the summary names the directory it
+  scanned. A scan that checks nothing says `nothing was checked`, and
+  `--fail-on-empty` makes that exit 3. Unknown flags exit 2, and a failed HEAD is
+  retried as GET. Run it from the project root: the allowlist and report paths
+  follow the working directory too.
+- **Stamped portals pin their typecheck toolchain** (wave 106) — a new
+  `@astrojs/language-server` release turned a freshly stamped portal's
+  `astro check` red with no change on our side. `astro`, `@astrojs/check` and
+  `typescript` are now exact versions, and the stamper writes an `overrides`
+  block pinning the transitive checker. Already-stamped initiatives do not get
+  the block on restamp: add it to your root `package.json` by hand, or commit a
+  lockfile. See wave 106 for the exact lines.
+
+### Changed
+
+- **Tier 0 stamps no portal** (wave 113) — with a product variant, `--tier=0`
+  now stamps the reviewer layer, `blueprint.yml`, the reader contract and the
+  actor-output manifest, and no `apps/portal`, `packages/` or
+  `blueprint/portal`. That matches `docs/portal-and-tier-ladder.md`: Tier 0
+  is pre-portal. The `package.json` has only `derive` and `reviewers`, so
+  there is nothing to install. To move to Tier 1, re-run the stamper with
+  `--tier=1`. It now warns when the `package.json` or `tier:` it keeps needs
+  a hand edit; see "Moving from Tier 0 to Tier 1" in the tier-ladder doc. A
+  research stamp given `--logo` no longer exits 2. An existing Tier 0
+  initiative keeps the portal it was stamped with, and the ladder counts it as
+  Tier 1 or above. See decisions/11.
+- **`/blueprint-dispatch` points at `dispatch-wave`** (wave 105) — the general
+  parallel-dispatch workflow now has one owner, the public `dispatch-wave`
+  skill. The stamped skill keeps its name and trigger, a one-screen outline, and
+  every clause Blueprint makes stricter: the overlap checker stays mandatory.
+  No action needed; an already-stamped copy keeps working as it is.
 
 ## 0.8.0
 

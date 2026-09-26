@@ -14,6 +14,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 async function read(p) { try { return await fs.readFile(p, 'utf8'); } catch { return null; } }
 async function exists(p) { try { await fs.access(p); return true; } catch { return false; } }
@@ -180,7 +181,7 @@ export default async function review({ targetDir, blueprintYml }) {
 }
 
 // Self-test (fires only on direct `node persona-fit-reviewer.mjs`, not on import).
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'pfr-'));
   const mk = async (rel, body) => { await fs.mkdir(path.dirname(path.join(tmp, rel)), { recursive: true }); await fs.writeFile(path.join(tmp, rel), body); };

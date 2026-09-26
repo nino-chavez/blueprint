@@ -239,6 +239,8 @@ Use prior audits as leads to recheck, never as current acceptance receipts.
 | Accessibility and web/app usability | What works under keyboard, touch, zoom/large text, contrast, reduced motion, and assistive technology? Check focus order/visibility, names/roles/states, errors, dialogs, target use, and alternatives to color or gestures. Identify applicable criteria and untested areas. |
 | Domain and comparable products | How do live comparable products solve the same jobs and states? Which patterns transfer, which would harm this product, and why? |
 
+**A source-grounded principle scan is one way to run the Gestalt/hierarchy and visual-system tracks.** Take principles from a named, cited source — a design-teaching video, a written standard, a prior audit — with timestamps or section references, and pair each principle with the product's own screen rather than a paraphrase of the source's general advice. Rank findings by the audience's actual question on that screen, not by which fix is easiest, and record which principles the screen already meets, not only the gaps. Two consumers ran this technique against a live site before any redesign work started; in both cases it produced direct fixes as well as evidence for a later `rethink` (`redesign-evaluation-pattern.md` § 8 and § 9 carry the citations). It is a Diagnose-stage technique, not a Stage-2 concept exercise — it does not substitute for the divergent concepts `judged-screen-pattern.md` § 2c requires when the intent is `rethink`.
+
 Use existing review contracts where they fit:
 [screen composition](../../.claude/agents/blueprint/reviewers/screen-composition-reviewer.md)
 for rendered judgment,

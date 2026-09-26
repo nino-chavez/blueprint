@@ -5,62 +5,35 @@ description: Orchestrate a parallel agent dispatch wave when a planning thread h
 
 # /blueprint-dispatch
 
-Orchestrate a parallel agent dispatch wave when a planning thread has produced multiple inspectable artifact briefs whose file scopes don't overlap. Codifies the wave-dispatch workflow — brief construction, model selection, inline orchestrator work during wait, post-flight cross-review for inter-artifact consistency, and commit-and-push following the project's dev-push pattern.
+Orchestrate a parallel agent dispatch wave when a planning thread has produced multiple inspectable artifact briefs whose file scopes don't overlap.
 
-Pattern doc: this file. Worked example: blueprint-example commit `09036602` (2026-05-27) — three Sonnet agents drafted platform-shims feasibility + sibling strategy doc + methodology amendment in parallel while the orchestrator wrote a parallel ingester.
+The general workflow is owned by the `dispatch-wave` skill: the pre-flight checks, the mandatory brief fields, model selection, dispatch mechanics, inline work during the wait, post-flight cross-review, and commit shape. Read it there, not here:
 
-## When to use
+- Installed: invoke `dispatch-wave`.
+- Not installed: <https://github.com/nino-chavez/agentic-ways-of-working/blob/main/skills/dispatch-wave/SKILL.md>
 
-Trigger when ALL FOUR pre-flight conditions hold:
+This file holds only what a Blueprint initiative adds or makes stricter. Where the two disagree, this file wins inside a Blueprint initiative.
 
-1. **≥2 artifacts** with target file paths named in-thread
-2. **Specs are complete**: each artifact has clear goal, output structure, and tonal model. Vague briefs ("implement X") produce shallow generic work — finish the specs first.
-3. **File scopes don't overlap**: run `template/tools/parallel-dispatch-check/check.sh` to verify mechanically before dispatching.
-4. **Execution doesn't need orchestrator synthesis mid-flight**: if an artifact needs judgment only the orchestrator can make, dispatch it to Opus or do inline.
+Worked example: blueprint-example commit `09036602` (2026-05-27) — three Sonnet agents drafted platform-shims feasibility + sibling strategy doc + methodology amendment in parallel while the orchestrator wrote a parallel ingester. `dispatch-wave` cites the same example.
 
-Skip when:
-- Single artifact (just write it).
-- Briefs aren't complete (finish them first).
-- File scopes overlap (dispatch serially or narrow scopes).
-- The work is a few minutes of mechanical pattern-matched editing.
+## What Blueprint makes stricter
 
-## What it does
+1. **The overlap check is mandatory, not conditional.** `dispatch-wave` says to run a project's overlap tool if one exists and otherwise check by inspection. A Blueprint initiative always has one. Run `template/tools/parallel-dispatch-check/check.sh` with each agent's file globs as separate args before every dispatch. Exit 0 → safe; exit 1 → switch to serial or narrow scopes.
+2. **Judgment an agent can carry goes to Opus; judgment only the orchestrator can make stays inline.** If an artifact needs judgment only the orchestrator can make, dispatch it to Opus or do inline. `dispatch-wave` names only the inline option at pre-flight.
+3. **Reporting follows the output-discipline rule.** Each agent reports the synthesized result plus pointers (file path, line count, cross-refs they couldn't resolve, judgment calls), never the corpus it read. Canonical rule + tier dial: `template/docs/methodology/agent-output-discipline-pattern.md`.
+4. **Push to the integration branch** (`dev` for blueprint-example and similarly-shaped projects) per the project's pattern-1 local-integration workflow. Fast-forward from remote before committing if behind. Include the `Co-Authored-By:` footer per the project CLAUDE.md template.
 
-1. **Run the pre-flight checklist** — confirm all four trigger conditions above. If any fails, redirect to inline or serial dispatch.
+## The workflow in one screen
 
-2. **Run `template/tools/parallel-dispatch-check/check.sh`** with each agent's file globs as separate args. Exit 0 → safe; exit 1 → switch to serial or narrow scopes.
+For when `dispatch-wave` is not to hand. Each line is a step it specifies in full.
 
-3. **Construct briefs with seven mandatory fields** per artifact. Agents have zero context from the orchestrator's thread — missing fields produce drift.
-
-   1. **Goal + audience** — what the artifact is, who reads it cold
-   2. **READ-FIRST sources** — absolute paths the agent mirrors for tone/structure. Orchestrator reads these first to confirm they exist and match memory.
-   3. **Full output structure** — every section, every enumeration item, every required cross-link. Embed the analysis; don't say "include the analysis."
-   4. **Cross-references** — including forward-links to files being written in parallel. Mark them as forward-links so the agent doesn't try to verify.
-   5. **Don't-do list** — no marketing copy, no emojis, no padding, no inflation to hit length targets, plus project-specific don'ts from CLAUDE.md.
-   6. **Voice + length constraints** — match the tonal model from READ-FIRST; give a natural-fit range, not a target.
-   7. **Reporting expectations** — what the agent reports back: the synthesized result plus pointers (file path, line count, cross-refs they couldn't resolve, judgment calls), never the corpus it read. This is what makes post-flight cross-review possible. Canonical rule + tier dial: `template/docs/methodology/agent-output-discipline-pattern.md`.
-
-4. **Select model per artifact**:
-   - **Sonnet** — execution-from-complete-brief. Markdown rendering, mirror-coding, mechanical work with clear acceptance criteria. Default.
-   - **Opus** — judgment-bearing dispatch. Strategic synthesis the brief can't carry, ambiguous trade-offs. Override, not baseline.
-
-5. **Create tasks** with `TaskCreate`: one per artifact + one for orchestrator side-work + one for cross-review + one for commit-and-push. Mark each artifact task `in_progress` with the agent ID as owner before dispatching.
-
-6. **Launch parallel agents in a single message** with multiple `Agent` tool calls and `run_in_background: true`. Don't poll for completion — wait for the notification.
-
-7. **Run bounded inline work during the wait** — mechanical mirror-edits, workflow/config updates that artifacts depend on, reading reference files for cross-review. Don't take on work that overlaps an agent's file scope. Don't start synthesis that contradicts an in-flight brief.
-
-8. **Post-flight cross-review (mandatory)** when all agents return:
-   - Compare **shared content** embedded in multiple briefs — agents will sometimes invent details that don't match each other.
-   - Verify **forward-link targets** now exist and resolve.
-   - Spot-check **frontmatter conformance** against project lint rules.
-   - Run any **mechanical lint** the project provides (frontmatter-lint, hive-meta-validator, schema validators).
-
-9. **Commit and push** following project conventions:
-   - Stage **specific files** with `git add path1 path2` — never `git add -A`.
-   - Commit subject in the project's conventional-commits format; body lists what each new file does.
-   - Include `Co-Authored-By:` footer per project CLAUDE.md template.
-   - Push to integration branch (`dev` for blueprint-example and similarly-shaped projects) per the project's pattern-1 local-integration workflow. Fast-forward from remote before committing if behind.
+1. Pre-flight: ≥2 artifacts with named target files; specs complete; file scopes disjoint (item 1 above); no orchestrator synthesis needed mid-flight (item 2 above); the brief set matches what was actually asked.
+2. One self-contained brief per artifact: goal and audience, READ-FIRST sources, full output structure, cross-references with forward-links marked, a don't-do list, voice and length, reporting expectations (item 3 above), and cleanup of anything the agent starts.
+3. Sonnet for execution from a complete brief; Opus for judgment-bearing work. Sonnet is the default.
+4. Make the wave visible as tasks, then launch all agents in a single message, in the background. Do not poll.
+5. Do bounded inline work during the wait. Nothing that overlaps an agent's file scope or contradicts an in-flight brief.
+6. Post-flight cross-review is mandatory: compare shared content across briefs, resolve forward-links, check frontmatter and run the project's lints, and verify each agent's file scope and cleanup against the repo, not against its report.
+7. Commit at end of wave with specific files staged by name (never `git add -A`), then push (item 4 above).
 
 ## Output
 
@@ -86,7 +59,9 @@ Consider proactively suggesting this skill when:
 
 ## Reference
 
+- `dispatch-wave` — owner of the general workflow (link above)
 - `template/tools/parallel-dispatch-check/check.sh` — pre-flight file-scope overlap detector (run before every dispatch)
 - `template/tools/wave-digest/digest.mjs` — post-wave filter for the methodology log
 - `template/methodology/handoff/handoff-template.md` — the cross-session handoff format; precursor to multi-agent dispatch
+- `template/docs/methodology/agent-output-discipline-pattern.md` — what an agent reports back, and the tier dial
 - blueprint-example `09036602` (2026-05-27) — canonical worked example: three Sonnet agents in parallel + orchestrator inline ingester work + post-flight cross-review caught one §C reclassification mismatch + commit-and-push to dev. Brief shape visible in the orchestrator's parent session.

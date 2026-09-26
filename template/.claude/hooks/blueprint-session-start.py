@@ -27,6 +27,10 @@ path `~/Workspace/dev/tools/blueprint`, else an npm-installed
 Output protocol: Claude Code SessionStart hooks emit a JSON object on stdout
 with a `hookSpecificOutput.additionalContext` field. The content of that field
 is injected into the session as a user-visible system reminder.
+
+`--self-test` checks the npm fallback against the root package.json `name`,
+then runs the hook through the global-rules cases against this source's own
+rules docs; `npm run test:core` runs it.
 """
 from __future__ import annotations
 
@@ -41,6 +45,10 @@ CANONICAL_DOCS = [
     "docs/variant-selection.md",
     "docs/portal-and-tier-ladder.md",
 ]
+
+# The published npm package: the root package.json `name`. `--self-test` fails
+# when the two disagree.
+NPM_PACKAGE = "@nino-chavez-labs/blueprint-cli"
 
 
 def find_blueprint_yml(start: Path) -> Path | None:
@@ -100,7 +108,7 @@ def _npm_package_home() -> Path | None:
         return None
     if not root:
         return None
-    return Path(root) / "@nino-chavez" / "blueprint-cli"
+    return Path(root) / NPM_PACKAGE
 
 
 def _candidate_homes(initiative_root: Path | None):
@@ -148,19 +156,24 @@ def load_canonical(blueprint_home: Path) -> list[tuple[str, str]]:
     return out
 
 
-def _verify_global_rules(blueprint_home: Path) -> tuple[bool, str]:
+def _verify_global_rules(blueprint_home: Path) -> str:
     """Verify methodology-shaped global rules are installed.
 
-    Returns (all_present, warning_msg). all_present=True if both rules are
-    installed in ~/.claude/CLAUDE.md. warning_msg is empty if OK, else contains
-    the installation reminder.
+    Returns the line main() adds to the session context: a warning when
+    ~/.claude/CLAUDE.md lacks the rules block, a note when the two rules docs
+    are missing from the methodology home, or "". The note names where the
+    hook looked: returning nothing there hid a wrong path from wave 74 to wave
+    116. An unreadable ~/.claude/CLAUDE.md still returns "" (wave 119 follow-up).
     """
-    # Check if the two global-rules docs exist in the blueprint home
-    audit_doc = blueprint_home / "docs" / "methodology" / "global-rules" / "audit-discipline.md"
-    decision_doc = blueprint_home / "docs" / "methodology" / "global-rules" / "decision-bias.md"
-    docs_present = audit_doc.is_file() and decision_doc.is_file()
-    if not docs_present:
-        return False, ""  # Docs should be present in blueprint home; skip warning if not
+    rules_dir = blueprint_home / "template" / "docs" / "methodology" / "global-rules"
+    missing = [n for n in ("audit-discipline.md", "decision-bias.md") if not (rules_dir / n).is_file()]
+    if missing:
+        return (
+            f"**Global-rules check did not run** — missing from `{rules_dir}`: "
+            + ", ".join(f"`{n}`" for n in missing)
+            + ". Nothing checked `~/.claude/CLAUDE.md` for the Blueprint rules block; "
+            "update the methodology source or point `BLUEPRINT_HOME` at a complete copy."
+        )
 
     # Check if the marker block exists in ~/.claude/CLAUDE.md
     claude_md = Path.home() / ".claude" / "CLAUDE.md"
@@ -174,7 +187,7 @@ def _verify_global_rules(blueprint_home: Path) -> tuple[bool, str]:
             "    EOF\n\n"
             "Or consult `$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
         )
-        return False, msg
+        return f"**Global rules not installed** — {msg}"
 
     try:
         content = claude_md.read_text(encoding="utf-8")
@@ -189,11 +202,11 @@ def _verify_global_rules(blueprint_home: Path) -> tuple[bool, str]:
                 "    EOF\n\n"
                 "Or consult `$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
             )
-            return False, msg
+            return f"**Global rules not installed** — {msg}"
     except Exception:
         pass
 
-    return True, ""
+    return ""
 
 
 def main() -> int:
@@ -220,9 +233,9 @@ def main() -> int:
                             "`$BLUEPRINT_HOME`, a `methodology_home:` field in this "
                             "initiative's blueprint.yml, the local dev path "
                             "`~/Workspace/dev/tools/blueprint`, then an npm-installed "
-                            "`@nino-chavez-labs/blueprint-cli`. None contained METHODOLOGY.md.\n\n"
+                            f"`{NPM_PACKAGE}`. None contained METHODOLOGY.md.\n\n"
                             "Fix: `export BLUEPRINT_HOME=/path/to/blueprint`, or "
-                            "`npm install -g @nino-chavez-labs/blueprint-cli`, or add "
+                            f"`npm install -g {NPM_PACKAGE}`, or add "
                             "`methodology_home: <path>` to blueprint.yml.\n"
                         ),
                     }
@@ -232,7 +245,7 @@ def main() -> int:
         return 0
 
     docs = load_canonical(blueprint_home)
-    _, rules_warning = _verify_global_rules(blueprint_home)
+    rules_line = _verify_global_rules(blueprint_home)
 
     header = (
         "# Blueprint canonical context (auto-loaded at SessionStart)\n\n"
@@ -246,8 +259,8 @@ def main() -> int:
         "the change lands in those files, not in this consumer session's notes.\n\n"
     )
 
-    if rules_warning:
-        header += f"**Global rules not installed** — {rules_warning}\n\n"
+    if rules_line:
+        header += f"{rules_line}\n\n"
 
     methodology_version = _read_methodology_version(blueprint_home)
     pinned = _read_yaml_scalar(initiative_root / "blueprint.yml", "methodology_version")
@@ -281,5 +294,146 @@ def main() -> int:
     return 0
 
 
+def _self_test_global_rules(source: Path) -> str | None:
+    """Run the hook end to end through the global-rules cases.
+
+    Cases (a) to (c) point BLUEPRINT_HOME at this methodology source, so the
+    rules docs sit where the source really keeps them. A fixture laid out from
+    the hook's own path would move with a wrong path and still pass. Case (d)
+    uses a home holding only METHODOLOGY.md. Each case gets a fresh HOME and
+    must exit 0 and print the canonical header, so a run that printed nothing
+    cannot pass an absence check. Returns None on pass, else what failed.
+    """
+    import subprocess
+    import tempfile
+
+    warning = "**Global rules not installed**"
+    note = "**Global-rules check did not run**"
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp).resolve()  # the hook names the resolved home; macOS /var is /private/var
+        initiative = t / "initiative"
+        initiative.mkdir()
+        (initiative / "blueprint.yml").write_text("variant: greenfield\n", encoding="utf-8")
+        bare = t / "bare-home"
+        bare.mkdir()
+        (bare / "METHODOLOGY.md").write_text("# fixture\n", encoding="utf-8")
+        # (case, methodology home, ~/.claude/CLAUDE.md text or None, expected global-rules line)
+        cases = [
+            ("(a) no ~/.claude/CLAUDE.md", source, None, warning),
+            ("(b) CLAUDE.md without the marker", source, "# my rules\n", warning),
+            ("(c) CLAUDE.md with the marker", source, "<!-- BEGIN blueprint-methodology-rules -->\n", None),
+            ("(d) home without the rules docs", bare, None, note),
+        ]
+
+        def run_case(n: int, case: str, home: Path, claude_md: str | None, want: str | None) -> str | None:
+            scratch_home = t / f"home-{n}"
+            scratch_home.mkdir()
+            if claude_md is not None:
+                (scratch_home / ".claude").mkdir()
+                (scratch_home / ".claude" / "CLAUDE.md").write_text(claude_md, encoding="utf-8")
+            try:
+                # input= closes stdin: main() reads it to EOF, and an inherited stdin can hang.
+                run = subprocess.run(
+                    [sys.executable, str(Path(__file__).resolve())],
+                    input=json.dumps({"cwd": str(initiative)}),
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    env={**os.environ, "HOME": str(scratch_home), "BLUEPRINT_HOME": str(home)},
+                )
+            except subprocess.TimeoutExpired:
+                return f"{case}: the hook did not exit within 30s"
+            if run.returncode != 0:
+                return f"{case}: exit {run.returncode}: {run.stderr.strip()[:200]}"
+            try:
+                context = json.loads(run.stdout)["hookSpecificOutput"]["additionalContext"]
+            except Exception:
+                return f"{case}: stdout is not the hook's JSON: {run.stdout[:200]!r}"
+            if not context.startswith("# Blueprint canonical context (auto-loaded"):
+                return f"{case}: no canonical context header: {context[:200]!r}"
+            # Only the header, above the inlined docs, carries the global-rules line.
+            lines = [l for l in context.split("\n---\n", 1)[0].splitlines() if l.startswith((warning, note))]
+            if not ((len(lines) == 1 and lines[0].startswith(want)) if want else not lines):
+                got = " | ".join(l[:160] for l in lines) or "no global-rules line"
+                return f"{case}: expected {want or 'no global-rules line'}, got {got}"
+            if want == note:
+                expected = bare / "template" / "docs" / "methodology" / "global-rules"
+                if f"`{expected}`" not in lines[0]:
+                    return f"{case}: the note does not name {expected}: {lines[0][:200]}"
+            return None
+
+        # Every case runs, so one run names all of its failures.
+        failures = [f for f in (run_case(n, *c) for n, c in enumerate(cases)) if f]
+    return "; ".join(failures) or None
+
+
+def _self_test() -> int:
+    """The npm fallback must find the package npm actually installs.
+
+    Lays out a fake global npm root holding a package named by the root
+    package.json, stubs `npm root -g` to print it, and resolves with no
+    BLUEPRINT_HOME, no methodology_home, and an empty HOME, so the npm candidate
+    is the only one that can match. package.json sits three directories above
+    this file in the methodology source and in the npm package; an installed
+    copy under ~/.claude/hooks/ has none, and the test fails rather than skips.
+    Then runs the global-rules cases against that same source.
+    """
+    import shlex
+    import tempfile
+
+    def fail(why: str) -> int:
+        print(f"blueprint-session-start self-test: FAIL — {why}")
+        return 1
+
+    pkg_json = Path(__file__).resolve().parents[3] / "package.json"
+    try:
+        name = json.loads(pkg_json.read_text(encoding="utf-8"))["name"]
+    except Exception as exc:
+        return fail(f"cannot read the package name from {pkg_json}: {exc}")
+    if name != NPM_PACKAGE:
+        return fail(f"NPM_PACKAGE is {NPM_PACKAGE!r} but package.json names {name!r}")
+
+    saved = {k: os.environ.get(k) for k in ("PATH", "HOME", "BLUEPRINT_HOME")}
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        installed = t / "global" / name
+        installed.mkdir(parents=True)
+        (installed / "METHODOLOGY.md").write_text("# fixture\n", encoding="utf-8")
+        npm = t / "bin" / "npm"
+        npm.parent.mkdir()
+        npm.write_text(f"#!/bin/sh\necho {shlex.quote(str(t / 'global'))}\n", encoding="utf-8")
+        npm.chmod(0o755)
+        initiative = t / "initiative"
+        initiative.mkdir()
+        (initiative / "blueprint.yml").write_text("variant: greenfield\n", encoding="utf-8")
+        (t / "home").mkdir()
+        try:
+            os.environ["PATH"] = f"{npm.parent}{os.pathsep}{saved['PATH'] or ''}"
+            os.environ["HOME"] = str(t / "home")
+            os.environ.pop("BLUEPRINT_HOME", None)
+            got = resolve_blueprint_home(initiative)
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+        if got != installed.resolve():
+            return fail(f"npm fallback resolved {got}, expected {installed.resolve()}")
+    failure = _self_test_global_rules(pkg_json.parent)
+    if failure:
+        return fail(failure)
+    print("blueprint-session-start self-test: PASS")
+    return 0
+
+
 if __name__ == "__main__":
+    args = sys.argv[1:]
+    if args in (["--self-test"], ["--selftest"]):
+        sys.exit(_self_test())
+    if args:
+        # Claude Code passes no arguments. A mistyped flag must not fall through
+        # to main(), which exits 0 and would pass a test run that tested nothing.
+        print(f"blueprint-session-start: unknown arguments {args}; expected none or --self-test", file=sys.stderr)
+        sys.exit(2)
     sys.exit(main())

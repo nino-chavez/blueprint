@@ -13,12 +13,18 @@
  * roster below mirrors docs/variant-selection.md § "Reviewer agents per variant").
  * Running every reviewer would mis-fire — the greenfield/portal/prescription gates
  * BLOCK on a research initiative they don't apply to. Variants without a roster entry
- * run all discovered reviewers (prior behavior preserved).
+ * run all discovered reviewers (prior behavior preserved), except:
+ *
+ * PORTAL-AWARE (decisions/11, wave 113): the three portal conformance reviewers run
+ * only where `blueprint doctor` would run them. Both use tools/lib/
+ * portal-reviewer-routing.mjs. Before this, an Initiative Portal stamp got 11 BLOCKs
+ * from the two Review Portal reviewers, which can never apply to it.
  *
  * It also lists the spec-only (agent-run, no `.mjs`) gates so a green executable run
  * is never mistaken for full coverage — the judgment gates still need an agent pass.
  *
  * Usage:  node tools/run-reviewers.mjs        (from the initiative root)
+ *         npm run reviewers                   (where the stamp wrote a package.json)
  * Exit:   0 = no blocks; 1 = at least one BLOCK or reviewer ERROR.
  */
 import { promises as fs } from 'node:fs';
@@ -63,8 +69,43 @@ const mdFiles = await listFiles(reviewersDir, '.md');
 const allNames = mjsFiles.map((f) => f.replace(/\.mjs$/, ''));
 
 const roster = VARIANT_ROSTER[variant];
-const toRun = roster ? mjsFiles.filter((f) => roster.includes(f.replace(/\.mjs$/, ''))) : mjsFiles;
+let toRun = roster ? mjsFiles.filter((f) => roster.includes(f.replace(/\.mjs$/, ''))) : mjsFiles;
 const skipped = roster ? allNames.filter((n) => !roster.includes(n)) : [];
+
+// Portal reviewers apply by which portal this initiative has, decided by the rule
+// `blueprint doctor` uses. A research roster already leaves them out. A copy of this
+// runner without the routing helper keeps the old run-everything behavior, and says so.
+const portalNotRun = [];
+if (!roster) {
+  try {
+    const routing = await import('./lib/portal-reviewer-routing.mjs');
+    const aoState = routing.readActorOutputState(targetDir);
+    let actorOutputRoute = false;
+    if (aoState.manifest && !aoState.ambiguous) {
+      try {
+        const { validateManifestFile } = await import('./lib/actor-output.mjs');
+        actorOutputRoute = routing.isActorOutputRoute(aoState, validateManifestFile(aoState.manifestPath, { root: targetDir }).verdict);
+      } catch { /* doctor treats a validator that throws as the legacy route */ }
+    }
+    const plan = routing.planPortalReviewers({ targetDir, portalType: routing.readPortalType(ymlText ?? '').value, actorOutputRoute });
+    const why = {
+      skip: 'the actor-output manifest is the contract (decisions/05)',
+      bespoke: 'portal_type: bespoke — its gate is a divergence ADR, checked by `blueprint doctor`',
+    };
+    for (const name of routing.PORTAL_REVIEWERS) {
+      if (plan.run.includes(name)) continue;
+      const initiative = name === routing.INITIATIVE_PORTAL_REVIEWER;
+      const state = initiative ? plan.initiative : plan.reviewPortal;
+      portalNotRun.push(`${name} — ${why[state] ?? (initiative ? 'no apps/portal' : 'no Review Portal directory')}`);
+    }
+    toRun = toRun.filter((f) => {
+      const name = f.replace(/\.mjs$/, '');
+      return !routing.PORTAL_REVIEWERS.includes(name) || plan.run.includes(name);
+    });
+  } catch (e) {
+    portalNotRun.push(`none skipped: tools/lib/portal-reviewer-routing.mjs could not load (${e.message}), so every portal reviewer runs. Copy it from $BLUEPRINT_HOME/template/tools/lib/.`);
+  }
+}
 
 const executableNames = new Set(allNames);
 const specOnly = roster
@@ -116,6 +157,10 @@ if (specOnly.length) {
 }
 if (skipped.length) {
   console.log(`\n  Not applicable to variant=${variant} (skipped): ${skipped.join(', ')}`);
+}
+if (portalNotRun.length) {
+  console.log(`\n  Portal gates not run here (the same rule \`blueprint doctor\` uses):`);
+  for (const n of portalNotRun) console.log(`    - ${n}`);
 }
 console.log('');
 process.exit(worst === 'BLOCKED' || worst === 'ERROR' ? 1 : 0);

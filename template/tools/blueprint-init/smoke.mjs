@@ -12,17 +12,34 @@
  * stamper's gates" a mechanical property:
  *
  *   1. Pattern B stamp into a temp dir → exit 0
- *   2. Imposition layer present (.claude reviewers + tools/lib + run-reviewers)
+ *   2. Imposition layer present (.claude reviewers + tools/lib + run-reviewers);
+ *      the recovery brief's refresh command runs with no package.json
  *   3. portal-chrome-canonical-reviewer over the stamped tree → PASS
  *   4. portal-review-conformance-reviewer over the stamped tree → not BLOCKED
  *   5. No deploy-fatal placeholders in the stamped portal (wrangler.toml)
  *   6. Stamped Pattern B tree → FULL doctor; both conformance reviewers executed
- *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present
+ *   6b. The stamped runner runs the Review Portal reviewers doctor runs, no others
+ *   7. Pattern A REAL stamp → exit 0, policy line + portal shell present; every
+ *      package.json script target exists; the brief names `npm run derive`;
+ *      `npm run reviewers` runs the stamped runner, which runs the portal
+ *      reviewers doctor runs (none, on a fresh stamp)
+ *   7d. Fresh Pattern A Tier 1 stamp → FULL doctor has no fails, and its
+ *      terminology check scanned the stamped portal
  *   8. Pilot-gate integration: fresh stamp blocks advance; populated profile passes
  *   9. chat-widget deriveChatMeta: zero/custom/absent manifest cases
  *  10. ADR-0010: readiness census + intent-gated prep-deploy + verified promotion + chat default-off
- *  11. Research real stamp: memo/evidence tree, no portal, inline-comment routing
+ *  11. Research real stamp: memo/evidence tree, no portal, inline-comment routing;
+ *      its package.json scripts run; derived/ skips the decision template and is
+ *      rerun after the first commit; Stage 3 is not started until a real ADR exists;
+ *      Stages 0, 1 and 5 are not started until their stamped templates are filled
  *  12. Methodology-amendment templates share one canonical field shape
+ *  13. Tier 0 is pre-portal (decisions/11): no portal on either portal type, the
+ *      portal-free package.json runs, doctor/reader/runner gates hold, no stamped
+ *      file passes a prototype gate; a Tier 1 re-stamp names the files to edit;
+ *      research + --logo exits 0; the tier-ladder doc agrees
+ *  14. A stamp copies source, not workstation files: no .DS_Store, .pyc or
+ *      __pycache__ arrives from a template copy seeded with a stray for each
+ *      skip rule, and the stamped text passes `git diff --check`
  *
  * Run: node template/tools/blueprint-init/smoke.mjs   (from the repo root)
  * Exit: 0 = all green; 1 = any failure (each failure printed).
@@ -45,6 +62,58 @@ const bad = (label, detail) => {
   failures.push(label);
   console.error(`  ✗ ${label}${detail ? ` — ${detail}` : ""}`);
 };
+const check = (cond, label, detail) => (cond ? ok(label) : bad(label, detail));
+
+// Every script in a stamped package.json must run against what the stamp wrote:
+// each `node <file>` names a file and each `-w <dir>` a workspace that exists.
+// Wave 109: research stamps shipped `-w apps/portal` scripts and no apps/portal.
+async function missingScriptTargets(root) {
+  const scripts = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8")).scripts ?? {};
+  const missing = [];
+  for (const [name, cmd] of Object.entries(scripts)) {
+    for (const [, kind, rel] of cmd.matchAll(/(node|-w)\s+(\S+)/g)) {
+      const p = kind === "-w" ? path.join(root, rel, "package.json") : path.join(root, rel);
+      if (!(await fs.stat(p).catch(() => null))) missing.push(`${name} → ${rel}`);
+    }
+  }
+  return missing;
+}
+
+// The refresh command a stamped recovery brief prints must work in that stamp:
+// an npm script its package.json defines, or a node script that exists.
+async function briefRefreshCommand(root) {
+  const brief = await fs.readFile(path.join(root, "derived", "recovery-brief.md"), "utf8").catch(() => "");
+  const cmd = /rerun `([^`]+)` to refresh/.exec(brief)?.[1];
+  if (!cmd) return { cmd, resolves: false, detail: "brief names no refresh command" };
+  const pkg = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8").catch(() => "{}"));
+  const npmScript = /^npm run (\S+)$/.exec(cmd)?.[1];
+  if (npmScript) return { cmd, resolves: Boolean(pkg.scripts?.[npmScript]), detail: `${cmd}; scripts: ${Object.keys(pkg.scripts ?? {}).join(", ") || "none"}` };
+  const nodeFile = /^node (\S+)/.exec(cmd)?.[1];
+  if (nodeFile) return { cmd, resolves: Boolean(await fs.stat(path.join(root, nodeFile)).catch(() => null)), detail: cmd };
+  return { cmd, resolves: false, detail: `unrecognized command: ${cmd}` };
+}
+
+// Every stamp carries tools/run-reviewers.mjs, and it must run exactly the portal
+// reviewers `blueprint doctor` runs (decisions/11, wave 113): both read
+// tools/lib/portal-reviewer-routing.mjs. Before, it ran all three on every
+// non-research stamp — 11 BLOCKs on a fresh Initiative Portal stamp.
+const PORTAL_REVIEWERS = ["portal-initiative-conformance-reviewer", "portal-chrome-canonical-reviewer", "portal-review-conformance-reviewer"];
+async function runStampedReviewers(root, { viaNpm = false } = {}) {
+  const [cmd, args] = viaNpm
+    ? ["npm", ["run", "--silent", "reviewers"]]
+    : [process.execPath, [path.join(root, "tools", "run-reviewers.mjs")]];
+  const { code, out } = await execFile(cmd, args, { cwd: root })
+    .then((r) => ({ code: 0, out: `${r.stdout}${r.stderr}` }), (e) => ({ code: e.code, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }));
+  const rows = [...out.matchAll(/^\s+\[(\w+)\s*\] (\S+)/gm)].map(([, status, name]) => ({ status, name }));
+  return {
+    code,
+    out,
+    portal: rows.map((r) => r.name).filter((n) => PORTAL_REVIEWERS.includes(n)).sort(),
+    errors: rows.filter((r) => r.status === "ERROR").map((r) => r.name),
+  };
+}
+const doctorPortalReviewers = (doc) => PORTAL_REVIEWERS.filter((n) =>
+  doc.checks.some((c) => c.name === "portal-conformance" && c.status !== "skip" && (c.detail || "").includes(n))).sort();
 
 const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "blueprint-smoke-"));
 const target = path.join(tmp, "smoke-initiative");
@@ -78,11 +147,16 @@ try {
     ".claude/agents/lib/initiative-root.mjs",
     "tools/lib/cost-dial.mjs",
     "tools/lib/review-loop.mjs",
+    "tools/lib/portal-reviewer-routing.mjs",
     "tools/run-reviewers.mjs",
   ]) {
     if (await fs.stat(path.join(target, rel)).catch(() => null)) ok(`stamped: ${rel}`);
     else bad(`stamped: ${rel}`, "missing — imposition layer gap");
   }
+  // 2b — Pattern B writes no package.json, so its recovery brief must name a
+  // refresh command that works without one (wave 109).
+  const bRefresh = await briefRefreshCommand(target);
+  check(bRefresh.resolves, "Pattern B brief's refresh command runs in the stamp", bRefresh.detail);
 
   // 3+4 — the stamped output passes the stamped gates.
   process.env.BLUEPRINT_HOME = BLUEPRINT_ROOT;
@@ -116,9 +190,11 @@ try {
   // conformance reviewers demonstrably EXECUTED (wave 86 — doctor used to key
   // conformance on apps/portal existing, so Pattern B trees were never
   // doctor-covered; a skipped reviewer must read as a failure here, not green).
+  const { runDoctor } = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "doctor.mjs")).href);
+  let bDoctor = null;
   try {
-    const { runDoctor } = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "doctor.mjs")).href);
     const doc = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: target });
+    bDoctor = doc;
     const conf = doc.checks.filter((c) => c.name === "portal-conformance");
     for (const reviewer of ["portal-chrome-canonical-reviewer", "portal-review-conformance-reviewer"]) {
       const row = conf.find((c) => (c.detail || "").includes(reviewer));
@@ -135,6 +211,21 @@ try {
     bad("doctor over stamped Pattern B tree", err.message);
   }
 
+  // 6b — decisions/11: the stamped runner runs the portal reviewers doctor runs.
+  // It used to add the Initiative Portal reviewer, which BLOCKs here.
+  try {
+    const run = await runStampedReviewers(target);
+    check(run.errors.length === 0, "Pattern B runner: no reviewer ERRORs", run.errors.join(", "));
+    check(run.portal.join() === "portal-chrome-canonical-reviewer,portal-review-conformance-reviewer",
+      "Pattern B runner runs the two Review Portal reviewers and not the Initiative Portal one", run.portal.join(", ") || "none");
+    if (bDoctor) {
+      check(run.portal.join() === doctorPortalReviewers(bDoctor).join(), "Pattern B runner and doctor run the same portal reviewers",
+        `runner [${run.portal.join(", ")}] doctor [${doctorPortalReviewers(bDoctor).join(", ")}]`);
+    }
+  } catch (err) {
+    bad("Pattern B stamped runner", err.message);
+  }
+
   // 7 — Pattern A REAL stamp (was dry-run-only; the npm artifact ships this
   // path, so release must exercise it — wave-86 review requirement).
   const aTarget = path.join(tmp, "smoke-a");
@@ -144,7 +235,8 @@ try {
       "--mode=stamp",
       "--name=smoke-test-a",
       "--display-name=Smoke Test A",
-      "--tagline=Pattern A smoke",
+      "--tagline=Initiative Portal smoke", // stamped into page copy: "Pattern A" would BLOCK terminology (wave 72)
+      "--tier=1",
       "--portal-type=initiative",
       `--target=${aTarget}`,
     ]);
@@ -161,6 +253,29 @@ try {
   else bad("Pattern A stamp writes an empty design_intent", "design_intent line missing from stamped blueprint.yml");
   if (await fs.stat(path.join(aTarget, "apps", "portal", "package.json")).catch(() => null)) ok("Pattern A portal shell present");
   else bad("Pattern A portal shell present", "apps/portal/package.json missing");
+  const aMissing = await missingScriptTargets(aTarget).catch((err) => [err.message]);
+  check(aMissing.length === 0, "Pattern A package.json scripts all point at stamped files", aMissing.join(", "));
+  const aRefresh = await briefRefreshCommand(aTarget);
+  check(aRefresh.resolves && aRefresh.cmd === "npm run derive", "Pattern A brief's refresh command is its npm derive script", aRefresh.detail);
+
+  // 7a — decisions/11: Initiative Portal stamps carry the runner too (the
+  // adaptive-commerce-content amendment of 2026-07-23 found it missing), and it
+  // runs the portal reviewers doctor runs. On a fresh stamp that is none: the
+  // actor-output manifest is the contract, and there is no Review Portal.
+  try {
+    const aPkg = JSON.parse(await fs.readFile(path.join(aTarget, "package.json"), "utf8"));
+    check(aPkg.scripts?.reviewers === "node tools/run-reviewers.mjs", "Pattern A package.json offers `npm run reviewers`", JSON.stringify(aPkg.scripts));
+    const run = await runStampedReviewers(aTarget, { viaNpm: true });
+    check(/variant=greenfield\b/.test(run.out) && !/Missing script|Cannot find module/.test(run.out),
+      `Pattern A \`npm run reviewers\` executes the stamped runner (exit ${run.code})`, run.out.trim().split("\n").slice(0, 3).join(" | "));
+    check(run.errors.length === 0, "Pattern A runner: no reviewer ERRORs", run.errors.join(", "));
+    const aDoctor = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: aTarget });
+    check(run.portal.length === 0 && doctorPortalReviewers(aDoctor).length === 0,
+      "Pattern A runner and doctor both run no portal reviewer on a fresh stamp",
+      `runner [${run.portal.join(", ")}] doctor [${doctorPortalReviewers(aDoctor).join(", ")}]`);
+  } catch (err) {
+    bad("Pattern A stamped runner", err.message);
+  }
 
   // 7b — actor-output contract from birth (decisions/05, wave 89): a fresh stamp
   // carries the intrinsic manifest, its derived outputs exist, the gate verdict
@@ -200,6 +315,24 @@ try {
     else bad("intrinsic stamp: portal-derive is a clean no-op (no views declared)", `ok=${r.ok} views=${r.views?.length} wrote=${r.wrote} ${(r.errors ?? []).join(" | ")}`);
   } catch (err) {
     bad("portal derivation no-op on intrinsic stamp", err.message);
+  }
+
+  // 7d — the fresh Initiative Portal stamp passes FULL doctor (wave 118), as
+  // check 6 has required of the Review Portal stamp since wave 86. Before, its
+  // terminology check blocked on the vendored ArchaeologyChat component. The
+  // stamp is Tier 1 on purpose: decisions/11 makes Tier 0 portal-free, where a
+  // green doctor would prove nothing about the portal. The terminology row must
+  // show a scan that read files; a check that ran nothing is not a pass.
+  try {
+    const doc = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: aTarget });
+    const term = doc.checks.find((c) => c.name === "terminology");
+    const scanned = Number(/\bfiles=(\d+)/.exec(term?.detail ?? "")?.[1] ?? 0);
+    check(term && term.status !== "skip" && scanned > 0, "doctor's terminology check scanned the stamped Pattern A portal",
+      term ? `${term.status} — ${term.detail}` : "no terminology row");
+    const fails = doc.checks.filter((c) => c.status === "fail");
+    check(fails.length === 0, "doctor over stamped Pattern A tree has no fails", fails.map((c) => `${c.name}: ${c.detail}`).join(" | "));
+  } catch (err) {
+    bad("doctor over stamped Pattern A tree", err.message);
   }
 
   // 8 — pilot-gate integration (wave 86): a FRESH stamp must block advance on
@@ -381,6 +514,110 @@ try {
       if (await fs.stat(path.join(researchTarget, rel)).catch(() => null)) bad(`research omits ${rel}`, "unexpected product scaffold");
       else ok(`research omits ${rel}`);
     }
+
+    // 11b — wave 109. The research package.json carries only commands this
+    // stamp can run, the brief names one of them, derived/ skips the decision
+    // template, Stage 3 reads not started until a real ADR exists, and the
+    // first-commit instruction the stamp prints actually works.
+    const researchPkg = JSON.parse(await fs.readFile(path.join(researchTarget, "package.json"), "utf8"));
+    check(!researchPkg.workspaces && !researchPkg.overrides && Object.keys(researchPkg.scripts ?? {}).sort().join() === "derive,reviewers",
+      "research package.json: derive + reviewers only, no portal workspaces", JSON.stringify(researchPkg));
+    const researchMissing = await missingScriptTargets(researchTarget);
+    check(researchMissing.length === 0, "research package.json scripts all point at stamped files", researchMissing.join(", "));
+    const npmRun = (script) => execFile("npm", ["run", "--silent", script], { cwd: researchTarget })
+      .then((r) => ({ code: 0, out: `${r.stdout}${r.stderr}` }), (e) => ({ code: e.code, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }));
+    const deriveRun = await npmRun("derive");
+    check(deriveRun.code === 0, "research `npm run derive` runs", `exit ${deriveRun.code} ${deriveRun.out.trim().split("\n").slice(-2).join(" | ")}`);
+    // A fresh stamp's reviewers BLOCK (empty research legs), so the runner exits
+    // 1. The check is that the script executes the runner, not that gates pass.
+    const reviewersRun = await npmRun("reviewers");
+    check(/variant=research\b/.test(reviewersRun.out) && !/Missing script|No workspaces found|Cannot find module/.test(reviewersRun.out),
+      `research \`npm run reviewers\` executes the reviewer runner (exit ${reviewersRun.code})`, reviewersRun.out.trim().split("\n").slice(0, 3).join(" | "));
+    const rRefresh = await briefRefreshCommand(researchTarget);
+    check(rRefresh.resolves && rRefresh.cmd === "npm run derive", "research brief's refresh command is its npm derive script", rRefresh.detail);
+    const packetOf = async () => JSON.parse(await fs.readFile(path.join(researchTarget, "derived", "boot-packet.json"), "utf8"));
+    const briefOf = () => fs.readFile(path.join(researchTarget, "derived", "recovery-brief.md"), "utf8");
+    const firstCommitLine = "derived before the first git commit";
+    let packet = await packetOf();
+    const rerunLine = (await briefOf()).includes(firstCommitLine);
+    check(packet.as_of === "no-git" && rerunLine, "brief derived before any commit says to rerun after the first commit",
+      `as_of=${packet.as_of}${packet.as_of === "no-git" ? "" : " (temp dir inside a git repo?)"}; rerun line ${rerunLine ? "present" : "missing"}`);
+    check(/After the first commit, regenerate derived\/[^\n]*\n\s+npm run derive/.test(researchStamp.stdout),
+      "stamp next steps say to regenerate derived/ after the first commit", researchStamp.stdout.trim().split("\n").slice(-4).join(" | "));
+    check(packet.decisions.length === 0, "derived decisions list skips decisions/_TEMPLATE.md", JSON.stringify(packet.decisions));
+    const sm = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "stage-model.mjs")).href);
+    const decisionsGate = () => sm.deriveStageStatus({ root: researchTarget }).stages.find((s) => s.id === 3).gates.find((g) => g.gate === "decisions");
+    check(decisionsGate().state === "absent", "stage status: Stage 3 not started on a fresh research stamp", decisionsGate().evidence);
+
+    // 11c — wave 112. The research templates are filled in place, so the stamp
+    // plants the very files the Stage 0, 1 and 5 gates match. Each gate skips its
+    // file while a template placeholder line remains: a fresh stamp starts none
+    // of those stages, an edit that leaves the placeholders starts none either,
+    // and filling the files completes all three.
+    const researchStatus = () => sm.deriveStageStatus({ root: researchTarget });
+    const researchGate = (st, id) => st.stages.flatMap((s) => s.gates).find((g) => g.gate === id);
+    const plantedGates = [
+      [0, "sources-catalog", "research/sources/README.md"],
+      [1, "personas-jtbd", "research/personas-and-jtbd.md"],
+      [5, "decision-memo", "docs/decision-memo.md"],
+    ];
+    let status = researchStatus();
+    check(status.variant === "research", "stage status reads the fresh stamp as research", status.variant);
+    for (const [stage, id, rel] of plantedGates) {
+      const g = researchGate(status, id);
+      check(g?.state === "absent" && g.evidence.includes(`${rel} still holds a template placeholder`) && !status.stagesComplete.includes(stage),
+        `stage status: Stage ${stage} not started on a fresh research stamp (${rel} is still the template)`, g ? `${g.state}: ${g.evidence}` : "gate missing");
+    }
+    const legsGate = researchGate(status, "research-legs");
+    check(legsGate?.state === "absent", "stage status: the personas template is not a research leg", legsGate ? `${legsGate.state}: ${legsGate.evidence}` : "gate missing");
+    const stamped = (rel) => fs.readFile(path.join(researchTarget, rel), "utf8");
+    const write = (rel, text) => fs.writeFile(path.join(researchTarget, rel), text);
+    const memoStamp = await stamped("docs/decision-memo.md");
+    await write("docs/decision-memo.md", memoStamp.replace("\n\n", "\n\nserves: none\nserves_reason: the memo is not drafted yet, so no persona job traces to it.\n\n"));
+    const memoGate = researchGate(researchStatus(), "decision-memo");
+    check(memoGate?.state === "absent", "a serves line added to the unfilled memo does not start Stage 5", memoGate ? `${memoGate.state}: ${memoGate.evidence}` : "gate missing");
+    const catalogStamp = await stamped("research/sources/README.md");
+    const personasStamp = await stamped("research/personas-and-jtbd.md");
+    // A catalog grows by rows, so this fill keeps the stamped blank row.
+    await write("research/sources/README.md", catalogStamp.replace("| | | | | | |", "| Smoke brief | Operator | 2026-09-25 | Brief | research/sources/README.md | Read in full |\n| | | | | | |"));
+    await write("research/personas-and-jtbd.md", personasStamp
+      .replace("### <Persona name> (`<slug>`)", "### Smoke reader (`smoke-reader`)")
+      .replace("- **JOB-1:** When …, I need to …, so I can …", "- **JOB-1:** When a decision is due, I need the memo, so I can approve it."));
+    await write("docs/decision-memo.md", memoStamp
+      .replace("# Decision Memo — <Initiative>", "# Decision Memo — Smoke Research")
+      .replace("<One sentence: the specific decision or approval being requested.>", "Approve the smoke initiative."));
+    status = researchStatus();
+    for (const [stage, id, rel] of plantedGates) {
+      const g = researchGate(status, id);
+      check(g?.state === "pass" && status.stagesComplete.includes(stage), `stage status: Stage ${stage} completes once ${rel} is filled`,
+        g ? `${g.state}: ${g.evidence}; complete ${JSON.stringify(status.stagesComplete)}` : "gate missing");
+    }
+    const filledLegs = researchGate(status, "research-legs");
+    check(filledLegs?.state === "partial", "stage status: the filled personas file counts as a research leg", filledLegs ? `${filledLegs.state}: ${filledLegs.evidence}` : "gate missing");
+
+    // An ADR copied from the template keeps its commented frontmatter lines. It
+    // must index under its own H1 and count toward Stage 3.
+    const decisionTemplate = await fs.readFile(path.join(researchTarget, "decisions", "_TEMPLATE.md"), "utf8");
+    await fs.writeFile(path.join(researchTarget, "decisions", "0001-smoke.md"),
+      decisionTemplate.replace("adr: NNNN", "adr: 0001").replace(/^# ADR-NNNN — .*$/m, "# ADR-0001 — Smoke decision"));
+    await npmRun("derive");
+    packet = await packetOf();
+    check(packet.decisions.length === 1 && packet.decisions[0].title === "ADR-0001 — Smoke decision",
+      "an ADR copied from the template indexes under its own H1", JSON.stringify(packet.decisions));
+    check(decisionsGate().state === "pass", "a real ADR passes Stage 3", decisionsGate().evidence);
+    // The remedy the brief and next steps give: after the first commit, derive
+    // records it. Hooks are off so a machine-wide commit hook cannot fire here.
+    const git = (...args) => execFile("git", [
+      "-c", "user.name=smoke", "-c", "user.email=smoke@example.invalid",
+      "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", ...args,
+    ], { cwd: researchTarget });
+    await git("init", "-q");
+    await git("add", "-A");
+    await git("commit", "-qm", "smoke: first commit");
+    await npmRun("derive");
+    packet = await packetOf();
+    check(/^[0-9a-f]{7,}$/.test(packet.as_of) && !(await briefOf()).includes(firstCommitLine),
+      "after the first commit, `npm run derive` records it and drops the rerun line", `as_of=${packet.as_of}`);
     const researchYmlPath = path.join(researchTarget, "blueprint.yml");
     const researchYml = await fs.readFile(researchYmlPath, "utf8");
     await fs.writeFile(researchYmlPath, researchYml.replace(/^variant: research$/m, "variant: research # routing regression"));
@@ -474,6 +711,197 @@ try {
     }
   } catch (err) {
     bad("amendment entry shape", err.message);
+  }
+
+  // 13 — decisions/11: Tier 0 is pre-portal for every variant. The stamper used
+  // to copy a portal at Tier 0, where both portal reviewers skip it, and the
+  // portal file then passed a prototype gate nobody worked for (decisions/11).
+  const exists = (p) => fs.stat(p).then(() => true, () => false);
+  const sm13 = await import(pathToFileURL(path.join(BLUEPRINT_ROOT, "template", "tools", "lib", "stage-model.mjs")).href);
+  const encounter13 = await import(new URL("../lib/encounter-audit.mjs", import.meta.url).href);
+  for (const [label, variant, portalType] of [
+    ["greenfield Initiative Portal", "greenfield", "initiative"],
+    ["brownfield Review Portal", "brownfield", "review"],
+  ]) {
+    const t0 = path.join(tmp, `smoke-tier0-${variant}`);
+    try {
+      const stamp0 = await execFile(process.execPath, [
+        STAMP, "--mode=stamp", `--name=smoke-tier0-${variant}`, `--variant=${variant}`, "--tier=0", `--portal-type=${portalType}`, `--target=${t0}`,
+      ]);
+      check(/stamping pre-portal \(Tier 0\) scaffold/.test(stamp0.stdout), `Tier 0 ${label}: stamp names the pre-portal scaffold`, stamp0.stdout.split("\n")[0]);
+      const portalDirs = [];
+      for (const rel of ["apps/portal", "packages", "blueprint/portal", "portal"]) if (await exists(path.join(t0, rel))) portalDirs.push(rel);
+      check(portalDirs.length === 0, `Tier 0 ${label}: no portal stamped`, portalDirs.join(", "));
+      const absent = [];
+      for (const rel of [".claude/agents/blueprint/reviewers", "tools/lib/portal-reviewer-routing.mjs", "tools/run-reviewers.mjs", "actor-output.yml", "reader-contract.json"]) {
+        if (!(await exists(path.join(t0, rel)))) absent.push(rel);
+      }
+      check(absent.length === 0, `Tier 0 ${label}: imposition layer and contracts present`, `missing ${absent.join(", ")}`);
+      const yml0 = await fs.readFile(path.join(t0, "blueprint.yml"), "utf8");
+      check(/^tier: 0$/m.test(yml0) && new RegExp(`^portal_type: ${portalType}$`, "m").test(yml0) && /^pilot_profile_policy: required$/m.test(yml0),
+        `Tier 0 ${label}: blueprint.yml keeps tier 0, the portal type for Tier 1, and the pilot-profile policy`);
+      const pkg0 = JSON.parse(await fs.readFile(path.join(t0, "package.json"), "utf8"));
+      check(!pkg0.workspaces && !pkg0.overrides && Object.keys(pkg0.scripts ?? {}).sort().join() === "derive,reviewers",
+        `Tier 0 ${label}: package.json has derive + reviewers only`, JSON.stringify(pkg0));
+      const missing0 = await missingScriptTargets(t0);
+      check(missing0.length === 0, `Tier 0 ${label}: package.json scripts all point at stamped files`, missing0.join(", "));
+      const derive0 = await execFile("npm", ["run", "--silent", "derive"], { cwd: t0 }).then(() => 0, (e) => e.code);
+      check(derive0 === 0, `Tier 0 ${label}: \`npm run derive\` runs`, `exit ${derive0}`);
+      const run0 = await runStampedReviewers(t0, { viaNpm: true });
+      check(new RegExp(`variant=${variant}\\b`).test(run0.out) && run0.errors.length === 0,
+        `Tier 0 ${label}: \`npm run reviewers\` runs with no reviewer ERRORs (exit ${run0.code})`,
+        run0.errors.join(", ") || run0.out.trim().split("\n").slice(0, 2).join(" | "));
+      const doc0 = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: t0 });
+      check(run0.portal.length === 0 && doctorPortalReviewers(doc0).length === 0, `Tier 0 ${label}: runner and doctor both run no portal reviewer`,
+        `runner [${run0.portal.join(", ")}] doctor [${doctorPortalReviewers(doc0).join(", ")}]`);
+      const fails0 = doc0.checks.filter((c) => c.status === "fail");
+      check(fails0.length === 0, `Tier 0 ${label}: full doctor has no fails (${doc0.status})`, fails0.map((c) => `${c.name}: ${c.detail}`).join(" | "));
+      const reader0 = await encounter13.auditReaderContract({ targetDir: t0 });
+      check(reader0.status !== "BLOCKED" && reader0.metadata.surfaces === 1, `Tier 0 ${label}: reader contract valid (${reader0.status})`,
+        reader0.findings.map((f) => f.message).join(" | "));
+      // Greenfield's portal-shell must not pass; brownfield's prototype stage is
+      // optional, and an absent optional gate reads pass "(optional)" by design.
+      const shell = sm13.deriveStageStatus({ root: t0 }).stages.flatMap((s) => s.gates).find((g) => /^(portal|prototype)-shell$/.test(g.gate));
+      check(shell && (shell.state !== "pass" || /\(optional\)$/.test(shell.evidence)), `Tier 0 ${label}: no stamped file satisfies the prototype gate`,
+        shell ? `${shell.gate}=${shell.state} — ${shell.evidence}` : "gate not found");
+    } catch (err) {
+      bad(`Tier 0 ${label} stamp`, (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+    }
+  }
+
+  // 13b — moving to Tier 1 re-runs the stamper at --tier=1. It adds the portal
+  // and, because package.json and blueprint.yml are preserved, names both.
+  try {
+    const t0 = path.join(tmp, "smoke-tier0-greenfield");
+    const restamp = await execFile(process.execPath, [
+      STAMP, "--mode=stamp", "--name=smoke-tier0-greenfield", "--variant=greenfield", "--tier=1", "--portal-type=initiative", `--target=${t0}`,
+    ]);
+    check(await exists(path.join(t0, "apps", "portal", "package.json")), "Tier 0 → 1 re-stamp adds apps/portal");
+    // The warning carries the keys to merge, from the stamper's own values.
+    check(/WARNINGS[\s\S]*package\.json was preserved without npm workspaces[^\n]*"workspaces":\["apps\/\*","packages\/\*"\][^\n]*"overrides"/.test(restamp.stdout)
+      && /blueprint\.yml was preserved with tier: 0, but this stamp ran with --tier=1/.test(restamp.stdout),
+    "Tier 0 → 1 re-stamp warns about the preserved package.json (with the keys to add) and tier",
+    restamp.stdout.split("\n").filter((l) => l.includes("!")).join(" | ") || "no warnings printed");
+  } catch (err) {
+    bad("Tier 0 → 1 re-stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
+  // The Review Portal path: it needs no workspaces, so only the tier warns, and
+  // after the documented edit full doctor has no fails.
+  try {
+    const t0 = path.join(tmp, "smoke-tier0-brownfield");
+    const restamp = await execFile(process.execPath, [
+      STAMP, "--mode=stamp", "--name=smoke-tier0-brownfield", "--variant=brownfield", "--tier=1", "--portal-type=review", `--target=${t0}`,
+    ]);
+    check(await exists(path.join(t0, "blueprint", "portal", "index.html")), "Tier 0 → 1 Review Portal re-stamp adds blueprint/portal");
+    check(/blueprint\.yml was preserved with tier: 0/.test(restamp.stdout) && !/package\.json was preserved without npm workspaces/.test(restamp.stdout),
+      "Tier 0 → 1 Review Portal re-stamp warns about the tier only", restamp.stdout.split("\n").filter((l) => l.includes("!")).join(" | ") || "no warnings printed");
+    const ymlPath = path.join(t0, "blueprint.yml");
+    await fs.writeFile(ymlPath, (await fs.readFile(ymlPath, "utf8")).replace(/^tier: 0$/m, "tier: 1"));
+    const doc1 = await runDoctor({ home: BLUEPRINT_ROOT, targetDir: t0 });
+    const fails1 = doc1.checks.filter((c) => c.status === "fail");
+    check(fails1.length === 0 && doctorPortalReviewers(doc1).length === 2,
+      `Tier 0 → 1 Review Portal: with tier: 1 set, doctor runs both portal reviewers and has no fails (${doc1.status})`,
+      fails1.map((c) => `${c.name}: ${c.detail}`).join(" | ") || `portal reviewers [${doctorPortalReviewers(doc1).join(", ")}]`);
+  } catch (err) {
+    bad("Tier 0 → 1 Review Portal re-stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
+  }
+
+  // 13c — the logo belongs to a portal. Research + --logo used to exit 2 with
+  // ENOENT on apps/portal/public after writing most of the scaffold.
+  const logoFile = path.join(tmp, "smoke-logo.png");
+  await fs.writeFile(logoFile, "not really a png");
+  await execFile(process.execPath, [
+    STAMP, "--mode=stamp", "--name=smoke-research-logo", "--variant=research", "--tier=0", `--logo=${logoFile}`, `--target=${path.join(tmp, "smoke-research-logo")}`,
+  ]).then(
+    (r) => check(/--logo \S+ \(no portal in this stamp/.test(r.stdout), "research stamp with --logo exits 0 and reports the logo skipped", r.stdout.split("\n").slice(-3).join(" | ")),
+    (e) => bad("research stamp with --logo exits 0 and reports the logo skipped", (e.stderr || e.message).split("\n").slice(-2).join(" | ")),
+  );
+
+  // 13d — the doc and the stamper agree: Tier 0 is pre-portal, and the doc says
+  // how to move to Tier 1.
+  const ladder = await fs.readFile(path.join(BLUEPRINT_ROOT, "docs", "portal-and-tier-ladder.md"), "utf8");
+  check(/\*\*No portal yet\.\*\*/.test(ladder) && /\| \*\*Brownfield\*\* \| Doc-only audit, no portal needed/.test(ladder)
+    && /^### Moving from Tier 0 to Tier 1$/m.test(ladder),
+  "tier-ladder doc: Tier 0 is pre-portal, as stamped, and it explains moving to Tier 1");
+
+  // 14 — wave 117. A consumer's fresh stamp carried .DS_Store and
+  // __pycache__/*.pyc. git ignores both, but copyTree walks the disk, so a stamp
+  // run from a checkout ($BLUEPRINT_HOME) copied whatever sat beside the source.
+  // Every directory of a template copy gets a .DS_Store, a loose .pyc, and a
+  // __pycache__/ holding a .pyc plus the <name>.pyc.<id> temp file CPython's
+  // bytecode writer leaves when killed mid-write, so each skip rule has a
+  // stray only it catches. Stamps from that copy must hold none of them. The
+  // scan is its own readdir; the stamper's walk() would skip exactly what it
+  // is looking for. The same fresh stamps must pass `git diff --check`, so a
+  // consumer's first commit clears a whitespace hook on files the methodology
+  // owns.
+  try {
+    const copyRoot = path.join(tmp, "stray-methodology");
+    const notCopied = new Set(["node_modules", ".git", "dist", "dist-story", ".astro"]);
+    await fs.cp(path.join(BLUEPRINT_ROOT, "template"), path.join(copyRoot, "template"), {
+      recursive: true,
+      filter: (src) => !notCopied.has(path.basename(src)),
+    });
+    const listTree = async (dir, acc = { dirs: [], files: [] }) => {
+      acc.dirs.push(dir);
+      for (const e of await fs.readdir(dir, { withFileTypes: true })) {
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) await listTree(p, acc);
+        else acc.files.push(p);
+      }
+      return acc;
+    };
+    // .DS_Store's own magic bytes. The NULs make git treat every stray as
+    // binary, so a leaked one cannot also fail the whitespace check.
+    const strayBytes = Buffer.from([0, 0, 0, 1, 0x42, 0x75, 0x64, 0x31]);
+    const seedDirs = (await listTree(path.join(copyRoot, "template"))).dirs;
+    for (const dir of seedDirs) {
+      await fs.mkdir(path.join(dir, "__pycache__"), { recursive: true });
+      await fs.writeFile(path.join(dir, ".DS_Store"), strayBytes);
+      await fs.writeFile(path.join(dir, "stray.pyc"), strayBytes);
+      await fs.writeFile(path.join(dir, "__pycache__", "stray.cpython-314.pyc"), strayBytes);
+      await fs.writeFile(path.join(dir, "__pycache__", "stray.cpython-314.pyc.4413177392"), strayBytes);
+    }
+    const stampRoots = [".claude", "tools/lib", "apps/portal", "packages", "portal"];
+    const unseeded = [];
+    for (const r of stampRoots) {
+      if (!(await fs.stat(path.join(copyRoot, "template", r, "__pycache__")).catch(() => null))) unseeded.push(r);
+    }
+    check(seedDirs.length > 0 && unseeded.length === 0,
+      `seeded strays into ${seedDirs.length} directories of a template copy, every copied root included`, `unseeded: ${unseeded.join(", ")}`);
+
+    const git = (cwd, ...args) => execFile("git", ["-c", "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab", ...args], { cwd });
+    for (const [label, flags] of [
+      ["Pattern A", ["--portal-type=initiative"]],
+      ["Pattern B", ["--variant=brownfield", "--tier=1", "--portal-type=review"]],
+    ]) {
+      const slug = `smoke-strays-${label.slice(-1).toLowerCase()}`;
+      const dst = path.join(tmp, slug);
+      await execFile(process.execPath, [
+        path.join(copyRoot, "template", "tools", "blueprint-init", "stamp.mjs"),
+        "--mode=stamp",
+        `--name=${slug}`,
+        ...flags,
+        `--target=${dst}`,
+      ]);
+      const tree = await listTree(dst);
+      const arrived = [...tree.dirs, ...tree.files]
+        .map((p) => path.relative(dst, p))
+        .filter((rel) => rel.split("/").some((part) => part === ".DS_Store" || part === "__pycache__" || part.endsWith(".pyc")));
+      const count = (test) => arrived.filter(test).length;
+      const kinds = `${count((rel) => path.basename(rel) === ".DS_Store")} .DS_Store, ` +
+        `${count((rel) => path.basename(rel) === "__pycache__")} __pycache__, ${count((rel) => rel.endsWith(".pyc"))} .pyc`;
+      check(tree.files.length > 0 && arrived.length === 0,
+        `${label} stamp from the seeded copy: no .DS_Store, __pycache__ or .pyc among ${tree.files.length} files`,
+        `${kinds} arrived, e.g. ${arrived.slice(0, 3).join(", ")}`);
+      await git(dst, "init", "-q");
+      await git(dst, "add", "-A");
+      const whitespace = await git(dst, "diff", "--cached", "--check").then(() => "", (e) => e.stdout || e.message);
+      const hits = whitespace.split("\n").filter((line) => /:\d+: /.test(line));
+      check(whitespace === "", `${label} stamp passes git diff --check`, `${hits.length} line(s): ${hits.slice(0, 3).join(" | ")}`);
+    }
+  } catch (err) {
+    bad("stamps carry no workstation files", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
   }
 } finally {
   await fs.rm(tmp, { recursive: true, force: true });

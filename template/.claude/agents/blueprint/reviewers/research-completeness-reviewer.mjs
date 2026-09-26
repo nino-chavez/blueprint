@@ -40,6 +40,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'research-completeness-reviewer';
 
@@ -695,7 +696,7 @@ export default async function review({ targetDir, blueprintYml }) {
 // ── Self-test (node research-completeness-reviewer.mjs) ───────────────────────
 // Builds inline fixtures under a temp dir, runs the reviewer, asserts the verdict.
 // Exits non-zero on any failed assertion (matches the libs' self-test pattern).
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
   const assert = (cond, msg) => {
     if (!cond) {

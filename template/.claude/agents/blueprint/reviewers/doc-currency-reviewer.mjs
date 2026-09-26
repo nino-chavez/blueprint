@@ -57,6 +57,7 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'doc-currency-reviewer';
 
@@ -331,7 +332,7 @@ export default async function review({ targetDir, methodologyHome }) {
 // Self-test — `node doc-currency-reviewer.mjs` exercises the checks against inline
 // fixtures and exits non-zero on any failed assertion (matches the libs' pattern).
 // ---------------------------------------------------------------------------------
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const assert = (cond, msg) => {
     if (!cond) {
       console.error(`FAIL: ${msg}`);

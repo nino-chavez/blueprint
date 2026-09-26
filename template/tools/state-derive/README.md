@@ -12,6 +12,16 @@ This tool replaces prose-claim audit findings with **mechanically derived eviden
 
 ## Usage
 
+Run it from a copy inside the repo it audits. It takes the repo root to be two directories above its own and reads `catalog/` beside itself. The directory you run it from does not change what it derives.
+
+The Blueprint stamper does not install it. From an initiative root, copy it in once, then add your `catalog/*.ts`:
+
+```sh
+cp -R "$BLUEPRINT_HOME/template/tools/state-derive" tools/
+```
+
+Run in place, the copy at `$BLUEPRINT_HOME/template/tools/state-derive/` derives the Blueprint template instead. It writes `docs/state/` there and still exits 0.
+
 From the repo root:
 
 ```sh

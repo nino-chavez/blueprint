@@ -29,6 +29,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
 import { readTopLevelYamlScalar } from '../../../../tools/lib/yaml-scalar.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'design-principles-reviewer';
 
@@ -694,7 +695,7 @@ export default async function review({ targetDir, blueprintYml }) {
 // inline fixtures and exits non-zero on any failed assertion. Matches the libs'
 // guarded-main pattern. Writes fixtures to a tmp dir, runs review(), cleans up.
 // ─────────────────────────────────────────────────────────────────────────────
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
 
   let passed = 0;

@@ -121,7 +121,7 @@ Four workhorse agents under `.claude/agents/blueprint/`:
 
 Variant-aware gates that block premature stage completion. Full roster + behavior: `.claude/agents/blueprint/reviewers/README.md`.
 
-This table is prose documentation; the machine-readable mapping lives in the stage model (`tools/lib/stage-model.mjs` gate `reviewer:` fields — ADR-0009). Where a gate carries that mapping, `blueprint stage advance` runs the reviewer itself and records the result with an input fingerprint (fresh PASSes are reused; changed inputs force a rerun). Currently machine-wired: Stage 0 → 1 (`pilot-profile-lock-reviewer`); the rest run manually until each mapping is calibrated against the fleet.
+This table is prose documentation; the machine-readable mapping lives in the stage model (`tools/lib/stage-model.mjs` gate `reviewer:` fields — ADR-0009). Where a gate carries that mapping, `blueprint stage advance` runs the reviewer itself and records the result with an input fingerprint (fresh PASSes are reused; changed inputs force a rerun). Currently machine-wired: Stage 0 → 1 (`pilot-profile-lock-reviewer`); the rest run manually until each mapping is calibrated against the fleet. To run every executable gate that applies to this initiative at once, use `npm run reviewers`. A Review Portal stamp has no `package.json`, so use `node tools/run-reviewers.mjs` there. The runner skips another portal type's conformance reviewers by the same rule `blueprint doctor` uses.
 
 | Gate | Reviewer(s) |
 |---|---|
@@ -190,6 +190,12 @@ node $BLUEPRINT_HOME/template/tools/blueprint-init/stamp.mjs \
   --target=<absolute path to initiative root>
 ```
 
+Tier 0 is pre-portal, so `--tier=0` stamps no portal of either type. Midstream
+cannot start at Tier 0. `--portal-type` still records which portal the
+initiative will use at Tier 1. To move up, re-run the stamper with `--tier=1`:
+see "Moving from Tier 0 to Tier 1" in
+`$BLUEPRINT_HOME/docs/portal-and-tier-ladder.md`.
+
 Research initial stamps are portal-free, so omit `--portal-type` and
 `--pattern`:
 
@@ -242,7 +248,7 @@ Methodology principle: self-attestation is not verification. Audits must resolve
 
 When an artifact claims verification, pull the canonical source yourself and re-verify the claim independently. Use mechanical verification tools where available (cited-url-lint for citations, state-derive for implementation state, scenario-result artifacts for coverage). Circular audits are the failure mode this rule prevents.
 
-See `$BLUEPRINT_HOME/docs/methodology/global-rules/audit-discipline.md` for the full pattern.
+See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/audit-discipline.md` for the full pattern.
 
 ## Decision Bias — Default to Action, Not Confirmation
 
@@ -250,17 +256,19 @@ Methodology principle: agents should default to executing the next logical conti
 
 Override this bias only for destructive actions (force-push, delete, amend), ambiguous requests, or scope expansion. When the next step is obvious and already authorized, do not ask.
 
-See `$BLUEPRINT_HOME/docs/methodology/global-rules/decision-bias.md` for the full pattern.
+See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/decision-bias.md` for the full pattern.
 
 <!-- END blueprint-methodology-rules -->
 EOF
 ```
 
-**Auto-check**: The SessionStart hook verifies these rules are installed and emits a non-fatal warning if absent. Re-run the installation command above if you see the warning.
+**Auto-check**: The SessionStart hook verifies these rules are installed and emits a non-fatal warning if absent. Re-run the installation command above if you see the warning. The check reads the two rules docs from `$BLUEPRINT_HOME/template/docs/methodology/global-rules/`. If they are missing there, the hook says the check did not run and names the folder it looked in; update the methodology source, or point `BLUEPRINT_HOME` at a complete copy.
 
 ### Customization
 
 These are append-only managed sections — do not edit them. Local operator preferences (theme, keybindings, project-specific shortcuts) remain in `~/.claude/CLAUDE.md` outside the managed region; they are unaffected by methodology updates.
+
+Nothing rewrites an installed block: the hook checks only for the BEGIN marker, and re-running the command appends a second copy. To take an update, delete everything from `<!-- BEGIN blueprint-methodology-rules -->` through `<!-- END blueprint-methodology-rules -->`, then run the command again.
 
 ## Converter
 

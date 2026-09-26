@@ -45,7 +45,7 @@ ADR-0001 accepted the dual-protocol distribution shape but left the toolchain un
 ## Consequences
 
 - **Positive**: gives the platform its missing version primitive — the foundation ADR-0005's "non-breaking" and the consumer pins require; a claimable package name unblocks publish CI now.
-- **Negative**: Changesets is monorepo-oriented; on a single-package repo the `.changeset` workflow is lightly-trodden (supported) and asks the operator to write a changeset markdown per change — the payoff is the migration-note quality. Scoped package (`@nino-chavez/...`) is less clean than `@blueprint/cli`; revisit if the `@blueprint` org is registered.
+- **Negative**: Changesets is monorepo-oriented; on a single-package repo the `.changeset` workflow is lightly-trodden (supported) and asks the operator to write a changeset markdown per change — the payoff is the migration-note quality. Scoped package (`@nino-chavez-labs/...`) is less clean than `@blueprint/cli`; revisit if the `@blueprint` org is registered.
 - **Reuse**: `specchain/package.json` (the literal publishable-scaffolder template + files discipline), `stamp.mjs` `parseArgs` (the dispatcher core).
 
 ## Follow-ups

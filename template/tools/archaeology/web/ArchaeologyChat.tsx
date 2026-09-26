@@ -102,7 +102,7 @@ export function ArchaeologyChat({ pageContext, getSuggestions }: ArchaeologyChat
     setLoadingEvent(eventId);
     setActiveEvent(null);
     try {
-      // The timeline endpoint joins on source+source_id. We don't know the source
+      // The /timeline route joins on source+source_id. We don't know the source
       // upfront from just an event_id, but the ranked list in the latest assistant
       // message carries it. Check the most recent message for a match first.
       const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
@@ -530,8 +530,8 @@ function RenderWithCitations({
 }
 
 function SourceDrawer({ event, onClose }: { event: EventDetail; onClose: () => void }) {
-  let payload: any = null;
-  try { payload = JSON.parse(event.payload_json); } catch {}
+  let parsed: any = null;
+  try { parsed = JSON.parse(event.payload_json); } catch {}
 
   return (
     <div className="fixed inset-y-0 right-[28rem] z-50 flex w-full max-w-md flex-col border-l border-contrast-200 bg-background shadow-2xl sm:right-[32rem] sm:max-w-lg">
@@ -558,9 +558,9 @@ function SourceDrawer({ event, onClose }: { event: EventDetail; onClose: () => v
           {event.actor && <Row label="actor">{event.actor}</Row>}
         </dl>
         <div className="mt-4">
-          <p className="mb-1 font-mono text-[10px] uppercase tracking-wide text-contrast-500">payload</p>
+          <p className="mb-1 font-mono text-[10px] uppercase tracking-wide text-contrast-500">raw data</p>
           <pre className="overflow-x-auto rounded bg-contrast-50 p-3 text-[11px] leading-snug text-foreground">
-            {payload ? JSON.stringify(payload, null, 2).slice(0, 4000) : event.payload_json.slice(0, 4000)}
+            {parsed ? JSON.stringify(parsed, null, 2).slice(0, 4000) : event.payload_json.slice(0, 4000)}
           </pre>
         </div>
       </div>

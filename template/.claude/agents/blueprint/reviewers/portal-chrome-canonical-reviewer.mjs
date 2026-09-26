@@ -37,6 +37,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findInitiativeRoot } from '../../lib/initiative-root.mjs';
+import { invokedDirectly } from '../../../../tools/lib/invoked-directly.mjs';
 
 const NAME = 'portal-chrome-canonical-reviewer';
 
@@ -372,7 +373,7 @@ export default async function review({ targetDir, methodologyHome }) {
 }
 
 // ── Self-test (node portal-chrome-canonical-reviewer.mjs) ────────────────────
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (invokedDirectly(import.meta.url)) {
   const os = await import('node:os');
   const assert = (cond, msg) => {
     if (!cond) {

@@ -11,7 +11,7 @@
 import { promises as fs } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { invokedDirectly } from './invoked-directly.mjs';
 
 export const ENCOUNTER_AUDIT_VERSION = 2;
 const CONTRACT_NAME = 'reader-contract.json';
@@ -557,7 +557,7 @@ async function selfTest() {
   console.log('encounter-audit self-test: PASS (contract, rendered audit, manual receipt, stale-source invalidation)');
 }
 
-const isDirect = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isDirect = invokedDirectly(import.meta.url);
 if (isDirect) {
   if (process.argv.includes('--selftest') || process.argv.includes('--self-test')) {
     await selfTest();

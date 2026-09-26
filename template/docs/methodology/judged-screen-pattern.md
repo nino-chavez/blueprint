@@ -178,6 +178,8 @@ It carries ten parts.
 
 **Platform strategy.** Which platform conventions the surface adopts, which it declines, and the reason for each decline.
 
+**Theme policy and length budget.** A shareable page states whether it follows the viewer's system theme or uses one fixed theme before the first draft. It states a length budget in desktop screens and a trade-off rule. On a sales-support page for a private initiative (2026-09-26), the page followed the viewer's system theme until the owner asked why it had a dark-mode style. Three owner requests then grew it from 4.8 to 8.7 desktop screens, and the budget was raised each time without a trade-off. When a request breaks the budget, name what it costs and offer what to cut. Never silently raise the budget.
+
 **A `## Surfaces` list.** One bullet per surface the brief governs, under that exact heading. This is the only part of the brief with a literal format requirement, because it is the roster two mechanical readers walk: `screen-composition-reviewer` enumerates it to find which surfaces need a cold review, and nothing else declares that list. A brief without the heading reads as governing zero surfaces, and the gate goes quiet rather than failing.
 
 **An object / action / state matrix.** Every object the screen shows gets a row:
@@ -226,6 +228,8 @@ This subsection applies when `design_intent: rethink`. Under `refit` or `preserv
 3. **Curated prior art, one question per reference.** Use the [targeted reference research guidance](#targeted-reference-research-within-the-declared-intent) above. Name what you are asking each reference — how it handles density, how it opens, how it fails — not "here is a site we like." A reference list with no question attached asks the surface to look like the category, which is the opposite of art direction.
 4. Three concepts, rendered on the same representative states.
 5. A named human selection, with the rejected concepts preserved rather than deleted. Preservation is not approval to continue them; it keeps the comparison auditable.
+
+**How to run Phase 1 in practice** — the working procedure behind steps 1–5, including how candidates get built and captured comparably, how prior art enters as questions rather than references, and how a rejected candidate still contributes through a graft — is `redesign-evaluation-pattern.md`. This section states what Phase 1 owes; that pattern states how two consumers actually produced it.
 
 **Phase 2 — System.** How the selected direction becomes buildable. The chosen direction converts into tokens, components, templates, motion rules, and `prototype/DESIGN.md`. This is the layer the design-system audit measures, and it is downstream of a direction — a complete system built with no direction selected is the boilerplate outcome forge-site names in § 8.
 
@@ -309,9 +313,13 @@ Device captures, one per representative state. A real device for native. A real 
 
 Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per representative state. The canonical manifest retains the full state name. Give the cold reviewer neutral capture IDs or byte-identical aliases when a filename would reveal a lifecycle answer, such as `active.png` or `failure.png`. Keep the alias-to-original mapping with the record. Device and accessibility condition names may remain in the cold packet; findings and lifecycle answers may not.
 
+**Check capture completeness before review.** Before any reviewer sees a full-page capture, verify three facts. A page taller than one screenshot can hold was shot in segments and joined, or, if shot once, does not repeat its top past that height. The image is the page's full size. Nothing extends past the viewport, measured against the document's `clientWidth`. Cut review tiles only after a joined image's canvas is reset. Make each check fail once on purpose before trusting it. A sales-support page for a private initiative (2026-09-26) was about 9,450 CSS px tall at 390 px wide and 2x. Chrome stopped at 16,384 device px and repeated the top; its crop had 0 differing pixels. A 4 px horizontal overflow passed against `innerWidth`, and tiles cut from the unreset stitched canvas were short. Follow `template/tools/web-capture/README.md`.
+
 The capture set carries a manifest, and the manifest records the device's accessibility state before the run: text size, Increase Contrast, Bold Text, Reduce Motion, and appearance. On a device the operator holds, ask; on a simulator, read it (`xcrun simctl ui <udid> content_size` / `increase_contrast`) and write the answer down before and after. The reason is a measured one: Minder's first physical capture of build 13 (2026-09-01) ran with Increase Contrast on, nothing in the run reported it, and the operator mentioned it only afterward; the whole set was recaptured. Its simulator evidence for builds 10 through 12 had the same defect the other way round, a simulator left at Accessibility XXXL for three days. A capture whose accessibility state is unknown is a capture of an unknown screen, and a reviewer cannot tell an intended accessibility state from an accidental one. Keeping them next to the review is what lets a later reader check the verdict against what was actually judged; a review pointing at captures that have since moved or been regenerated is a claim with no evidence behind it.
 
 #### How it is judged
+
+**Make owner feedback testable.** When a rebuild answers owner feedback, quote the feedback verbatim in the cold brief as the acceptance test. Tell the reviewer to judge without deference. The implementer also restates the fix as a measurable change. On a sales-support page for a private initiative (2026-09-26), the brief quoted, “there is no clear separation in the sales kit so it's hard to tell how to follow the page.” Version 2 used #ffffff and #f4f5f7 bands at 1.09:1, small section numbers, and rules on nearly every item. Version 3 used #ffffff and #eceff2 at 1.17:1, chapter numbers larger than any other number, and rules only on table rows. The cold reviewer called separation the clearest fix.
 
 The reviewer answers, in order:
 
@@ -365,21 +373,39 @@ Record it the same way, with `kind: conformance` and `cold: false`. A conformanc
 
 **A conformance pass is not an appearance verdict.** "It matches the ADR" says the team built what it chose. Whether what it chose reads well on the device is the cold review's question, and the cold review is the one that gets skipped when a conformance pass is in hand.
 
+### 3c. Hand the owner a version, not a link
+
+Every rebuilt surface sent to its owner names its version, its build, and one visible marker to inspect. A bare link leaves the owner and team unable to identify the frame under discussion. On a sales-support page for a private initiative (2026-09-26), repeated feedback arrived minutes after version 2 went live, and it was unclear which version the owner had seen. The hand-off names the version and build, then says what visible marker changed, such as the larger chapter number or the absence of item-level rules.
+
 ### How it relates to the DoD ladder
 
 `dod-verification-ladder-pattern.md` builds five gates on mechanically answerable oracles — a registry parse, a presence check, a recorded test result. Its honesty comes from every gate resolving to something a machine can check.
 
 This gate has no such oracle, and pretending otherwise would be the failure the ladder exists to prevent, inverted. So it sits **outside** the ladder rather than as a sixth gate. What is mechanical here is only the **record**: does each required review exist for this surface, does its `kind` carry the matching `cold` value, is the reviewer someone other than the implementer, does it accept, is it current with the build. That is what `screen-composition-reviewer.mjs` checks. The judgment inside the file is not machine-checkable and the reviewer does not pretend to check it.
 
-## 4. Closeout asks what came off, not only what went on
+## 4. A slice states its debt when it opens, and closeout asks what came off
 
-Slice closeout is additive today: it records what the slice added and what now passes. Twenty-seven such closeouts sum to a screen nobody designed.
+Slice closeout was additive-only: it recorded what the slice added and what now passes. Twenty-seven such closeouts sum to a screen nobody designed. The gap ran in both directions — nothing at open time asked what the addition cost, and nothing at close time asked what it should have removed. One before/after pair now brackets every slice.
 
-Every slice closeout gains one line:
+**At slice open, before implementation, write the debt line:**
+
+> **Adds:** what is new. **Decisions:** what the addition forces — a fill, a border, a radius, a shadow, or a second widget. **Earns them:** why, or what removal pays for them.
+
+A slice with no debt line has not stated what its addition costs, and "earns them" is the load-bearing part: a decision that cannot name what pays for it is the accretion this section exists to stop before it starts.
+
+**At close, every slice closeout gains one line:**
 
 > **Removed / combined / demoted / disclosed:** … If nothing, why.
 
-"If nothing, why" is the load-bearing half. A slice that adds without subtracting may be correct; a slice that cannot say why is accreting.
+"If nothing, why" is the load-bearing half on this side. A slice that adds without subtracting may be correct; a slice that cannot say why is accreting.
+
+**A per-screen object-box style count is an optional measure to record beside both lines, not a new required field.** Count the distinct object-box styles on the rendered screen — fill, border, radius, or shadow combinations, excluding controls (links, buttons, fields, tabs, anything pill-shaped) — at phone and desktop width, before and after the slice. A ceiling of 2 (one recipe, plus a dialog if one is open) is the target one shipped consumer used; a different product may set its own ceiling, but "too many boxes" is not itself a check — a count is. Record the count in the review body next to the debt line and the closeout line; `screen-composition-reviewer.mjs` does not read it and this pattern does not ask it to.
+
+**A count that has not been checked against a real frame is not evidence.** One consumer's first script excluded controls by size alone and returned 12 on a frame whose real count was 6 — a wide button and a search field both counted as boxes. Whatever a measuring script reports, open the frame it measured and confirm the number against what a person sees before trusting it, the same discipline § 3a already requires of the cold review itself.
+
+**Promotion status differs by claim, because the evidence differs.** Two consumers independently reached "the screen is built from too many boxes, and nothing said when it was done," and one converged on a rule the other adopted: a screen carries one object-box recipe. That rule — one recipe per screen, checked by eye — is promoted here on second-instance evidence. The debt line and the mechanical style count are one consumer's fix so far; the second consumer applied the recipe rule without running a count ("one panel recipe; checked by eye"). Both stay in this pattern as the documented practice, and the ceiling number and the counting script remain a candidate pending a second product actually running the measurement, per the promotion criterion at the top of this document.
+
+**Provenance.** Rally HQ's card-debt remediation (`docs/design/card-debt-2026-09-21/PLAN.md`, finding F14, commit `f6ef7493`) is the origin of the debt line, the ceiling of 2, and `measure.js` (commit `61826554`) — including the 12-vs-6 miscount, corrected the same session. The rule reached a second product on 630 Volleyball's site: PR #172 ("Visual direction D … one box recipe", merged `9cce4716`) states "Every 2–8px ink bar and the decorative red bars become 1px lines, in both the theme and the plugin," and the direction record for that port (`review/visual-directions-20260923/DIRECTION.md`, commit `58b34440`) scores it against the source principle as "Applied — one panel recipe; checked by eye on Girls only" — confirming the rule transferred and the count did not. Rally HQ's own style guide (`src/routes/style-guide/+page.svelte` §12, "Object boxes and weight") renders the shipped recipe as documentation, and its later audit (`docs/design/style-audit-2026-09-22/AUDIT.md`, commit `862800c6`) reports "The box rule has a check. At most two object-box styles per screen, counted by `measure.js`."
 
 ## 5. Six acceptance states, one new ladder rung, and no collapsing them into "done"
 
@@ -447,6 +473,7 @@ Marketing captures are the vendor's best frame under the vendor's chosen conditi
 | Pattern | Relationship |
 |---|---|
 | [`confident-preview-rule.md`](confident-preview-rule.md) | It sends variant deliberation upstream to Stage 2. § 2 is the artifact that was missing at the other end of that pointer. |
+| [`redesign-evaluation-pattern.md`](redesign-evaluation-pattern.md) | The working procedure behind § 2c's Phase 1 — how candidates get built on the real product, captured comparably, and converged on with a named human choice. |
 | [`ui-rendering-contract-tier.md`](ui-rendering-contract-tier.md) | **Complementary, and deliberately not overlapping.** That pattern asks whether the non-happy-path states were specified and whether they render — mechanical, per state. This one asks whether the rendered whole is any good — judged, across states. A surface can pass the contract tier on all six states and still fail this gate. Its authoring-discipline lesson is why § 1 carries three consumers rather than one. |
 | [`dod-verification-ladder-pattern.md`](dod-verification-ladder-pattern.md) | The five gates are mechanical oracles. This gate is outside that model by construction — see § 3, "How it relates to the DoD ladder." Only the review record is machine-checkable. |
 | [`org-reviewer-authoring.md`](org-reviewer-authoring.md) | The reviewer shipped with this pattern follows the ADR-0002 `review()` contract; a consumer that wants a stricter screen gate writes its own reviewer under a different name rather than shadowing this one. |
