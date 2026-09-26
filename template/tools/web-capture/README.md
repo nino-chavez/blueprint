@@ -74,10 +74,11 @@ sales-support page for a private initiative on 2026-09-26.
 - **A joined image keeps the first segment's canvas size.** Crops cut from it came out short until
   `+repage` reset the canvas.
 
-`--selftest` rebuilds these failures in miniature. It checks four things:
-- the overflow check catches a 4 px overshoot that the `innerWidth` test misses;
-- a 9,500 CSS px page is joined from segments;
-- the joined image is complete;
+`--selftest` rebuilds these failures in miniature. It prints one PASS or FAIL line for each of five checks:
+- the overflow check catches a 4 px overshoot;
+- the `innerWidth` test misses the same overshoot, which is why the check uses `clientWidth`;
+- a 9,500 CSS px page at 2x is joined from segments;
+- the joined image is the full size and does not repeat the page top;
 - a single shot of the same page trips the wrap check.
 
 A check that has never failed is not yet trusted.
