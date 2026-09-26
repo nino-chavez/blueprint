@@ -15,6 +15,18 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+### Added
+
+- **Capture a web page for review, and prove the capture is complete**
+  (wave 120) — `template/tools/web-capture/capture.mjs` shoots a page in six
+  states, joins a tall page from segments, and flags an image that is the
+  wrong size, repeats the page top, or has content past the screen edge.
+  `--selftest` makes each check fail once. The judged-screen pattern now asks
+  the brief for a theme policy and a length budget, checks captures before
+  review, uses the owner's own words as the cold review's test, and has every
+  hand-off name its version and build. Nothing to migrate: the stamper does
+  not install the tool, so run it from the methodology home.
+
 ### Fixed
 
 - **The SessionStart hook says when it cannot find the global-rules docs**

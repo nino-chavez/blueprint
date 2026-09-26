@@ -178,6 +178,8 @@ It carries ten parts.
 
 **Platform strategy.** Which platform conventions the surface adopts, which it declines, and the reason for each decline.
 
+**Theme policy and length budget.** A shareable page states whether it follows the viewer's system theme or uses one fixed theme before the first draft. It states a length budget in desktop screens and a trade-off rule. On a sales-support page for a private initiative (2026-09-26), the page followed the viewer's system theme until the owner asked why it had a dark-mode style. Three owner requests then grew it from 4.8 to 8.7 desktop screens, and the budget was raised each time without a trade-off. When a request breaks the budget, name what it costs and offer what to cut. Never silently raise the budget.
+
 **A `## Surfaces` list.** One bullet per surface the brief governs, under that exact heading. This is the only part of the brief with a literal format requirement, because it is the roster two mechanical readers walk: `screen-composition-reviewer` enumerates it to find which surfaces need a cold review, and nothing else declares that list. A brief without the heading reads as governing zero surfaces, and the gate goes quiet rather than failing.
 
 **An object / action / state matrix.** Every object the screen shows gets a row:
@@ -289,9 +291,13 @@ Device captures, one per representative state. A real device for native. A real 
 
 Captures live beside the record they belong to, at `docs/evidence/screen-reviews/<surface>-<build>/`, one file per representative state. The canonical manifest retains the full state name. Give the cold reviewer neutral capture IDs or byte-identical aliases when a filename would reveal a lifecycle answer, such as `active.png` or `failure.png`. Keep the alias-to-original mapping with the record. Device and accessibility condition names may remain in the cold packet; findings and lifecycle answers may not.
 
+**Check capture completeness before review.** Before any reviewer sees a full-page capture, verify three facts. A page taller than one screenshot can hold was shot in segments and joined, or, if shot once, does not repeat its top past that height. The image is the page's full size. Nothing extends past the viewport, measured against the document's `clientWidth`. Cut review tiles only after a joined image's canvas is reset. Make each check fail once on purpose before trusting it. A sales-support page for a private initiative (2026-09-26) was about 9,450 CSS px tall at 390 px wide and 2x. Chrome stopped at 16,384 device px and repeated the top; its crop had 0 differing pixels. A 4 px horizontal overflow passed against `innerWidth`, and tiles cut from the unreset stitched canvas were short. Follow `template/tools/web-capture/README.md`.
+
 The capture set carries a manifest, and the manifest records the device's accessibility state before the run: text size, Increase Contrast, Bold Text, Reduce Motion, and appearance. On a device the operator holds, ask; on a simulator, read it (`xcrun simctl ui <udid> content_size` / `increase_contrast`) and write the answer down before and after. The reason is a measured one: Minder's first physical capture of build 13 (2026-09-01) ran with Increase Contrast on, nothing in the run reported it, and the operator mentioned it only afterward; the whole set was recaptured. Its simulator evidence for builds 10 through 12 had the same defect the other way round, a simulator left at Accessibility XXXL for three days. A capture whose accessibility state is unknown is a capture of an unknown screen, and a reviewer cannot tell an intended accessibility state from an accidental one. Keeping them next to the review is what lets a later reader check the verdict against what was actually judged; a review pointing at captures that have since moved or been regenerated is a claim with no evidence behind it.
 
 #### How it is judged
+
+**Make owner feedback testable.** When a rebuild answers owner feedback, quote the feedback verbatim in the cold brief as the acceptance test. Tell the reviewer to judge without deference. The implementer also restates the fix as a measurable change. On a sales-support page for a private initiative (2026-09-26), the brief quoted, “there is no clear separation in the sales kit so it's hard to tell how to follow the page.” Version 2 used #ffffff and #f4f5f7 bands at 1.09:1, small section numbers, and rules on nearly every item. Version 3 used #ffffff and #eceff2 at 1.17:1, chapter numbers larger than any other number, and rules only on table rows. The cold reviewer called separation the clearest fix.
 
 The reviewer answers, in order:
 
@@ -344,6 +350,10 @@ One question, in three parts:
 Record it the same way, with `kind: conformance` and `cold: false`. A conformance review claiming `cold: true` has misunderstood its job — it read the direction record, which is the point.
 
 **A conformance pass is not an appearance verdict.** "It matches the ADR" says the team built what it chose. Whether what it chose reads well on the device is the cold review's question, and the cold review is the one that gets skipped when a conformance pass is in hand.
+
+### 3c. Hand the owner a version, not a link
+
+Every rebuilt surface sent to its owner names its version, its build, and one visible marker to inspect. A bare link leaves the owner and team unable to identify the frame under discussion. On a sales-support page for a private initiative (2026-09-26), repeated feedback arrived minutes after version 2 went live, and it was unclear which version the owner had seen. The hand-off names the version and build, then says what visible marker changed, such as the larger chapter number or the absence of item-level rules.
 
 ### How it relates to the DoD ladder
 
