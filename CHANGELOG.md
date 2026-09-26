@@ -29,6 +29,14 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **`web-capture` no longer passes a capture with content missing below the
+  fold** (wave 121) — a full-page shot does not scroll, so lazy images and
+  sections revealed on scroll could be absent while every check passed. The
+  tool now scrolls each page to its end and back in the state's own theme,
+  flags a pass that stops short of the end, and flags any image in the layout
+  that did not finish loading. `--artifact-fragment` keeps the fragment's
+  relative URLs pointing at its own folder, and the self-test now makes the
+  size check fail once, as wave 120 claimed it did. Nothing to migrate.
 - **The SessionStart hook says when it cannot find the global-rules docs**
   (wave 119) — when the two rules docs were missing from the methodology home,
   the hook skipped its check of `~/.claude/CLAUDE.md` without a word, so a
