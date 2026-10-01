@@ -50,6 +50,7 @@ const STEPS = [
   [`${REVIEWERS}/design-principles-reviewer.mjs`, ['--selftest'], /^All \d+ assertions passed\.$/m],
   [`${REVIEWERS}/screen-composition-reviewer.mjs`, ['--selftest'], /^All \d+ assertions passed\.$/m],
   ['template/tools/blueprint-init/smoke.mjs', [], /^smoke green\b/m],
+  ['template/tools/blueprint-init/workflow-smoke.mjs', [], /^workflow-smoke: PASS\b/m],
   ['template/.claude/hooks/blueprint-session-start.py', ['--self-test'], /^blueprint-session-start self-test: PASS\b/m],
 ];
 

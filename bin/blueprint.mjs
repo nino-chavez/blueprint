@@ -463,6 +463,15 @@ async function runDoctor(doctorArgv, home) {
     console.log(`  ${icon[c.status] || '?'} ${c.name.padEnd(20)} ${c.detail}`);
     if (c.remediation) console.log(`      fix: ${c.remediation}`);
   }
+  if (result.health) console.log(`\n  tooling/conformance: ${result.health.status.toUpperCase()}`);
+  if (result.workflow) {
+    console.log(`  workflow readiness: ${result.workflow.status.toUpperCase()} (unfinished work does not mean a broken installation)`);
+    if (result.workflow.detail) console.log(`    ${result.workflow.detail}`);
+    for (const c of result.workflow.checks.filter(c => c.status !== 'pass')) {
+      console.log(`    Stage ${c.stage} / ${c.gate}: ${c.detail}`);
+    }
+    if (result.workflow.status === 'pending') console.log('    next: run `blueprint stage advance` for the transition checks; use --execute only when recording advancement.');
+  }
   console.log('\n  not checked (by design — a green here is not a build/browser green):');
   for (const n of result.notChecked) console.log(`    · ${n}`);
   console.log(`\noverall: ${result.status.toUpperCase()} → exit ${result.status === 'fail' ? 1 : 0}`);
@@ -587,7 +596,7 @@ async function runStage(stageArgv, home) {
     if (!res.ok) {
       for (const g of res.blocking || []) console.log(`  ✗ ${g.gate.padEnd(20)} ${g.evidence}  (derivable — fix on disk, cannot assert)`);
       for (const g of res.missingAssertions || []) console.log(`  ~ ${g.gate.padEnd(20)} ${g.evidence}  (assert with --assert-${g.gate}="…")`);
-      for (const rv of res.reviewerBlocked || []) console.log(`  ✗ ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.note ? ` — ${rv.note}` : ''}`);
+      for (const rv of res.reviewerBlocked || []) console.log(`  ✗ Stage ${rv.stage} / ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.note ? ` — ${rv.note}` : ''}`);
       console.log(`\n  BLOCKED — entry-guard not satisfied.`);
       process.exit(1);
     }

@@ -364,3 +364,8 @@ Pattern B has two modes:
 ## Root instruction delivery
 
 The initial stamp now creates the root `CLAUDE.md` from the canonical template. An existing file or symlink is preserved, including on re-stamp; dry-run does not write it. Before this correction the command promised a root guide but never created one. Delivery checks cover Initiative Portal, Review Portal, and research stamps.
+
+It also creates `AGENTS.md`, a Codex entry point that refers to the same map.
+Existing `AGENTS.md` files and symlinks are preserved too. Follow the map's
+startup commands in any harness; the shipped Claude hook configuration does
+not prove that a host trusted or executed it.

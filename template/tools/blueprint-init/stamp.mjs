@@ -311,25 +311,28 @@ async function copyTree({ src, dst, subs, dryRun, log }) {
 // all three into the Review Portal branch, believing Initiative Portal stamps
 // already had the runner; they never did (decisions/11, wave 113).
 async function installImpositionLayer({ target, subs, dryRun, log }) {
-  // The root guide is project-owned after adoption. Deliver it on first stamp;
-  // never replace an existing file or symlink while updating the scaffold.
-  const guidePath = path.join(target, "CLAUDE.md");
-  if (await fs.lstat(guidePath).catch((error) => {
-    if (error.code === "ENOENT") return null;
-    throw error;
-  })) {
-    log.skipped.push("CLAUDE.md (existing project-owned instructions preserved)");
-  } else if (dryRun) {
-    log.copied.push("CLAUDE.md");
-  } else {
-    await fs.mkdir(target, { recursive: true });
-    const guide = await fs.readFile(path.join(BLUEPRINT_ROOT, "template/CLAUDE.md"), "utf8");
-    try {
-      await fs.writeFile(guidePath, guide, { encoding: "utf8", flag: "wx" });
-      log.copied.push("CLAUDE.md");
-    } catch (error) {
-      if (error.code !== "EEXIST") throw error;
-      log.skipped.push("CLAUDE.md (project instructions appeared during stamp; preserved)");
+  // Preserve the existing exclusive-write contract for both entry points.
+  for (const name of ["CLAUDE.md", "AGENTS.md"]) {
+    // The root guide is project-owned after adoption. Deliver it on first stamp;
+    // never replace an existing file or symlink while updating the scaffold.
+    const guidePath = path.join(target, name);
+    if (await fs.lstat(guidePath).catch((error) => {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    })) {
+      log.skipped.push(`${name} (existing project-owned instructions preserved)`);
+    } else if (dryRun) {
+      log.copied.push(name);
+    } else {
+      await fs.mkdir(target, { recursive: true });
+      const guide = await fs.readFile(path.join(BLUEPRINT_ROOT, "template", name), "utf8");
+      try {
+        await fs.writeFile(guidePath, guide, { encoding: "utf8", flag: "wx" });
+        log.copied.push(name);
+      } catch (error) {
+        if (error.code !== "EEXIST") throw error;
+        log.skipped.push(`${name} (project instructions appeared during stamp; preserved)`);
+      }
     }
   }
   await copyTree({
@@ -1560,12 +1563,12 @@ function printNextSteps({ variant, portalType, stampsPortal, target, derived }) 
     console.log(`    1. Catalog your input assets into research/sources/ (Stage 0: Inputs Intake).`);
     console.log(`    2. Ground personas/JTBD: research/personas-and-jtbd.md (Stage 1 gate).`);
     console.log(`    3. Run \`blueprint stage status --target=${target}\` to see the derived pipeline position.`);
-    console.log(`    4. Open the initiative in your agent harness and run /blueprint-research.`);
+    console.log(`    4. Open the initiative in your agent harness and follow CLAUDE.md's startup instructions (Codex enters through AGENTS.md).`);
   } else {
     console.log(`    1. Fill pilot_profile in blueprint.yml (all 7 fields + a real walkthrough_citation`);
     console.log(`       file) — \`blueprint stage advance\` blocks until it's populated.`);
     console.log(`    2. Run \`blueprint stage status --target=${target}\` to see the derived pipeline position.`);
-    console.log(`    3. Open the initiative in your agent harness and run /blueprint-research (Stage 1).`);
+    console.log(`    3. Open the initiative in your agent harness and follow CLAUDE.md's startup instructions (Codex enters through AGENTS.md).`);
     if (!stampsPortal) {
       console.log(`    4. Tier 0 is pre-portal, so no portal was stamped. When the initiative needs one, move to Tier 1:`);
       console.log(`       $BLUEPRINT_HOME/docs/portal-and-tier-ladder.md § "Moving from Tier 0 to Tier 1".`);
@@ -1576,7 +1579,8 @@ function printNextSteps({ variant, portalType, stampsPortal, target, derived }) 
     console.log(`    5. After the first commit, regenerate derived/ (it was generated before any commit existed):`);
     console.log(`         ${derived.refresh}`);
   }
-  console.log(`    Full map: the stamped CLAUDE.md at the initiative root.`);
+  console.log(`    Full map: CLAUDE.md at the initiative root; AGENTS.md points Codex to it. Existing project instructions are preserved.`);
+  console.log(`    Claude hook configuration is included; host execution and trust have not been verified.`);
 }
 
 // Research-variant scaffolding: the decision-memo pipeline structure + templates.

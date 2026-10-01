@@ -102,6 +102,25 @@ expires — a PASS recorded against artifacts that have since changed remains
 
 ## Consequences
 
+### Research bindings and prior-stage verification (2026-10-01)
+
+The research model now binds `personas-jtbd` to `persona-fit-reviewer` and
+`research-legs` to `research-completeness-reviewer`, both with `onWarn: block`.
+The persona gate passes its ID to the reviewer so Stage 1 does not require the
+future memo. Direct persona reviews retain their full deliverable checks.
+
+Before recording advancement, the verifier walks every mapped gate through
+the proposed cursor, including earlier stages already complete on disk. It
+also rechecks that prefix when all stages appear complete. This closes a bypass:
+the first unfinished stage could be Fact-Check while Research had never run
+its reviewer. Fresh recorded results remain reusable under the existing hash
+and input-fingerprint rules; reviewers without declared inputs rerun.
+
+The read-only workflow view used by doctor runs those same bindings. Missing
+artifacts, assertions, or passing reviews report pending work. A missing or
+broken reviewer reports an execution error. The existing artifact counts stay
+structural: a count alone cannot authorize advancement.
+
 The audit's residual finding — "a deterministic core that ignores its blocking
 reviewer is incomplete" — closes structurally. Costs: reviewers gain an `inputs`
 export (roster sweep), `stage-state.json` schema grows a versioned assertion

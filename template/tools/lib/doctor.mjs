@@ -60,7 +60,7 @@ export async function runDoctor({ home, targetDir }) {
     add('methodology-home', 'pass', `resolved at ${home}`);
   } else {
     add('methodology-home', 'fail', `methodology home not resolvable (${home || 'unset'})`, 'set $BLUEPRINT_HOME or blueprint.yml methodology_home; reinstall @nino-chavez-labs/blueprint-cli');
-    return { checks, status: 'fail', notChecked: ['everything else — no methodology home'] };
+    return { checks, status: 'fail', health: { status: 'fail' }, workflow: { status: 'not-checked', checks: [] }, notChecked: ['everything else — no methodology home'] };
   }
 
   const ymlPath = join(targetDir, 'blueprint.yml');
@@ -489,14 +489,29 @@ export async function runDoctor({ home, targetDir }) {
     add('lint-jurisdiction', 'fail', `lint-jurisdiction check threw: ${e.message}`);
   }
 
-  const status = checks.reduce((acc, c) => worst(acc, c.status), 'pass');
+  // Preserve the existing conformance/health checks and exit contract. Workflow
+  // readiness is a separate, live assessment: pending work warns, never fails
+  // an otherwise healthy installation. A broken checker still fails loudly.
+  const health = { status: checks.reduce((acc, c) => worst(acc, c.status), 'pass') };
+  let workflow = { status: 'not-checked', checks: [] };
+  if (hasYml) {
+    try {
+      const sm = await import(libUrl(home, 'stage-model.mjs'));
+      workflow = await sm.evaluateWorkflowReadiness({ root: targetDir, home });
+    } catch (e) {
+      workflow = { status: 'error', checks: [], detail: e.message };
+    }
+  }
+  const status = worst(health.status, workflow.status === 'error' ? 'fail' : workflow.status === 'pending' ? 'warn' : 'pass');
   // Honesty about the boundary: name what doctor did NOT verify, so a green is
   // never read as more than it is.
   const notChecked = [
     'full build (npm/astro build) — run it in CI / the deploy step',
     'browser/runtime rendering (Playwright) — out of v1 doctor scope; the deploy gate owns it',
+    'human judgment and outcome observation — mechanical checks and recorded receipts do not independently verify them',
+    'host startup-hook execution or trust — installed files and configuration do not prove delivery',
   ];
-  return { checks, status, notChecked };
+  return { checks, status, health, workflow, notChecked };
 }
 
 // ── Self-test (node doctor.mjs --self-test) ──────────────────────────────────
@@ -523,7 +538,7 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   assert(r2.checks.find((c) => c.name === 'reviewers-loadable').status === 'pass', 'real reviewers all load');
   const smCheck = r2.checks.find((c) => c.name === 'stage-model');
   assert(smCheck && smCheck.status === 'pass', 'stage-model resolves (self-app declares greenfield, no fallback)');
-  assert(Array.isArray(r2.notChecked) && r2.notChecked.length === 2, 'reports its not-checked boundary');
+  assert(Array.isArray(r2.notChecked) && r2.notChecked.length === 4, 'reports its not-checked boundary');
   assert(['pass', 'warn'].includes(r2.status), 'real home is healthy (pass/warn)');
 
   // All runtime scalar consumers must agree on column-zero, quote-aware

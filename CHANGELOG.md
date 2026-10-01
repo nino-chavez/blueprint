@@ -41,6 +41,20 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Fixed
 
+- **Research advancement runs its required reviewers, and readiness stays
+  separate from tooling health** (wave 124). The research
+  model binds persona-fit and research-completeness before advancement, including
+  earlier stages that already look complete on disk. Doctor adds `health` and
+  `workflow` results while retaining its existing checks and exit convention:
+  unfinished workflow warns; a broken check fails. New stamps add `AGENTS.md`
+  as a Codex pointer to the existing `CLAUDE.md` owner. Both instruction files
+  remain project-owned after stamping. Ready outputs without target-grade
+  receipts now report PENDING, and recovery briefs no longer call outcomes
+  proven. Existing manifests can therefore move from PASS to PENDING without
+  a schema change. Record real receipts or keep the pending state; do not add
+  synthetic observations to regain PASS. Existing consumers and host hooks
+  are unchanged by this local work.
+
 - **Template instructions no longer override the host's dispatch, browser, or
   setup policy** (wave 123) — Blueprint still requires overlap checks,
   evidence, parent judgment, and project-local SessionStart context. The host
