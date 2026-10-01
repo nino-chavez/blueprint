@@ -596,7 +596,7 @@ async function runStage(stageArgv, home) {
     if (!res.ok) {
       for (const g of res.blocking || []) console.log(`  ✗ ${g.gate.padEnd(20)} ${g.evidence}  (derivable — fix on disk, cannot assert)`);
       for (const g of res.missingAssertions || []) console.log(`  ~ ${g.gate.padEnd(20)} ${g.evidence}  (assert with --assert-${g.gate}="…")`);
-      for (const rv of res.reviewerBlocked || []) console.log(`  ✗ ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.note ? ` — ${rv.note}` : ''}`);
+      for (const rv of res.reviewerBlocked || []) console.log(`  ✗ Stage ${rv.stage} / ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.note ? ` — ${rv.note}` : ''}`);
       console.log(`\n  BLOCKED — entry-guard not satisfied.`);
       process.exit(1);
     }

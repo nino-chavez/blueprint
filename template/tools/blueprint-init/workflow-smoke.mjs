@@ -84,9 +84,22 @@ try {
   put('research/personas-and-jtbd.md', '# Personas\nA filled-looking file with enough text but no grounded persona jobs.');
   await test('an already recorded stage cannot hide invalidated personas', async () => {
     const before = readFileSync(join(root, '.blueprint/stage-state.json'), 'utf8');
+    const frontier = deriveStageStatus({ root, assertions: JSON.parse(before).assertions }).nextStage;
+    assert(frontier.id > 1, 'regression must have later unfinished work');
     const r = await advance(true);
     assert.equal(r.ok, false);
-    assert(r.reviewerBlocked?.some(c => c.reviewer === 'persona-fit-reviewer'));
+    assert.equal(r.target.id, frontier.id, 'missing work must retain its own frontier stage');
+    assert(r.reviewerBlocked?.some(c => c.reviewer === 'persona-fit-reviewer' && c.stage === 1));
+    let cli;
+    try {
+      execFileSync(process.execPath, [join(home, 'bin/blueprint.mjs'), 'stage', 'advance', `--target=${root}`], { env: { ...process.env, BLUEPRINT_HOME: home }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+      assert.fail('invalidated personas must block the CLI');
+    } catch (e) {
+      assert.equal(e.status, 1);
+      cli = e.stdout;
+    }
+    assert.match(cli, new RegExp(`target frontier: Stage ${frontier.id} `));
+    assert.match(cli, /Stage 1.*reviewer persona-fit-reviewer/);
     assert.equal(readFileSync(join(root, '.blueprint/stage-state.json'), 'utf8'), before);
   });
   put('research/personas-and-jtbd.md', personas);

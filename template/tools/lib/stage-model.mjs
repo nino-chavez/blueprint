@@ -917,10 +917,11 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
   for (const st of stagesToVerify) {
     for (const g of st.gates.filter((x) => x.state === 'pass' && x.reviewer && x.reviewer.name)) {
       const v = await verifyGateReviewer({ root, home, gate: g, recorded: prevReviews[g.gate], stamp });
-      reviewReports.push(v.report);
+      const report = { ...v.report, stage: st.id, stageName: st.name };
+      reviewReports.push(report);
       if (v.record) reviews[g.gate] = v.record;
       if (!v.ok) {
-        return { ok: false, target: { id: st.id, name: st.name }, blocking: blocking.map(g => ({ gate: g.gate, evidence: g.evidence })), missingAssertions: stillNeeding.map(g => ({ gate: g.gate, evidence: g.evidence })), reviewerBlocked: [v.report], reviews: reviewReports, state: prev };
+        return { ok: false, target: { id: target.id, name: target.name }, blocking: blocking.map(g => ({ gate: g.gate, evidence: g.evidence })), missingAssertions: stillNeeding.map(g => ({ gate: g.gate, evidence: g.evidence })), reviewerBlocked: [report], reviews: reviewReports, state: prev };
       }
     }
   }
