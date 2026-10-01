@@ -123,7 +123,7 @@ export function renderRecoveryBrief(proj) {
   L.push('');
   if (proj.verdict.errors.length) { L.push('Blocked:'); for (const e of proj.verdict.errors) L.push(`- ${e}`); }
   if (proj.verdict.pendings.length) { L.push('Open (PENDING is not green):'); for (const p of proj.verdict.pendings) L.push(`- ${p}`); }
-  if (!proj.verdict.errors.length && !proj.verdict.pendings.length) L.push('All declared outcomes served and proven.');
+  if (proj.verdict.state === 'PASS') L.push('Manifest validation passed; any recorded outcome observations still require independent verification.');
   L.push('');
   if (proj.recent.length) {
     L.push('## Recent movement (git)');
@@ -208,7 +208,7 @@ outputs:
 `);
   const { proj, outDir } = derive(fx);
   ok(proj.schema === SCHEMA && proj.initiative === 'fixture', 'projection carries schema + initiative');
-  ok(proj.verdict.state === 'PENDING' && proj.verdict.pendings.length === 1, 'verdict embedded (planned-only → PENDING)');
+  ok(proj.verdict.state === 'PENDING' && proj.verdict.pendings.some(p => p.includes('R2-lifecycle')) && proj.verdict.pendings.some(p => p.includes('R4-receipts')), 'verdict embeds unfinished output and missing outcome receipt');
   ok(proj.account.decisions[0].exists && proj.account.decisions[0].entries === 2, 'account entry count leaves templates out');
   ok(proj.decisions.map((d) => d.file).join() === 'decisions/01-thing.md,decisions/02-copied.md', 'decisions index skips _TEMPLATE.md and template: true');
   ok(proj.decisions[0].title.includes('pick the thing'), 'decisions indexed by title');

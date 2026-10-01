@@ -201,7 +201,7 @@ export function validateManifest(m, opts = {}) {
     for (const ref of o.serves ?? []) {
       const t = outcomes.get(ref);
       if (!t) { E('R1-refs', `output ${o.id} serves unknown outcome "${ref}"`); continue; }
-      t.servedBy.push({ id: o.id, status });
+      t.servedBy.push({ ...o, status });
     }
 
     // R3 — recipient-safe is a proven state, not declared metadata.
@@ -274,10 +274,23 @@ export function validateManifest(m, opts = {}) {
   }
 
   // R2 — every declared outcome is served by something real.
-  for (const [ref, { servedBy }] of outcomes) {
+  for (const [ref, { outcome, servedBy }] of outcomes) {
     if (servedBy.length === 0) E('R2-lifecycle', `unserved outcome: ${ref} — declared actor need with no output serving it`);
     else if (!servedBy.some((s) => SERVING.includes(s.status)))
       P('R2-lifecycle', `outcome ${ref} is served only by ${servedBy.map((s) => `${s.id}(${s.status})`).join(', ')} — PENDING, not green`);
+    // A target describes the evidence still needed; ready/issued describes an
+    // artifact. Neither establishes the actor's outcome. Match the declared
+    // target exactly, with no silent upgrade from an interim evidence grade.
+    const proof = outcome.success?.proof;
+    const method = (proof?.target ?? proof)?.method;
+    if (method && GRADES.includes(method)) {
+      const backed = servedBy.some(s => SERVING.includes(s.status)
+        && Array.isArray(s.assurance?.receipts)
+        && s.assurance.receipts.some(r => r?.grade === method && r.result === 'pass'
+          && typeof r.observer === 'string' && r.observer.trim()
+          && typeof r.at === 'string' && r.at.trim()));
+      if (!backed) P('R4-receipts', `outcome ${ref} has no ${method} pass receipt on a ready/issued serving output — outcome success unproven`);
+    }
   }
 
   // R6 — typed preconditions: enforceable orderings, not open-vocabulary labels.
@@ -389,6 +402,9 @@ outputs:
     status: ready
     artifact: HANDOFF.md
     clearance: internal
+    assurance:
+      receipts:
+        - { grade: observed-human, observer: operator, at: 2026-07-20, result: pass }
   - id: package
     type: issued-package
     serves: [reviewer.verify]
@@ -428,7 +444,7 @@ outputs:
   ok(validateManifest(leak, opts).verdict === 'BLOCKED', 'recipient-safe + cite BLOCKs');
 
   // 5. passed without an observed-human receipt → BLOCKED; legacy validated_by → BLOCKED
-  const nog = parseManifest(BASE.replace('grade: observed-human', 'grade: simulated-walk'));
+  const nog = parseManifest(BASE.replaceAll('grade: observed-human', 'grade: simulated-walk'));
   ok(validateManifest(nog, opts).errors.some((e) => e.includes('no observed-human pass receipt')), 'grade upgrade BLOCKs');
   const legacyBy = parseManifest(BASE.replace('human_validation: passed', 'validated_by: persona-walk-agent'));
   ok(validateManifest(legacyBy, opts).errors.some((e) => e.includes('legacy validated_by')), 'validated_by string BLOCKs');

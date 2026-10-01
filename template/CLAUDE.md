@@ -4,6 +4,33 @@
 
 Agent-assisted jig for product planning, prototyping, and stakeholder alignment. This file is a **map**, not a manual — pointers to canonical docs, not inlined content. See `blueprint.yml` for project configuration.
 
+## Start here — every agent harness
+
+This is the shared map for Claude, Codex, and other agents. `AGENTS.md` points
+here so the methodology instructions have one owner.
+
+1. Read `blueprint.yml` and any `METHODOLOGY-AMENDMENTS.md` before choosing work.
+2. Run `blueprint doctor --target=.`. Its tooling/conformance result and workflow
+   readiness are separate. Pending research is normal unfinished work.
+3. Run `blueprint stage status --target=.` for the artifact view. Before claiming
+   advancement, run `blueprint stage advance --target=.`. It runs the mapped
+   reviewers without writing state. Use `--execute` when recording a transition;
+   supply manual assertions only after doing the work they describe.
+4. Read the selected variant's workflow in
+   `$BLUEPRINT_HOME/docs/variant-selection.md` and the applicable instructions in
+   `.claude/skills/blueprint/`. These files can be read directly in Codex; slash-command
+   support is not required. For research, start with
+   `.claude/skills/blueprint/research.md`.
+
+If `BLUEPRINT_HOME` is unset, doctor's `methodology-home` check names the
+resolved installation; use that path for the references in this map. The CLI
+also accepts `--help` for available commands.
+
+The stamp includes Claude startup-hook configuration. This is not evidence
+that any host has trusted or run a hook. Codex uses this file through
+`AGENTS.md`; no shared host configuration needs changing. Mechanical reviewer
+passes do not replace the judgment checks in their paired `.md` specifications.
+
 ## Operating invariants (read before any methodology-shaped work)
 
 These two rules govern the relationship between an initiative's repo and the Blueprint methodology repo. Both are encoded responses to drift modes observed on 2026-05-25.

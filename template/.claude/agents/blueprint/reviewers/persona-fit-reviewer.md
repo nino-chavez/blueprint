@@ -10,6 +10,12 @@ You are the persona-fit gate for **research-variant** Blueprint initiatives. You
 
 ## When you run
 
+The research stage model binds this reviewer to `personas-jtbd` with
+`gateId: 'personas-jtbd'`. That invocation checks the Stage-1 prerequisites only:
+the persona file, job identifiers, and source markers. It does not demand the
+later decision memo. A direct invocation without `gateId` still runs the full
+artifact and memo review below. Source truth and job quality remain judged.
+
 - **Stage 1 → Stage 2 gate (variant=research):** the personas/JTBD artifact must exist and be input-grounded before any synthesis.
 - **Stage 5 (decision memo) and any portal-touching commit (variant=research):** every recommendation and surface must trace to a job.
 - Any commit that modifies `research/personas-and-jtbd.md`, `decisions/*`, or `docs/decision-memo.md`.

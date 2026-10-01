@@ -11,7 +11,7 @@ matching ADR-0002's `review()` contract:
 
 ```js
 // .blueprint/reviewers/acme-naming-reviewer.mjs
-export default async function review({ targetDir, blueprintYml, methodologyHome }) {
+export default async function review({ targetDir, blueprintYml, methodologyHome, gateId }) {
   const findings = [];
   // ... inspect targetDir; push { severity, location, message, remediation, reference } ...
   const status = findings.some((f) => f.severity === 'BLOCK')
@@ -20,6 +20,11 @@ export default async function review({ targetDir, blueprintYml, methodologyHome 
   return { status, findings, metadata: { reviewer: 'acme-naming-reviewer', targetSummary: '...' } };
 }
 ```
+
+`gateId` is optional. Stage advancement and doctor's workflow check supply the
+mapped gate's ID; direct reviewer runs omit it. A reviewer may use it to check
+an early prerequisite without demanding a later deliverable. Existing reviewers
+can ignore it. The model still owns the binding and `onWarn` policy.
 
 `blueprint review acme-naming-reviewer --target=<dir>` runs it; exit 1 on
 `BLOCKED`. `blueprint review --list` shows it alongside the canonical set. The

@@ -46,6 +46,14 @@ The Initiative Portal retires; the Review Portal demotes to the `review-context`
 
 1. **Schema + validator** — productize the experimental validator's eight rule families into `template/tools/lib/` (dependency-free, self-tested, per house rules); replace the string-sniffed grade heuristic with structured receipts (grade, observer, timestamp, source version, result, evidence location, expiry).
 2. **Gate semantics** — three-state output: `PASS` (valid + required outcomes served) / `PENDING` (structurally valid; planned outputs or unmet receipts) / `BLOCKED` (invalid/unsafe/stale). A stage transition never treats PENDING as green. Gate mode requires resolvable roots — skipped path validation cannot produce green.
+
+   Receipt enforcement (2026-10-01): each declared outcome needs a structured
+   passing receipt matching its target method on a ready or issued output that
+   serves it. Omitted assurance is PENDING even when the artifact is ready.
+   Human and team outcomes still require observed-human evidence; an agent
+   outcome requires its own declared target method. The receipt is an
+   output-level declaration under the existing schema, not independent proof
+   that the observation happened. No receipt is fabricated at stamp time.
 3. **Routing shim** — dual-validation per above; the legacy route actually invokes the existing portal reviewers, not just a warn.
 4. **Recipient safety made evidentiary** — selector-level allowlists, required `as_of` + destination policy, executed leakage lint (generalizing the GSI `sanitize.py` mechanism), recorded issuance attestation. "Configured to be checked" ≠ "recipient-safe proven."
 5. **Account projection + intrinsic outputs** — stable machine projection of the account layer; versioned agent boot packet; standing recovery-brief derivation.

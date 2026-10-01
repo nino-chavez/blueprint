@@ -85,7 +85,7 @@ function outcomeCoverage(memoText, jobIndex) {
   };
 }
 
-export default async function review({ targetDir, blueprintYml }) {
+export default async function review({ targetDir, blueprintYml, gateId }) {
   const startedAt = Date.now();
   const findings = [];
 
@@ -117,6 +117,16 @@ export default async function review({ targetDir, blueprintYml }) {
     if (!/source:/i.test(sec)) {
       findings.push({ severity: 'BLOCK', location: `research/personas-and-jtbd.md (### ${head})`, message: `PERSONA_UNGROUNDED — "${head}" has no Source: (must derive from research/sources/).`, remediation: 'Add a Source: line pointing at the input asset.', reference: 'persona-fit-reviewer.md' });
     }
+  }
+
+  // The Stage-1 transition precedes synthesis and the memo. The direct reviewer
+  // remains the full deliverable audit; the bound gate checks its prerequisites.
+  if (gateId === 'personas-jtbd') {
+    return {
+      status: findings.some(f => f.severity === 'BLOCK') ? 'BLOCKED' : 'PASS',
+      findings,
+      metadata: { reviewer: 'persona-fit-reviewer', targetSummary: `Stage 1 personas; jobs=${jobIndex.size}; downstream memo not checked`, durationMs: Date.now() - startedAt },
+    };
   }
 
   // Decisions + memo recommendations trace to jobs

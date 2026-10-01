@@ -1,0 +1,65 @@
+{
+  "source_base": "a4f1ff182fe849d898d2df401711b0b4da6f659b",
+  "kind": "read-only consumer calibration; no files or stage state changed",
+  "results": [
+    {
+      "fixture": "preserved pre-repair consumer",
+      "manifest_sha256": "aa7703b6ac848c51ab2069ae6ab08f105ee1030fb5ff21222ba74fac29f6d918",
+      "manifest": "PENDING",
+      "manifest_errors": 0,
+      "missing_receipt_findings": 3,
+      "health": "fail",
+      "workflow": "pending",
+      "research_reviews": [
+        {
+          "stage": 1,
+          "gate": "personas-jtbd",
+          "status": "pass",
+          "detail": "PASS: research|.: filename ~ /personas-and-jtbd|personas.*jtbd|personas/",
+          "reviewer": "persona-fit-reviewer",
+          "ran": true,
+          "reviewStatus": "PASS"
+        },
+        {
+          "stage": 2,
+          "gate": "research-legs",
+          "status": "pending",
+          "detail": "research/: 2 leg(s) (<3)",
+          "reviewer": "research-completeness-reviewer",
+          "ran": false
+        }
+      ],
+      "stage_state_unchanged": true
+    },
+    {
+      "fixture": "current repaired consumer",
+      "manifest_sha256": "b95abab360cd2f3dd92cef88be65cafc110255dd7af7763fbef9db3000778396",
+      "manifest": "PENDING",
+      "manifest_errors": 0,
+      "missing_receipt_findings": 4,
+      "health": "warn",
+      "workflow": "pending",
+      "research_reviews": [
+        {
+          "stage": 1,
+          "gate": "personas-jtbd",
+          "status": "pass",
+          "detail": "PASS: research|.: filename ~ /personas-and-jtbd|personas.*jtbd|personas/",
+          "reviewer": "persona-fit-reviewer",
+          "ran": true,
+          "reviewStatus": "PASS"
+        },
+        {
+          "stage": 2,
+          "gate": "research-legs",
+          "status": "pass",
+          "detail": "PASS: research/: 4 legs (competitive, personas-and-jtbd.md, prior-art, problem-space)",
+          "reviewer": "research-completeness-reviewer",
+          "ran": true,
+          "reviewStatus": "PASS"
+        }
+      ],
+      "stage_state_unchanged": true
+    }
+  ]
+}

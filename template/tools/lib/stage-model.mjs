@@ -549,15 +549,16 @@ export const RESEARCH_MODEL = {
       { id: 'sources-catalog', derivable: true, kind: 'any-exists', params: { dirs: ['research/sources'], placeholders: SOURCES_PLACEHOLDERS } },
     ] },
     { id: 1, name: 'Personas & JTBD', gates: [
-      { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas', placeholders: PERSONAS_PLACEHOLDERS } },
+      { id: 'personas-jtbd', derivable: true, kind: 'name-match', params: { dirs: ['research', '.'], pattern: 'personas-and-jtbd|personas.*jtbd|personas', placeholders: PERSONAS_PLACEHOLDERS }, reviewer: { name: 'persona-fit-reviewer', onWarn: 'block' } },
     ] },
     { id: 2, name: 'Research', gates: [
       // layout-tolerant: ≥3 research legs (any names), excluding the Stage-0
       // `sources/` intake dir so it isn't counted as a research leg. The
       // research-completeness-reviewer enforces the specific legs +
-      // primary-source grounding. (Uncalibrated — no local research consumer.)
+      // substance. Its executable binding blocks advancement when a counted
+      // persona file masks a missing required leg. Source quality stays judged.
       // An unfilled personas template is not a leg; a filled one still counts.
-      { id: 'research-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 3, exclude: ['sources'], placeholders: PERSONAS_PLACEHOLDERS } },
+      { id: 'research-legs', derivable: true, kind: 'research-legs', params: { dir: 'research', min: 3, exclude: ['sources'], placeholders: PERSONAS_PLACEHOLDERS }, reviewer: { name: 'research-completeness-reviewer', onWarn: 'block' } },
     ] },
     { id: 3, name: 'Synthesis & Decisions', gates: [
       { id: 'decisions', derivable: true, kind: 'dir-md-min', params: { dirs: ['decisions', 'docs/decisions'], min: 1 } },
@@ -811,7 +812,7 @@ async function verifyGateReviewer({ root, home, gate, recorded, stamp }) {
     return { ok: true, report: { gate: gate.gate, reviewer: name, ran: false, status: 'PASS', note: 'recorded result fresh (reviewer + inputs unchanged)' }, record: recorded };
   }
   let r;
-  try { r = await mod.default({ targetDir: root }); }
+  try { r = await mod.default({ targetDir: root, methodologyHome: home, gateId: gate.gate }); }
   catch (e) { return { ok: false, report: { gate: gate.gate, reviewer: name, ran: true, status: 'THREW', note: e.message } }; }
   const status = r && r.status;
   const firstBlock = ((r && r.findings) || []).find((f) => f.severity === 'BLOCK');
@@ -823,6 +824,37 @@ async function verifyGateReviewer({ root, home, gate, recorded, stamp }) {
     return { ok: false, report: { gate: gate.gate, reviewer: name, ran: true, status: 'WARN', note: `onWarn=${onWarn} — transition refused${hint}` } };
   }
   return { ok: false, report: { gate: gate.gate, reviewer: name, ran: true, status: status || 'INVALID-RESULT', note: firstBlock ? firstBlock.message.slice(0, 160) : 'reviewer did not return PASS' } };
+}
+
+// Read-only workflow view for doctor. Unfinished artifacts/assertions and
+// reviewer BLOCKs are pending work; inability to run a mapped check is an error.
+// This does not record assertions or claim that a host startup hook executed.
+export async function evaluateWorkflowReadiness({ root, home }) {
+  const saved = readStageState(root);
+  if (saved.corrupt) return { status: 'error', checks: [], detail: saved.error };
+  const st = deriveStageStatus({ root, assertions: saved.assertions || {} });
+  const checks = [];
+  for (const stage of st.stages) {
+    for (const gate of stage.gates) {
+      const check = { stage: stage.id, gate: gate.gate, status: gate.state === 'pass' ? 'pass' : 'pending', detail: gate.evidence };
+      if (gate.reviewer) {
+        check.reviewer = gate.reviewer.name;
+        check.ran = false;
+        if (gate.state === 'pass') {
+          const v = await verifyGateReviewer({ root, home, gate, stamp: new Date().toISOString() });
+          check.ran = v.report.ran;
+          check.reviewStatus = v.report.status;
+          check.status = v.ok ? 'pass' : ['BLOCKED', 'WARN'].includes(v.report.status) ? 'pending' : 'error';
+          check.detail = `${v.report.status}: ${v.report.note || gate.evidence}`;
+        }
+      }
+      checks.push(check);
+    }
+  }
+  return {
+    status: checks.some(c => c.status === 'error') ? 'error' : checks.some(c => c.status === 'pending') ? 'pending' : 'ready',
+    checks,
+  };
 }
 
 export function readStageState(root) {
@@ -855,8 +887,8 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
 
   // frontier from recorded assertions only — the fixed target for this call
   const base = deriveStageStatus({ root, assertions: recorded });
-  const frontier = base.nextStage;
-  if (!frontier) return { ok: true, complete: true, cursor: base.cursor, message: 'all stages confirmed — pipeline complete', state: prev };
+  const frontier = base.nextStage || base.stages.at(-1);
+  if (!frontier) return { ok: true, complete: true, cursor: base.cursor, message: 'stage model declares no stages', state: prev };
 
   // fold the new assertions and test whether THIS frontier completes
   const merged = { ...recorded };
@@ -865,18 +897,8 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
   const target = withNew.stages.find((s) => s.id === frontier.id);
   const blocking = target.gates.filter((g) => g.derivable && g.state !== 'pass');
   const stillNeeding = target.gates.filter((g) => !g.derivable && g.state !== 'pass');
-  if (blocking.length || stillNeeding.length) {
-    return {
-      ok: false,
-      target: { id: target.id, name: target.name },
-      blocking: blocking.map((g) => ({ gate: g.gate, evidence: g.evidence })),
-      missingAssertions: stillNeeding.map((g) => ({ gate: g.gate, evidence: g.evidence })),
-      state: prev,
-    };
-  }
-
-  // ADR-0009: the frontier's structural gates are satisfied — now VERIFY every
-  // gate that maps an executable reviewer. Fresh recorded PASSes are reused;
+  // ADR-0009: VERIFY structurally satisfied gates with executable reviewers,
+  // even when a later frontier gate is unfinished. Fresh PASSes are reused;
   // stale/absent ones run the reviewer here (read-only, so dry-run runs them
   // too and reports what --execute would record). Any non-passing reviewer
   // refuses the transition.
@@ -888,17 +910,32 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
   // already-disk-complete stages" — without this walk, a mapped gate on a
   // passed-through stage would be confirmed with its reviewer never run, a
   // silent skip with no UNRESOLVED and no record).
-  const stagesToVerify = withNew.stages.filter((s) => s.id >= frontier.id && s.id <= Math.max(withNew.cursor, frontier.id));
+  // Recheck the entire prefix, including stages already complete on disk or
+  // recorded by an older model. Otherwise filled-looking research before the
+  // frontier never runs its reviewer. Fresh receipts still avoid repeated work.
+  const stagesToVerify = withNew.stages.filter((s) => s.id <= Math.max(withNew.cursor, frontier.id));
   for (const st of stagesToVerify) {
-    for (const g of st.gates.filter((x) => x.reviewer && x.reviewer.name)) {
+    for (const g of st.gates.filter((x) => x.state === 'pass' && x.reviewer && x.reviewer.name)) {
       const v = await verifyGateReviewer({ root, home, gate: g, recorded: prevReviews[g.gate], stamp });
       reviewReports.push(v.report);
       if (v.record) reviews[g.gate] = v.record;
       if (!v.ok) {
-        return { ok: false, target: { id: st.id, name: st.name }, blocking: [], missingAssertions: [], reviewerBlocked: [v.report], reviews: reviewReports, state: prev };
+        return { ok: false, target: { id: st.id, name: st.name }, blocking: blocking.map(g => ({ gate: g.gate, evidence: g.evidence })), missingAssertions: stillNeeding.map(g => ({ gate: g.gate, evidence: g.evidence })), reviewerBlocked: [v.report], reviews: reviewReports, state: prev };
       }
     }
   }
+
+  if (blocking.length || stillNeeding.length) {
+    return {
+      ok: false,
+      target: { id: target.id, name: target.name },
+      blocking: blocking.map((g) => ({ gate: g.gate, evidence: g.evidence })),
+      missingAssertions: stillNeeding.map((g) => ({ gate: g.gate, evidence: g.evidence })),
+      reviews: reviewReports,
+      state: prev,
+    };
+  }
+  if (!base.nextStage) return { ok: true, complete: true, cursor: base.cursor, message: 'all stages confirmed — pipeline complete', reviews: reviewReports, state: prev };
 
   const state = {
     cursor: withNew.cursor,          // may jump past already-disk-complete stages
