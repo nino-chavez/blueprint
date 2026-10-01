@@ -21,12 +21,17 @@ A 200 response from curl is not enough. A green `@smoke` Playwright suite is not
 
 4. **Run the smoke suite.** Look for `@smoke`-tagged Playwright specs in `prototype/tests/` or `tests/` or `playwright.config.ts`'s testDir. Run via `npx playwright test --grep @smoke`. Pass if all `@smoke` specs pass; otherwise BLOCK.
 
-5. **Capture viewport screenshots — every changed page.** Use `browse-tool` per the Stage 0 reference recipe:
+5. **Capture viewport screenshots — every changed page.** Use the browser tool
+   and persistent profile selected by the configured host or workspace policy.
+   Do not create, override, or reseed a profile for this run. Keep this run's
+   tabs and declared port separate from other tasks, and close only what this
+   run started. For a `browse-tool` route, the navigation and capture loop is:
 
    ```bash
-   browse-start --profile-name <initiative-slug>-blueprint --headless
+   # BROWSE_SESSION and PREVIEW_ORIGIN come from this run's isolation brief.
+   export BROWSE_SESSION="<assigned-session>"
    for page in $(./scripts/list-pages.sh); do
-     browse-nav "http://localhost:<port>/$page" --wait
+     browse-nav "${PREVIEW_ORIGIN}/$page" --wait
      browse-screenshot --out ".smoke-screenshots/$(basename $page .html).png"
    done
    ```

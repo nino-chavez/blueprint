@@ -64,6 +64,13 @@ const bad = (label, detail) => {
 };
 const check = (cond, label, detail) => (cond ? ok(label) : bad(label, detail));
 
+// Check delivered instructions, not just their template source.
+async function checkConsumerGuide(root, label) {
+  const expected = await fs.readFile(path.join(BLUEPRINT_ROOT, "template", "CLAUDE.md"), "utf8");
+  const actual = await fs.readFile(path.join(root, "CLAUDE.md"), "utf8").catch(() => null);
+  check(actual === expected, `${label} delivers the canonical root instruction file`, "missing or changed CLAUDE.md");
+}
+
 // Every script in a stamped package.json must run against what the stamp wrote:
 // each `node <file>` names a file and each `-w <dir>` a workspace that exists.
 // Wave 109: research stamps shipped `-w apps/portal` scripts and no apps/portal.
@@ -153,6 +160,7 @@ try {
     if (await fs.stat(path.join(target, rel)).catch(() => null)) ok(`stamped: ${rel}`);
     else bad(`stamped: ${rel}`, "missing — imposition layer gap");
   }
+  await checkConsumerGuide(target, "Pattern B");
   // 2b — Pattern B writes no package.json, so its recovery brief must name a
   // refresh command that works without one (wave 109).
   const bRefresh = await briefRefreshCommand(target);
@@ -244,6 +252,7 @@ try {
   } catch (err) {
     bad("Pattern A real stamp exits 0", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
   }
+  await checkConsumerGuide(aTarget, "Pattern A");
   const aYml = await fs.readFile(path.join(aTarget, "blueprint.yml"), "utf8").catch(() => "");
   if (/^pilot_profile_policy: required$/m.test(aYml)) ok("Pattern A stamp writes pilot_profile_policy: required");
   else bad("Pattern A stamp writes pilot_profile_policy: required", "policy line missing from stamped blueprint.yml");
@@ -493,6 +502,7 @@ try {
       `--target=${researchTarget}`,
     ]);
     ok("research real stamp exits 0");
+    await checkConsumerGuide(researchTarget, "Research");
     if (/stamping research decision\/evidence scaffold/.test(researchStamp.stdout)
       && !/stamping Initiative Portal scaffold/.test(researchStamp.stdout)) {
       ok("research stamp identifies the memo/evidence scaffold, not an Initiative Portal");
@@ -686,6 +696,20 @@ try {
   } catch (err) {
     bad("research real stamp", (err.stderr || err.message).split("\n").slice(-3).join(" | "));
   }
+
+  // Existing consumer instructions belong to the project, including on re-stamp.
+  const guideTarget = path.join(tmp, "smoke-owned-guide");
+  await fs.mkdir(guideTarget);
+  const ownedGuide = "# Project-owned instructions\nPreserve this exact file.\n";
+  await fs.writeFile(path.join(guideTarget, "CLAUDE.md"), ownedGuide);
+  const guideArgs = [STAMP, "--name=smoke-owned-guide", "--variant=research", "--tier=0", `--target=${guideTarget}`];
+  await execFile(process.execPath, guideArgs, { timeout: 30000 });
+  check(await fs.readFile(path.join(guideTarget, "CLAUDE.md"), "utf8") === ownedGuide,
+    "stamp preserves project-owned root instructions");
+  const dryGuideTarget = path.join(tmp, "smoke-dry-guide");
+  await execFile(process.execPath, [STAMP, "--name=smoke-dry-guide", "--variant=research", "--tier=0", "--dry-run", `--target=${dryGuideTarget}`], { timeout: 30000 });
+  check(!(await fs.lstat(path.join(dryGuideTarget, "CLAUDE.md")).catch(() => null)),
+    "dry-run does not write root instructions");
 
   // 12 — the canonical convention and both shipped entry examples must expose
   // the same fields. Drift here made a consumer choose between incompatible

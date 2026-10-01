@@ -15,6 +15,10 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ## Unreleased
 
+- Initial stamps now deliver the root `CLAUDE.md` they advertised. Existing project instructions and symlinks are preserved on re-stamp; dry-run does not write the guide.
+
+- Parent verification also repaired the browser reference and SessionStart output: a missing legacy marker no longer prescribes a global append.
+
 ### Added
 
 - **Capture a web page for review, and prove the capture is complete**
@@ -36,6 +40,18 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
   research report is complete; design benefit remains unmeasured.
 
 ### Fixed
+
+- **Template instructions no longer override the host's dispatch, browser, or
+  setup policy** (wave 123) — Blueprint still requires overlap checks,
+  evidence, parent judgment, and project-local SessionStart context. The host
+  now selects worker model and effort, concurrent writers always use separate
+  worktrees, and existing publication authority carries through without a new
+  confirmation. Browser runs use the configured persistent profile without
+  creating or reseeding one. Fresh stamps retain project-local context loading;
+  manual prompts remain the fallback. Ordinary initiative work no longer tells
+  a user to install global hooks or append another managed rules block. Existing
+  consumers remain unchanged until their authorized update path applies the
+  template.
 
 - **`web-capture` no longer passes a capture with content missing below the
   fold** (wave 121) — a full-page shot does not scroll, so lazy images and

@@ -157,10 +157,10 @@ def load_canonical(blueprint_home: Path) -> list[tuple[str, str]]:
 
 
 def _verify_global_rules(blueprint_home: Path) -> str:
-    """Verify methodology-shaped global rules are installed.
+    """Check the legacy global-rules marker without prescribing installation.
 
     Returns the line main() adds to the session context: a warning when
-    ~/.claude/CLAUDE.md lacks the rules block, a note when the two rules docs
+    ~/.claude/CLAUDE.md lacks the marker (not proof the policy is absent), a note when the two rules docs
     are missing from the methodology home, or "". The note names where the
     hook looked: returning nothing there hid a wrong path from wave 74 to wave
     116. An unreadable ~/.claude/CLAUDE.md still returns "" (wave 119 follow-up).
@@ -175,38 +175,22 @@ def _verify_global_rules(blueprint_home: Path) -> str:
             "update the methodology source or point `BLUEPRINT_HOME` at a complete copy."
         )
 
-    # Check if the marker block exists in ~/.claude/CLAUDE.md
+    # A missing legacy marker does not prove that equivalent rules are absent:
+    # a host can import them from its tracked policy owner.
     claude_md = Path.home() / ".claude" / "CLAUDE.md"
-    if not claude_md.is_file():
-        msg = (
-            "Methodology global rules not installed. Run:\n\n"
-            "    cat >> ~/.claude/CLAUDE.md << 'EOF'\n"
-            "    <!-- BEGIN blueprint-methodology-rules -->\n"
-            "    ... (see template/CLAUDE.md for full snippet)\n"
-            "    <!-- END blueprint-methodology-rules -->\n"
-            "    EOF\n\n"
-            "Or consult `$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
-        )
-        return f"**Global rules not installed** — {msg}"
-
     try:
-        content = claude_md.read_text(encoding="utf-8")
-        has_marker = "<!-- BEGIN blueprint-methodology-rules -->" in content
-        if not has_marker:
-            msg = (
-                "Methodology global rules not installed. Run:\n\n"
-                "    cat >> ~/.claude/CLAUDE.md << 'EOF'\n"
-                "    <!-- BEGIN blueprint-methodology-rules -->\n"
-                "    ... (see template/CLAUDE.md for full snippet)\n"
-                "    <!-- END blueprint-methodology-rules -->\n"
-                "    EOF\n\n"
-                "Or consult `$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
-            )
-            return f"**Global rules not installed** — {msg}"
+        if claude_md.is_file() and "<!-- BEGIN blueprint-methodology-rules -->" in claude_md.read_text(encoding="utf-8"):
+            return ""
+        return (
+            "**Global rules marker absent** — the legacy Blueprint block was not found. "
+            "Equivalent rules may already load through the host's tracked policy owner. "
+            "Continue with the canonical context below and the existing session-prompt fallback. "
+            "Route any authorized global setup or update to that owner; do not append rules "
+            "or install host-wide hooks during ordinary initiative work. See "
+            "`$BLUEPRINT_HOME/template/CLAUDE.md § Methodology-shaped global rules`."
+        )
     except Exception:
-        pass
-
-    return ""
+        return ""
 
 
 def main() -> int:
@@ -307,7 +291,7 @@ def _self_test_global_rules(source: Path) -> str | None:
     import subprocess
     import tempfile
 
-    warning = "**Global rules not installed**"
+    warning = "**Global rules marker absent**"
     note = "**Global-rules check did not run**"
     with tempfile.TemporaryDirectory() as tmp:
         t = Path(tmp).resolve()  # the hook names the resolved home; macOS /var is /private/var
@@ -351,6 +335,8 @@ def _self_test_global_rules(source: Path) -> str | None:
                 return f"{case}: stdout is not the hook's JSON: {run.stdout[:200]!r}"
             if not context.startswith("# Blueprint canonical context (auto-loaded"):
                 return f"{case}: no canonical context header: {context[:200]!r}"
+            if "cat >> ~/.claude/CLAUDE.md" in context.split("\n---\n", 1)[0]:
+                return f"{case}: startup context prescribes a global append"
             # Only the header, above the inlined docs, carries the global-rules line.
             lines = [l for l in context.split("\n---\n", 1)[0].splitlines() if l.startswith((warning, note))]
             if not ((len(lines) == 1 and lines[0].startswith(want)) if want else not lines):

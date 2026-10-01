@@ -79,14 +79,13 @@ Pipeline shape depends on the variant. The greenfield variant is the canonical p
 
 ## Stage 0 — browser sensor
 
-Default sensor: `browse-tool`. Install once per initiative:
-
-```bash
-export PATH="$HOME/Workspace/dev/tools/browse-tool/bin:$PATH"
-# In Claude Code: /add-dir $HOME/Workspace/dev/tools/browse-tool
-```
-
-Override the per-initiative profile name (`--profile-name <initiative-slug>-blueprint`) and claim the next free port in `serve.sh`. Full reference + escalation rubric: `$BLUEPRINT_HOME/docs/context/browser-legibility.md`.
+Use the browser tool and persistent profile selected by the configured host or
+workspace policy. Do not create, override, or reseed a profile for this
+initiative. Keep task-specific tabs, hostnames, and ports separate. When a local preview
+is needed, assign its port in `serve.sh`; leave other tasks' tabs and ports
+intact, and clean up only what this task started. If the configured browser route is unavailable,
+use the fallback in `$BLUEPRINT_HOME/docs/context/browser-legibility.md`; do not
+turn ordinary initiative work into a host-tool installation task.
 
 ## Skills
 
@@ -225,50 +224,31 @@ Reusable prompts for common Blueprint adoption / update scenarios:
 
 ## SessionStart canonical-context injection (required)
 
-Install `template/.claude/hooks/blueprint-session-start.py` to `~/.claude/hooks/` and merge the SessionStart block from `template/.claude/settings.json.example` into `~/.claude/settings.json`. The hook detects Blueprint initiatives (walks up for `blueprint.yml`) and injects `METHODOLOGY.md` + `docs/variant-selection.md` + `docs/portal-and-tier-ladder.md` at the top of every session.
+Fresh stamps carry the project-local SessionStart configuration and hook. It
+detects Blueprint initiatives (walks up for `blueprint.yml`) and injects
+`METHODOLOGY.md` + `docs/variant-selection.md` +
+`docs/portal-and-tier-ladder.md` at the top of every session. The session
+prompts above remain the fallback when that project integration is missing.
+
+Do not install global hooks or append rules to a host-global instruction file
+from ordinary initiative work. A one-time setup or update belongs to the
+tracked host or workspace configuration owner, under its existing task or
+project authorization. For a project-local integration, use the stamped
+`.claude/settings.json` and `.claude/hooks/blueprint-session-start.py` source;
+the stamper's setup contract is `template/tools/blueprint-init/README.md`.
 
 **Why this is mandatory, not optional**: on 2026-05-25, three live consumer sessions reasoned about Blueprint shape from first principles instead of reading the canonical docs, then disagreed about what Blueprint is. Failing to encode this is a direct violation of Blueprint's own first principle (`METHODOLOGY.md` § "First Principle: Agent Struggle Is a Missing Capability") applied to Blueprint itself. The session-prompts paste-snippets above are a fallback for operators who haven't installed the hook; the hook is the encoding.
 
-## Methodology-shaped global rules (required)
+## Methodology-shaped global rules
 
-The methodology distributes two domain-neutral discipline rules as global context. Install them once per machine (not per initiative).
-
-### Installation
-
-Append the two files below to `~/.claude/CLAUDE.md` at your next session start, or run manually:
-
-```bash
-cat >> ~/.claude/CLAUDE.md << 'EOF'
-
-<!-- BEGIN blueprint-methodology-rules -->
-
-## Audit Discipline — Verification Against Canonical Sources
-
-Methodology principle: self-attestation is not verification. Audits must resolve to ground truth, never trust an artifact's own claims about being verified.
-
-When an artifact claims verification, pull the canonical source yourself and re-verify the claim independently. Use mechanical verification tools where available (cited-url-lint for citations, state-derive for implementation state, scenario-result artifacts for coverage). Circular audits are the failure mode this rule prevents.
-
-See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/audit-discipline.md` for the full pattern.
-
-## Decision Bias — Default to Action, Not Confirmation
-
-Methodology principle: agents should default to executing the next logical continuation of work instead of pausing to ask for permission. End work turns with a status sentence naming what landed and the next move, not a question.
-
-Override this bias only for destructive actions (force-push, delete, amend), ambiguous requests, or scope expansion. When the next step is obvious and already authorized, do not ask.
-
-See `$BLUEPRINT_HOME/template/docs/methodology/global-rules/decision-bias.md` for the full pattern.
-
-<!-- END blueprint-methodology-rules -->
-EOF
-```
-
-**Auto-check**: The SessionStart hook verifies these rules are installed and emits a non-fatal warning if absent. Re-run the installation command above if you see the warning. The check reads the two rules docs from `$BLUEPRINT_HOME/template/docs/methodology/global-rules/`. If they are missing there, the hook says the check did not run and names the folder it looked in; update the methodology source, or point `BLUEPRINT_HOME` at a complete copy.
-
-### Customization
-
-These are append-only managed sections — do not edit them. Local operator preferences (theme, keybindings, project-specific shortcuts) remain in `~/.claude/CLAUDE.md` outside the managed region; they are unaffected by methodology updates.
-
-Nothing rewrites an installed block: the hook checks only for the BEGIN marker, and re-running the command appends a second copy. To take an update, delete everything from `<!-- BEGIN blueprint-methodology-rules -->` through `<!-- END blueprint-methodology-rules -->`, then run the command again.
+The methodology defines audit discipline and decision bias in
+`template/docs/methodology/global-rules/`. They are reference material for a
+host or workspace policy owner, not a project-task installer. The SessionStart
+check remains non-fatal: if it reports a missing legacy marker, keep the
+project's canonical context and manual-prompt fallback in place, then route an
+authorized one-time setup or update to that tracked owner. Do not append a
+second managed block or create a separate global configuration from this
+initiative.
 
 ## Converter
 
