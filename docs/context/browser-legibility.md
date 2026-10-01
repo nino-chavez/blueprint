@@ -1,100 +1,50 @@
 # Browser Legibility Pattern
 
-**Activates when**: any Blueprint initiative needs the agent to validate its own UI work — i.e., every initiative with a `prototype/` or `portal/` shell.
-**Reference for**: choosing between `browse-tool` (default, cheap) and Chrome DevTools MCP (escalation, heavy); install steps; per-worktree bootability.
+**Use when:** a Blueprint initiative needs to validate a rendered page or observed interaction.
+**Purpose:** make the application inspectable without changing the host's browser policy or another task's session.
 
-## Why this pattern exists
+## Select the route from its owner
 
-Codex's harness engineering experiment (OpenAI, Feb 2026) treated *application legibility* as a Stage 0 prerequisite: the agent boots the app per git worktree, drives it via Chrome DevTools Protocol, queries a local observability stack, and validates its own fixes before opening a PR. Without this, every UI change requires a human to click through and confirm — which becomes the bottleneck once code throughput rises.
+Read the configured host or workspace browser policy first. It chooses the tool for a local preview, an external site, an authenticated session, or a device. Use the project's own test runner for automated suites. A browser screenshot and a passing test establish different things.
 
-Blueprint's audience (VPs clicking a Slack share-link) demands the same loop, but with a different cost ceiling. Chrome DevTools MCP alone costs ~18k tokens of always-loaded schema. Most stakeholder-prototype validation doesn't need network capture, console streaming, perf tracing, or accessibility-tree snapshots — it needs nav + DOM query + screenshot. So the default is a lighter primitive, and MCP escalates only when the task actually requires its capabilities.
+If no host policy exists, choose an available tool that can observe the behavior under review. Read that tool's current documentation before using it. Do not install another browser integration simply because an initiative lacks one.
 
-## The default: `browse-tool`
+The original May 2026 version of this pattern preferred browse-tool to reduce always-loaded tool schemas. That preference and its historical cost comparison are not a current host routing rule.
 
-`browse-tool` lives at `~/Workspace/dev/tools/browse-tool`. It is a set of small Bash-invokable CLIs (puppeteer-core under the hood) that connect to a single long-lived Chrome. State lives in `$TMPDIR/browse-tool-state.json`.
+## Separate application instances, not login profiles
 
-### Why it's the default
+A worktree isolates source files. Parallel browser tasks also need their own tab or lease, preview hostname, port, and test identity where cookies or data can collide. Declare those values in the dispatch brief before starting work. A browser review of an existing remote page does not require a local server.
 
-| Property | browse-tool | Chrome DevTools MCP |
-|---|---|---|
-| Schema cost | Few hundred tokens, loaded on demand via `@README.md` | ~18k tokens, always loaded |
-| Profile per initiative | Yes — `~/.browse-tool/profiles/<cwd-basename>` auto-selected | No — single profile |
-| Composability | Pipes, shell scripts, JSON output | MCP protocol calls only |
-| Interactive selector picking | Yes — `browse-pick` | No |
-| Adding a new command | One file in `bin/`, no protocol/rebuild/restart | Patch the MCP server |
+Use the persistent profile selected by the host or workspace policy. Do not derive it from a project or worktree name, create a task profile, or reseed a shared profile. Changing a profile can replace login state. Bootability comes from separate application instances, not from copying credentials or browser profiles.
 
-The reason for the default is the token economics. Blueprint initiatives already push context with their docs/ tree (research, design-docs, exec-plans, references). 18k of unused MCP schema crowds out the design content the agent actually needs to reason from.
+When browse-tool is the configured route, its current README owns its commands and profile behavior. In this workspace that source is `~/Workspace/dev/tools/browse-tool/README.md`. It currently uses a configured persistent profile and tab leases; set the brief's `BROWSE_SESSION` for each independent worker. A distinct hostname is needed for cookie isolation: changing only the port does not separate cookies.
 
-### Primitives
+## Validate the observed result
 
-| Command | Use case |
-|---|---|
-| `browse-start` | Boot Chrome with the per-initiative persistent profile. Logged-in state survives sessions. |
-| `browse-start --headless` | Same, without a visible window — for CI or background validation |
-| `browse-start --profile` | First-run only: rsync your real Chrome profile (cookies, logins) into the persistent profile |
-| `browse-start --reseed` | Force re-rsync after logging into a new account in real Chrome |
-| `browse-stop` | Kill the managed Chrome and clear state |
-| `browse-nav <url>` | Navigate active tab; `--new` for a new tab; `--wait` for `networkidle2` (default is `domcontentloaded`) |
-| `browse-eval '<js>'` | Run JS in active page. Wrapped in `async () => { … }` so `return` and `await` both work. Result is JSON to stdout. |
-| `browse-eval --file script.js` | Same but from a file — prefer this for non-trivial code |
-| `browse-screenshot [--full] [--out path.png]` | Capture viewport or full page. Prints path so you can `Read` it. |
-| `browse-tabs list` / `browse-tabs close <i>` | Tab management |
-| `browse-pick` | Interactive picker — human hovers/clicks in Chrome, returns selector + element data as JSON. Use when stakeholder feedback references a specific element. |
+1. Start the project's preview only when needed, using the assigned hostname and port. Confirm the intended source state is being served.
+2. Open the assigned page in the selected browser tool and verify the URL before any write.
+3. Exercise the changed interaction. Record actual behavior and the state used.
+4. Capture the relevant viewport or region. For visual judgment, also inspect the whole screen in its representative state on the target device or viewport.
+5. Record the source version, URL, state, expected result, observed result, and unresolved limits. Do not equate HTTP 200 with working UI, or source code with appearance.
+6. Close only this task's tabs and stop only its servers. Do not stop the shared browser or modify its profile.
 
-### Per-worktree bootability
+For a browse-tool route, navigation and capture use the assigned session and preview origin:
 
-Codex's pattern was "app bootable per git worktree" so each PR has its own instance. browse-tool gives this for free because the profile is named after the cwd basename. Each worktree in `~/Workspace/dev/apps/rally-hq/.worktrees/<branch>` gets its own profile if the basename differs, or shares if not. For initiatives where parallel work needs profile isolation, override with `--profile-name <slug>`.
-
-### Validation recipe (the common case)
-
-```bash
-# Stage 0 setup
-browse-start
-
-# Validate the prototype's home page renders
-browse-nav http://localhost:5173 --wait
-browse-screenshot --out /tmp/home.png
-
-# Smoke-check that critical elements exist
-browse-eval 'return document.querySelectorAll("[data-testid]").length'
-
-# Validate strategy panel opens
-browse-eval 'document.querySelector("[data-strategy-toggle]").click(); return document.querySelector("[data-strategy-panel]")?.classList.contains("open")'
-
-browse-stop
+```text
+BROWSE_SESSION=<assigned-session> browse-nav <assigned-page-url> --wait
+BROWSE_SESSION=<assigned-session> browse-screenshot --out <receipt-path>.png
 ```
 
-That recipe covers ~80% of Blueprint validation. No MCP needed.
+The commands illustrate that route; they do not override the host's tool choice. Read the current tool README for startup, tab ownership, capture bounds, and cleanup.
 
-## Escalation: Chrome DevTools MCP
+## Escalate for an observation the current tool cannot make
 
-Only load MCP when the task actually requires capabilities browse-tool cannot synthesize from DOM access:
+Network events, console output, performance traces, computed accessibility trees, and device behavior may require different capabilities. Check what the chosen tool currently supports before adding another. Route any switch through the same host policy. Old tool comparisons are not evidence that a capability is absent today.
 
-| Trigger phrase | Why MCP is required |
-|---|---|
-| "capture network requests" / "watch XHR" / "intercept fetch" | `browse-eval` can call `fetch`, but cannot subscribe to ambient network traffic the page generates |
-| "stream console errors" / "log capture" / "watch for console.error" | `eval` reads page state at a point in time; it doesn't subscribe to the console event stream |
-| "lighthouse audit" / "perf trace" / "core web vitals" | MCP wraps the CDP performance + lighthouse domains; browse-tool doesn't |
-| "accessibility tree" / "ARIA snapshot" / "a11y audit" | MCP exposes the computed a11y tree directly; DOM-only `eval` misses computed roles, names, focus order |
+Persistent login state belongs to the configured profile. If the required session is missing there, use the host's sign-in route. Copying or reseeding a profile is not a validation step.
 
-When none of these fire, MCP schemas do not load. The agent's first reach is always browse-tool.
-
-## Inferability — how the agent picks
-
-Three places encode the choice so the agent self-routes without guessing:
-
-1. **`prototype/CLAUDE.md` per initiative** declares the available browser sensors. Default: browse-tool only. Adding MCP requires an explicit override per the table above.
-2. **The four-row escalation table** in this doc. The agent grep-matches the user's task description against the trigger phrases. Hit → load MCP. No hit → browse-tool only.
-3. **The `template/CLAUDE.md` Stage 0 block** repeats the rubric so it's always in context for new initiatives.
-
-If the agent is uncertain whether a task needs MCP, the rule is **start with browse-tool, escalate on second-pass failure** — because the cost of one wasted browse-tool attempt is trivial, and the cost of always loading MCP is paid every session.
-
-## What this does NOT cover
-
-- **Observability stack** (LogQL/PromQL/TraceQL per worktree). Codex wired Victoria Logs/Metrics/Traces into every worktree because they were building a production product with telemetry. Most Blueprint stakeholder prototypes don't have ambient telemetry to query. Out of scope; add per-initiative when the prototype includes a real backend.
-- **Multi-page persistent state** (e.g., logged-in session that must survive across many test steps). Use `browse-start --profile` once to seed; the persistent profile then survives between commands.
-- **Mobile viewports / device emulation**. browse-tool's Puppeteer connection supports `setViewport` via `browse-eval`, but if mobile testing becomes load-bearing, escalate to MCP's `emulate` capability.
+Backend observability is project-specific. Add it when the behavior being judged needs logs, metrics, or traces; do not scaffold a separate telemetry stack for a static page by default.
 
 ## Origin
 
-Distilled from the OpenAI Codex harness engineering post (Feb 2026) — specifically the "Increasing application legibility" section where they wired Chrome DevTools Protocol into the agent runtime. browse-tool is the lighter equivalent for Blueprint's audience, inspired by Mario Zechner's *What if you don't need MCP at all?* (Nov 2025) and built at `~/Workspace/dev/tools/browse-tool`. Conversation that triggered this: 2026-05-25 Blueprint v2 patch.
+The pattern began with the application-legibility section of OpenAI's February 2026 Codex harness engineering discussion and the local browse-tool workflow. This revision preserves observable validation while moving tool and profile selection to their configured owner.

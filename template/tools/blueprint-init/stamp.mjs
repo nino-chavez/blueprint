@@ -311,6 +311,27 @@ async function copyTree({ src, dst, subs, dryRun, log }) {
 // all three into the Review Portal branch, believing Initiative Portal stamps
 // already had the runner; they never did (decisions/11, wave 113).
 async function installImpositionLayer({ target, subs, dryRun, log }) {
+  // The root guide is project-owned after adoption. Deliver it on first stamp;
+  // never replace an existing file or symlink while updating the scaffold.
+  const guidePath = path.join(target, "CLAUDE.md");
+  if (await fs.lstat(guidePath).catch((error) => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  })) {
+    log.skipped.push("CLAUDE.md (existing project-owned instructions preserved)");
+  } else if (dryRun) {
+    log.copied.push("CLAUDE.md");
+  } else {
+    await fs.mkdir(target, { recursive: true });
+    const guide = await fs.readFile(path.join(BLUEPRINT_ROOT, "template/CLAUDE.md"), "utf8");
+    try {
+      await fs.writeFile(guidePath, guide, { encoding: "utf8", flag: "wx" });
+      log.copied.push("CLAUDE.md");
+    } catch (error) {
+      if (error.code !== "EEXIST") throw error;
+      log.skipped.push("CLAUDE.md (project instructions appeared during stamp; preserved)");
+    }
+  }
   await copyTree({
     src: path.join(BLUEPRINT_ROOT, "template/.claude"),
     dst: path.join(target, ".claude"),

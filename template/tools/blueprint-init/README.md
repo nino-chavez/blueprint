@@ -341,9 +341,26 @@ Any hits are reported. Expected hits: the `REPLACE_FOR_PROJECT`-banner files (ga
 
 The stamper is methodology infrastructure (one of two encoded responses to the 2026-05-25 de-bcization drift; the other is the SessionStart canonical-context hook). It belongs alongside the other template-level tools (`archaeology/`, `state-derive/`) and is updated whenever the canonical `template/apps/portal/` shape evolves. The reviewer agent `portal-pattern-a-conformance-reviewer` validates the stamped output at Stage 3.
 
+## Session context setup and updates
+
+Fresh stamps include the project-local `.claude/settings.json` and
+`.claude/hooks/blueprint-session-start.py` integration. It loads the canonical
+Blueprint context for this initiative. Existing initiatives that need that
+integration should update it through this tracked template and the project's
+authorized upgrade path.
+
+Do not use ordinary project work to install global hooks or append a second
+managed rules block. Host-wide setup and updates belong to the configured host
+or workspace policy owner. The manual session prompts remain the fallback until
+the project-local integration is present.
+
 ## Pattern B stamper
 
 Pattern B has two modes:
 
 - **Initial stamp** (`--mode=stamp --pattern=B`): **implemented (2026-06-27, amendment 1)**. Copies `template/portal/` to `blueprint/portal/` (or a custom path declared in `blueprint.yml`), applies narrow substitutions (project name, repo URL, brand tokens), and runs the mechanical check. Pattern B initiatives no longer need to copy by hand.
 - **Chrome refresh** (`--mode=restamp-chrome --pattern=B`): **implemented**. Refreshes the canonical chrome manifest (`PATTERN_B_CHROME_FILES` in `stamp.mjs`) without touching project-owned files. As of 2026-06-27 (amendment 2), `--accept-overwrite` defines scope, not consent: diverged files not in the list are skipped, not blocked. This is the encoded response to the 2026-05-25 v3 chrome-drift bug where a consumer truncated 268 lines from `shared.css` mid-edit and restored from a peer consumer's deploy. The `portal-chrome-canonical-reviewer` gate enforces it.
+
+## Root instruction delivery
+
+The initial stamp now creates the root `CLAUDE.md` from the canonical template. An existing file or symlink is preserved, including on re-stamp; dry-run does not write it. Before this correction the command promised a root guide but never created one. Delivery checks cover Initiative Portal, Review Portal, and research stamps.
