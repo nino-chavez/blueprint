@@ -1,0 +1,32 @@
+{
+  "cursor": 8,
+  "ok": true,
+  "complete": true,
+  "message": "all stages confirmed \u2014 pipeline complete",
+  "reviews": [
+    {
+      "gate": "personas-jtbd",
+      "reviewer": "persona-fit-reviewer",
+      "ran": true,
+      "status": "PASS",
+      "stage": 1,
+      "stageName": "Personas & JTBD"
+    },
+    {
+      "gate": "research-legs",
+      "reviewer": "research-completeness-reviewer",
+      "ran": true,
+      "status": "PASS",
+      "stage": 2,
+      "stageName": "Research"
+    },
+    {
+      "gate": "decision-memo",
+      "reviewer": "doc-quality-auditor",
+      "ran": true,
+      "status": "PASS",
+      "stage": 5,
+      "stageName": "Decision Memo"
+    }
+  ]
+}

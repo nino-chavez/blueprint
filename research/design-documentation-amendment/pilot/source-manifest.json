@@ -1,0 +1,67 @@
+{
+  "captured_at": "2026-10-02T12:42:08.465351+00:00",
+  "consumer_root": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star",
+  "consumer_git_state": "unborn HEAD, untracked files; file hashes identify candidate",
+  "files": [
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/AGENTS.md",
+      "sha256": "36ad4724641bef59d2a214892e743e31ea673ae26de0c09a7fcf8d19d5bf9862"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/.blueprint/stage-state.json",
+      "sha256": "80f828cac45b95a6702b2d810b4e333564c3972462518e9e2653e47f80a89efd"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/baselines/definition-v0.4/manifest.json",
+      "sha256": "d07f065f94061434c1a4a7b3f97e19a70750cdb572b99676665a8a761fa71545"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/brd.md",
+      "sha256": "80fc0ba67fbaebddb13bda37dd21075c727c1551e55b3add98f1e3b2782255af"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/prd.md",
+      "sha256": "b2c62b4cca9b1d464de2a445be8e2452612e440ec5541ca72340a637b2075328"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/user-stories.md",
+      "sha256": "15b25bf0399129a9cdd34c6037b0a46c1ab4ddd53951f254527e279b16b2393e"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/design/experience-architecture.json",
+      "sha256": "6939cfeb5f75e31c38e779ffe0b60610d6995e8780ac0e21041a1af03fa9e80d"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/design/experience-architecture-notes.md",
+      "sha256": "66ffe769a1645b9812597352657d6f95119310892eaf7051b30569d8ff9461ba"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/design/combined-direction.md",
+      "sha256": "66f7b11d95f85c23bb4889fac66486f10733b96b50a15cc1d56e9ea7d485b506"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/decisions/0002-mvp-technical-target.md",
+      "sha256": "b173c178796ad6c5d60c9b3ca42f3a2b2678f3b23944f7c052e5eedacc108fa0"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/docs/mvp-build-handoff.md",
+      "sha256": "6aac7141ce5847f6aedb1b5cc701a5a739296b655ecd8ad80dba009203421c92"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star/METHODOLOGY-AMENDMENTS.md",
+      "sha256": "af19fe1dd93779a83f1eead7ed87fff84e837be6d504edb822485155cd83bcf9"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/apps/rally-hq/src/hooks.server.ts",
+      "sha256": "e5fb3eecf4cc1980c9a85a097814a644c6cb3e5a7ff2657a558a68bb099d7444"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/apps/rally-hq/supabase/migrations/20260909211422_consume_invitation_atomically.sql",
+      "sha256": "a6e96bc90cfae5f499b603e52f31981a2c5b160065f07f756e33f43274eee66f"
+    },
+    {
+      "path": "/Users/nino/Workspace/dev/sites/nino/nino-chavez-photography/src/lib/supabase/server-ssr.ts",
+      "sha256": "fb1ca73cd095f5c68181fb5b15b01514ba3709c1e38deaa1f67882d30b1d4622"
+    }
+  ]
+}

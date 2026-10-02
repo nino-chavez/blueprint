@@ -1,0 +1,73 @@
+{
+  "observed_at": "2026-10-02T12:01:00.260451+00:00",
+  "sources": {
+    "blueprint": {
+      "root": "/Users/nino/Workspace/dev/tools/blueprint/.worktrees/codex/design-documentation-amendment",
+      "head": "4aaed42edcf6864efdd4eb3588a2d330c0905e30",
+      "files": {
+        "AGENTS.md": "bbf0f2dfc36bccf6c6853206fbc44cfcd223aa59e47f4c28529e55dd14fbffe8",
+        "METHODOLOGY.md": "6a8bb67941a1a257de1bef9e78e9a64da71e0e7baa28dcafbe1fae8c129114df",
+        "WAVE-LOG.md": "c2e158b505832cd1244bc2876ea79114ec74411c48b11dea8ca3c0b1728aa9e5",
+        "template/docs/methodology/methodology-amendments-convention.md": "05c274704a3b43f889d6af9a45ca00febf8c353d927d037401c708b52a44ac03",
+        "docs/patterns/amendment-classification-pattern.md": "fb1a6e9a33b552172b0fb91e4768d57ddcdddd89cf1c8d63999d6c8569da4436",
+        "template/docs/methodology/handoff-manifest-convention.md": "5cf089f7300f1cfa57e676ffd693d129cc474b29dd0440c222c0a89e748715e6",
+        "template/tools/lib/stage-model.mjs": "7fc0c6ac4fc430e7dabc9460655eb733f0f94ad8a7b1d2663607a43756b5c54c",
+        "template/.claude/agents/blueprint/reviewers/doc-quality-auditor.mjs": "a3c45afa5604567e8743c08468cc8748c370cd2f0377590f88eacb29934f1d8a",
+        "template/.claude/agents/blueprint/reviewers/foundation-stage-reviewer.md": "d3236ee5071d9ca176af8bd2cab223764d6f15852508faf6081c2b9faee1d111",
+        "template/docs/methodology/proof-obligation-registry-pattern.md": "f8767f6761d51b1de6687dbe5b757e24d563fff01028ca5c78f8c7cdba763076",
+        "template/tools/spec-obligation-registry/index.ts": "287dd45a3c295426f3990afecfa0de059f2b10032418e8e828584240519270e0",
+        "decisions/08-refounded-semantic-core.md": "947592d7905839ec5b8ecfcea2135982f260121ad4d9fec588f8ea1c2db61dc3"
+      }
+    },
+    "wedding": {
+      "root": "/Users/nino/Workspace/dev/initiatives/wedding-guest-experience/.worktrees/codex/north-star",
+      "head": null,
+      "files": {
+        "AGENTS.md": "36ad4724641bef59d2a214892e743e31ea673ae26de0c09a7fcf8d19d5bf9862",
+        "METHODOLOGY-AMENDMENTS.md": "af19fe1dd93779a83f1eead7ed87fff84e837be6d504edb822485155cd83bcf9",
+        "docs/brd.md": "80fc0ba67fbaebddb13bda37dd21075c727c1551e55b3add98f1e3b2782255af",
+        "docs/prd.md": "b2c62b4cca9b1d464de2a445be8e2452612e440ec5541ca72340a637b2075328",
+        "docs/user-stories.md": "15b25bf0399129a9cdd34c6037b0a46c1ab4ddd53951f254527e279b16b2393e",
+        "docs/design/experience-architecture.json": "6939cfeb5f75e31c38e779ffe0b60610d6995e8780ac0e21041a1af03fa9e80d",
+        "docs/design/experience-architecture-notes.md": "66ffe769a1645b9812597352657d6f95119310892eaf7051b30569d8ff9461ba",
+        "docs/design/combined-direction.md": "66f7b11d95f85c23bb4889fac66486f10733b96b50a15cc1d56e9ea7d485b506",
+        "decisions/0002-mvp-technical-target.md": "b173c178796ad6c5d60c9b3ca42f3a2b2678f3b23944f7c052e5eedacc108fa0",
+        "docs/mvp-build-handoff.md": "6aac7141ce5847f6aedb1b5cc701a5a739296b655ecd8ad80dba009203421c92",
+        "docs/dispatch/stack-target/result.json": "78600ac86df93c8aa48c1a62c18acb5b43bb6b706ae8d153a69b50485627547d",
+        "docs/baselines/definition-v0.4/manifest.json": "d07f065f94061434c1a4a7b3f97e19a70750cdb572b99676665a8a761fa71545",
+        ".blueprint/stage-state.json": "80f828cac45b95a6702b2d810b4e333564c3972462518e9e2653e47f80a89efd"
+      }
+    },
+    "rally": {
+      "root": "/Users/nino/Workspace/dev/apps/rally-hq",
+      "head": "d99bfa14ac517b62bf7322398adda3183bbdf0fd",
+      "files": {
+        "blueprint/METHODOLOGY-AMENDMENTS.md": "d0bbe5fbe07c362767f642bc06046248840ce27f44c9df0bea8ee8ede822047e",
+        "docs/LAYOUT_TAXONOMY.md": "31b9851f6ded77b49ef98459b668ddc57cde0f92d6d1d7d3a428d357d9e38bc0",
+        "src/lib/design/surfaces.ts": "8c8c83c384adc7004d147a1eb4aa073f9d5c503fcf8bb6c9bd3195e1f6ecfa3b",
+        "tests/e2e/surfaces.ts": "e84e3a886fda98bc5011bce30eb72ae027bc91fa3f0c68bca879b6d73c0fbcf6",
+        "src/lib/surface-coverage.test.ts": "d7c0dce6d7d0019ec1b8348dee871ef3ca5474570024fe0de3a4ae423014222d"
+      }
+    },
+    "subscriptions": {
+      "root": "/Users/nino/Workspace/dev/labs/bc-subscriptions",
+      "head": "41fae517eac2abd6f44acf08186c2e14c6d58fe4",
+      "files": {
+        "docs/methodology/2026-06-25-storefront-contract-drift-retro.md": "748b8b99f3aac3b73c255f703a21d2bfe193da11c56dc4227aa7cc49e9fdc55d",
+        "packages/storefront-contract/src/index.ts": "4fc32de9898c82997f02a187b5a214693a44f642738c378e4e30b888606c2089",
+        "apps/storefront-svelte/src/lib/server/cart.ts": "601aa947233b2d19df30c86cb56e533479ae49f4c99ba6b45550ef2921087c8b",
+        "apps/api/src/routes/webhooks.ts": "379b62d1047ea726d1295e290c5228314956fab74be43858c996d09827b6e8e9"
+      }
+    }
+  },
+  "wedding_frozen_v04": {
+    "file_count": 40,
+    "current_mismatches": [],
+    "snapshot_mismatches": []
+  },
+  "wedding_historical_stage": {
+    "cursor": 8,
+    "sha256": "80f828cac45b95a6702b2d810b4e333564c3972462518e9e2653e47f80a89efd"
+  },
+  "wedding_target_directory_exists": false
+}

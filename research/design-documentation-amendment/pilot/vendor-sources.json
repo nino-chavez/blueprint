@@ -1,0 +1,283 @@
+{
+  "fetched_date": "2026-10-02",
+  "sources": [
+    {
+      "url": "https://supabase.com/changelog.md",
+      "status": 200,
+      "sha256": "8a9b9cc29618b6988edcec0de74725028c031fce4f5638c93efd90a75ce88f0d",
+      "bytes": 98178,
+      "relevant_lines": [
+        [
+          21,
+          "2026-09-25 \u00b7 Breaking Change \u00b7 Database \u00b7 [supabase.com/changelog/postgres-15-19-17-11-breaking-changes](https://supabase.com/changelog/postgres-15-19-17-11-breaking-changes)"
+        ],
+        [
+          198,
+          "2026-05-25 \u00b7 Breaking Change \u00b7 Database \u00b7 [supabase.com/changelog/46320-breaking-change-in-pg-graphql-1-6-0-graphql-introspection-disabled-by-default](https://supabase.com/changelog/46320-breaking-change-in-pg-graphql-1-6-0-graphql-introspection-disabled-by-default)"
+        ],
+        [
+          222,
+          "2026-05-18 \u00b7 Breaking Change \u00b7 Database \u00b7 [supabase.com/changelog/46081-self-hosted-supabase-switching-studio-from-supabase-admin-to-postgres-breaking-change](https://supabase.com/changelog/46081-self-hosted-supabase-switching-studio-from-supabase-admin-to-postgres-breaking-change)"
+        ],
+        [
+          230,
+          "2026-05-18 \u00b7 Breaking Change \u00b7 Database \u00b7 [supabase.com/changelog/46080-self-hosted-supabase-upgrading-from-pg-15-to-17-breaking-change](https://supabase.com/changelog/46080-self-hosted-supabase-upgrading-from-pg-15-to-17-breaking-change)"
+        ],
+        [
+          262,
+          "2026-05-01 \u00b7 Breaking Change \u00b7 Platform \u00b7 [supabase.com/changelog/45468-breaking-change-oauth-token-endpoint-will-return-http-200-instead-of-201](https://supabase.com/changelog/45468-breaking-change-oauth-token-endpoint-will-return-http-200-instead-of-201)"
+        ],
+        [
+          270,
+          "2026-04-28 \u00b7 Breaking Change \u00b7 Data APIs, Database \u00b7 [supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically)"
+        ],
+        [
+          334,
+          "2026-02-17 \u00b7 Breaking Change \u00b7 Data APIs \u00b7 [supabase.com/changelog/42949-breaking-change-removing-access-to-openapi-spec-via-the-anon-key](https://supabase.com/changelog/42949-breaking-change-removing-access-to-openapi-spec-via-the-anon-key)"
+        ],
+        [
+          352,
+          "The Supabase Table Editor now batches inserts, edits, and deletes into a single transaction with a diff preview. Enable it under Feature Previews > Queue table operations."
+        ],
+        [
+          358,
+          "2026-01-26 \u00b7 Breaking Change \u00b7 Platform \u00b7 [supabase.com/changelog/42180-breaking-change-pg-graphql-no-longer-enabled-automatically-within-approx-3-weeks-from-today](https://supabase.com/changelog/42180-breaking-change-pg-graphql-no-longer-enabled-automatically-within-approx-3-weeks-from-today)"
+        ],
+        [
+          462,
+          "2025-10-08 \u00b7 Breaking Change \u00b7 Database \u00b7 [supabase.com/changelog/39378-potential-breaking-change-in-pgmq-from-1-4-4-to-1-5-1-and-temporary-halt-on-upgrade-for-existing-projects](https://supabase.com/changelog/39378-potential-breaking-change-in-pgmq-from-1-4-4-to-1-5-1-and-temporary-halt-on-upgrade-for-existing-projects)"
+        ],
+        [
+          696,
+          "Supabase Dedicated Pooler is now generally available on Pro and above: a co-located PgBouncer instance with lower latency than the Shared Pooler for serverless workloads. Transaction mode, IPv6 only."
+        ],
+        [
+          758,
+          "2025-02-18 \u00b7 Breaking Change \u00b7 Studio \u00b7 [supabase.com/changelog/33670-upcoming-breaking-change-to-dashboard-navigation](https://supabase.com/changelog/33670-upcoming-breaking-change-to-dashboard-navigation)"
+        ],
+        [
+          776,
+          "Supabase Studio dashboard updates from 27 Jan to 10 Feb 2025: deploy Edge Functions via the AI Assistant, Auth settings consolidated, reference rows in popovers, Security Definer view fix."
+        ],
+        [
+          856,
+          "Supavisor deprecates Session Mode on port 6543 on 2025-02-28; after that date port 6543 only supports Transaction Mode. Move Session Mode clients to port 5432. Transaction-only users need no action."
+        ],
+        [
+          998,
+          "2024-09-24 \u00b7 Breaking Change \u00b7 Security \u00b7 [supabase.com/changelog/29494-supabase-platform-access-control-project-permissions-breaking-changes-on-october-15-2024](https://supabase.com/changelog/29494-supabase-platform-access-control-project-permissions-breaking-changes-on-october-15-2024)"
+        ],
+        [
+          1040,
+          "Supabase Auth is adding asymmetric JWT signing keys with a public JWKs endpoint and a new `getClaims()` method. Projects created after 2025-05-01 default to RSA asymmetric keys."
+        ],
+        [
+          1174,
+          "2024-07-15 \u00b7 Breaking Change \u00b7 Platform \u00b7 [supabase.com/changelog/27993-supabase-platform-access-control-organization-permissions-breaking-changes-on-july-26-2024](https://supabase.com/changelog/27993-supabase-platform-access-control-organization-permissions-breaking-changes-on-july-26-2024)"
+        ],
+        [
+          1304,
+          "March 2024 Platform Updates: higher Supavisor client connection limits, a conversational AI assistant in the SQL Editor, port 6543 transaction-mode only, and v2 platform architecture migration."
+        ],
+        [
+          1328,
+          "Dashboard weekly roll-up: a hybrid RLS policy editor that shows the underlying SQL, and Supavisor pooler port 6543 set to transaction mode only with session mode on 5432."
+        ]
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/database/functions.md",
+      "status": 200,
+      "sha256": "6ed8fc4b7c789769b031fc0f20532a8eed899e3d51289e82088939fa30c3aac9",
+      "bytes": 13179,
+      "relevant_lines": [
+        [
+          331,
+          "security definer set search_path = ''"
+        ],
+        [
+          339,
+          "Prefer `security invoker`, which is also the default. When you use `security definer`, you must set the `search_path`."
+        ],
+        [
+          341,
+          "With an empty search path, `search_path = ''`, name the schema for every relation in the function body, such as `from public.table`. An empty search path limits the damage when the function can reach a schema you don't want the calling user to reach."
+        ],
+        [
+          347,
+          "1. Revoke on a case-by-case basis. Revoke execute for the functions you want to protect, from both `public` and the role you're restricting:"
+        ],
+        [
+          350,
+          "   revoke execute on function public.hello_world from public;"
+        ],
+        [
+          351,
+          "   revoke execute on function public.hello_world from anon;"
+        ],
+        [
+          356,
+          "   To restrict every function that exists, revoke execute from both `public` and the role you want to restrict:"
+        ],
+        [
+          359,
+          "   revoke execute on all functions in schema public from public;"
+        ],
+        [
+          360,
+          "   revoke execute on all functions in schema public from anon, authenticated;"
+        ],
+        [
+          366,
+          "   alter default privileges in schema public revoke execute on functions from public;"
+        ],
+        [
+          367,
+          "   alter default privileges in schema public revoke execute on functions from anon, authenticated;"
+        ],
+        [
+          406,
+          "  -- immediately ends function and reverts transaction"
+        ]
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/database/postgres/row-level-security.md",
+      "status": 200,
+      "sha256": "9398df00c60160ffbbdf9b53f02e61bd34db000d291152a3268a00a95e4cdac8",
+      "bytes": 30344,
+      "relevant_lines": [
+        [
+          90,
+          "Views bypass RLS by default because they are usually created with the `postgres` user. This is a feature of Postgres, which automatically creates views with `security definer`. A view over a protected table hands out every row its policies were meant to withhold, so a view needs the same attention as a table. To create one safely, see [Expose a vie"
+        ],
+        [
+          522,
+          "This method works well for JWT functions like `auth.uid()` and `auth.jwt()` as well as `security definer` Functions. Wrapping the function causes an `initPlan` to be run by the Postgres optimizer, which allows it to \"cache\" the results per-statement, rather than calling the function on each row."
+        ],
+        [
+          610,
+          "### Use security definer functions"
+        ],
+        [
+          612,
+          "A \"security definer\" function runs using the same role that *created* the function. This means that if you create a role with a superuser (like `postgres`), then that function will have `bypassrls` privileges. For example, if you had a policy like this:"
+        ],
+        [
+          625,
+          "We can instead create a `security definer` function which can scan `roles_table` without any RLS penalties:"
+        ],
+        [
+          631,
+          "security definer -- will run as the creator"
+        ],
+        [
+          632,
+          "set search_path = '' -- every name inside must be schema-qualified"
+        ],
+        [
+          651,
+          "Set `search_path = ''` on every `security definer` function and schema-qualify the names inside it. Without a pinned `search_path`, a caller can point an unqualified name at their own object and run it with the function owner's privileges."
+        ],
+        [
+          653,
+          "Caution: A `security definer` function in an exposed schema is callable over the Data API with the creator's privileges. Never create one in a schema listed under \"Exposed schemas\" in your [API settings](https://supabase.com/dashboard/project/_/settings/api)."
+        ],
+        [
+          682,
+          "Break the cycle with a [security definer function](#use-security-definer-functions). It reads the membership table as its owner, so the second policy never runs and the cycle is broken:"
+        ],
+        [
+          690,
+          "security definer"
+        ],
+        [
+          691,
+          "set search_path = ''"
+        ],
+        [
+          698,
+          "revoke execute on function private.user_list_ids() from public;"
+        ],
+        [
+          713,
+          "This works because the function runs as its owner, and a `security definer` function only skips RLS when its owner can. On Supabase the owner is `postgres`, which has `bypassrls`. A function owned by a role without `bypassrls`, or reading a table set to `force row level security`, evaluates the membership policy again and stays recursive."
+        ]
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/auth/server-side/creating-a-client.md",
+      "status": 200,
+      "sha256": "bec7e0a1d449ba15f5b640314fe2f26281f325c3f49f4cef12b567206de0d7eb",
+      "bytes": 30482,
+      "relevant_lines": [
+        [
+          183,
+          "1. Refreshing the Auth token by calling `supabase.auth.getClaims()`."
+        ],
+        [
+          232,
+          "Danger: Anyone can forge the session cookie, so trusting it without verification lets an attacker render another user's page. Always use `supabase.auth.getClaims()` to protect pages and user data."
+        ],
+        [
+          236,
+          "`getClaims()` verifies the token's signature on every call. On projects with asymmetric signing keys, the default for new projects, it verifies locally against a cached copy of the project's public keys. On projects still using a symmetric secret, it calls the Auth server instead. Either way the claims come from a token the server has verified rath"
+        ],
+        [
+          457,
+          "  // Use `supabase` here for server-side work, e.g. await supabase.auth.getClaims()"
+        ],
+        [
+          547,
+          "  await supabase.auth.getClaims()"
+        ],
+        [
+          621,
+          "  // Use `supabase` here for server-side work, e.g. await supabase.auth.getClaims()"
+        ],
+        [
+          775,
+          "1. Write a server function, `fetchClaims`, that calls `supabase.auth.getClaims()` and returns the claims, or `null` if the session isn't valid."
+        ],
+        [
+          778,
+          "Danger: Skipping the check inside the server function exposes private data to unauthenticated users. `beforeLoad` runs on the server for the initial request and on the client for later navigation, but either way it only gates the route's render. It doesn't stop the server function from being called directly. Because there's no proxy re-checking eve"
+        ],
+        [
+          780,
+          "`getClaims()` validates the JWT signature on every call, the same check the Next.js Proxy relies on. Calling it inside the server function gives TanStack Start's per-route check that same guarantee, because the function runs on every request to a protected route."
+        ],
+        [
+          802,
+          "- Use [`getClaims`](https://supabase.com/docs/reference/javascript/auth-getclaims) to protect pages and user data. It reads the access token from storage and verifies it. Locally via the [WebCrypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) and a cached JWKS endpoint when the project uses asymmetric signing keys (the defa"
+        ],
+        [
+          803,
+          "- [`getUser`](https://supabase.com/docs/reference/javascript/auth-getuser) makes a network call to the project's Auth instance to get the user record, which includes the most up-to-date information about the user at the cost of a network call."
+        ],
+        [
+          804,
+          "- [`getSession`](https://supabase.com/docs/reference/javascript/auth-getsession) when you need the raw session (the access token, refresh token, and expiry). For example to forward the access token to another service. The session is loaded directly from local storage and isn't re-validated against the Auth server, so the embedded user object should"
+        ],
+        [
+          806,
+          "**In summary**: use `getClaims` to verify identity (typically for protecting pages and data), `getUser` when you need an up-to-date user record from the Auth server, and `getSession` when you need the access or refresh token directly, but don't rely on the user object it returns for authorization decisions."
+        ]
+      ]
+    },
+    {
+      "url": "https://docs.postgrest.org/en/stable/references/transactions.html",
+      "error": "HTTP Error 403: Forbidden",
+      "web_fetch": "success",
+      "web_fetched_date": "2026-10-02",
+      "title": "Transactions \u2014 PostgREST 16 documentation",
+      "relevant_sections": [
+        "Access Mode on Functions",
+        "Isolation Level",
+        "Transaction End",
+        "Aborting transactions"
+      ],
+      "note": "Direct Python fetch 403; web tool fetched source contents in-session. No raw HTTP content hash available for that fetch."
+    }
+  ]
+}

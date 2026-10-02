@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-02T12:32:23.717117+00:00",
+  "local_links_and_anchors": 59,
+  "source_files_compared": 34,
+  "source_changes": [],
+  "issues": [],
+  "node_syntax": "PASS",
+  "reader_audit": {
+    "status": "WARN",
+    "files_scanned": 0,
+    "reason": "No machine-readable reader-contract.json; separate cold review completed."
+  },
+  "runtime_tests": "NOT_RUN: research-only change"
+}

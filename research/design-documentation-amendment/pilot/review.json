@@ -1,0 +1,63 @@
+{
+  "schema_scope": "local research receipt, not a shared Blueprint schema",
+  "candidate": "wedding-durable-rsvp-01",
+  "candidate_revision": 2,
+  "candidate_path": "design-contract.md",
+  "candidate_sha256": "09c87185e0ff78becf9fa3ee6db4c475bb193af879a28ddecee589f84d22923f",
+  "source_manifest": "source-manifest.json",
+  "source_manifest_sha256": "3a48c9b5129bdacca6eea27c92f43fbcf429153d75950fefb060137546d8b506",
+  "reviewed_at": "2026-10-02T12:54:49.297584Z",
+  "verdict": "ACCEPT",
+  "verdict_scope": "Fictional seeded RSVP save/read/correction/recovery design only",
+  "independence": "Separate read-only Operator workers, no author role or write permission; reviews are agent judgments, not human product acceptance. Final reviewer saw prior findings; this was not a blinded comparative experiment.",
+  "review_method": "Read source requirements and handoff, check design against independent concerns, identify concrete failing cases, then review a hashed revision for closure and adjacent defects.",
+  "review_records": [
+    "reviews/r1-review.md",
+    "reviews/r2-review.md"
+  ],
+  "dispatches": [
+    "a0b8a1b8-820c-4dfa-b3d3-a583420a86c4",
+    "46db68c8-8da4-41df-b499-ccfadac4b4db"
+  ],
+  "model_evidence": "Policy selected gpt-5.6-terra/high; both runtime receipts report model and effort null. Actual model/effort unverified.",
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "major",
+      "problem": "Recovery omitted the current scope/request versions needed for a new intent.",
+      "resolution": "Every current snapshot includes scope/data/request versions; new intent uses that exact snapshot.",
+      "state": "closed-by-r2-review"
+    },
+    {
+      "id": "R2",
+      "severity": "major",
+      "problem": "Audit and receipt could lose the scope at save time when assignments changed.",
+      "resolution": "Immutable person, question, covered-event IDs and scope revision stored transactionally; historical source deletion restricted.",
+      "state": "closed-by-r2-review"
+    }
+  ],
+  "additional_author_changes": [
+    "Explicit cancelled-receipt variant and hash comparison order",
+    "Column-limited privileged writer",
+    "Caller-scoped privileged responses and separation of historical command result from current state"
+  ],
+  "remaining_material_findings": [],
+  "behavior_checks": {
+    "P1": "NOT_RUN",
+    "P2": "NOT_RUN",
+    "P3": "NOT_RUN",
+    "P4": "NOT_RUN",
+    "P5": "NOT_RUN",
+    "P6": "NOT_RUN",
+    "P7": "NOT_RUN",
+    "P8": "NOT_RUN"
+  },
+  "consumer_adoption": "NOT_APPLIED",
+  "message_to_consumer_chat": "AUTHORIZED_BY_NINO_2026-10-02; send after merge; delivery receipt belongs to the sending chat",
+  "implementation_authorization": "NOT_GRANTED_BY_THIS_DESIGN_PILOT",
+  "product_acceptance": "NOT_ESTABLISHED",
+  "shared_gate_promotion": "NOT_JUSTIFIED",
+  "prior_candidate_path": "design-contract-r1.md",
+  "prior_candidate_sha256": "6eb013a29760169fd3560edbf0f4cca23da04c778fa81e4b4b7b0091456b9f78",
+  "archive_note": "Original candidate bytes preserved; moved from reviews/r1-design-contract.md to the pilot root after final review so original relative source links remain valid."
+}
