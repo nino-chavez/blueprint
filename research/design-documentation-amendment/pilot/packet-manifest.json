@@ -1,0 +1,20 @@
+{
+  "created_at": "2026-10-02T12:58:45.442343+00:00",
+  "scope": "Published research pilot evidence; excludes this manifest",
+  "files": {
+    "checks.json": "8929bc1259f1bd8b93811dbc2044571e642fd7ac9818fc308b8d3b6d2a337de1",
+    "design-contract-r1.md": "6eb013a29760169fd3560edbf0f4cca23da04c778fa81e4b4b7b0091456b9f78",
+    "design-contract.md": "09c87185e0ff78becf9fa3ee6db4c475bb193af879a28ddecee589f84d22923f",
+    "outcome.md": "2e1f2613c68d11d9cb873ae9e4532c05b3baf0b578d46e97ff998718adc51f82",
+    "review.json": "3bf1539207631019415d561a9b23795b928acfc2d944c1a4a812852353c5e175",
+    "reviews/r1-dispatch.json": "8aedbe8cec556ae0b37cdd370e0821a7896bff3b5eae12bd2cff529abe324158",
+    "reviews/r1-review.md": "72f6f6d8a02b0849695fc478ec3324b696d468edad1cb1647d29ea759f0c304a",
+    "reviews/r2-dispatch.json": "4885fe1451ebe471af27306229078ff06870a185f8e3f8c03d8df175f66d4815",
+    "reviews/r2-review.md": "88a36694fd4b7b7daf6352998aa599812dc482e6258db0c994d77c79361224ca",
+    "source-manifest.json": "3a48c9b5129bdacca6eea27c92f43fbcf429153d75950fefb060137546d8b506",
+    "stage-advance.json": "179b4e0da0e106a2917591b9a01cd139832c7c30d590e318af9bd39a31b92ada",
+    "stage-status.json": "cc872c80658b94d531c4338f1696460e317117b1c851edddabd2497321368b37",
+    "vendor-sources.json": "4dc6540628a4275736dc9154557770f9e1f5af931f5aef4dcd48100e6d8d71c6"
+  },
+  "updated_at": "2026-10-02T13:10:23.174898+00:00"
+}

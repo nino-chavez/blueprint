@@ -1,0 +1,213 @@
+{
+  "observedAt": "2026-10-02T11:58:43.804Z",
+  "scope": "Stage 5 and Stage 8 individual gates plus the mechanical document reviewer; not full advancement, doctor, actor-output validation, or runtime acceptance.",
+  "sources": {
+    "template/tools/lib/stage-model.mjs": "7fc0c6ac4fc430e7dabc9460655eb733f0f94ad8a7b1d2663607a43756b5c54c",
+    "template/.claude/agents/blueprint/reviewers/doc-quality-auditor.mjs": "a3c45afa5604567e8743c08468cc8748c370cd2f0377590f88eacb29934f1d8a"
+  },
+  "negativeControls": [
+    "no decision detected",
+    "in-scope attribution defect blocked",
+    "receiving actor without handoff detected"
+  ],
+  "rows": [
+    {
+      "case": "no-design-or-decision",
+      "documents": {
+        "id": 5,
+        "name": "Documents",
+        "gates": [
+          {
+            "gate": "decisions",
+            "derivable": true,
+            "kind": "dir-md-min",
+            "vacuous": false,
+            "reviewer": {
+              "name": "doc-quality-auditor",
+              "onWarn": "pass"
+            },
+            "state": "absent",
+            "evidence": "decisions|docs/decisions: none"
+          }
+        ],
+        "artifactPass": false,
+        "complete": false
+      },
+      "handoff": {
+        "id": 8,
+        "name": "Handoff",
+        "gates": [
+          {
+            "gate": "handoff-manifest",
+            "derivable": true,
+            "kind": "handoff-manifest",
+            "vacuous": false,
+            "state": "pass",
+            "evidence": "no actor-output.yml — no receiving actor declared (handoff n/a, decisions/07)"
+          }
+        ],
+        "artifactPass": true,
+        "complete": true
+      }
+    },
+    {
+      "case": "stack-decision-only",
+      "documents": {
+        "id": 5,
+        "name": "Documents",
+        "gates": [
+          {
+            "gate": "decisions",
+            "derivable": true,
+            "kind": "dir-md-min",
+            "vacuous": false,
+            "reviewer": {
+              "name": "doc-quality-auditor",
+              "onWarn": "pass"
+            },
+            "state": "pass",
+            "evidence": "decisions|docs/decisions: 1 artifacts"
+          }
+        ],
+        "artifactPass": true,
+        "complete": true
+      },
+      "documentReview": {
+        "status": "PASS",
+        "findings": [
+          {
+            "severity": "INFO",
+            "check": "scope",
+            "location": "/Users/nino/Workspace/dev/tools/blueprint/.worktrees/codex/design-documentation-amendment/research/design-documentation-amendment/.probe-VQ7nO4",
+            "message": "No deliverable documents found (docs/content/, decision-memo, 01-diagnose.md, 03-design-brief.md) — mechanical checks skipped. Checks 1-4 of the spec (so-what, mental math, logic gaps, scannable) are judgment and remain agent-run."
+          }
+        ],
+        "metadata": {
+          "reviewer": "doc-quality-auditor",
+          "targetSummary": "docs=0, figures=0 (no deliverable surface)",
+          "durationMs": 1
+        }
+      }
+    },
+    {
+      "case": "contradictory-permissions",
+      "documents": {
+        "id": 5,
+        "name": "Documents",
+        "gates": [
+          {
+            "gate": "decisions",
+            "derivable": true,
+            "kind": "dir-md-min",
+            "vacuous": false,
+            "reviewer": {
+              "name": "doc-quality-auditor",
+              "onWarn": "pass"
+            },
+            "state": "pass",
+            "evidence": "decisions|docs/decisions: 1 artifacts"
+          }
+        ],
+        "artifactPass": true,
+        "complete": true
+      },
+      "documentReview": {
+        "status": "PASS",
+        "findings": [
+          {
+            "severity": "INFO",
+            "check": "scope",
+            "location": "/Users/nino/Workspace/dev/tools/blueprint/.worktrees/codex/design-documentation-amendment/research/design-documentation-amendment/.probe-VQ7nO4",
+            "message": "No deliverable documents found (docs/content/, decision-memo, 01-diagnose.md, 03-design-brief.md) — mechanical checks skipped. Checks 1-4 of the spec (so-what, mental math, logic gaps, scannable) are judgment and remain agent-run."
+          }
+        ],
+        "metadata": {
+          "reviewer": "doc-quality-auditor",
+          "targetSummary": "docs=0, figures=0 (no deliverable surface)",
+          "durationMs": 2
+        }
+      }
+    },
+    {
+      "case": "known-in-scope-attribution-defect",
+      "documentReview": {
+        "status": "BLOCKED",
+        "findings": [
+          {
+            "severity": "BLOCK",
+            "check": "derivation-methodology",
+            "file": "docs/content/figures.md",
+            "line": 5,
+            "location": "docs/content/figures.md:5",
+            "message": "Percentage breakdown (2 figures) over an admittedly-incomplete set, with no derivation declared — \"84.7% of cases are uncategorized.\". A skeptical reader asks: if part of the set is unclassified, how is the breakdown known?",
+            "remediation": "Add a `<!-- derivation: <source> — <how computed> -->` comment next to the figures, or a `## Methodology` section stating how the breakdown was produced. Prose that merely mentions methodology does not satisfy this — the declaration must be deliberate.",
+            "fix": "Add a `<!-- derivation: <source> — <how computed> -->` comment next to the figures, or a `## Methodology` section stating how the breakdown was produced. Prose that merely mentions methodology does not satisfy this — the declaration must be deliberate."
+          },
+          {
+            "severity": "WARN",
+            "check": "figure-attribution",
+            "file": "docs/content/figures.md",
+            "line": 3,
+            "location": "docs/content/figures.md:3",
+            "message": "1 unattributed figure (59%) — no source, link, footnote, or illustrative marker in this block.",
+            "remediation": "Name the source inline, link it, add a footnote, or mark the number `illustrative` if it is not a claim about the world. \"~\" and \"approx\" do not exempt — an approximation is still a claim.",
+            "fix": "Name the source inline, link it, add a footnote, or mark the number `illustrative` if it is not a claim about the world. \"~\" and \"approx\" do not exempt — an approximation is still a claim."
+          },
+          {
+            "severity": "WARN",
+            "check": "figure-attribution",
+            "file": "docs/content/figures.md",
+            "line": 5,
+            "location": "docs/content/figures.md:5",
+            "message": "1 unattributed figure (84.7%) — no source, link, footnote, or illustrative marker in this block.",
+            "remediation": "Name the source inline, link it, add a footnote, or mark the number `illustrative` if it is not a claim about the world. \"~\" and \"approx\" do not exempt — an approximation is still a claim.",
+            "fix": "Name the source inline, link it, add a footnote, or mark the number `illustrative` if it is not a claim about the world. \"~\" and \"approx\" do not exempt — an approximation is still a claim."
+          }
+        ],
+        "metadata": {
+          "reviewer": "doc-quality-auditor",
+          "targetSummary": "docs=1, figures=2, blocks=1, warns=2",
+          "durationMs": 1
+        }
+      }
+    },
+    {
+      "case": "receiving-actor-without-handoff",
+      "handoff": {
+        "id": 8,
+        "name": "Handoff",
+        "gates": [
+          {
+            "gate": "handoff-manifest",
+            "derivable": true,
+            "kind": "handoff-manifest",
+            "vacuous": false,
+            "state": "absent",
+            "evidence": "receiving actor build-team declared but NO handoff-manifest output — the build contract is missing (decisions/07)"
+          }
+        ],
+        "artifactPass": false,
+        "complete": false
+      }
+    },
+    {
+      "case": "handoff-without-feature-contracts",
+      "handoff": {
+        "id": 8,
+        "name": "Handoff",
+        "gates": [
+          {
+            "gate": "handoff-manifest",
+            "derivable": true,
+            "kind": "handoff-manifest",
+            "vacuous": false,
+            "state": "pass",
+            "evidence": "receiving actor build-team served by handoff-manifest build-contract"
+          }
+        ],
+        "artifactPass": true,
+        "complete": true
+      }
+    }
+  ]
+}

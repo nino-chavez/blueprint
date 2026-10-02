@@ -1,0 +1,20 @@
+{
+  "dispatch_id": "46db68c8-8da4-41df-b499-ccfadac4b4db",
+  "created_at": "2026-10-02T12:53:06.538285Z",
+  "updated_at": "2026-10-02T12:54:49.297584Z",
+  "read_only": true,
+  "stage": "completed",
+  "selected_route": {
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "high",
+    "tier": "implementation"
+  },
+  "runtime_evidence": {
+    "child_thread_id": "01a0fcac-edda-7d02-840f-b38c83ec6678",
+    "executable": "/opt/homebrew/bin/codex",
+    "reported_model": null,
+    "reported_reasoning_effort": null,
+    "status": "completed"
+  },
+  "prompt_sha256": "7bf954d8750bc103379c9ba5edbda93b61fb92f6a5a9a90b24605ce51dc74cce"
+}

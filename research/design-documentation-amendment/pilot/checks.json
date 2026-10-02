@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-02T12:58:45.442343+00:00",
+  "candidate_sha256": "09c87185e0ff78becf9fa3ee6db4c475bb193af879a28ddecee589f84d22923f",
+  "accepted_candidate_matches": true,
+  "prior_candidate_matches": true,
+  "local_links_checked": 35,
+  "source_hashes_checked": 15,
+  "frozen_files_checked": 40,
+  "frozen_current_and_archive_match": true,
+  "historical_stage_sha256": "80f828cac45b95a6702b2d810b4e333564c3972462518e9e2653e47f80a89efd",
+  "errors": [],
+  "behavior_checks": "NOT_RUN",
+  "checks_prove": "File identity and local link existence only; not design correctness or runtime behavior."
+}

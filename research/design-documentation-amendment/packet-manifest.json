@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-10-02T12:32:23.717117+00:00",
+  "blueprint_base_revision": "4aaed42",
+  "packet_revision": "Git commit containing this manifest",
+  "note": "Hashes of packet files, excluding this manifest. Source revisions remain in source-snapshot.json; pilot/ has its own manifest.",
+  "files": {
+    "checks.json": "bc9e347f03656520f7cb841f9db14ee12402adffd8214ee51512cf5235e25158",
+    "consumer-amendment.md": "9ab3601e44664374a86995367bfb640af00c6cfb8813a37afc92ee4354d8ef34",
+    "current-gates.json": "102c10274508576257cd96e3bca7d22cba2790ebc49d25113a4cb8f15014479a",
+    "evidence.md": "edcaccdda8e1858a489656e1bef5da060cfba813a25794884d4b2dfb180b897a",
+    "implementation-plan.md": "8867864ac1611ad17680e0aea00816c09e6adb94739198ec4ec359c96bf8bbbe",
+    "probe-current-gates.mjs": "0322321a9e5d320e6eb04f8db5f99a7aeff1c8d4bffe2bd88f82123038c0284d",
+    "proposal.md": "207d5083b598d19937cc8df27adc99930d8167126074e53a192ccd48dbf86b2d",
+    "review-and-checks.md": "cb96c7c09ab3efeafb70617119ef4691057a616699b9d77c310aaa15b0a0ae56",
+    "source-snapshot.json": "cc9a70ed0bd1dae6e6d53a3bc825ce307919ae945b1ec43597ebe65b4f6ae9f8"
+  },
+  "updated_at": "2026-10-02T13:09:23.770564+00:00"
+}
