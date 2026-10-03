@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-10-03T15:56:47.580589+00:00",
+  "status": "source-input-controls-pass",
+  "delivery": "research prototype; local verification; no distributed enforcement",
+  "result_boundary": {
+    "clean_document_state": "pending",
+    "authority": "not-verified",
+    "allowed_actions": []
+  },
+  "test_diagnostics": {
+    "synthetic_document_controls": 34,
+    "negative_controls_on_two_private_case_copies": 6,
+    "structured_and_copied_engine_controls": 37
+  },
+  "real_cases": "One whole-application snapshot and one bounded RSVP snapshot; both source checks passed. Inputs and raw reports are retained locally and are not public CI dependencies.",
+  "negative_controls": [
+    "changed source without repinning",
+    "unknown reference after repinning",
+    "referenced definition removed after repinning"
+  ],
+  "preservation": "Saved snapshots stayed unchanged. One live source set changed concurrently; its original mapping correctly returned stale-source. The other captured live source set stayed unchanged.",
+  "method_files": {
+    "document-input.mjs": "c002891ae39dcce327cbaf1b1265458632a98abdcd6b3977a487de16ce35542e",
+    "document-input.test.mjs": "49900c8574844dc7fc0832fb08b07f04371af95478d884110fd455e2db5b1a4e",
+    "gate.mjs": "39d00cbdb3e8974406810a419a172485fd9c2a543fa635abd7ce902b5b8ade77",
+    "probe.mjs": "9598420f75849497c3ed2b7d6384bd93dc7580e099abe0c912abcff68febf436"
+  },
+  "limits": [
+    "Source checks do not establish completeness, meaningful journeys, product approval or working software.",
+    "Scope declarations and unavailable-inventory reasons still need substantive review.",
+    "No host authority adapter or distributed phase integration is implemented."
+  ]
+}

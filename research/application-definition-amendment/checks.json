@@ -1,6 +1,6 @@
 {
   "date": "2026-10-03",
-  "checked_at": "2026-10-03T14:39:54.063Z",
+  "checked_at": "2026-10-03T15:52:44.661Z",
   "status": "research-prototype-only",
   "results": [
     {
@@ -179,7 +179,7 @@
     "No distributed gate, schema, command, consumer change or rollout"
   ],
   "sources": {
-    "gate.mjs": "cf9ede5e7e09b79126a5df4089e265706e60d67008f15ff6256d315c4ac8262c",
+    "gate.mjs": "39d00cbdb3e8974406810a419a172485fd9c2a543fa635abd7ce902b5b8ade77",
     "fixture.mjs": "96968904f21ad1ca9e3a19dd2d14831066e6afda8326cce02477e37aadca8711",
     "probe.mjs": "9598420f75849497c3ed2b7d6384bd93dc7580e099abe0c912abcff68febf436",
     "../../template/tools/lib/stage-model.mjs": "7fc0c6ac4fc430e7dabc9460655eb733f0f94ad8a7b1d2663607a43756b5c54c"
