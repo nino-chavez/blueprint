@@ -1,0 +1,32 @@
+{
+  "verified_on": "2026-10-03",
+  "sources": [
+    {
+      "url": "https://github.com/nino-chavez/blueprint/blob/363381459f3d4dfd15c017992be515d498a62532/CONTRIBUTING.md",
+      "status": 200,
+      "final_url": "https://github.com/nino-chavez/blueprint/blob/363381459f3d4dfd15c017992be515d498a62532/CONTRIBUTING.md",
+      "raw_url": "https://raw.githubusercontent.com/nino-chavez/blueprint/363381459f3d4dfd15c017992be515d498a62532/CONTRIBUTING.md",
+      "raw_status": 200,
+      "sha256": "a20f887965bd33ebb5c4bfe53641085de9fa07f6d4c4f3e79dc1becd45713d46",
+      "matches_locally_read_source": true
+    },
+    {
+      "url": "https://github.com/nino-chavez/blueprint/blob/363381459f3d4dfd15c017992be515d498a62532/template/tools/lib/stage-model.mjs",
+      "status": 200,
+      "final_url": "https://github.com/nino-chavez/blueprint/blob/363381459f3d4dfd15c017992be515d498a62532/template/tools/lib/stage-model.mjs",
+      "raw_url": "https://raw.githubusercontent.com/nino-chavez/blueprint/363381459f3d4dfd15c017992be515d498a62532/template/tools/lib/stage-model.mjs",
+      "raw_status": 200,
+      "sha256": "7fc0c6ac4fc430e7dabc9460655eb733f0f94ad8a7b1d2663607a43756b5c54c",
+      "matches_locally_read_source": true
+    },
+    {
+      "url": "https://github.com/nino-chavez/gather-here/blob/06e5e346519f0011ce68b9c2f6bd2d088050e683/docs/brd.md",
+      "status": 200,
+      "final_url": "https://github.com/nino-chavez/gather-here/blob/06e5e346519f0011ce68b9c2f6bd2d088050e683/docs/brd.md",
+      "raw_url": "https://raw.githubusercontent.com/nino-chavez/gather-here/06e5e346519f0011ce68b9c2f6bd2d088050e683/docs/brd.md",
+      "raw_status": 200,
+      "sha256": "cd174f753fcb2adf661c4f5631dcb93359c0c15869d7bb93910a3d916cecac94",
+      "matches_locally_read_source": true
+    }
+  ]
+}

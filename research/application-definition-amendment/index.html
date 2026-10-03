@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="A local review kit for Blueprint's proposed application-definition amendment.">
+    <title>Application definition — RFC review kit</title>
+    <link rel="stylesheet" href="review-kit.css">
+    <script src="review-kit.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to the recommendation</a>
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="Blueprint review kit home">Blueprint <span>/ review kit</span></a>
+      <nav aria-label="On this page">
+        <a href="#change">The change</a>
+        <a href="#example">Example</a>
+        <a href="#gate">Gate</a>
+        <a href="#evidence">Evidence</a>
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section class="hero" id="top" aria-labelledby="page-title">
+        <p class="eyebrow">Local review kit · proposal dated 02 October 2026</p>
+        <h1 id="page-title">Define the whole application before comparing concepts.</h1>
+        <p class="lede">Then update that definition after a human chooses a direction, and freeze it before validating or building the selected application.</p>
+        <div class="recommendation" role="note" aria-label="Recommendation">
+          <p class="label">Recommendation</p>
+          <p><strong><a href="https://github.com/nino-chavez/blueprint/issues/65">RFC #65 is open for maintainer review.</a> Next: confirm the scope, the two-phase structure, and the first pilot.</strong> The prepared proposal closes a timing gap: a collection of designed screens can look connected while still leaving permissions, recovery, or an entire job undefined.</p>
+          <p class="status-line"><strong>Filed · awaiting acceptance.</strong> RFC #65 was filed on 03 October 2026. The amendment is still proposed. No CLI, consumer, template, or production behavior has changed.</p>
+        </div>
+        <p class="quiet">The next decision is whether to accept the proposed scope and choose a pilot. The RFC has not authorized implementation or rollout.</p>
+      </section>
+
+      <section class="section change" id="change" aria-labelledby="change-title">
+        <div class="section-intro">
+          <p class="eyebrow">Why this change</p>
+          <h2 id="change-title">A document can pass the check while the application stays undefined.</h2>
+          <p>The existing Design Principles gate is an <a href="evidence.md#blueprint-permits-an-rfc-not-silent-promotion">individual filename check</a>. In the packet, a lone <code>DESIGN.md</code> passes it; removing that file fails it. That is useful evidence about one gate, not proof that the current pipeline passes or that an application is ready.</p>
+        </div>
+
+        <div class="workflow" aria-label="Before and proposed workflow">
+          <div>
+            <p class="label">Current gate coverage</p>
+            <ol>
+              <li>The design-stage gate looks for a design document</li>
+              <li>That document can omit a job, permission, or recovery path</li>
+              <li>No checked definition phase stops concepts from starting early</li>
+            </ol>
+          </div>
+          <div class="proposed-flow">
+            <p class="label">Proposed order</p>
+            <ol>
+              <li>Existing-product blind baseline review, when relevant</li>
+              <li><strong>Draft and review the complete application definition</strong></li>
+              <li>Compare concepts; record the human choice and useful parts retained from other options</li>
+              <li><strong>Reconcile and freeze the selected definition</strong></li>
+              <li>Blind validation of the selected candidate, then separately authorized implementation</li>
+            </ol>
+          </div>
+        </div>
+        <p class="caption">The earlier blind baseline review looks at the existing product before rationale is shown. The later blind validation looks at the selected candidate. They answer different questions and stay separate. The <a href="proposal.md#extend-the-current-design-stage-instead-of-renumbering-the-pipeline">proposal adds ordered phases</a> inside the design stage instead of a new numbered stage, so existing stage IDs and historical cursors do not move.</p>
+      </section>
+
+      <section class="section definition" aria-labelledby="definition-title">
+        <div class="section-intro split-heading">
+          <div>
+            <p class="eyebrow">What must be defined</p>
+            <h2 id="definition-title">Define the rules, screens, and paths.</h2>
+          </div>
+          <p>Use existing sources where they already cover the need. These are required kinds of information, not seven new files. The point is a <a href="contract.md#one-scope-owns-the-inventory-being-checked">reviewable connected model</a>, using stable IDs already owned by the project.</p>
+        </div>
+        <div class="definition-list">
+          <div><strong>Purpose and rules</strong><span>Business requirements (BRD), product requirements (PRD), and user stories connect the problem to product rules and testable acceptance.</span></div>
+          <div><strong>Surfaces and behavior</strong><span>Every task surface, action, permission, state, transition, feedback, and recovery route has an owner.</span></div>
+          <div><strong>Journeys in two forms</strong><span>Each in-scope job has a written path and a diagram of the same IDs, including failure and return.</span></div>
+        </div>
+        <p><strong>Applies to:</strong> a new application or a whole-application rethink. A whole-app rethink can reference accepted page contracts; it does not require redesigning every accepted page. A bounded preserve/refit is not a fleet retrofit: it carries a reviewed exclusion naming affected surfaces and preserved contracts. If navigation, role boundaries, or lifecycle expand, the scope decision reopens.</p>
+      </section>
+
+      <section class="section example" id="example" aria-labelledby="example-title">
+        <div class="section-intro">
+          <p class="eyebrow">Worked miniature example</p>
+          <h2 id="example-title">Show who can save and how to recover.</h2>
+          <p>In the packet’s fixture, a guest’s job is to record their own answer. <code>FR-1</code> requires it; <code>US-1</code> describes the authorized guest; <code>P-1</code> is the invitation surface; and <code>PER-1</code> decides who may save.</p>
+        </div>
+        <figure class="journey-figure" aria-labelledby="journey-caption">
+          <figcaption id="journey-caption"><span class="synthetic-tag">Synthetic fixture — invented example</span><strong>J-1 · Guest saves an answer, then knows how to recover it</strong></figcaption>
+          <ol class="journey-map">
+            <li><code>S-1</code><span>Answer not saved</span></li>
+            <li><code>I-1</code><span>Save on <code>P-1</code><small><code>PER-1</code> allows guest to save their own answer</small></span></li>
+            <li><code>S-2</code><span>Saved receipt<small>Recovery: reload the saved answer</small></span></li>
+          </ol>
+          <div class="recovery-path"><strong>Recovery journey:</strong> if the guest needs to confirm what happened, they reload the saved answer instead of being left with a success screen that cannot establish the saved state.</div>
+          <div class="denied-path">
+            <h3>J-2 · A visitor has no right to save</h3>
+            <p><code>US-2</code> defines the denied path. The visitor opens a direct link to <code>P-1</code> and chooses Save.</p>
+            <ol class="journey-map" aria-label="Denied journey">
+              <li><code>S-1</code><span>Answer not saved</span></li>
+              <li><code>I-2</code><span>Save denied<small><code>PER-2</code> denies a visitor without an invitation</small></span></li>
+              <li><code>S-1</code><span>No answer changed<small>Recovery: return to entry</small></span></li>
+            </ol>
+          </div>
+        </figure>
+        <p class="caption">This is synthetic test data, not a real user outcome or product approval. A screen sequence can show “Save” then “Saved” and still be incomplete if it does not name the permission, the state change, and the recovery route that make the sequence trustworthy.</p>
+      </section>
+
+      <section class="section gate" id="gate" aria-labelledby="gate-title">
+        <div class="section-intro split-heading">
+          <div>
+            <p class="eyebrow">Gate behavior</p>
+            <h2 id="gate-title">See what would stop concept work.</h2>
+          </div>
+          <p>This is an interactive illustration of the proposed behavior, not a live run of <code>gate.mjs</code>.</p>
+        </div>
+        <div class="gate-demo" data-gate-demo>
+          <div class="scenario-tabs" role="group" aria-label="Illustrated gate conditions">
+            <button class="scenario-button" type="button" data-scenario="complete" aria-pressed="true">Complete draft</button>
+            <button class="scenario-button" type="button" data-scenario="journey" aria-pressed="false">Missing journey</button>
+            <button class="scenario-button" type="button" data-scenario="permission" aria-pressed="false">Unresolved permission</button>
+            <button class="scenario-button" type="button" data-scenario="state" aria-pressed="false">Missing state</button>
+            <button class="scenario-button" type="button" data-scenario="stale" aria-pressed="false">Stale evidence</button>
+          </div>
+          <div class="gate-result" aria-live="polite">
+            <p class="gate-state" data-gate-state>Ready for concepts</p>
+            <p data-gate-message>All scoped records have a current reviewed disposition. Concepts may begin only where concept-work authority already exists.</p>
+            <dl>
+              <div><dt>Blocker</dt><dd data-gate-blocker>None in this illustration</dd></div>
+              <div><dt>Remedy</dt><dd data-gate-remedy>Keep the review current; obtain or verify the separate authorization for concept work.</dd></div>
+            </dl>
+          </div>
+        </div>
+        <p class="caption">A pass is evidence about this transition only. <a href="contract.md#readiness-and-permission-are-separate-results">Drafting permission, concept permission, human selection, product freeze, and build permission are separate facts.</a> One owner message may cover more than one, but the host must verify its scope rather than infer it.</p>
+      </section>
+
+      <section class="section authority" aria-labelledby="authority-title">
+        <p class="eyebrow">Scope and authority</p>
+        <h2 id="authority-title">Each decision authorizes a different step.</h2>
+        <ol class="authority-list">
+          <li><strong>Drafting authority</strong><span>May investigate and define the bounded application.</span></li>
+          <li><strong>Concept authority</strong><span>May compare concepts after the draft is current and reviewed.</span></li>
+          <li><strong>Human selection</strong><span>Chooses a candidate; it does not approve every product rule.</span></li>
+          <li><strong>Product freeze</strong><span>Confirms the reconciled definition used for selected-candidate validation.</span></li>
+          <li><strong>Implementation authority</strong><span>Permits only the separately scoped durable build after its existing technical and validation checks.</span></li>
+        </ol>
+      </section>
+
+      <section class="section evidence" id="evidence" aria-labelledby="evidence-title">
+        <div class="section-intro">
+          <p class="eyebrow">Evidence and decision boundary</p>
+          <h2 id="evidence-title">The prototype blocks the tested omissions. Its product benefit is unmeasured.</h2>
+        </div>
+        <div class="evidence-columns">
+          <div>
+            <h3>Observed in this packet</h3>
+            <p><strong>37 probe controls passed.</strong> They cover omissions, stale evidence, synthetic approvals, selection/freeze gaps, exclusions, and separate build authorization. The narrow existing design-document gate is separately observed.</p>
+          </div>
+          <div>
+            <h3>Still unproven</h3>
+          <p>The authority is synthetic. The stage-engine test injects a copied engine only for the experiment. Neither proves <a href="evidence.md#the-experiment-establishes-a-narrow-mechanical-result">shipped phases, a real human-authority adapter, complete real semantics, or better product outcomes.</a></p>
+          </div>
+        </div>
+        <p>The prototype also does not decide whether a diagram is understandable to a person. It checks that the fixture’s diagram edges agree with the structured interaction path. A later real pilot must test the proposal against an actual definition, name an omission the ordinary brief would have missed, and compare that benefit with the extra authoring and review work.</p>
+        <p><strong>What would change the recommendation:</strong> an existing accepted source already provides the complete model; a smaller gate enforces both timing boundaries; or a real pilot catches no consequential omission beyond the current brief while adding duplicate maintenance. In each case, reduce the proposal before asking consumers to carry a second, overlapping review obligation in ordinary work.</p>
+        <aside class="source-links" aria-labelledby="sources-title">
+          <h3 id="sources-title">Inspect the source packet</h3>
+          <p>Read the proposal first, then follow the contract and evidence when you need exact terms or limits.</p>
+          <ul>
+            <li><a href="https://github.com/nino-chavez/blueprint/issues/65">Filed RFC #65</a> <span>— maintainer discussion and acceptance</span></li>
+            <li><a href="rfc-issue.md">Local copy of the filed RFC</a> <span>— public issue text</span></li>
+            <li><a href="proposal.md">Full amendment proposal</a> <span>— recommendation, applicability, Gates D and F</span></li>
+            <li><a href="contract.md">Proposed contract</a> <span>— records, authority, promotion work</span></li>
+            <li><a href="evidence.md">Evidence and limits</a> <span>— direct sources and experiment boundary</span></li>
+            <li><a href="review-and-checks.md">Review and checks receipt</a> <span>— the 37-control result and delivery boundary</span></li>
+            <li><a href="checks.json">Machine-readable controls</a> <span>— each recorded result</span></li>
+            <li><a href="fixture.mjs">Synthetic fixture</a> <span>— the invented IDs used above</span></li>
+            <li><a href="../../CONTRIBUTING.md">Contribution process</a> <span>— RFC-first routing and admin review</span></li>
+          </ul>
+        </aside>
+      </section>
+    </main>
+
+    <footer>
+      <p><strong>Local review package.</strong> RFC #65 filed. Amendment awaiting acceptance; no implementation or deployment.</p>
+      <a href="#top">Back to top</a>
+    </footer>
+  </body>
+</html>
