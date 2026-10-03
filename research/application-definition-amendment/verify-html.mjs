@@ -15,6 +15,10 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   page.on('requestfailed', r => errors.push(r.url()));
   await page.goto(new URL('index.html', dir).href);
+  await page.locator('.hero').screenshot({ path: fileURLToPath(new URL('source-input-desktop.png', output)) });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('.hero').screenshot({ path: fileURLToPath(new URL('source-input-phone.png', output)) });
+  await page.setViewportSize({ width: 1280, height: 800 });
   for (const link of await page.locator('a').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')))) {
     const target = new URL(link, dir);
     if (link.startsWith('#')) assert.equal(await page.locator(link).count(), 1, link);

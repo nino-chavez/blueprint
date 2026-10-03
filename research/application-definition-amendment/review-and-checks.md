@@ -41,3 +41,49 @@ The prototype was rerun after export preparation: all 37 controls passed. The HT
 ## Acceptance update — 2026-10-03
 
 Nino's explicit “approve it” accepts RFC #65's methodology bucket, applicability and two-phase structure. The approval was posted under the authenticated repository admin account and read back; `rfc-acceptance.json` records its URL, exact packet revision and scope. The issue remains open for implementation tracking. Pilot setup, the opt-in implementation, real-case validation and release remain ahead. The original filing receipt and as-filed issue snapshot are preserved as history.
+
+## Existing-document input — 2026-10-03
+
+The owner authorized connecting the research checker to the existing documents
+after the read-only consumer trial. `gate.mjs --documents` now uses the shared
+`document-input.mjs` extractor. It verifies pinned sources and declared
+references without generating approvals or a complete structured definition.
+Clean sources return `pending`, `not-verified`, and no allowed actions.
+
+The parent compared direct conversion, a source mapping, and project-specific
+parsers against the captured whole-application and bounded RSVP cases. The
+selected mapping preserves owned IDs and source locations; the alternatives
+and retained parts are recorded in `contract.md`. No project document was
+rewritten. Private mappings, snapshots, raw reports, and dispatch receipts stay
+under ignored local provenance, outside this public packet.
+
+A focused read-only code review found two parser defects. The parent reproduced
+the malformed-ID false pass, added regression controls, and fixed malformed
+suffix handling. Reference scanning now ignores fenced examples while retaining
+Mermaid references. The real cases then caught an ASCII-hyphen range regression;
+repeated-prefix ranges have a dedicated control and pass on the original
+snapshots. Prior reports are retained, not treated as final verification.
+
+Validation: 34 synthetic document-input controls, six negative controls on
+disposable copies of the two real snapshots, and all 37 existing structured and
+copied-engine controls passed. The real controls changed a pinned file, inserted
+an unknown reference, and removed a referenced definition. Originals were
+rehashed. These counts are test diagnostics, not a measured product benefit.
+`document-input-checks.json` records method hashes and the delivery limits.
+
+The worker completed read-only; its runtime model and effort were not reported.
+No distributed stage integration, authority adapter, consumer edit, deployment,
+or product acceptance is included. The document mode cannot check the meaning
+of prose permissions, complete actor handoffs, or rendered comprehension.
+
+The final live-source recheck found that one consumer's documents changed
+concurrently after the retained capture. The original mapping returned
+`stale-source` against that live tree. The retained snapshots still passed;
+no source pins were silently refreshed. The saved results are point-in-time
+checks, not an acceptance of the newer documents.
+
+The HTML kit now distinguishes tested source input from unimplemented review
+and approval enforcement. Its existing keyboard, link, print, and asset checks
+passed. The parent opened desktop and phone captures of the changed section;
+a separate cold reviewer opened both captures and found no material defects.
+That review covered this section only, not a new whole-page acceptance.

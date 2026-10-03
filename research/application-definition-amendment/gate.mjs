@@ -2,6 +2,8 @@
 import { readFileSync, realpathSync } from 'node:fs';
 import { resolve, sep, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { inspectDocuments } from './document-input.mjs';
 export const GROUPS = ['requirements','stories','pages','states','permissions','interactions','journeys'];
 export const ROLES = ['brd','prd','stories','pages','interactions','journeys-words','journeys-visual'];
 // Executable draft schema; relationship rules are below.
@@ -24,7 +26,7 @@ function file(root,path) {
 export const fingerprint = (root,paths) => hash([hash(readFileSync(new URL(import.meta.url))), [...new Set(paths)].sort().map(p => [p,hash(file(root,p))])]);
 
 // Authority comes from a trusted HOST adapter, never a field in the package.
-// There is deliberately no live adapter in this unaccepted research prototype.
+// There is deliberately no live authority adapter in this research prototype.
 export function evaluate(root,phase='draft',authority=()=>false) {
   const errors=[], fail=(code,detail)=>errors.push({code,detail});
   const json=p=>JSON.parse(file(root,p));
@@ -173,4 +175,26 @@ export function evaluate(root,phase='draft',authority=()=>false) {
     }
     return {state:errors.length?'absent':'pass',applicability:'required',packet_hash:packetHash,errors};
   } catch(e) {fail('shape',e.message);return {state:'absent',errors};}
+}
+
+// Existing prose enters through an explicit inspection mode, never through a
+// fallback from a failed structured gate. Source checks cannot authorize work.
+export const evaluateDocuments = (root, manifest) => inspectDocuments(root, manifest, ROLES, hash(readFileSync(new URL(import.meta.url))));
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  if (process.argv.length !== 5 || process.argv[2] !== '--documents') {
+    process.stderr.write('Usage: node gate.mjs --documents <source-root> <mapping.json>\n');
+    process.exitCode = 2;
+  } else {
+    try {
+      const report = evaluateDocuments(process.argv[3], JSON.parse(readFileSync(process.argv[4], 'utf8')));
+      process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+      // 0 means only the requested source inspection succeeded. Read state,
+      // authority and allowed_actions; this mode never returns a gate pass.
+      process.exitCode = report.source_status === 'pass' ? 0 : 1;
+    } catch (error) {
+      process.stderr.write(error.message + '\n');
+      process.exitCode = 2;
+    }
+  }
 }

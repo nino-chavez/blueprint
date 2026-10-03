@@ -8,7 +8,7 @@ date: 2026-10-02
 
 This is the implementation boundary of the [RFC](proposal.md). Names below are proposed research fields, not supported Blueprint configuration. `gate.mjs` owns the executable prototype's field lists; this document explains their meaning and the work needed for promotion.
 
-Current review: [RFC #65](https://github.com/nino-chavez/blueprint/issues/65) was filed on 2026-10-03. The maintainer accepted the bucket, applicability and two-phase structure on 2026-10-03; see [rfc-acceptance.json](rfc-acceptance.json). Pilot setup and implementation remain pending.
+Current review: [RFC #65](https://github.com/nino-chavez/blueprint/issues/65) was filed on 2026-10-03. The maintainer accepted the bucket, applicability and two-phase structure on 2026-10-03; see [rfc-acceptance.json](rfc-acceptance.json). A document-input prototype now reads mapped source documents; phase integration and trusted authority remain pending.
 
 ## One scope owns the inventory being checked
 
@@ -53,6 +53,84 @@ Do not infer a later permission from an earlier transition. Do not require repea
 
 The default prototype authority adapter always rejects. The synthetic adapter exists only in `fixture.mjs`; it is not a real authorization provider. Adoption requires a tested host adapter that validates roles, provenance, scope, chronology, expiry/revocation and the action authorized. No current CLI command may be advertised as providing that verification.
 
+## Read existing documents without rewriting them
+
+The research checker now has an explicit document-input mode. Run it against a
+source snapshot with a separately owned JSON mapping:
+
+```text
+node research/application-definition-amendment/gate.mjs --documents <source-root> <mapping.json>
+```
+
+This command inspects sources. It does not advance a stage or authorize work.
+Its exit code is 0 for successful source checks, 1 for source/mapping findings,
+and 2 for a CLI or input-file error. Read the returned `state`, `authority`, and
+`allowed_actions`: even clean input returns `pending`, `not-verified`, and `[]`.
+The original `evaluate(root, phase, authority)` still requires the structured
+packet; a failed structured check never falls back to document inspection.
+
+The mapping has `version: 1`, a declared `scope`, `sources`, and `inventories`.
+Scope names `id`, `owner`, `boundary`, `extent`, `included` jobs, and `excluded`
+jobs. The declared owner is metadata, not authenticated authority. Extents are
+the existing new/whole/bounded/non-application values. Bounded input must name
+excluded jobs and still needs substantive scope review.
+
+Each source names its relative `path`, pinned `sha256`, `roles`, and explicit
+`scan_references` boolean. Roles use the artifact roles above, plus `context`
+and `contract`. One source can serve multiple roles. Whole/new-application
+input needs every application artifact role; a bounded input requires BRD,
+PRD, and stories without demanding a new whole-application diagram. Role labels
+do not prove that a document fulfills its job.
+
+Each owned inventory names `name`, `prefix`, minimum `digits`, `source`, and
+`format` (`heading`, `table`, or `list`). For example:
+
+```json
+{"name":"stories","prefix":"US-","digits":2,"source":"docs/stories.md","format":"heading"}
+```
+
+The extractor preserves IDs and records file/line locations. Definitions are
+IDs at the start of a Markdown heading, first table cell, or list item, with
+optional bold or inline-code markup. Fenced examples do not define records.
+References are inspected only in declared namespaces and opted-in files.
+Fenced code examples are excluded; Mermaid diagram references are checked.
+Numeric ranges and slash shorthand are expanded; unsupported descending,
+cross-section, or over-200-step ranges fail. This is a bounded Markdown
+extractor, not an inference engine for prose relationships.
+
+An inventory omitted from a public export can declare `source: null`, an
+`unavailable_reason`, and `evidence: {source, text}` pointing to an exact passage
+in a declared source. Omit `format`. Its references remain explicitly
+unverified in `external_references`; they are never counted as resolved.
+Missing local inventory files, in contrast, are errors. Source paths cannot
+escape the declared root, including through symlinks.
+
+The result includes source hashes, source-located IDs/references, unresolved
+external references, and a fingerprint covering the mapping, actual source
+bytes, adapter method, and gate entry point. Changing a pin creates new input;
+it does not restore a prior approval. Prose permissions, state coverage,
+actor handoffs, branches, decisions, and rendered comprehension still need
+substantive review. No JSON application definition or acceptance receipt is
+manufactured from prose.
+
+Three input approaches were compared against the two captured document sets:
+
+| Approach | Decision |
+|---|---|
+| Convert prose directly into the full structured gate schema | Reject for this step: the sources do not supply every machine field, and filling them would invent reviewed semantics. |
+| Keep one source mapping and inspect owned IDs/references | Select: source identity and broken references are mechanically testable while semantic review stays explicit. |
+| Write a separate parser for each project | Reject: their heading/table/list conventions fit the same small extractor. |
+
+Retain source locations and fingerprints from the conversion approach, but
+omit inferred approvals and transitions. Retain explicit file/ID ownership
+from project-specific parsers, but keep consumer paths in their local mappings.
+Private mappings and reports stay outside the public packet. The focused
+controls are in `document-input.test.mjs`. Repeat `--case <source-root>
+<mapping.json>` to run stale-source, unknown-reference, and deleted-definition
+controls on disposable copies of real snapshots. Originals are rehashed to
+verify preservation. The separate structured/engine
+controls remain in `probe.mjs`.
+
 ## Promotion and integration
 
 1. **Complete pilot setup for the accepted RFC.** Filing and admin acceptance of bucket, shape and applicability are complete. Before implementation begins, name the pilot, its accountable product owner/reviewer, and the trusted source for human decisions. Keep the RFC open through implementation review.
@@ -64,7 +142,7 @@ The default prototype authority adapter always rejects. The synthetic adapter ex
 7. **Prove it on cases.** Pilot one authorized new/whole-app definition and one bounded refit. The owner confirms a real omission caught, remaining unknowns and maintenance cost. Keep the provided synthetic tests, but do not count them as consumer acceptance.
 8. **Promote only after review.** Amend `METHODOLOGY.md`, variant selection, judged-screen timing, the template configuration, stage/reviewer bindings and producing skills together. Re-run stage-model, reviewer-registry, doctor and stamp tests; verify a fresh stamp through the public CLI path. Include root/nested layouts, all variants, custom models, old cursors, checker errors, stale review-method hashes and skipped-phase attempts. Run `test:core` and the manifest check for the actual shipped change. Check external migrations before `template/` edits and record the wave/freeze/sync note. No automatic consumer rewrite or pin change.
 
-A phase extension is the accepted direction for the opt-in implementation. The research fields above are not supported configuration until the implementation and its reviews land. Pilot setup remains the next prerequisite. The previous [implementation-design proposal](../design-documentation-amendment/proposal.md) remains separate and unadopted.
+A phase extension is the accepted direction for the opt-in implementation. The research fields above are not supported configuration until the implementation and its reviews land. The source-document trial does not finish implementation-pilot setup: its accountable reviewer and trusted decision source still need to be bound before enforcement. The previous [implementation-design proposal](../design-documentation-amendment/proposal.md) remains separate and unadopted.
 
 ## Run the bounded experiment
 
