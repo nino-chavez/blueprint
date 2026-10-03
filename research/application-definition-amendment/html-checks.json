@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-03T14:39:55.782Z",
+  "status": "pass",
+  "results": [
+    "All local links and heading references resolve; external RFC link matches verified filing receipt",
+    "All five scenarios work by keyboard, show a remedy, and keep one selected control",
+    "Skip link is first in keyboard order and moves focus into the main content",
+    "Print hides interactive controls and retains the source references",
+    "No script errors or failed asset requests"
+  ]
+}

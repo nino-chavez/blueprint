@@ -1,0 +1,37 @@
+{
+  "title": "[RFC] Define the application before whole-application concepts",
+  "label": "amendment",
+  "repo": "nino-chavez/blueprint",
+  "status": "filed",
+  "url": "https://github.com/nino-chavez/blueprint/issues/65",
+  "body_sha256": "5f67a030742b32005e1d9bc6fa16e1c3731b23088395c0dcf7fb401709778fb3",
+  "number": 65,
+  "state": "OPEN",
+  "created_at": "2026-10-03T10:05:45Z",
+  "author": "nino-chavez",
+  "remote_body_verified": true,
+  "local_filing_date": "2026-10-03",
+  "public_url_http_status": 200,
+  "public_url_final": "https://github.com/nino-chavez/blueprint/issues/65",
+  "status_before_update_sha256": {
+    "index.html": "7eff8f753448246629b19a4f2db8247b09b07b7dd40ce0b62f2f119786c2aa52",
+    "proposal.md": "2054c2787b31d6168c1fe504fb25e5a246008295db77d0233dd3f74368ad28fa",
+    "contract.md": "1947c5b97dadfc583dbc89f310f42dfcdcd21691c7058bc3f8ec75d77349d36a",
+    "verify-html.mjs": "f89898e189ca3e6eb22535c9f9563fc56324f733f77ed497e9c8ba6c1b6ccf95",
+    "html-review.md": "e3cd6add57140d92e94e1b506e7c87d3bb2f725c6b4d3379e7c45558521d3949",
+    "review-and-checks.md": "2455261a7a1360177ae0caf95875b98e755c72a783b1fdd2d2e4b0d9e500dd7d"
+  },
+  "status_after_update_sha256": {
+    "index.html": "e6efd97ca5f41ed95bbe29521b503c940dce02008dfa60a5c5734989cf74b47d",
+    "proposal.md": "2aefeb94e80728543a83193bd3f756b04554f76309efd4f3b1f4e3ea3326c232",
+    "contract.md": "1dd916db774a2cba70522cefc1062c3d51be3be5833287ae7f49abab38ccec58",
+    "verify-html.mjs": "f9e1992bd9281bdc7c518714a639a0830bb478b0f2a9ec823eb05953add0c874",
+    "html-review.md": "0075ad33fb2d93cd7e2c78d52383fedfa6c7ce934d8bbf1e48c0e4b8b443dffa",
+    "review-and-checks.md": "897d00e89469cfc33b10a930deaa612d35045940fe1e7efee3f3ba8b32a2d497"
+  },
+  "acceptance": "pending",
+  "implementation": "not-authorized-by-filing",
+  "html_checks": "passed after filing-status update",
+  "preview_refresh": "blocked by browser URL policy; no workaround attempted",
+  "snapshot_note": "Receipt of issue filing and then-local status on 2026-10-03; later publication does not imply acceptance."
+}

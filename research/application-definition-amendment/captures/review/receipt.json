@@ -1,0 +1,109 @@
+{
+  "page": "research/application-definition-amendment/index.html",
+  "wrappedIn": null,
+  "taken": "2026-10-03T05:16:35.901Z",
+  "browser": "148.0.7778.96",
+  "states": {
+    "desktop-light": {
+      "imagesNotLoaded": 0,
+      "unloadedImages": [],
+      "fonts": [],
+      "overflowX": false,
+      "overflowByInnerWidth": false,
+      "pastEdge": [],
+      "clientWidth": 1280,
+      "innerWidth": 1280,
+      "height": 6200,
+      "screens": 7.8,
+      "ground": "rgb(255, 255, 255)",
+      "scrollReachedEnd": true,
+      "segments": 1,
+      "imageSize": [
+        1280,
+        6200
+      ],
+      "expected": [
+        1280,
+        6200
+      ],
+      "sizeOk": true,
+      "wrapsToTop": false
+    },
+    "phone-light": {
+      "imagesNotLoaded": 0,
+      "unloadedImages": [],
+      "fonts": [],
+      "overflowX": false,
+      "overflowByInnerWidth": false,
+      "pastEdge": [],
+      "clientWidth": 390,
+      "innerWidth": 390,
+      "height": 9143,
+      "screens": 10.8,
+      "ground": "rgb(255, 255, 255)",
+      "scrollReachedEnd": true,
+      "segments": 2,
+      "imageSize": [
+        780,
+        18286
+      ],
+      "expected": [
+        780,
+        18286
+      ],
+      "sizeOk": true,
+      "wrapsToTop": false
+    },
+    "reflow320-light": {
+      "imagesNotLoaded": 0,
+      "unloadedImages": [],
+      "fonts": [],
+      "overflowX": false,
+      "overflowByInnerWidth": false,
+      "pastEdge": [],
+      "clientWidth": 320,
+      "innerWidth": 320,
+      "height": 10406,
+      "screens": 14.9,
+      "ground": "rgb(255, 255, 255)",
+      "scrollReachedEnd": true,
+      "segments": 2,
+      "imageSize": [
+        640,
+        20812
+      ],
+      "expected": [
+        640,
+        20812
+      ],
+      "sizeOk": true,
+      "wrapsToTop": false
+    },
+    "desktop-systemdark": {
+      "imagesNotLoaded": 0,
+      "unloadedImages": [],
+      "fonts": [],
+      "overflowX": false,
+      "overflowByInnerWidth": false,
+      "pastEdge": [],
+      "clientWidth": 1280,
+      "innerWidth": 1280,
+      "height": 6200,
+      "screens": 7.8,
+      "ground": "rgb(255, 255, 255)",
+      "scrollReachedEnd": true,
+      "segments": 1,
+      "imageSize": [
+        1280,
+        6200
+      ],
+      "expected": [
+        1280,
+        6200
+      ],
+      "sizeOk": true,
+      "wrapsToTop": false
+    }
+  },
+  "export_note": "Local absolute page path normalized for publication; capture measurements unchanged. Whole-page captures predate the RFC filing-status update."
+}

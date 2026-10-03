@@ -1,0 +1,8 @@
+# Local provenance and superseded captures are not part of the public packet.
+.local/
+dispatch/
+captures/initial/
+html-worker-brief.txt
+html-cold-review-brief.txt
+html-refs-before.txt
+html-production-output.zip

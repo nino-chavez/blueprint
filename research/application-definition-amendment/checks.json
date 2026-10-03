@@ -1,0 +1,187 @@
+{
+  "date": "2026-10-03",
+  "checked_at": "2026-10-03T14:39:54.063Z",
+  "status": "research-prototype-only",
+  "results": [
+    {
+      "name": "complete synthetic draft, selection, freeze and separately authorized build pass",
+      "result": "PASS"
+    },
+    {
+      "name": "missing journeys blocked even after refreshing synthetic review",
+      "result": "PASS"
+    },
+    {
+      "name": "missing pages blocked even after refreshing synthetic review",
+      "result": "PASS"
+    },
+    {
+      "name": "missing interactions blocked even after refreshing synthetic review",
+      "result": "PASS"
+    },
+    {
+      "name": "missing permissions blocked even after refreshing synthetic review",
+      "result": "PASS"
+    },
+    {
+      "name": "missing states blocked even after refreshing synthetic review",
+      "result": "PASS"
+    },
+    {
+      "name": "state coverage row omitted while all states remain",
+      "result": "PASS"
+    },
+    {
+      "name": "permission decision unresolved",
+      "result": "PASS"
+    },
+    {
+      "name": "denied action cannot mutate domain data",
+      "result": "PASS"
+    },
+    {
+      "name": "transition points at nonexistent state",
+      "result": "PASS"
+    },
+    {
+      "name": "journey visual disagrees with its transitions",
+      "result": "PASS"
+    },
+    {
+      "name": "known-incomplete inventory cannot be shrunk silently",
+      "result": "PASS"
+    },
+    {
+      "name": "empty BRD file and populated filenames are not completeness proof",
+      "result": "PASS"
+    },
+    {
+      "name": "changed source with refreshed manifest still needs substantive re-review",
+      "result": "PASS"
+    },
+    {
+      "name": "missing semantic review cannot be replaced by file presence",
+      "result": "PASS"
+    },
+    {
+      "name": "authored approval fields are not a trusted human decision",
+      "result": "PASS"
+    },
+    {
+      "name": "drafting does not authorize concept work",
+      "result": "PASS"
+    },
+    {
+      "name": "later blocking decision permits comparison but prevents freeze",
+      "result": "PASS"
+    },
+    {
+      "name": "changed requirement cannot be reported as kept",
+      "result": "PASS"
+    },
+    {
+      "name": "stale checker-method review is rejected",
+      "result": "PASS"
+    },
+    {
+      "name": "drafting does not approve product freeze",
+      "result": "PASS"
+    },
+    {
+      "name": "product freeze does not authorize implementation",
+      "result": "PASS"
+    },
+    {
+      "name": "agent-only concept selection is rejected",
+      "result": "PASS"
+    },
+    {
+      "name": "stale selected candidate invalidates freeze",
+      "result": "PASS"
+    },
+    {
+      "name": "freeze cannot omit a reconciliation row even with a new synthetic approval",
+      "result": "PASS"
+    },
+    {
+      "name": "forged old baseline is rejected",
+      "result": "PASS"
+    },
+    {
+      "name": "blocking owner decision prevents concepts",
+      "result": "PASS"
+    },
+    {
+      "name": "unsupported not-applicable state does not pass",
+      "result": "PASS"
+    },
+    {
+      "name": "bounded refit can be excluded only by current scope acceptance",
+      "result": "PASS"
+    },
+    {
+      "name": "missing graft record blocks selection",
+      "result": "PASS"
+    },
+    {
+      "name": "incomplete baseline cannot pass with refreshed synthetic receipts",
+      "result": "PASS"
+    },
+    {
+      "name": "exclusion requires owner and boundary",
+      "result": "PASS"
+    },
+    {
+      "name": "exclusion invalidated when preserved contract changes",
+      "result": "PASS"
+    },
+    {
+      "name": "stable IDs with dots and slashes work through diagram node aliases",
+      "result": "PASS"
+    },
+    {
+      "name": "unknown applicability fails closed",
+      "result": "PASS"
+    },
+    {
+      "name": "current gate evidence",
+      "result": "OBSERVED",
+      "stage": {
+        "id": 2,
+        "name": "Design Principles",
+        "gates": [
+          {
+            "gate": "principles-doc",
+            "derivable": true,
+            "kind": "name-match",
+            "vacuous": false,
+            "state": "pass",
+            "evidence": "prototype|docs|research: filename ~ /^design\\.md$|design-principle|design-system|principles/"
+          }
+        ],
+        "artifactPass": true,
+        "complete": true
+      },
+      "limit": "Individual Design Principles gate, not full pipeline advancement"
+    },
+    {
+      "name": "existing shipped design gate passes a design file with no definition",
+      "result": "PASS"
+    },
+    {
+      "name": "real stage engine blocks missing definition, stale prior evidence, and assertion bypass",
+      "result": "PASS"
+    }
+  ],
+  "limitations": [
+    "Synthetic authority adapter only; no real human acceptance",
+    "Miniature fixture tests mechanics, not complete application semantics",
+    "No distributed gate, schema, command, consumer change or rollout"
+  ],
+  "sources": {
+    "gate.mjs": "cf9ede5e7e09b79126a5df4089e265706e60d67008f15ff6256d315c4ac8262c",
+    "fixture.mjs": "96968904f21ad1ca9e3a19dd2d14831066e6afda8326cce02477e37aadca8711",
+    "probe.mjs": "9598420f75849497c3ed2b7d6384bd93dc7580e099abe0c912abcff68febf436",
+    "../../template/tools/lib/stage-model.mjs": "7fc0c6ac4fc430e7dabc9460655eb733f0f94ad8a7b1d2663607a43756b5c54c"
+  }
+}
