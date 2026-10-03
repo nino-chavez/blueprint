@@ -1,6 +1,6 @@
 ---
 canonical: false
-status: proposal-not-adopted
+status: accepted-implementation-pending
 date: 2026-10-02
 blueprint_base_revision: 363381459f3d4dfd15c017992be515d498a62532
 template_changed: false
@@ -12,7 +12,7 @@ Add two checked phases to Blueprint's existing design stage for a new applicatio
 
 The definition covers business requirements (BRD), product requirements (PRD), user stories, every page, every interaction and state, and user journeys in words and diagrams. These are required kinds of information, not seven mandatory files. Reuse each project's existing sources and stable IDs.
 
-**Decision for the maintainer:** confirm the scope and phase structure of [RFC #65](https://github.com/nino-chavez/blueprint/issues/65), filed on 2026-10-03, and name the first pilot before a bounded implementation can proceed. This packet is a substantial methodology RFC draft under [CONTRIBUTING.md](../../CONTRIBUTING.md), not an adopted rule. It contains a working research prototype and negative controls. It changes neither the distributed CLI nor a consumer. The issue is filed; acceptance remains pending.
+**Maintainer decision:** Nino approved [RFC #65](https://github.com/nino-chavez/blueprint/issues/65) on 2026-10-03. The methodology bucket, applicability and two-phase structure are accepted. The [approval receipt](rfc-acceptance.json) identifies the published decision and the exact reviewed packet. Pilot setup and implementation remain ahead; no distributed CLI or consumer behavior has changed.
 
 ## A collection of designed pages does not define an application
 
@@ -115,12 +115,12 @@ The stage integration test copies the existing engine into a disposable director
 
 The fixture is deliberately small. It does not prove that all real application states were discovered, that the prose makes sense, that diagram rendering works, or that an owner accepted anything. A future pilot must review a real definition and demonstrate an omission the ordinary brief process misses. Compare that value with authoring/review effort. More files and passing controls are not product outcomes.
 
-## Acceptance is the next boundary
+## The accepted design needs a named pilot
 
-Before changing shared behavior, the maintainer must accept the RFC's bucket (**methodology**, substantial), applicable scope and two-phase shape. The owner also chooses the first pilot, the accountable product owner/reviewer, and the trusted source for human decisions. The implementation plan is in [contract.md](contract.md#promotion-and-integration).
+The maintainer accepted the RFC's bucket (**methodology**, substantial), applicable scope and two-phase shape on 2026-10-03. Before implementation begins, name the first pilot, the accountable product owner/reviewer, and the trusted source for human decisions. The implementation plan is in [contract.md](contract.md#promotion-and-integration).
 
 This proposal recommends application-wide coverage for new apps and whole-app rethink, with bounded changes excluded through a reviewed scope record. It recommends keeping technical implementation design as the separate scoped contract in the [existing proposal](../design-documentation-amendment/proposal.md), which is also not adopted. These proposals complement each other; neither silently promotes the other.
 
-[RFC #65](https://github.com/nino-chavez/blueprint/issues/65) is filed and awaiting admin confirmation of its bucket and shape. After that confirmation, implement only the authorized opt-in change, run a real pilot and a bounded-refit control, then assess promotion. Recheck consumer migration state before editing `template/`, include a freeze acknowledgment and consumer-sync note in the eventual wave, and preserve historical consumer cursors. No wave number is reserved here. This request authorizes no push, production rollout or fleet-wide retrofit.
+[RFC #65](https://github.com/nino-chavez/blueprint/issues/65) remains open to track implementation. Once pilot setup is complete, implement the scoped opt-in change, run the real pilot and a bounded-refit control, then assess promotion. Recheck consumer migration state before editing `template/`, include a freeze acknowledgment and consumer-sync note in the eventual wave, and preserve historical consumer cursors. No wave number is reserved here. The research packet was published in PR #66. RFC acceptance does not authorize production rollout or a fleet-wide retrofit.
 
 The recommendation changes if an existing accepted source already supplies this complete model; if a smaller existing gate can enforce both timing boundaries; or if the real pilot catches no consequential omissions beyond the current brief while adding duplicate maintenance. The appropriate response may then be a smaller contract or a consumer-local convention.
