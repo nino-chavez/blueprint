@@ -1,6 +1,6 @@
 ---
 canonical: false
-status: local-html-reviewed-adoption-pending
+status: rfc-accepted-implementation-pending
 date: 2026-10-03
 ---
 
@@ -40,3 +40,7 @@ The owner requested the next step after reviewing the local kit. [RFC #65](https
 ## Reproducing the checks
 
 From the repository root, run `node research/application-definition-amendment/probe.mjs` for the dependency-free synthetic controls. The optional HTML check is `node research/application-definition-amendment/verify-html.mjs`; it requires Playwright and its Chromium browser installed in the local environment. Playwright is not a declared root dependency. The check writes `html-checks.json` and the blocked-control capture.
+
+## Acceptance update — 2026-10-03
+
+Nino approved the RFC after publication. The current page reports the accepted scope and phase structure, links the approval receipt, and identifies pilot setup as the next step. The earlier rendered reviews and filing receipt remain historical; they do not show this later status copy. No gate logic or layout changed.

@@ -8,7 +8,7 @@ date: 2026-10-02
 
 This is the implementation boundary of the [RFC](proposal.md). Names below are proposed research fields, not supported Blueprint configuration. `gate.mjs` owns the executable prototype's field lists; this document explains their meaning and the work needed for promotion.
 
-Current review: [RFC #65](https://github.com/nino-chavez/blueprint/issues/65) was filed on 2026-10-03. Maintainer acceptance, the pilot, and implementation remain pending.
+Current review: [RFC #65](https://github.com/nino-chavez/blueprint/issues/65) was filed on 2026-10-03. The maintainer accepted the bucket, applicability and two-phase structure on 2026-10-03; see [rfc-acceptance.json](rfc-acceptance.json). Pilot setup and implementation remain pending.
 
 ## One scope owns the inventory being checked
 
@@ -55,7 +55,7 @@ The default prototype authority adapter always rejects. The synthetic adapter ex
 
 ## Promotion and integration
 
-1. **File and settle the RFC.** File the draft through `.github/ISSUE_TEMPLATE/amendment-rfc.yml`, then obtain admin acceptance of bucket, shape, applicability and pilot before the implementation PR. Public filing needs a suitable evidence summary; local private source paths are provenance, not publicly retrievable evidence.
+1. **Complete pilot setup for the accepted RFC.** Filing and admin acceptance of bucket, shape and applicability are complete. Before implementation begins, name the pilot, its accountable product owner/reviewer, and the trusted source for human decisions. Keep the RFC open through implementation review.
 2. **Add opt-in ordered phases to the existing engine.** Preserve existing stage IDs. Add validated `phases` beneath a design-stage definition and an explicit phase cursor/order; do not encode phases as fractional numbers or reuse the existing numeric-stage comparison for strings. Existing models without phases retain current behavior. The proposal's research test flattens phases to temporary integer stages; it does not verify the new schema implementation.
 3. **Bind the definition gate.** Add the owned manifest schema/checker and a substantive review receipt contract under `template/tools/lib/`, then bind `application-definition-draft` and `application-definition-freeze` in the applicable opt-in design stages. Mechanical gates are derivable and cannot be bypassed with `--assert-*`. Root versus nested `blueprint/` resolution must choose one declared manifest; never take a passing packet from the wrong scope under the current best-of-two fallback.
 4. **Enforce entry as well as exit.** `stage status` reports the current phase, allowed next actions and blocked actions. `stage advance` rechecks the entire dependent prefix, including recorded phases. The concept-producing skill and authorized worker-brief path must query this preflight before concept dispatch. Validation/build/handoff paths do the same for the freeze and implementation permission. A tool does not prevent an unrestricted agent from editing files outside the workflow; document that boundary. Do not claim the CLI dispatches producing skills today.
@@ -64,7 +64,7 @@ The default prototype authority adapter always rejects. The synthetic adapter ex
 7. **Prove it on cases.** Pilot one authorized new/whole-app definition and one bounded refit. The owner confirms a real omission caught, remaining unknowns and maintenance cost. Keep the provided synthetic tests, but do not count them as consumer acceptance.
 8. **Promote only after review.** Amend `METHODOLOGY.md`, variant selection, judged-screen timing, the template configuration, stage/reviewer bindings and producing skills together. Re-run stage-model, reviewer-registry, doctor and stamp tests; verify a fresh stamp through the public CLI path. Include root/nested layouts, all variants, custom models, old cursors, checker errors, stale review-method hashes and skipped-phase attempts. Run `test:core` and the manifest check for the actual shipped change. Check external migrations before `template/` edits and record the wave/freeze/sync note. No automatic consumer rewrite or pin change.
 
-A phase extension is the smallest recommended *adopted* change. Until its owner accepts that contract, the permitted work is this isolated research implementation and review packet. The previous [implementation-design proposal](../design-documentation-amendment/proposal.md) remains separate and unadopted.
+A phase extension is the accepted direction for the opt-in implementation. The research fields above are not supported configuration until the implementation and its reviews land. Pilot setup remains the next prerequisite. The previous [implementation-design proposal](../design-documentation-amendment/proposal.md) remains separate and unadopted.
 
 ## Run the bounded experiment
 

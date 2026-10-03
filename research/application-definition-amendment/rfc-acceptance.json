@@ -1,0 +1,27 @@
+{
+  "status": "accepted-implementation-pending",
+  "rfc_url": "https://github.com/nino-chavez/blueprint/issues/65",
+  "approval_url": "https://github.com/nino-chavez/blueprint/issues/65#issuecomment-5970269419",
+  "approved_by": "nino-chavez",
+  "recorded_at": "2026-10-03T14:49:59Z",
+  "authority_source": "Explicit human instruction in the owning task: approve it. Published through the authenticated repository admin account.",
+  "approved_packet_revision": "d3dc5e75a704768d211a72b295d90cc8c8bc06e1",
+  "accepted": [
+    "methodology bucket and substantial-change classification",
+    "new-application and whole-application-rethink applicability with reviewed bounded-change exclusions",
+    "reviewed draft before concepts; reconciled freeze after human selection",
+    "ordered phases within existing numbered design stages"
+  ],
+  "pending": [
+    "named pilot, accountable product owner/reviewer and trusted decision source",
+    "opt-in implementation and substantive review",
+    "real pilot and bounded-refit control",
+    "distributed release and consumer rollout"
+  ],
+  "comment_body_sha256": "03f0e33928af8f3c16db2778dbb6bb49364b6d482d50dc293bc10a1218a58269",
+  "current_issue_body_sha256": "4574c567f9e36fc51e0238764f53160d6e13c53457e455f53f1cd352668bcfcd",
+  "remote_comment_verified": true,
+  "remote_issue_body_verified": true,
+  "issue_state": "OPEN",
+  "filing_snapshot": "rfc-filing.json remains the historical pre-acceptance filing receipt."
+}

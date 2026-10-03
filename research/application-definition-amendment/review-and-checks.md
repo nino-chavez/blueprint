@@ -1,6 +1,6 @@
 ---
 canonical: false
-status: local-review-complete-adoption-pending
+status: rfc-accepted-implementation-pending
 date: 2026-10-02
 ---
 
@@ -37,3 +37,7 @@ The owner requested the next step after reviewing the local kit. [RFC #65](https
 The owner authorized pushing and merging the research packet. The public export omits private case records, absolute local paths, dispatch traces and superseded initial captures; the originals remain local. Publishing this packet does not accept the proposed shared contract or authorize an implementation.
 
 The prototype was rerun after export preparation: all 37 controls passed. The HTML behavior checks also passed, including local links, all five keyboard scenarios, skip-link focus, print-media visibility and asset/script errors. Local Markdown targets resolve. `packet-manifest.json` hashes only the public package; historical filing and capture receipts retain their original scope.
+
+## Acceptance update — 2026-10-03
+
+Nino's explicit “approve it” accepts RFC #65's methodology bucket, applicability and two-phase structure. The approval was posted under the authenticated repository admin account and read back; `rfc-acceptance.json` records its URL, exact packet revision and scope. The issue remains open for implementation tracking. Pilot setup, the opt-in implementation, real-case validation and release remain ahead. The original filing receipt and as-filed issue snapshot are preserved as history.
