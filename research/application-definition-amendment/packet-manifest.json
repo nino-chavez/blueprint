@@ -31,7 +31,7 @@
     "checks.json": "b8a901fde2d13090afdc5dd92da518ae681834b50827d9d31b068035b1a5abbf",
     "contract.md": "adb9ada77b4afa311dabba02a68aafde8cee38012936ac13c44d0c6cfc54d71b",
     "document-input-checks.json": "0e33493d7f73c3f48141524c82ba62c7144dfce451c933c6cd31ad2e4d750a57",
-    "document-input.mjs": "c002891ae39dcce327cbaf1b1265458632a98abdcd6b3977a487de16ce35542e",
+    "document-input.mjs": "295433955f46c0dc9114788e18a2d1db9cdfb7b992757f799a49475ffda95816",
     "document-input.test.mjs": "49900c8574844dc7fc0832fb08b07f04371af95478d884110fd455e2db5b1a4e",
     "evidence.md": "247fb0933ea0f84f66bd537df543c6ef93b1abab687ac6d0c473ac71f3b7b75f",
     "fixture.mjs": "96968904f21ad1ca9e3a19dd2d14831066e6afda8326cce02477e37aadca8711",
@@ -55,5 +55,9 @@
   },
   "html_status": "reviewed-status-update-for-source-input",
   "rfc_url": "https://github.com/nino-chavez/blueprint/issues/65",
-  "approval_receipt": "rfc-acceptance.json"
+  "approval_receipt": "rfc-acceptance.json",
+  "runtime_dependencies": {
+    "template/tools/lib/application-definition-documents.mjs": "458854a8d80b2e70c3b283022e8cc262ee5b755203e7e2ac6741b8c9da827675"
+  },
+  "runtime_dependency_scope": "Repository-relative dependency of the document-input compatibility entry point. Historical test and capture receipts retain their dated scope; current integration checks are recorded in docs/audits/2026-10-03-application-definition-binding.md. Source publication does not establish an npm release or consumer acceptance."
 }

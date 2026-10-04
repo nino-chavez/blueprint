@@ -59,7 +59,7 @@ Commands:
   hive       Stand up the team coordination substrate      (blueprint hive setup --slug=<x> --cf-account-id=<id> [--hive-dir=.hive] [--execute])
              dry-run PLAN by default (terraform-plan style); --execute provisions CF D1+Worker+Pages from a vendored ai-hive kit
              the "run" rung of crawl→walk→run — only when contention is real (docs/governance/team-roles-and-conventions.md litmus)
-  stage      Derive/advance the initiative's pipeline position (blueprint stage <status|advance> [--target=<dir>] [--json])
+  stage      Derive/advance the initiative's pipeline position (blueprint stage <status|advance> [--target=<dir>] [--phase=<id>] [--json])
              deterministic-core view (ADR-0008): status marks derivable vs. assertion-only gates; advance gates the next transition
              advance is dry-run by default; --execute records to .blueprint/stage-state.json; --assert-<gate>="…" confirms a shell gate
   feedback   Validate the reader review/disposition loop (blueprint feedback [--target=<dir>] [--json] [--gate])
@@ -468,7 +468,7 @@ async function runDoctor(doctorArgv, home) {
     console.log(`  workflow readiness: ${result.workflow.status.toUpperCase()} (unfinished work does not mean a broken installation)`);
     if (result.workflow.detail) console.log(`    ${result.workflow.detail}`);
     for (const c of result.workflow.checks.filter(c => c.status !== 'pass')) {
-      console.log(`    Stage ${c.stage} / ${c.gate}: ${c.detail}`);
+      console.log(`    Stage ${c.stage}${c.phase ? ` / Phase ${c.phase}` : ''} / ${c.gate}: ${c.detail}`);
     }
     if (result.workflow.status === 'pending') console.log('    next: run `blueprint stage advance` for the transition checks; use --execute only when recording advancement.');
   }
@@ -545,7 +545,7 @@ async function runStage(stageArgv, home) {
   const targetDir = resolve(flags.target || process.cwd());
 
   if (sub !== 'status' && sub !== 'advance') {
-    console.error('blueprint stage: usage — blueprint stage <status|advance> [--target=<dir>] [--json]');
+    console.error('blueprint stage: usage — blueprint stage <status|advance> [--target=<dir>] [--phase=<id>] [--json]');
     process.exit(2);
   }
 
@@ -565,9 +565,28 @@ async function runStage(stageArgv, home) {
   for (const [k, v] of Object.entries(flags)) if (k.startsWith('assert-')) asserts[k.slice('assert-'.length)] = v;
   const state = lib.readStageState(targetDir);
 
-  // Corrupt state file must not be silently discarded (it holds the recorded
-  // assertions/history). Warn on every path; advance --execute refuses below.
-  if (state.corrupt) console.error(`  ! .blueprint/stage-state.json is unparseable (${state.error}) — ignoring recorded state; fix or remove it`);
+  // A state record is evidence, not a cache. Refuse a malformed record rather
+  // than deriving an empty history that could credit a later phase.
+  if (state.corrupt) {
+    const error = `.blueprint/stage-state.json is malformed (${state.error}) — fix or remove it`;
+    if (flags.json) console.log(JSON.stringify({ ok: false, error }, null, 2));
+    else console.error(`  ✗ ${error}`);
+    process.exit(2);
+  }
+
+  const status = lib.deriveStageStatus({ root: targetDir, assertions: state.assertions, phaseState: state });
+  const statusError = status.modelError || status.stateError;
+  if (statusError) {
+    if (flags.json) console.log(JSON.stringify({ ok: false, error: statusError, modelSource: status.modelSource }, null, 2));
+    else console.error(`blueprint stage: ${statusError}`);
+    process.exit(2);
+  }
+  if (flags.phase && (!status.currentPhase || status.currentPhase.id !== flags.phase)) {
+    const error = `--phase=${flags.phase} does not match the current phase${status.currentPhase ? ` '${status.currentPhase.id}'` : ' (this frontier has no phase)'}`;
+    if (flags.json) console.log(JSON.stringify({ ok: false, error, currentPhase: status.currentPhase }, null, 2));
+    else console.error(`blueprint stage: ${error}`);
+    process.exit(2);
+  }
 
   if (sub === 'advance') {
     const execute = !!flags.execute;
@@ -575,7 +594,7 @@ async function runStage(stageArgv, home) {
     // reject evidence-less bare flags — a typo'd or empty assertion silently
     // "satisfying" a shell gate defeats the whole recorded-confirmation point.
     const shellGateIds = new Set(
-      lib.deriveStageStatus({ root: targetDir }).stages.flatMap((s) => s.gates).filter((g) => !g.derivable).map((g) => g.gate),
+      status.stages.flatMap((s) => [...s.gates, ...s.phases.flatMap((phase) => phase.gates)]).filter((g) => !g.derivable).map((g) => g.gate),
     );
     const assertErrors = [];
     for (const [gate, evidence] of Object.entries(asserts)) {
@@ -587,12 +606,12 @@ async function runStage(stageArgv, home) {
     }
     if (assertErrors.length) { for (const e of assertErrors) console.error(`  ✗ ${e}`); process.exit(2); }
 
-    const res = await lib.recordAdvance({ root: targetDir, asserts, execute, home });
-    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.ok ? 0 : 1); }
+    const res = await lib.recordAdvance({ root: targetDir, asserts, execute, home, expectedPhase: flags.phase || null });
+    if (flags.json) { console.log(JSON.stringify(res, null, 2)); process.exit(res.ok ? 0 : (res.inputError || res.modelError || res.stateError || res.corrupt) ? 2 : 1); }
     console.log(`blueprint stage advance${execute ? '' : ' (dry-run)'} — ${targetDir}\n`);
-    if (res.corrupt) { console.error(`  ✗ ${res.message}`); process.exit(2); }
+    if (res.corrupt || res.inputError || res.modelError || res.stateError) { console.error(`  ✗ ${res.message}`); process.exit(2); }
     if (res.complete) { console.log(`  ${res.message}`); process.exit(0); }
-    console.log(`target frontier: Stage ${res.target.id} — ${res.target.name}\n`);
+    console.log(`target frontier: Stage ${res.target.id} — ${res.target.name}${res.target.phase ? ` / Phase ${res.target.phase.id} — ${res.target.phase.name}` : ''}\n`);
     if (!res.ok) {
       for (const g of res.blocking || []) console.log(`  ✗ ${g.gate.padEnd(20)} ${g.evidence}  (derivable — fix on disk, cannot assert)`);
       for (const g of res.missingAssertions || []) console.log(`  ~ ${g.gate.padEnd(20)} ${g.evidence}  (assert with --assert-${g.gate}="…")`);
@@ -603,14 +622,14 @@ async function runStage(stageArgv, home) {
     // ADR-0009: mapped reviewers verified at the frontier (fresh recorded
     // PASSes reused; others ran just now — read-only either way).
     for (const rv of res.reviews || []) console.log(`  ${rv.status === 'PASS' ? '✓' : '~'} ${rv.gate.padEnd(20)} reviewer ${rv.reviewer}: ${rv.status}${rv.ran ? '' : ' (recorded, fresh)'}${rv.note ? ` — ${rv.note}` : ''}`);
-    console.log(`  ✓ entry-guard satisfied — frontier Stage ${res.target.id} completes`);
-    if (execute) console.log(`  ✓ recorded → ${res.wrote} (confirmed cursor now Stage ${res.cursor})`);
-    else console.log(`  (dry-run — re-run with --execute to record; confirmed cursor would be Stage ${res.cursor})`);
+    console.log(`  ✓ entry-guard satisfied — ${res.target.phase ? `Phase ${res.target.phase.id} completes within Stage ${res.target.id}` : `frontier Stage ${res.target.id} completes`}`);
+    if (execute) console.log(`  ✓ recorded → ${res.wrote} (confirmed cursor now Stage ${res.cursor}${res.phaseCursor ? `; phase ${res.phaseCursor.stageId}/${res.phaseCursor.phaseId}` : ''})`);
+    else console.log(`  (dry-run — re-run with --execute to record; confirmed cursor would be Stage ${res.cursor}${res.phaseCursor ? `; phase ${res.phaseCursor.stageId}/${res.phaseCursor.phaseId}` : ''})`);
     process.exit(0);
   }
 
-  const res = lib.deriveStageStatus({ root: targetDir, assertions: state.assertions });
-  if (flags.json) { console.log(JSON.stringify({ ...res, recordedCursor: state.cursor }, null, 2)); process.exit(0); }
+  const res = status;
+  if (flags.json) { console.log(JSON.stringify({ ...res, recordedCursor: state.cursor, recordedPhaseCursor: state.phaseCursor }, null, 2)); process.exit(0); }
   console.log(`blueprint stage status — ${targetDir}`);
   console.log(`model: ${res.variant} [${res.modelSource}]${res.modelNote ? `  (${res.modelNote})` : ''}\n`);
   for (const s of res.stages) {
@@ -620,12 +639,21 @@ async function runStage(stageArgv, home) {
       const der = g.derivable ? '   ' : ' *?';
       console.log(`  ${icon[g.state] || '?'}${der} ${g.gate.padEnd(20)} ${g.evidence}`);
     }
+    for (const phase of s.phases) {
+      console.log(`  Phase ${phase.id} — ${phase.name}${phase.recorded ? '  ✓ recorded' : ''}`);
+      for (const g of phase.gates) {
+        const der = g.derivable ? '     ' : '  *?';
+        console.log(`    ${icon[g.state] || '?'}${der} ${g.gate.padEnd(20)} ${g.evidence}`);
+      }
+    }
   }
   console.log(`\n  legend: ✓ pass  ~ partial  ✗ absent    *? = NOT machine-derivable (needs agent/human assertion)`);
   console.log(`\nartifact cursor:  Stage ${res.artifactCursor} ${res.artifactCursor >= 0 ? `(${res.artifactCursorName})` : '(none)'}  — how far the disk artifacts reach (derivable gates only)`);
   console.log(`confirmed cursor: Stage ${res.cursor} ${res.cursor >= 0 ? `(${res.cursorName})` : '(none)'}  — all gates incl. recorded assertions (what \`advance\` moves)`);
   console.log(`stages complete:  ${res.stagesComplete.length}/${res.stageCount} [${res.stagesComplete.join(', ') || '—'}]  — coverage (may be non-contiguous; the spine stops at the first gap)`);
   if (res.nextStage) console.log(`frontier (advance target): Stage ${res.nextStage.id} — ${res.nextStage.name}`);
+  if (res.phaseCursor) console.log(`recorded phase cursor: ${res.phaseCursor.stageId}/${res.phaseCursor.phaseId}`);
+  if (res.currentPhase) console.log(`current phase: ${res.currentPhase.stageId}/${res.currentPhase.id} — ${res.currentPhase.name}`);
   console.log(`\nderivability: ${res.derivableCount}/${res.totalGates} gates machine-derivable, ${res.nonderivableCount}/${res.totalGates} need assertion`);
   console.log(`  the deterministic core owns the ${res.derivableCount}; the agentic shell owns the ${res.nonderivableCount}.`);
   process.exit(0);

@@ -34,6 +34,7 @@ const STEPS = [
   [`${LIB}/doctor.mjs`, ['--selftest'], /^doctor self-test: PASS\b/m],
   [`${LIB}/reviewer-registry.mjs`, ['--self-test'], /^reviewer-registry self-test: PASS\b/m],
   [`${LIB}/yaml-scalar.mjs`, ['--selftest'], /^yaml-scalar self-test: PASS\b/m],
+  [`${LIB}/application-definition.mjs`, ['--selftest'], /^application-definition self-test: PASS\b/m],
   [`${LIB}/stage-model.mjs`, ['--selftest'], /^selftest OK \(/m],
   [`${LIB}/telemetry.mjs`, ['--self-test'], /^telemetry self-test: PASS\b/m],
   [`${LIB}/upgrade.mjs`, ['--self-test'], /^upgrade self-test: PASS\b/m],
@@ -51,6 +52,7 @@ const STEPS = [
   [`${REVIEWERS}/screen-composition-reviewer.mjs`, ['--selftest'], /^All \d+ assertions passed\.$/m],
   ['template/tools/blueprint-init/smoke.mjs', [], /^smoke green\b/m],
   ['template/tools/blueprint-init/workflow-smoke.mjs', [], /^workflow-smoke: PASS\b/m],
+  ['template/tools/blueprint-init/decision-smoke.mjs', [], /^decision-smoke: PASS\b/m],
   ['template/.claude/hooks/blueprint-session-start.py', ['--self-test'], /^blueprint-session-start self-test: PASS\b/m],
 ];
 
