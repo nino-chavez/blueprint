@@ -2,15 +2,21 @@
 import Layout from '@/layouts/Layout.astro';
 import HarnessNote from '@/components/HarnessNote.astro';
 import { StateMachineView } from '@/components/StateMachineView';
-import {
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { repoRoot } from '@/lib/repo-root';
+
+// Load the CLI from its source location. Its checks fingerprint adjacent files;
+// bundling it into this page would change import.meta.url and break those reads.
+const modelUrl = pathToFileURL(resolve(repoRoot(), 'template/tools/lib/stage-model.mjs')).href;
+const {
   GREENFIELD_MODEL,
   MIDSTREAM_MODEL,
   BROWNFIELD_MODEL,
   RESEARCH_MODEL,
-} from '../../../../template/tools/lib/stage-model.mjs';
+} = await import(/* @vite-ignore */ modelUrl) as typeof import('../../../../template/tools/lib/stage-model.mjs');
 
-// Structure comes straight from the model. The *_MODEL constants are pure data
-// (no check functions, no disk access at import), so the chart is DERIVED from
+// Structure comes straight from the model, so the chart is DERIVED from
 // the machine — it can't drift from stage-model.mjs. We pass only the shape the
 // island renders (id/name + gate id/derivable/optional/kind); params dropped.
 const models = [GREENFIELD_MODEL, MIDSTREAM_MODEL, BROWNFIELD_MODEL, RESEARCH_MODEL].map((m) => ({
