@@ -207,3 +207,153 @@ repo's audit-discipline rule exists to catch. Recording the split explicitly:
   the spine and gate-closing, not the fuzzy node work). The operating contract stays: the agent
   executes stages, the operator steers, `advance` gates and records. README/onboarding copy states
   this contract explicitly as of wave 86.
+
+## Ordered phases within a stage (RFC #65)
+
+An explicitly selected custom JSON model can add `phases` to a numbered stage.
+The array order is the phase order. Stage-level gates are prerequisites for every
+phase in that stage. Each phase supplies an `id`, a `name`, and a `gates` array;
+gates use the existing check-kind and reviewer contracts.
+
+```json
+{
+  "variant": "greenfield",
+  "stages": [{
+    "id": 2,
+    "name": "Design",
+    "gates": [],
+    "phases": [
+      {"id": "definition", "name": "Definition", "gates": [
+        {"id": "definition-document", "derivable": true,
+         "kind": "file-exists", "params": {"path": "docs/application-definition.md"}}
+      ]},
+      {"id": "selection", "name": "Selection", "gates": [
+        {"id": "selection-record", "derivable": true,
+         "kind": "file-exists", "params": {"path": "decisions/selected-direction.md"}}
+      ]}
+    ]
+  }]
+}
+```
+
+This example demonstrates sequencing with file-presence checks. It does not
+verify the definition's completeness, the choice's authority, or product freeze.
+It is not the proposed application-definition model. Declare the JSON path with
+`stage_model:` in `blueprint.yml`; built-in models remain phase-free.
+
+`stage status` shows the numbered stage and current phase. `stage advance`
+previews one phase transition. `--execute` records it, and optional
+`--phase=definition` requires that exact current phase rather than choosing a
+later one. Later files being present cannot skip the phase. A phase transition
+rechecks its earlier prerequisites and mapped reviewers; an earlier failure
+refuses the transition without replacing history.
+
+The numeric cursor still means the last complete numbered stage. `phaseCursor`
+records the last completed phase separately. Its recorded history is tied to the
+selected model's fingerprint. Old records without phase history receive no phase
+credit. Invalid phase history and changed model fingerprints require deliberate
+reconciliation; the command does not erase the old record or silently reset it.
+
+Malformed explicitly selected models now return an error instead of substituting
+greenfield. This is the intentional exception to legacy compatibility: a broken
+model must not produce a pass for a different workflow. Valid models without
+phases retain their existing derive and advance semantics; status adds phase
+fields. Empty legacy stage lists, omitted gates, and legacy non-slug gate IDs
+remain accepted. Phase-bearing models require nonnegative ascending integer
+stage IDs, nonempty phase arrays, unique phase IDs within each stage, and
+slug-shaped gate IDs unique across the model.
+
+The CLI now refuses corrupt saved state. `recordAdvance` validates new assertion
+names and evidence strings at the library boundary, as the CLI already did.
+Saved assertions in a phased model must have valid evidence and belong to the
+current or an earlier phase. Preserve old records while deliberately reconciling
+invalid state; neither a new numeric cursor nor a silent reset supplies phase
+history.
+
+Library callers pass `phaseState: readStageState(root)` and its `assertions`
+when using `deriveStageStatus` or the predicate-only `previewAdvance`.
+`recordAdvance` loads saved state itself and also verifies mapped reviewers.
+Doctor reports unrecorded phase transitions as pending even when their files
+already pass.
+
+These records are local workflow state. They are not authenticated human
+approvals. The application-definition manifest checker, substantive-review and
+authority adapters, producer preflight, and real consumer pilot remain separate
+work under RFC #65. See the [implementation evidence](../audits/2026-10-03-ordered-design-phases.md).
+
+### Application source inspection within a phase
+
+A custom phase model can select the `application-definition-source` check. It
+reads the existing [document mapping](../../research/application-definition-amendment/contract.md#read-existing-documents-without-rewriting-them)
+through a single declaration in the initiative root's `blueprint.yml`:
+
+```yaml
+stage_model: model.json
+application_definition: docs/application-definition.json
+```
+
+The selected model can place this gate in its definition phase:
+
+```json
+{"id":"definition-sources","derivable":true,"kind":"application-definition-source"}
+```
+
+The JSON manifest and every declared source path resolve relative to the same
+initiative root. Placing the manifest under `blueprint/` does not change that
+root. A missing declaration never falls back to the nested folder. Conflicting
+declarations and escaped paths are errors. Other gate kinds retain their
+existing root/nested lookup.
+
+This integration checks source identity and declared IDs/references. A clean
+result still has unverified authority and no allowed product actions; the phase
+remains pending. The gate must be derivable and required. Assertions and an
+optional flag cannot bypass it.
+
+It does not install a substantive reviewer, authenticate a human decision,
+reconcile a chosen design, or enforce producer preflight. Those remain required
+before a real application-definition phase may complete. Built-in models and
+consumer configurations remain unchanged. See the
+[integration evidence](../audits/2026-10-03-application-definition-binding.md)
+for exercised cases and current limits.
+
+### Host verification of a definition decision
+
+`template/tools/lib/application-definition-decisions.mjs` adds two library APIs:
+
+```text
+applicationDecisionRequest({ initiativeRoot, requirement, host })
+  -> exact source/model/review/method binding and fingerprint
+inspectApplicationDecision({ initiativeRoot, requirement, decisionId, host })
+  -> verified or unverified decision; application state remains pending
+```
+
+The trusted caller supplies `requirement` with `kind: definition-review`,
+`action: concepts`, numeric `stage`, `phase`, and `review` containing current
+`input_hash`, `method_hash`, and UTC `completed_at`. Review hashes bind the
+approval; they do not establish a review PASS. The selected phase must own an
+`application-definition-source` check; another existing phase is not enough.
+
+`host` supplies `provider`, `actor`, `role`, `method_hash`, and an asynchronous
+`resolveDecision({ decisionId, request, signal })` function. The method hash must
+cover its effective identity policy and adapter implementation. Resolve from the
+canonical host source on every call, including current revocation state. Never
+construct this host from consumer configuration or an exported transcript.
+
+The returned `blueprint-human-decision/1` record names `id`, `provider`, `actor`,
+`role`, `origin`, `status`, `verdict`, `subject`, `kind`, `action`, `fingerprint`,
+`decided_at`, `expires_at`, and `source: { id, revision }`. A valid origin is
+`authenticated-human` only after the host verifies direct-human provenance.
+Status is `active`, `revoked` or `superseded`; verdict is `accept` or `reject`.
+Times are UTC ISO strings with seconds and optional three-digit milliseconds;
+`expires_at` may be null. The decision must follow the bound review and must not
+be in the future. Source/method changes invalidate its fingerprint.
+
+Lookups default to five seconds, accept a 1–30,000 ms `timeoutMs`, and receive an
+abort signal. The host should honor it. A `now` function defaults to `Date.now`
+and is injectable by trusted hosts/tests. Missing hosts, unavailable sources,
+malformed records, mismatches and stale decisions fail closed.
+
+This is an integration interface, not an installed authentication provider.
+The current desktop chat lookup does not expose direct-human provenance.
+Selection/freeze/build and stage advancement are outside this API. Even verified
+results retain empty allowed actions. See the [evidence and limits](../audits/2026-10-03-application-decision-verification.md).

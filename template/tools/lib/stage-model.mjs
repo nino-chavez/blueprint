@@ -2,8 +2,8 @@
 //
 // Declares the canonical stage model as DATA (not closures) and DERIVES an
 // initiative's current stage state from artifacts-on-disk + blueprint.yml.
-// Read-only: this lib reports; it does not gate or mutate. `blueprint stage
-// status` renders it; `blueprint stage advance` previews the next transition.
+// `blueprint stage status` renders derived state. `stage advance` verifies the
+// next transition; only its explicit --execute path writes workflow state.
 //
 // Architecture (ADR-0008, "deterministic core / agentic shell"): stage
 // SEQUENCING is deterministic and lives here in code; the fuzzy NODE work
@@ -25,7 +25,7 @@
 // block presence); the model shape itself travels as JSON when overridden.
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync, rmSync, mkdtempSync } from 'node:fs';
-import { join, resolve, isAbsolute, sep } from 'node:path';
+import { join, resolve, isAbsolute, sep, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -34,6 +34,7 @@ import { resolveReviewer } from './reviewer-registry.mjs';
 import { parseManifest } from './actor-output.mjs';
 import { evaluateReviewLoop } from './review-loop.mjs';
 import { readTopLevelYamlScalar, splitFrontmatter } from './yaml-scalar.mjs';
+import { inspectApplicationDefinition } from './application-definition.mjs';
 
 // ── fs helpers ─────────────────────────────────────────────────────
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
@@ -290,6 +291,29 @@ const CHECK_KINDS = {
   },
 
   'manual': ({ evidence }) => ({ state: 'partial', evidence: evidence || 'not derivable from disk — needs assertion' }),
+
+  // The application-definition mapping is an explicit, root-only opt-in. A
+  // clean mapping proves only source identity and reference consistency; it is
+  // intentionally still partial until substantive review and trusted authority
+  // exist outside this deterministic core.
+  'application-definition-source': (params, c) => {
+    if (!isPlainObject(params) || Object.keys(params).length) return badParams('application-definition-source', 'takes no params');
+    const source = inspectApplicationDefinition({ initiativeRoot: c.root });
+    const metadata = {
+      manifest: source.manifest ?? null,
+      source_status: source.source_status,
+      source_fingerprint: source.source_fingerprint ?? null,
+      method_hash: source.method_hash ?? null,
+      authority: 'not-verified',
+      allowed_actions: [],
+      review_required: source.review_required,
+      errors: source.errors,
+    };
+    const detail = source.errors.map(error => `${error.path ? `${error.path}${error.line ? `:${error.line}` : ''}: ` : ''}${error.code}: ${error.detail}`).join('; ');
+    if (source.execution_error) return { state: 'absent', evidence: `application definition cannot be inspected: ${detail}`, executionError: true, applicationDefinition: metadata };
+    if (source.source_status !== 'pass') return { state: 'absent', evidence: `application definition source failed: ${detail}`, applicationDefinition: metadata };
+    return { state: 'partial', evidence: 'application definition source verified; substantive review and trusted authority remain required', applicationDefinition: metadata };
+  },
 
   'deploy-signals': ({ paths = [], distDir }, c) => {
     if (!Array.isArray(paths)) return badParams('deploy-signals', 'paths must be an array');
@@ -588,6 +612,77 @@ const BUILTIN_MODELS = {
   research: RESEARCH_MODEL,
 };
 
+const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+const isSlug = (value) => typeof value === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+const stableJson = (value) => Array.isArray(value)
+  ? `[${value.map(stableJson).join(',')}]`
+  : isPlainObject(value)
+    ? `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`
+    : JSON.stringify(value);
+const modelFingerprint = (model) => createHash('sha256').update(stableJson(model)).digest('hex');
+
+function validateGate(gate, location, gateIds, phased) {
+  if (!isPlainObject(gate)) return `${location} must be an object`;
+  if (phased ? !isSlug(gate.id) : typeof gate.id !== 'string' || !gate.id.trim()) return `${location}.id must be ${phased ? 'a stable string slug' : 'nonempty'}`;
+  if (phased && gateIds.has(gate.id)) return `${location}.id '${gate.id}' is not globally unique`;
+  gateIds.add(gate.id);
+  if (typeof gate.derivable !== 'boolean') return `${location}.derivable must be boolean`;
+  if (typeof gate.kind !== 'string' || !Object.hasOwn(CHECK_KINDS, gate.kind)) return `${location}.kind '${gate.kind}' is not a known check kind`;
+  if (gate.kind === 'application-definition-source' && gate.derivable !== true) return `${location}: application-definition-source must be derivable:true`;
+  if (gate.kind === 'application-definition-source' && gate.optional === true) return `${location}: application-definition-source cannot be optional`;
+  if (gate.params !== undefined && !isPlainObject(gate.params)) return `${location}.params must be an object`;
+  if (gate.kind === 'application-definition-source' && gate.params && Object.keys(gate.params).length) return `${location}: application-definition-source takes no params`;
+  if (gate.optional !== undefined && typeof gate.optional !== 'boolean') return `${location}.optional must be boolean`;
+  if (gate.reviewer !== undefined) {
+    if (!isPlainObject(gate.reviewer) || typeof gate.reviewer.name !== 'string' || !gate.reviewer.name.trim()) return `${location}.reviewer needs a nonempty name`;
+    if (gate.reviewer.onWarn !== undefined && !['block', 'pass', 'ask'].includes(gate.reviewer.onWarn)) return `${location}.reviewer.onWarn must be block, pass, or ask`;
+  }
+  return null;
+}
+
+// A custom model is executable input, not a hint. Validation happens before any
+// fallback decision so a typo cannot quietly select greenfield and report the
+// wrong workflow as healthy.
+export function validateStageModel(model) {
+  if (!isPlainObject(model)) return 'model must be an object';
+  if (!Array.isArray(model.stages)) return 'model.stages must be an array';
+  const phased = model.stages.some((stage) => stage?.phases !== undefined);
+  const gateIds = new Set();
+  let previousId = -Infinity;
+  for (let index = 0; index < model.stages.length; index++) {
+    const stage = model.stages[index];
+    const here = `stages[${index}]`;
+    if (!isPlainObject(stage)) return `${here} must be an object`;
+    if (!Number.isFinite(stage.id) || (phased && (!Number.isInteger(stage.id) || stage.id < 0 || stage.id <= previousId))) return `${here}.id must be ${phased ? 'a nonnegative integer in declared ascending order' : 'a number'}`;
+    previousId = stage.id;
+    if (typeof stage.name !== 'string' || !stage.name.trim()) return `${here}.name must be nonempty`;
+    if (!Array.isArray(stage.gates ?? (phased ? null : []))) return `${here}.gates must be an array`;
+    for (let gateIndex = 0; gateIndex < (stage.gates || []).length; gateIndex++) {
+      const error = validateGate(stage.gates[gateIndex], `${here}.gates[${gateIndex}]`, gateIds, phased);
+      if (error) return error;
+    }
+    if (stage.phases !== undefined) {
+      if (!Array.isArray(stage.phases) || !stage.phases.length) return `${here}.phases must be a nonempty array when declared`;
+      const phaseIds = new Set();
+      for (let phaseIndex = 0; phaseIndex < stage.phases.length; phaseIndex++) {
+        const phase = stage.phases[phaseIndex];
+        const phaseHere = `${here}.phases[${phaseIndex}]`;
+        if (!isPlainObject(phase)) return `${phaseHere} must be an object`;
+        if (!isSlug(phase.id)) return `${phaseHere}.id must be a stable string slug`;
+        if (phaseIds.has(phase.id)) return `${phaseHere}.id '${phase.id}' is duplicated in stage ${stage.id}`;
+        phaseIds.add(phase.id);
+        if (typeof phase.name !== 'string' || !phase.name.trim()) return `${phaseHere}.name must be nonempty`;
+        if (!Array.isArray(phase.gates)) return `${phaseHere}.gates must be an array`;
+        for (let gateIndex = 0; gateIndex < phase.gates.length; gateIndex++) {
+          const error = validateGate(phase.gates[gateIndex], `${phaseHere}.gates[${gateIndex}]`, gateIds, phased);
+          if (error) return error;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // ── model loading (config-driven) ──────────────────────────────────
 // Resolution order:
 //   1. blueprint.yml `stage_model:` scalar —
@@ -604,73 +699,130 @@ export function loadStageModel(root) {
     const p = isAbsolute(sel) ? sel : join(root, sel);
     try {
       const model = JSON.parse(read(p));
-      // Consumer-authored JSON: validate the whole stage shape, not just that
-      // `stages` is an array. A null stage element, or `gates` authored as an
-      // object (a plausible YAML-map→JSON slip), otherwise throws out of
-      // deriveStageStatus — which bin/blueprint.mjs calls with no try/catch.
-      // Fail closed to greenfield rather than crash `stage status`.
-      const stagesOk = Array.isArray(model?.stages)
-        && model.stages.every((s) => s && typeof s === 'object' && Array.isArray(s.gates ?? []));
-      if (!stagesOk) {
-        return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' has a malformed stages[] (need objects with gates[]) — using greenfield` };
-      }
-      return { model, source: p, note: null };
+      const error = validateStageModel(model);
+      if (error) return { model: null, source: p, error: `stage_model '${sel}' is invalid: ${error}` };
+      return { model, source: p, note: null, fingerprint: modelFingerprint(model) };
     } catch (e) {
-      return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' unreadable: ${e.message}` };
+      return { model: null, source: p, error: `stage_model '${sel}' is unreadable: ${e.message}` };
     }
   }
-  if (sel && BUILTIN_MODELS[sel]) return { model: BUILTIN_MODELS[sel], source: sel, note: null };
-  if (sel) return { model: GREENFIELD_MODEL, source: 'greenfield (fallback)', note: `stage_model '${sel}' is not a known model — using greenfield` };
+  if (sel && Object.hasOwn(BUILTIN_MODELS, sel)) return { model: BUILTIN_MODELS[sel], source: sel, note: null, fingerprint: modelFingerprint(BUILTIN_MODELS[sel]) };
+  if (sel) return { model: null, source: sel, error: `stage_model '${sel}' is not a known built-in model or JSON file` };
   // No explicit stage_model → follow the declared `variant` (all four variants
   // ship a model). This connects the existing blueprint.yml `variant` field to
   // the stage machine so consumers don't declare the shape twice.
   const variant = ymlScalar(yml, 'variant');
-  if (variant && BUILTIN_MODELS[variant]) return { model: BUILTIN_MODELS[variant], source: `variant:${variant}`, note: null };
-  return { model: GREENFIELD_MODEL, source: variant ? `greenfield (fallback)` : 'greenfield (default)', note: variant ? `variant '${variant}' has no stage model — using greenfield` : null };
+  if (variant && Object.hasOwn(BUILTIN_MODELS, variant)) return { model: BUILTIN_MODELS[variant], source: `variant:${variant}`, note: null, fingerprint: modelFingerprint(BUILTIN_MODELS[variant]) };
+  return { model: GREENFIELD_MODEL, source: variant ? `greenfield (fallback)` : 'greenfield (default)', note: variant ? `variant '${variant}' has no stage model — using greenfield` : null, fingerprint: modelFingerprint(GREENFIELD_MODEL) };
 }
 
 // ── derivation ─────────────────────────────────────────────────────
-export function deriveStageStatus({ root, assertions = {} }) {
+function phaseDefinitions(model) {
+  return model.stages.flatMap((stage) => (stage.phases || []).map((phase) => ({ stageId: stage.id, stageName: stage.name, phaseId: phase.id, phaseName: phase.name })));
+}
+
+function validateRecordedPhases(model, fingerprint, phaseState = {}) {
+  if (!isValidStateShape(phaseState) || phaseState.corrupt) return 'phase state is malformed';
+  const definitions = phaseDefinitions(model);
+  const hasPhaseFields = phaseState.phaseCursor !== undefined || phaseState.phaseHistory !== undefined || phaseState.phaseModelFingerprint !== undefined;
+  if (!definitions.length) {
+    if (hasPhaseFields && ((phaseState.phaseHistory || []).length || phaseState.phaseCursor || phaseState.phaseModelFingerprint)) return 'phase state exists but the selected model declares no phases';
+    return { history: [], cursor: null, definitions };
+  }
+  // Old state records are legitimate but establish no ordered phase credit.
+  if (!hasPhaseFields) return { history: [], cursor: null, definitions };
+  if (!Array.isArray(phaseState.phaseHistory)) return 'phaseHistory must be an array';
+  if (phaseState.phaseModelFingerprint !== undefined && phaseState.phaseModelFingerprint !== fingerprint) return 'phase state belongs to a different selected model fingerprint';
+  const history = phaseState.phaseHistory;
+  if (history.length > definitions.length) return 'phaseHistory is longer than the selected model phase sequence';
+  for (let index = 0; index < history.length; index++) {
+    const entry = history[index];
+    const expected = definitions[index];
+    if (!isPlainObject(entry) || entry.stageId !== expected.stageId || entry.phaseId !== expected.phaseId) return `phaseHistory[${index}] is not the declared contiguous phase prefix (expected ${expected.stageId}/${expected.phaseId})`;
+    if (entry.modelFingerprint !== fingerprint) return `phaseHistory[${index}] belongs to a different selected model fingerprint`;
+  }
+  const expectedCursor = history.length ? { stageId: history.at(-1).stageId, phaseId: history.at(-1).phaseId } : null;
+  const cursor = phaseState.phaseCursor ?? null;
+  if (expectedCursor ? cursor?.stageId !== expectedCursor.stageId || cursor?.phaseId !== expectedCursor.phaseId : cursor !== null) return 'phaseCursor does not match the last contiguous phaseHistory entry';
+  return { history, cursor: expectedCursor, definitions };
+}
+
+function deriveGate(g, candidates, ctx, assertions) {
+  const kind = CHECK_KINDS[g.kind];
+  let r = null;
+  const scopedCandidates = g.kind === 'application-definition-source' ? [ctx.root] : candidates;
+  for (const cand of scopedCandidates) {
+    let rr;
+    try {
+      rr = kind ? kind(g.params || {}, { ...ctx, root: cand })
+        : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
+    } catch (e) {
+      rr = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
+    }
+    if (!r || rankState(rr.state) > rankState(r.state)) r = rr;
+  }
+  if (!g.derivable && r.state !== 'pass' && Object.hasOwn(assertions, g.id) && assertions[g.id]) r = { state: 'pass', evidence: `asserted: ${assertions[g.id].evidence || 'confirmed'}` };
+  let vacuous = false;
+  if (g.optional && r.state !== 'pass') {
+    r = { ...r, state: 'pass', evidence: `${r.evidence} (optional)` };
+    vacuous = true;
+  }
+  return { gate: g.id, derivable: g.derivable, kind: g.kind, vacuous, ...(g.reviewer && g.reviewer.name ? { reviewer: g.reviewer } : {}), ...r };
+}
+
+function validatePhaseAssertions(model, assertions, recordedPhases) {
+  if (!recordedPhases.definitions.length) return null; // Legacy records retain their interpretation.
+  if (!isPlainObject(assertions)) return 'assertions must be an object';
+  const next = recordedPhases.definitions[recordedPhases.history.length];
+  const all = new Map();
+  const allowed = new Set();
+  for (const stage of model.stages) {
+    for (const gate of stage.gates) {
+      all.set(gate.id, gate);
+      if (!next || stage.id <= next.stageId) allowed.add(gate.id);
+    }
+    let throughCurrent = true;
+    for (const phase of stage.phases || []) {
+      for (const gate of phase.gates) {
+        all.set(gate.id, gate);
+        if (!next || stage.id < next.stageId || (stage.id === next.stageId && throughCurrent)) allowed.add(gate.id);
+      }
+      if (next && stage.id === next.stageId && phase.id === next.phaseId) throughCurrent = false;
+    }
+  }
+  for (const [id, record] of Object.entries(assertions)) {
+    if (!all.has(id)) return `unknown recorded assertion '${id}'`;
+    if (!allowed.has(id)) return `recorded assertion '${id}' belongs to a later phase or stage; reconcile it before advancing`;
+    if (all.get(id).derivable) return `recorded assertion '${id}' targets a derivable gate`;
+    if (!isPlainObject(record) || typeof record.evidence !== 'string' || !record.evidence.trim() || record.evidence === 'true') return `recorded assertion '${id}' needs nonempty evidence`;
+  }
+  return null;
+}
+
+export function deriveStageStatus({ root, assertions = {}, phaseState = {} }) {
   root = resolve(root);
-  const { model, source, note } = loadStageModel(root);
+  const { model, source, note, error: modelError, fingerprint } = loadStageModel(root);
+  if (modelError) return { variant: null, modelSource: source, modelNote: null, modelError, cursor: -1, cursorName: null, stagesComplete: [], stageCount: 0, artifactCursor: -1, artifactCursorName: null, stages: [], derivableCount: 0, nonderivableCount: 0, totalGates: 0, nextStage: null, phaseCursor: null, currentPhase: null, nextPhase: null };
+  const recordedPhases = validateRecordedPhases(model, fingerprint, phaseState);
+  const stateError = typeof recordedPhases === 'string' ? recordedPhases : validatePhaseAssertions(model, assertions, recordedPhases);
+  if (stateError) return { variant: model.variant || 'greenfield', modelSource: source, modelNote: note, stateError, cursor: -1, cursorName: null, stagesComplete: [], stageCount: model.stages.length, artifactCursor: -1, artifactCursorName: null, stages: [], derivableCount: 0, nonderivableCount: 0, totalGates: 0, nextStage: null, phaseCursor: null, currentPhase: null, nextPhase: null, modelFingerprint: fingerprint };
   const ctx = { root, yml: read(join(root, 'blueprint.yml')) };
 
   const candidates = rootDirs(root); // [root] or [root, root/blueprint]
   const stages = model.stages.map((st) => {
-    const gates = (st.gates || []).map((g) => {
-      const kind = CHECK_KINDS[g.kind];
-      // Evaluate against EACH candidate root and take the BEST result — so an
-      // empty root stub never shadows real work under blueprint/ (and vice
-      // versa). Content wins over existence. Seed null (not a placeholder absent)
-      // so a genuinely-absent gate keeps the kind's real diagnostic evidence
-      // ("research/: no legs", "no pilot_profile") the operator acts on.
-      let r = null;
-      for (const cand of candidates) {
-        let rr;
-        try {
-          rr = kind ? kind(g.params || {}, { ...ctx, root: cand })
-            : { state: 'absent', evidence: `unknown check kind '${g.kind}'` };
-        } catch (e) {
-          rr = { state: 'absent', evidence: `check '${g.kind}' errored: ${e.message}` };
-        }
-        if (!r || rankState(rr.state) > rankState(r.state)) r = rr;
-      }
-      // A non-derivable (agentic-shell) gate is satisfied by a RECORDED
-      // assertion — the operator/reviewer confirmed the fuzzy edge. Derivable
-      // gates ignore assertions: you cannot assert your way past a mechanical
-      // check the disk contradicts.
-      if (!g.derivable && r.state !== 'pass' && assertions[g.id]) {
-        r = { state: 'pass', evidence: `asserted: ${assertions[g.id].evidence || 'confirmed'}` };
-      }
-      // An OPTIONAL gate never blocks the spine: absent/partial reads as pass so
-      // the stage can complete without the artifact. Tag it `vacuous` so the
-      // coverage metric doesn't count an optional-only stage as real progress.
-      let vacuous = false;
-      if (g.optional && r.state !== 'pass') {
-        r = { ...r, state: 'pass', evidence: `${r.evidence} (optional)` };
-        vacuous = true;
-      }
-      return { gate: g.id, derivable: g.derivable, kind: g.kind, vacuous, ...(g.reviewer && g.reviewer.name ? { reviewer: g.reviewer } : {}), ...r };
+    const gates = (st.gates || []).map((g) => deriveGate(g, candidates, ctx, assertions));
+    const phases = (st.phases || []).map((phase) => {
+      const gates = phase.gates.map((g) => deriveGate(g, candidates, ctx, assertions));
+      const recorded = recordedPhases.history.some((entry) => entry.stageId === st.id && entry.phaseId === phase.id);
+      const derivable = gates.filter((g) => g.derivable);
+      return {
+        id: phase.id,
+        name: phase.name,
+        gates,
+        recorded,
+        artifactPass: derivable.length === 0 ? true : derivable.every((g) => g.state === 'pass'),
+        predicatesPass: gates.every((g) => g.state === 'pass'),
+      };
     });
     // Two notions, deliberately distinct:
     //  - artifactPass: all DERIVABLE gates pass — "how far the raw artifacts
@@ -683,9 +835,12 @@ export function deriveStageStatus({ root, assertions = {} }) {
     // vacuously artifact-passing (research's Fact-Check / Deliver are
     // all-non-derivable; without this the artifact cursor caps at the last
     // stage that has a derivable gate). Mirrors the empty-gate `complete` rule.
-    const artifactPass = derivable.length === 0 ? true : derivable.every((g) => g.state === 'pass');
-    const complete = gates.every((g) => g.state === 'pass');
-    return { id: st.id, name: st.name, gates, artifactPass, complete };
+    const phaseArtifactPass = phases.every((phase) => phase.artifactPass);
+    const phasePredicatesPass = phases.every((phase) => phase.predicatesPass);
+    const phasesRecorded = phases.every((phase) => phase.recorded);
+    const artifactPass = (derivable.length === 0 ? true : derivable.every((g) => g.state === 'pass')) && phaseArtifactPass;
+    const complete = gates.every((g) => g.state === 'pass') && phasePredicatesPass && phasesRecorded;
+    return { id: st.id, name: st.name, gates, phases, artifactPass, complete };
   });
 
   // Linear spine: a cursor is the highest N such that EVERY stage ≤ N holds the
@@ -708,10 +863,13 @@ export function deriveStageStatus({ root, assertions = {} }) {
   // an empty brownfield reporting Stage 4 (optional prototype) or an
   // assertion-only research Fact-Check from inflating coverage.
   const stagesComplete = stages
-    .filter((s) => s.complete && s.gates.some((g) => g.derivable && g.state === 'pass' && !g.vacuous))
+    .filter((s) => s.complete && [...s.gates, ...s.phases.flatMap((phase) => phase.gates)].some((g) => g.derivable && g.state === 'pass' && !g.vacuous))
     .map((s) => s.id);
-  const allGates = stages.flatMap((s) => s.gates);
+  const allGates = stages.flatMap((s) => [...s.gates, ...s.phases.flatMap((phase) => phase.gates)]);
   const derivableCount = allGates.filter((g) => g.derivable).length;
+  const nextStage = stages.find((s) => !s.complete) || null;
+  const phaseAtFrontier = nextStage?.phases.find((phase) => !phase.recorded) || null;
+  const currentPhase = phaseAtFrontier ? { stageId: nextStage.id, stageName: nextStage.name, id: phaseAtFrontier.id, name: phaseAtFrontier.name, recorded: false } : null;
   return {
     variant: model.variant || 'greenfield',
     modelSource: source,
@@ -727,21 +885,39 @@ export function deriveStageStatus({ root, assertions = {} }) {
     nonderivableCount: allGates.length - derivableCount,
     totalGates: allGates.length,
     // frontier = first stage not yet CONFIRMED complete (what advance targets)
-    nextStage: stages.find((s) => !s.complete) || null,
+    nextStage,
+    modelFingerprint: fingerprint,
+    phaseCursor: recordedPhases.cursor,
+    currentPhase,
+    nextPhase: currentPhase,
   };
 }
 
 // ── advance preview (dry-run; ADR-0008 rollout step c) ─────────────
-// Reports whether the initiative may advance PAST its current cursor into the
-// next stage: the next stage's derivable gates must all pass, and each
-// non-derivable gate needs an assertion (assertion RECORDING — the state
-// mutation — is deferred to a later slice; today advance is read-only preview).
-export function previewAdvance({ root, assertions = {} }) {
-  const st = deriveStageStatus({ root, assertions });
+// Predicate-only view, with explicit assertions and phaseState inputs like
+// deriveStageStatus. Use recordAdvance for reviewer verification as well.
+export function previewAdvance({ root, assertions = {}, phaseState = {} }) {
+  const st = deriveStageStatus({ root, assertions, phaseState });
+  if (st.modelError || st.stateError) return { ...st, advance: { canAdvance: false, target: null, reason: st.modelError || st.stateError } };
+  if (st.currentPhase) {
+    const prefix = gatesThroughPhase(st, st.currentPhase);
+    const blocking = prefix.filter((g) => g.derivable && g.state !== 'pass');
+    const needsAssertion = prefix.filter((g) => !g.derivable && g.state !== 'pass');
+    return {
+      ...st,
+      advance: {
+        canAdvance: blocking.length === 0 && needsAssertion.length === 0,
+        target: { id: st.currentPhase.stageId, name: st.currentPhase.stageName, phase: { id: st.currentPhase.id, name: st.currentPhase.name } },
+        blocking: blocking.map((g) => ({ gate: g.gate, evidence: g.evidence })),
+        needsAssertion: needsAssertion.map((g) => ({ gate: g.gate, evidence: g.evidence })),
+      },
+    };
+  }
   const next = st.nextStage;
   if (!next) return { ...st, advance: { canAdvance: true, target: null, reason: 'all stages pass — pipeline complete' } };
-  const blocking = next.gates.filter((g) => g.derivable && g.state !== 'pass');
-  const needsAssertion = next.gates.filter((g) => !g.derivable && g.state !== 'pass');
+  const gates = gatesThroughPhase(st, { stageId: next.id });
+  const blocking = gates.filter((g) => g.derivable && g.state !== 'pass');
+  const needsAssertion = gates.filter((g) => !g.derivable && g.state !== 'pass');
   return {
     ...st,
     advance: {
@@ -782,6 +958,10 @@ export function isValidStateShape(parsed) {
   // reviews (ADR-0009, additive): reviewer-recorded results keyed by gate id.
   const rv = parsed.reviews;
   if (rv !== undefined && (rv === null || typeof rv !== 'object' || Array.isArray(rv))) return false;
+  const pc = parsed.phaseCursor;
+  if (pc !== undefined && pc !== null && (!isPlainObject(pc) || !Number.isInteger(pc.stageId) || !isSlug(pc.phaseId))) return false;
+  if (parsed.phaseHistory !== undefined && !Array.isArray(parsed.phaseHistory)) return false;
+  if (parsed.phaseModelFingerprint !== undefined && (typeof parsed.phaseModelFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(parsed.phaseModelFingerprint))) return false;
   return true;
 }
 
@@ -797,10 +977,12 @@ async function verifyGateReviewer({ root, home, gate, recorded, stamp }) {
   const onWarn = (gate.reviewer.onWarn === 'pass' || gate.reviewer.onWarn === 'ask') ? gate.reviewer.onWarn : 'block';
   const { entry } = resolveReviewer(name, { home, targetDir: root });
   if (!entry) return { ok: false, report: { gate: gate.gate, reviewer: name, ran: false, status: 'UNRESOLVED', note: 'mapped reviewer not found in methodology home or initiative — cannot verify, refusing to advance' } };
-  let mod;
-  try { mod = await import(pathToFileURL(entry.path).href); }
-  catch (e) { return { ok: false, report: { gate: gate.gate, reviewer: name, ran: false, status: 'LOAD-ERROR', note: e.message } }; }
   const reviewerHash = fileSha256(entry.path);
+  let mod;
+  // The hash is also the cache key. Without it, a changed reviewer hashes as
+  // stale but Node serves the already-imported old module in a long-lived CLI.
+  try { mod = await import(`${pathToFileURL(entry.path).href}?v=${reviewerHash}`); }
+  catch (e) { return { ok: false, report: { gate: gate.gate, reviewer: name, ran: false, status: 'LOAD-ERROR', note: e.message } }; }
   // `inputs` may be an array OR a function (root) => array — the function form
   // covers verdict inputs only knowable at runtime (e.g. the pilot reviewer's
   // walkthrough_citation target, which can point anywhere in the tree; review
@@ -832,11 +1014,19 @@ async function verifyGateReviewer({ root, home, gate, recorded, stamp }) {
 export async function evaluateWorkflowReadiness({ root, home }) {
   const saved = readStageState(root);
   if (saved.corrupt) return { status: 'error', checks: [], detail: saved.error };
-  const st = deriveStageStatus({ root, assertions: saved.assertions || {} });
+  const st = deriveStageStatus({ root, assertions: saved.assertions || {}, phaseState: saved });
+  if (st.modelError || st.stateError) return { status: 'error', checks: [], detail: st.modelError || st.stateError };
   const checks = [];
   for (const stage of st.stages) {
-    for (const gate of stage.gates) {
-      const check = { stage: stage.id, gate: gate.gate, status: gate.state === 'pass' ? 'pass' : 'pending', detail: gate.evidence };
+    for (const phase of stage.phases) {
+      if (!phase.recorded) checks.push({ stage: stage.id, phase: phase.id, gate: `phase:${phase.id}`, status: 'pending', detail: 'phase transition not recorded; run stage advance to verify and record it' });
+    }
+    for (const [phase, gate] of [
+      ...stage.gates.map((gate) => [null, gate]),
+      ...stage.phases.flatMap((phase) => phase.gates.map((gate) => [phase, gate])),
+    ]) {
+      const check = { stage: stage.id, ...(phase ? { phase: phase.id } : {}), gate: gate.gate, status: gate.executionError ? 'error' : gate.state === 'pass' ? 'pass' : 'pending', detail: gate.evidence };
+      if (gate.applicationDefinition) check.application_definition = gate.applicationDefinition;
       if (gate.reviewer) {
         check.reviewer = gate.reviewer.name;
         check.ran = false;
@@ -868,6 +1058,34 @@ export function readStageState(root) {
   } catch (e) { return { ...empty, corrupt: true, error: e.message }; }
 }
 
+function assertionProblems(asserts, allowedGates, allGates) {
+  const allowed = new Map(allowedGates.map((gate) => [gate.gate, gate]));
+  const all = new Set(allGates.map((gate) => gate.gate));
+  const problems = [];
+  for (const [gate, evidence] of Object.entries(asserts)) {
+    const defined = allowed.get(gate);
+    if (!defined) problems.push(all.has(gate) ? `assertion '${gate}' belongs to a later phase or stage` : `unknown assertion '${gate}'`);
+    else if (defined.derivable) problems.push(`assertion '${gate}' targets a derivable gate and cannot override disk evidence`);
+    else if (typeof evidence !== 'string' || evidence === 'true' || !evidence.trim()) problems.push(`assertion '${gate}' needs nonempty evidence`);
+  }
+  return problems;
+}
+
+function gatesThroughPhase(status, target) {
+  const targetStageIndex = status.stages.findIndex((stage) => stage.id === target.stageId);
+  const gates = [];
+  for (let stageIndex = 0; stageIndex <= targetStageIndex; stageIndex++) {
+    const stage = status.stages[stageIndex];
+    gates.push(...stage.gates.map((gate) => ({ ...gate, stage: stage.id, stageName: stage.name })));
+    const lastPhase = stage.id === target.stageId && target.id !== undefined ? stage.phases.findIndex((phase) => phase.id === target.id) : stage.phases.length - 1;
+    for (let phaseIndex = 0; phaseIndex <= lastPhase; phaseIndex++) {
+      const phase = stage.phases[phaseIndex];
+      gates.push(...phase.gates.map((gate) => ({ ...gate, stage: stage.id, stageName: stage.name, phase: phase.id, phaseName: phase.name })));
+    }
+  }
+  return gates;
+}
+
 // recordAdvance — advance the CONFIRMED cursor by completing the current
 // frontier stage (the first not-yet-complete stage, computed from the
 // ALREADY-recorded assertions so the target is fixed for this call and doesn't
@@ -876,7 +1094,7 @@ export function readStageState(root) {
 // recorded ∪ new assertions. On success the confirmed cursor jumps to wherever
 // disk-complete stages then reach. Dry-run by default; `now` injected for
 // deterministic testing.
-export async function recordAdvance({ root, asserts = {}, execute = false, now, home = null }) {
+export async function recordAdvance({ root, asserts = {}, execute = false, now, home = null, expectedPhase = null }) {
   root = resolve(root);
   const prev = readStageState(root);
   if (prev.corrupt) {
@@ -886,17 +1104,82 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
   const recorded = prev.assertions || {};
 
   // frontier from recorded assertions only — the fixed target for this call
-  const base = deriveStageStatus({ root, assertions: recorded });
+  const base = deriveStageStatus({ root, assertions: recorded, phaseState: prev });
+  if (base.modelError || base.stateError) return { ok: false, modelError: base.modelError, stateError: base.stateError, message: base.modelError || base.stateError, state: prev };
   const frontier = base.nextStage || base.stages.at(-1);
   if (!frontier) return { ok: true, complete: true, cursor: base.cursor, message: 'stage model declares no stages', state: prev };
+
+  const targetPhase = base.currentPhase;
+  if (expectedPhase && (!targetPhase || targetPhase.id !== expectedPhase)) return { ok: false, inputError: true, message: `--phase=${expectedPhase} does not match the current phase${targetPhase ? ` '${targetPhase.id}'` : ' (this frontier has no phase)'}`, state: prev };
+  const allGates = base.stages.flatMap((stage) => [...stage.gates, ...stage.phases.flatMap((phase) => phase.gates)]);
+  const hasPhases = base.stages.some((stage) => stage.phases.length);
+  if (!isPlainObject(asserts)) return { ok: false, inputError: true, message: 'asserts must be an object with gate IDs and evidence strings', state: prev };
+  // Legacy models historically accepted an assertion collected ahead of its
+  // stage; retain that behavior. Phased models restrict assertions to the
+  // current frontier and its earlier prerequisites.
+  const allowedGates = hasPhases
+    ? gatesThroughPhase(base, { stageId: frontier.id, ...(targetPhase ? { id: targetPhase.id } : {}) })
+    : allGates;
+  const assertionErrors = assertionProblems(asserts, allowedGates, allGates);
+  if (assertionErrors.length) return { ok: false, inputError: true, message: assertionErrors.join('; '), assertionErrors, state: prev };
 
   // fold the new assertions and test whether THIS frontier completes
   const merged = { ...recorded };
   for (const [gate, evidence] of Object.entries(asserts)) merged[gate] = { evidence, at: stamp };
-  const withNew = deriveStageStatus({ root, assertions: merged });
+  const withNew = deriveStageStatus({ root, assertions: merged, phaseState: prev });
+  if (withNew.modelError || withNew.stateError) return { ok: false, modelError: withNew.modelError, stateError: withNew.stateError, message: withNew.modelError || withNew.stateError, state: prev };
+
+  if (targetPhase) {
+    const phaseHistory = [...(prev.phaseHistory || []), { stageId: targetPhase.stageId, phaseId: targetPhase.id, modelFingerprint: withNew.modelFingerprint, at: stamp }];
+    const phaseCursor = { stageId: targetPhase.stageId, phaseId: targetPhase.id };
+    const after = deriveStageStatus({ root, assertions: merged, phaseState: { ...prev, phaseHistory, phaseCursor, phaseModelFingerprint: withNew.modelFingerprint } });
+    // Completing the last phase may pass through later disk-complete stages.
+    // Verify that whole prefix before granting any of its numeric stage credit.
+    const prefix = gatesThroughPhase(after, after.cursor > targetPhase.stageId ? { stageId: after.cursor } : targetPhase);
+    const executionError = prefix.find((gate) => gate.executionError);
+    if (executionError) return { ok: false, inputError: true, message: `${executionError.gate}: ${executionError.evidence}`, state: prev };
+    const blocking = prefix.filter((gate) => gate.derivable && gate.state !== 'pass');
+    const stillNeeding = prefix.filter((gate) => !gate.derivable && gate.state !== 'pass');
+    const prevReviews = (prev.reviews && isPlainObject(prev.reviews)) ? prev.reviews : {};
+    const reviews = { ...prevReviews };
+    const reviewReports = [];
+    for (const gate of prefix.filter((gate) => gate.state === 'pass' && gate.reviewer?.name)) {
+      const v = await verifyGateReviewer({ root, home, gate, recorded: prevReviews[gate.gate], stamp });
+      const report = { ...v.report, stage: gate.stage, stageName: gate.stageName, ...(gate.phase ? { phase: gate.phase, phaseName: gate.phaseName } : {}) };
+      reviewReports.push(report);
+      if (v.record) reviews[gate.gate] = v.record;
+      if (!v.ok) return { ok: false, target: { id: frontier.id, name: frontier.name, phase: { id: targetPhase.id, name: targetPhase.name } }, blocking: blocking.map((gate) => ({ gate: gate.gate, evidence: gate.evidence, stage: gate.stage, phase: gate.phase })), missingAssertions: stillNeeding.map((gate) => ({ gate: gate.gate, evidence: gate.evidence, stage: gate.stage, phase: gate.phase })), reviewerBlocked: [report], reviews: reviewReports, state: prev };
+    }
+    if (blocking.length || stillNeeding.length) return {
+      ok: false,
+      target: { id: frontier.id, name: frontier.name, phase: { id: targetPhase.id, name: targetPhase.name } },
+      blocking: blocking.map((gate) => ({ gate: gate.gate, evidence: gate.evidence, stage: gate.stage, phase: gate.phase })),
+      missingAssertions: stillNeeding.map((gate) => ({ gate: gate.gate, evidence: gate.evidence, stage: gate.stage, phase: gate.phase })),
+      reviews: reviewReports,
+      state: prev,
+    };
+    const state = {
+      cursor: after.cursor,
+      advancedTo: after.cursorName,
+      assertions: merged,
+      ...(Object.keys(reviews).length ? { reviews } : {}),
+      history: [...(prev.history || []), { stage: frontier.id, phase: targetPhase.id, at: stamp }],
+      phaseCursor,
+      phaseHistory,
+      phaseModelFingerprint: withNew.modelFingerprint,
+    };
+    if (execute) {
+      mkdirSync(join(root, '.blueprint'), { recursive: true });
+      writeFileSync(join(root, STATE_REL), JSON.stringify(state, null, 2) + '\n');
+    }
+    return { ok: true, target: { id: frontier.id, name: frontier.name, phase: { id: targetPhase.id, name: targetPhase.name } }, cursor: after.cursor, phaseCursor, currentPhase: after.currentPhase, nextPhase: after.nextPhase, wrote: execute ? STATE_REL : null, reviews: reviewReports, state };
+  }
   const target = withNew.stages.find((s) => s.id === frontier.id);
-  const blocking = target.gates.filter((g) => g.derivable && g.state !== 'pass');
-  const stillNeeding = target.gates.filter((g) => !g.derivable && g.state !== 'pass');
+  const prefix = gatesThroughPhase(withNew, { stageId: Math.max(withNew.cursor, frontier.id) });
+  const executionError = prefix.find((gate) => gate.executionError);
+  if (executionError) return { ok: false, inputError: true, message: `${executionError.gate}: ${executionError.evidence}`, state: prev };
+  const blocking = prefix.filter((g) => g.derivable && g.state !== 'pass');
+  const stillNeeding = prefix.filter((g) => !g.derivable && g.state !== 'pass');
   // ADR-0009: VERIFY structurally satisfied gates with executable reviewers,
   // even when a later frontier gate is unfinished. Fresh PASSes are reused;
   // stale/absent ones run the reviewer here (read-only, so dry-run runs them
@@ -913,17 +1196,14 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
   // Recheck the entire prefix, including stages already complete on disk or
   // recorded by an older model. Otherwise filled-looking research before the
   // frontier never runs its reviewer. Fresh receipts still avoid repeated work.
-  const stagesToVerify = withNew.stages.filter((s) => s.id <= Math.max(withNew.cursor, frontier.id));
-  for (const st of stagesToVerify) {
-    for (const g of st.gates.filter((x) => x.state === 'pass' && x.reviewer && x.reviewer.name)) {
+  for (const g of prefix.filter((x) => x.state === 'pass' && x.reviewer && x.reviewer.name)) {
       const v = await verifyGateReviewer({ root, home, gate: g, recorded: prevReviews[g.gate], stamp });
-      const report = { ...v.report, stage: st.id, stageName: st.name };
+      const report = { ...v.report, stage: g.stage, stageName: g.stageName, ...(g.phase ? { phase: g.phase, phaseName: g.phaseName } : {}) };
       reviewReports.push(report);
       if (v.record) reviews[g.gate] = v.record;
       if (!v.ok) {
         return { ok: false, target: { id: target.id, name: target.name }, blocking: blocking.map(g => ({ gate: g.gate, evidence: g.evidence })), missingAssertions: stillNeeding.map(g => ({ gate: g.gate, evidence: g.evidence })), reviewerBlocked: [report], reviews: reviewReports, state: prev };
       }
-    }
   }
 
   if (blocking.length || stillNeeding.length) {
@@ -944,6 +1224,7 @@ export async function recordAdvance({ root, asserts = {}, execute = false, now, 
     assertions: merged,
     ...(Object.keys(reviews).length ? { reviews } : {}),
     history: [...(prev.history || []), { stage: frontier.id, at: stamp }],
+    ...(hasPhases ? { phaseCursor: prev.phaseCursor ?? null, phaseHistory: prev.phaseHistory || [], phaseModelFingerprint: withNew.modelFingerprint } : {}),
   };
   if (execute) {
     mkdirSync(join(root, '.blueprint'), { recursive: true });
@@ -1058,10 +1339,9 @@ async function selftest() {
   let cur = -1; for (const s of fake) { if (s.stagePass) cur = s.id; else break; }
   assert(cur === -1, 'linear-spine cursor halts at first gap');
 
-  // malformed consumer models must fall back, never throw (loadStageModel guard)
+  // Malformed explicit models refuse instead of substituting another workflow.
   for (const bad of [{ stages: [null] }, { stages: [{ id: 0, gates: { x: 1 } }] }, { stages: {} }, {}]) {
-    const v = Array.isArray(bad?.stages) && bad.stages.every((s) => s && typeof s === 'object' && Array.isArray(s.gates ?? []));
-    assert(v === false, `malformed model rejected: ${JSON.stringify(bad)}`);
+    assert(validateStageModel(bad), `malformed model rejected: ${JSON.stringify(bad)}`);
   }
 
   const res = deriveStageStatus({ root: process.cwd() });
@@ -1069,6 +1349,198 @@ async function selftest() {
   assert(res.totalGates === res.derivableCount + res.nonderivableCount, 'gate counts reconcile');
   const adv = previewAdvance({ root: process.cwd() });
   assert(adv.advance && typeof adv.advance.canAdvance === 'boolean', 'advance preview shape');
+
+  // RFC #65 tracer bullet: selected models may opt into ordered phases. A
+  // missing gate in the first phase must remain the frontier even when a later
+  // phase's evidence is already present. Before phase support, phases[] was
+  // ignored and this model appeared complete.
+  {
+    const phased = mkdtempSync(join(tmpdir(), 'bp-phases-red-'));
+    try {
+      writeFileSync(join(phased, 'blueprint.yml'), 'stage_model: model.json\n');
+      writeFileSync(join(phased, 'model.json'), JSON.stringify({
+        variant: 'phase-fixture',
+        stages: [{
+          id: 0,
+          name: 'Design',
+          gates: [],
+          phases: [
+            { id: 'definition', name: 'Definition', gates: [{ id: 'definition-file', derivable: true, kind: 'file-exists', params: { path: 'definition.md' } }] },
+            { id: 'selection', name: 'Selection', gates: [{ id: 'selected-file', derivable: true, kind: 'file-exists', params: { path: 'selected.md' } }] },
+          ],
+        }],
+      }));
+      writeFileSync(join(phased, 'selected.md'), 'later evidence exists\n');
+      const phaseStatus = deriveStageStatus({ root: phased });
+      assert(phaseStatus.currentPhase?.id === 'definition', 'phases: missing first phase remains the current frontier');
+      assert(phaseStatus.nextPhase?.id === 'definition', 'phases: later evidence cannot skip the first phase');
+    } finally { rmSync(phased, { recursive: true, force: true }); }
+  }
+
+  // RFC #65 ordered-phase controls: transitions are explicit, one-at-a-time,
+  // and every later transition rechecks the ordered predicate/reviewer prefix.
+  {
+    const phased = mkdtempSync(join(tmpdir(), 'bp-phases-'));
+    const write = (rel, body) => { mkdirSync(join(phased, rel.split('/').slice(0, -1).join('/') || '.'), { recursive: true }); writeFileSync(join(phased, rel), body); };
+    const reviewer = 'export const inputs = ["definition.md"]; export default async () => ({ status: "PASS", findings: [] });\n';
+    const model = {
+      variant: 'phase-fixture', stages: [{
+        id: 0, name: 'Design', gates: [{ id: 'stage-file', derivable: true, kind: 'file-exists', params: { path: 'stage.md' } }], phases: [
+          { id: 'definition', name: 'Definition', gates: [{ id: 'definition-file', derivable: true, kind: 'file-exists', params: { path: 'definition.md' }, reviewer: { name: 'phase-reviewer' } }] },
+          { id: 'selection', name: 'Selection', gates: [{ id: 'selected', derivable: false, kind: 'manual', params: {} }] },
+          { id: 'freeze', name: 'Freeze', gates: [{ id: 'freeze-file', derivable: true, kind: 'file-exists', params: { path: 'freeze.md' } }] },
+        ],
+      }, { id: 1, name: 'Delivery', gates: [{ id: 'delivery-file', derivable: true, kind: 'file-exists', params: { path: 'delivery.md' } }] }],
+    };
+    try {
+      write('blueprint.yml', 'stage_model: model.json\n');
+      write('model.json', JSON.stringify(model));
+      write('.blueprint/reviewers/phase-reviewer.mjs', reviewer);
+      write('freeze.md', 'prepopulated later phase evidence\n');
+      let status = deriveStageStatus({ root: phased, phaseState: readStageState(phased) });
+      assert(status.currentPhase?.id === 'definition' && status.nextPhase?.id === 'definition', 'phase order ignores prepopulated later evidence');
+      for (const [asserts, label] of [
+        [{ selected: 'skip ahead' }, 'later-phase assertion rejected'],
+        [{ unknown: 'evidence' }, 'unknown assertion rejected'],
+        [{ selected: '' }, 'evidence-free assertion rejected'],
+      ]) {
+        const attempt = await recordAdvance({ root: phased, asserts, home: null });
+        assert(attempt.inputError, label);
+      }
+      write('stage.md', 'stage prerequisite\n'); write('definition.md', 'definition evidence\n');
+      let first = await recordAdvance({ root: phased, execute: false, home: null, now: '2026-10-03T00:00:00Z' });
+      assert(first.ok && first.target.phase.id === 'definition' && first.wrote === null && first.phaseCursor?.phaseId === 'definition', 'first phase dry-run qualifies definition only');
+      assert(!existsSync(join(phased, STATE_REL)), 'phase dry-run does not write state');
+      first = await recordAdvance({ root: phased, execute: true, home: null, now: '2026-10-03T00:00:00Z' });
+      let saved = readStageState(phased);
+      assert(first.ok && saved.phaseHistory.length === 1 && saved.phaseCursor.phaseId === 'definition', 'first phase records a fingerprinted transition');
+      assert(saved.phaseHistory[0].modelFingerprint === first.state.phaseModelFingerprint, 'phase history binds the selected model fingerprint');
+      // A changed earlier reviewer must block the next phase and leave history intact.
+      write('.blueprint/reviewers/phase-reviewer.mjs', 'export default async () => { throw new Error("stale reviewer"); };\n');
+      const beforeReviewerFailure = readFileSync(join(phased, STATE_REL), 'utf8');
+      let blocked = await recordAdvance({ root: phased, asserts: { selected: 'selection recorded' }, execute: true, home: null });
+      assert(!blocked.ok && blocked.reviewerBlocked?.[0].status === 'THREW', 'a stale earlier reviewer blocks a later phase');
+      assert(readFileSync(join(phased, STATE_REL), 'utf8') === beforeReviewerFailure, 'reviewer failure never overwrites phase history');
+      write('.blueprint/reviewers/phase-reviewer.mjs', reviewer);
+      let selected = await recordAdvance({ root: phased, asserts: { selected: 'selection recorded' }, execute: true, home: null });
+      assert(selected.ok && selected.phaseCursor.phaseId === 'selection', 'selection advances only after its assertion');
+      // A changed earlier predicate also blocks the later phase and preserves state.
+      rmSync(join(phased, 'definition.md'));
+      const beforePredicateFailure = readFileSync(join(phased, STATE_REL), 'utf8');
+      blocked = await recordAdvance({ root: phased, execute: true, home: null });
+      assert(!blocked.ok && blocked.blocking.some((gate) => gate.gate === 'definition-file'), 'a stale earlier predicate blocks a later phase');
+      assert(readFileSync(join(phased, STATE_REL), 'utf8') === beforePredicateFailure, 'predicate failure never overwrites phase history');
+      write('definition.md', 'definition restored\n');
+      const frozen = await recordAdvance({ root: phased, execute: true, home: null });
+      assert(frozen.ok && frozen.phaseCursor.phaseId === 'freeze', 'prepopulated final evidence still requires its own recorded transition');
+      saved = readStageState(phased);
+      assert(deriveStageStatus({ root: phased, assertions: saved.assertions, phaseState: saved }).stagesComplete.includes(0), 'phase gates count as real stage coverage');
+      // A completed phase must still gate subsequent unphased work.
+      rmSync(join(phased, 'definition.md'));
+      const beforeCompletedFailure = readFileSync(join(phased, STATE_REL), 'utf8');
+      blocked = await recordAdvance({ root: phased, execute: true });
+      assert(!blocked.ok && blocked.blocking.some((gate) => gate.gate === 'definition-file'), 'completed phase predicate stays blocking after the last phase');
+      assert(readFileSync(join(phased, STATE_REL), 'utf8') === beforeCompletedFailure, 'completed-phase failure preserves history');
+      write('definition.md', 'definition restored\n');
+      write('delivery.md', 'delivery evidence\n');
+      write('.blueprint/reviewers/phase-reviewer.mjs', 'export default async () => ({status:"BLOCKED",findings:[]});\n');
+      blocked = await recordAdvance({ root: phased, execute: true });
+      assert(!blocked.ok && blocked.reviewerBlocked?.[0].status === 'BLOCKED', 'completed phases recheck reviewers on the pipeline-complete path');
+      write('.blueprint/reviewers/phase-reviewer.mjs', reviewer);
+      const reorderedCursor = { ...saved, phaseCursor: { phaseId: 'freeze', stageId: 0 } };
+      assert(!deriveStageStatus({ root: phased, phaseState: reorderedCursor }).stateError, 'phase cursor property order has no meaning');
+      // Old numeric records remain readable but grant no phase completion.
+      write('.blueprint/stage-state.json', JSON.stringify({ cursor: 0, assertions: {}, history: [{ stage: 0, at: 'old' }] }));
+      status = deriveStageStatus({ root: phased, phaseState: readStageState(phased) });
+      assert(!status.stateError && status.currentPhase?.id === 'definition', 'old cursor state grants no phase completion');
+      // Skipped/reordered history is an error, never interpreted as empty.
+      write('.blueprint/stage-state.json', JSON.stringify({ cursor: 0, assertions: {}, history: [], phaseCursor: { stageId: 0, phaseId: 'selection' }, phaseModelFingerprint: saved.phaseModelFingerprint, phaseHistory: [{ stageId: 0, phaseId: 'selection', modelFingerprint: saved.phaseModelFingerprint, at: 'bad' }] }));
+      status = deriveStageStatus({ root: phased, phaseState: readStageState(phased) });
+      assert(status.stateError?.includes('contiguous phase prefix'), 'skipped phase history is rejected as contradictory state');
+      const corrupt = readStageState(phased);
+      const rejected = await recordAdvance({ root: phased, home: null });
+      assert(!rejected.ok && rejected.stateError && rejected.state.phaseCursor?.phaseId === corrupt.phaseCursor.phaseId, 'contradictory phase state is never silently emptied');
+      // A selected model edit invalidates old phase history rather than changing its meaning.
+      write('.blueprint/stage-state.json', JSON.stringify(saved));
+      model.stages[0].phases.reverse(); write('model.json', JSON.stringify(model));
+      status = deriveStageStatus({ root: phased, phaseState: readStageState(phased) });
+      assert(status.stateError?.includes('different selected model fingerprint'), 'model fingerprint mismatch rejects reordered phase state');
+      const unresolvedModel = structuredClone(model);
+      unresolvedModel.stages[0].phases = [{ id: 'definition', name: 'Definition', gates: [{ id: 'definition-file', derivable: true, kind: 'file-exists', params: { path: 'definition.md' }, reviewer: { name: 'missing-phase-reviewer' } }] }];
+      write('model.json', JSON.stringify(unresolvedModel));
+      write('.blueprint/stage-state.json', JSON.stringify({ cursor: -1, assertions: {}, history: [] }));
+      const unresolved = await recordAdvance({ root: phased, home: null });
+      assert(!unresolved.ok && unresolved.reviewerBlocked?.[0].status === 'UNRESOLVED', 'an unresolved phase reviewer blocks advancement as an error');
+      write('blueprint.yml', 'stage_model: missing.json\n');
+      assert(deriveStageStatus({ root: phased }).modelError?.includes('unreadable'), 'unknown selected JSON model is an actionable error');
+      write('model.json', JSON.stringify({ stages: [null] })); write('blueprint.yml', 'stage_model: model.json\n');
+      assert(deriveStageStatus({ root: phased }).modelError?.includes('must be an object'), 'malformed selected model is an actionable error');
+    } finally { rmSync(phased, { recursive: true, force: true }); }
+  }
+
+  // Mixed stage traversal, model validation, and persisted assertion controls.
+  {
+    const root = mkdtempSync(join(tmpdir(), 'bp-phase-mixed-'));
+    const write = (rel, body) => { mkdirSync(dirname(join(root, rel)), { recursive: true }); writeFileSync(join(root, rel), body); };
+    const gate = (id, extra = {}) => ({ id, derivable: false, kind: 'manual', ...extra });
+    const model = { stages: [
+      { id: 0, name: 'Design', gates: [], phases: [{ id: 'definition', name: 'Definition', gates: [gate('definition-file', { derivable: true, kind: 'file-exists', params: { path: 'definition.md' } })] }] },
+      { id: 1, name: 'Delivery', gates: [gate('delivery')] },
+      { id: 2, name: 'Follow-up', gates: [], phases: [{ id: 'acceptance', name: 'Acceptance', gates: [gate('acceptance')] }] },
+    ] };
+    try {
+      write('blueprint.yml', 'stage_model: model.json\n'); write('model.json', JSON.stringify(model)); write('definition.md', 'real fixture content\n');
+      const ready = await evaluateWorkflowReadiness({ root });
+      assert(ready.status === 'pending' && ready.checks.some((c) => c.phase === 'definition' && c.status === 'pending'), 'unrecorded phase is pending even when all its gates pass');
+      const first = await recordAdvance({ root, execute: true });
+      assert(first.ok && first.cursor === 0, 'first phase stops at the unfinished unphased stage');
+      let saved = readStageState(root);
+      assert(previewAdvance({ root, phaseState: saved, assertions: saved.assertions }).advance.target.id === 1, 'preview accepts persisted phase state');
+      assert(!(await recordAdvance({ root, asserts: { acceptance: 'too early' }, execute: true })).ok, 'an unphased frontier cannot assert a future phase');
+      const delivered = await recordAdvance({ root, asserts: { delivery: 'delivery checked' }, execute: true });
+      assert(delivered.ok && delivered.state.phaseHistory.length === 1 && delivered.state.phaseCursor.phaseId === 'definition', 'unphased advancement preserves phase history');
+      const accepted = await recordAdvance({ root, asserts: { acceptance: 'acceptance checked' }, execute: true });
+      assert(accepted.ok && accepted.state.phaseHistory.length === 2 && accepted.cursor === 2, 'a later phased stage extends the same ordered history');
+      assert((await recordAdvance({ root })).complete, 'complete mixed model remains complete');
+      const malformedAssertions = [ { acceptance: { evidence: true } }, { acceptance: {} }, { acceptance: 'yes' }, { unknown: { evidence: 'yes' } } ];
+      for (const assertions of malformedAssertions) {
+        write(STATE_REL, JSON.stringify({ ...accepted.state, assertions: { ...accepted.state.assertions, ...assertions } }));
+        const bytes = readFileSync(join(root, STATE_REL), 'utf8');
+        const attempt = await recordAdvance({ root, execute: true });
+        assert(!attempt.ok && attempt.stateError, 'malformed persisted assertion refuses advancement');
+        assert(readFileSync(join(root, STATE_REL), 'utf8') === bytes, 'invalid saved assertions are not overwritten');
+      }
+      write(STATE_REL, JSON.stringify({ assertions: { acceptance: { evidence: 'valid text but future phase' } }, history: [] }));
+      assert((await recordAdvance({ root })).stateError?.includes('later phase'), 'well-formed future saved assertion still refuses advancement');
+      // A final phase cannot jump over a reviewer on a later complete stage.
+      model.stages = model.stages.slice(0, 2);
+      model.stages[1].gates = [gate('later-file', { derivable: true, kind: 'file-exists', params: { path: 'definition.md' }, reviewer: { name: 'later-reviewer' } })];
+      write('model.json', JSON.stringify(model)); write(STATE_REL, JSON.stringify({ assertions: {}, history: [] }));
+      write('.blueprint/reviewers/later-reviewer.mjs', 'export default async () => { throw new Error("must run before credit"); };\n');
+      const rejected = await recordAdvance({ root, execute: true });
+      assert(!rejected.ok && rejected.reviewerBlocked?.[0].stage === 1, 'last phase verifies passed-through unphased reviewers');
+      assert(!readStageState(root).phaseHistory?.length, 'failed passed-through reviewer grants no phase credit');
+      const invalid = [];
+      for (const update of [
+        (m) => { m.stages[0].id = -1; },
+        (m) => { m.stages[1].id = 0; },
+        (m) => { m.stages[0].phases.push(structuredClone(m.stages[0].phases[0])); },
+        (m) => { m.stages[0].phases = []; },
+        (m) => { m.stages[1].gates[0].id = 'definition-file'; },
+        (m) => { m.stages[0].phases[0].gates[0].kind = 'toString'; },
+        (m) => { m.stages[1].gates[0].reviewer = {}; },
+      ]) { const bad = structuredClone(model); update(bad); invalid.push(bad); }
+      for (const bad of invalid) assert(validateStageModel(bad), 'invalid phased model shape rejected');
+      for (const legacy of [{ stages: [] }, { stages: [{ id: 0, name: 'Empty' }] }, { stages: [{ id: 0, name: 'Legacy', gates: [gate('approval.v1')] }] }]) {
+        write('model.json', JSON.stringify(legacy)); write(STATE_REL, '{}');
+        assert(!deriveStageStatus({ root }).modelError, 'legacy empty stages, omitted gates, and non-slug IDs remain valid');
+      }
+      write('model.json', JSON.stringify({ stages: [{ id: 0, name: 'Design', gates: [], phases: [{ id: 'definition', name: 'Definition', gates: [gate('constructor')] }] }] }));
+      assert(!(await recordAdvance({ root })).ok, 'inherited object properties are not recorded assertions');
+      write('blueprint.yml', 'stage_model: constructor\n');
+      assert(deriveStageStatus({ root }).modelError, 'inherited object keys cannot select a built-in model');
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  }
 
   // an assertion satisfies a non-derivable gate; a derivable gate ignores it
   const asserted = deriveStageStatus({ root: process.cwd(), assertions: { 'sensor-wired': { evidence: 'drove it' } } });

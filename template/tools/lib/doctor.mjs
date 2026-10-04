@@ -174,9 +174,11 @@ export async function runDoctor({ home, targetDir }) {
   if (hasYml) {
     try {
       const sm = await import(libUrl(home, 'stage-model.mjs'));
-      const { source, note } = sm.loadStageModel(targetDir);
+      const { source, note, error } = sm.loadStageModel(targetDir);
+      if (error) throw new Error(error);
       // deriving proves every gate references a known check kind (no throw)
-      sm.deriveStageStatus({ root: targetDir });
+      const status = sm.deriveStageStatus({ root: targetDir });
+      if (status.modelError || status.stateError) throw new Error(status.modelError || status.stateError);
       if (note) add('stage-model', 'warn', `stage model fell back — ${note}`, 'fix the `variant:` / `stage_model:` value in blueprint.yml, or author a JSON model');
       else add('stage-model', 'pass', `stage model: ${source}`);
     } catch (e) {

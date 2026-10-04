@@ -21,6 +21,31 @@ Methodology evolution prior to this baseline is recorded as 29 waves in [WAVE-LO
 
 ### Added
 
+- **A host can verify an exact definition-review decision** (wave 127). The
+  library checks identity, role, source/review/model fingerprints, chronology,
+  expiry and revocation through a host-supplied lookup. Missing providers and
+  local approval files cannot grant authority. No live chat provider or consumer
+  gate is enabled; verified decisions alone grant no workflow action. See the
+  [host contract](docs/decisions/ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md#host-verification-of-a-definition-decision).
+
+- **Custom phases can inspect an application-definition source packet** (wave
+  126). One root `application_definition` declaration selects the document
+  mapping. Status and doctor show source defects and fingerprints; an invalid
+  selection cannot fall back to a nested packet. A passing source check remains
+  pending until substantive review and trusted approval exist. Built-in models
+  and consumers are unchanged. See the [binding and limits](docs/decisions/ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md#application-source-inspection-within-a-phase).
+
+- **Custom stages can require ordered phases** (wave 125). A custom JSON model
+  may declare `stages[].phases` without changing stage numbers. Advancement
+  records one phase at a time and rechecks earlier requirements and reviewers.
+  Old numeric state supplies no phase credit. Built-in models remain phase-free.
+  Status adds phase fields; `--phase` checks the expected current phase.
+  Malformed explicit models and inconsistent saved state now refuse instead of
+  silently substituting a workflow. Library assertions must name a real manual
+  gate and include evidence. Review the [phase and state compatibility notes](docs/decisions/ADR-0008-deterministic-core-agentic-shell-stage-orchestration.md#ordered-phases-within-a-stage-rfc-65)
+  before opting in. This is sequencing support; application-definition checks,
+  authenticated human decisions, and consumer rollout remain separate work.
+
 - **Capture a web page for review, and prove the capture is complete**
   (wave 120) — `template/tools/web-capture/capture.mjs` shoots a page in six
   states, joins a tall page from segments, and flags an image that is the
