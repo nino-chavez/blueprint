@@ -48,7 +48,8 @@ in the brief first (`judged-screen-pattern.md` § 2b), then check this state aga
 ### Checks
 
 - **Tall pages are shot in segments.** A page taller than 16,000 device pixels is captured in clipped
-  segments of 6,000 CSS px, then joined with `magick -append +repage`.
+  segments of 6,000 CSS px, then joined with `magick -append +repage`. This happens on every browser, because
+  only some browsers repeat the page top in a tall single shot (see below).
 - **The image is the page's full size.** The width must equal the viewport, and the height must equal the
   page height, both at the state's pixel density.
 - **The image does not repeat the page top.** In a single shot taller than 16,384 px, the band at 16,384 px
@@ -68,16 +69,25 @@ in the brief first (`judged-screen-pattern.md` § 2b), then check this state aga
 - **Nothing is captured mid-transition.** After the theme switch the script waits up to two seconds for
   finite transitions to settle, and every screenshot freezes animations.
 - **The receipt names what can be reloaded:** the source file or URL, and whether it was wrapped in the
-  artifact skeleton.
+  artifact skeleton. It also records the browser version, and in `browserSource` whether that browser was
+  Playwright's own (`playwright-bundled`) or the installed Google Chrome (`chrome-channel`).
 
 ### Why these checks
 
 Each check exists because the capture it guards against passed silently. All of these were measured on a
 sales-support page for a private initiative on 2026-09-26.
 
-- **Chrome paints at most 16,384 device pixels per screenshot.** A 390-wide capture at 2x of a page about
-  9,450 CSS px tall repeated the page top from 16,384 px on. A crop there matched the top with 0 differing
-  pixels, so the reviewer never saw the last two sections at phone width.
+- **Google Chrome paints at most 16,384 device pixels per screenshot.** A 390-wide capture at 2x of a page
+  about 9,450 CSS px tall repeated the page top from 16,384 px on. A crop there matched the top with 0
+  differing pixels, so the reviewer never saw the last two sections at phone width.
+
+  This depends on the browser, not the Playwright version. On 2026-10-09 the self-test's 9,500 CSS px page
+  was shot once at 390 wide and 2x. The installed Google Chrome 154 repeated the page top from exactly
+  16,384 px. That is the browser the script falls back to. Playwright's default headless browser is a
+  separate headless shell ([Playwright: Browsers](https://playwright.dev/docs/browsers)). Two builds of it,
+  Chromium 148 and 153, painted all 19,000 px correctly. Chrome's new headless mode through
+  `channel: 'chromium'` was not measured. A run cannot know in advance which browser it will get, so tall
+  pages are segmented everywhere.
 - **Mobile emulation widens `window.innerWidth` to fit overflowing content.** A 4 px sideways scroll passed a
   `scrollWidth > innerWidth` test, and `clientWidth` catches it.
 - **A joined image keeps the first segment's canvas size.** Crops cut from it came out short until
@@ -93,12 +103,13 @@ More were found by automated reviews of the first version and its fix, not measu
 - **The fragment wrapper is written to a temporary folder.** A fragment's relative URLs resolved there and
   failed to load.
 
-`--selftest` rebuilds these failures in miniature. It prints one PASS or FAIL line for each of twelve checks:
+`--selftest` rebuilds these failures in miniature. It prints one PASS or FAIL line for each of thirteen checks:
 - the overflow check catches a 4 px overshoot;
 - the `innerWidth` test misses the same overshoot, which is why the check uses `clientWidth`;
 - a 9,500 CSS px page at 2x is joined from segments;
 - the joined image is the full size and does not repeat the page top;
-- a single shot of the same page trips the wrap check;
+- a copy of the joined image that repeats the page top from 16,384 px on trips the wrap check;
+- the joined image itself, checked as if it were a single shot, passes the wrap check;
 - a copy of the joined image 400 px short trips the size check;
 - with the scroll pass skipped, a lazy image 9,000 px down stays unloaded, which shows the test page defers it;
 - with the scroll pass, it reaches the page end and the same image loads;
@@ -107,12 +118,17 @@ More were found by automated reviews of the first version and its fix, not measu
 - a broken image trips the image check;
 - a wrapped fragment still loads its relative image.
 
+The two wrap cases use copies of the joined image, so they can fail on any browser. The self-test also shoots
+the tall page once without segments and prints an INFO line. It names the browser and says whether that single
+shot repeated the page top. The INFO line does not pass or fail, because the answer depends on the browser.
+
 A check that has never failed is not yet trusted.
 
 ### Requirements
 
 - **Node and Playwright.** If Playwright's bundled browser is absent, the script falls back to the installed
-  Google Chrome (`channel: 'chrome'`).
+  Google Chrome (`channel: 'chrome'`). Chrome is the browser measured to repeat the page top in a tall single
+  shot.
 - **ImageMagick's `magick`,** for joining segments and for the wrap check.
 
 ### Status
