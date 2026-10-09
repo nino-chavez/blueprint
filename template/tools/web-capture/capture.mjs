@@ -9,9 +9,11 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 
-const MAX_DEVICE_PX = 16000;   // Chrome paints at most 16,384 device px per screenshot; stay under it
+// Google Chrome paints at most 16,384 device px per screenshot; Playwright's default headless shell painted a
+// full 19,000 px on 2026-10-09. Which one runs is not known in advance, so tall pages are segmented on both.
+const MAX_DEVICE_PX = 16000;   // stay under Chrome's limit
 const SEGMENT_CSS_PX = 6000;   // clipped segment height when a page is taller than that
-const WRAP_PX = 16384;         // where a too-tall single shot starts repeating the page top
+const WRAP_PX = 16384;         // where Chrome starts repeating the page top in a too-tall single shot
 
 const STATES = {
   'desktop-light':      { vp: [1280, 800], dpr: 1, mobile: false, scheme: 'light' },
@@ -56,9 +58,11 @@ function loadPlaywright(p) {
   }
 }
 
+// Returns the browser and where it came from. The two differ in what a single tall shot shows (see WRAP_PX),
+// and the version number alone does not say which ran.
 async function launch(pw) {
-  try { return await pw.chromium.launch(); }
-  catch { return await pw.chromium.launch({ channel: 'chrome' }); }   // when the bundled browser is absent
+  try { return [await pw.chromium.launch(), 'playwright-bundled']; }
+  catch { return [await pw.chromium.launch({ channel: 'chrome' }), 'chrome-channel']; }   // when the bundled browser is absent
 }
 
 function magick(...a) { return execFileSync('magick', a, { encoding: 'utf8' }); }
@@ -164,8 +168,8 @@ function complete(file, st, m) {
   return { imageSize: [w, h], expected: want, sizeOk: w === want[0] && Math.abs(h - want[1]) <= st.dpr };
 }
 
-// Completeness, part 2: a single shot taller than 16,384 px does not repeat the page top. A stitched image
-// cannot wrap, so the check runs on single shots only; there, two matching bands mean a wrap.
+// Completeness, part 2: a single shot taller than 16,384 px does not repeat the page top, as Chrome's does. A
+// stitched image cannot wrap, so the check runs on single shots only; there, two matching bands mean a wrap.
 function wrapCheck(file, segments) {
   if (segments > 1) return false;
   const [w, h] = magick('identify', '-format', '%w %h', file).trim().split(' ').map(Number);
@@ -188,10 +192,10 @@ async function capture(a) {
   const url = pageUrl(a.page, a.fragment, tmp);
   fs.mkdirSync(a.out, { recursive: true });
   const [attr, val] = a.darkAttr.split('=');
-  const browser = await launch(pw);
+  const [browser, browserSource] = await launch(pw);
   const receipt = { page: /^https?:/.test(a.page) ? a.page : path.resolve(a.page),
     wrappedIn: a.fragment ? 'artifact publish skeleton, as in capture.mjs, with a <base> at the fragment\'s folder' : null,
-    taken: new Date().toISOString(), browser: browser.version(), states: {} };
+    taken: new Date().toISOString(), browser: browser.version(), browserSource, states: {} };
   try {
     for (const id of a.states) {
       const st = STATES[id];
@@ -250,7 +254,7 @@ async function selftest(a) {
   const darkOnly = path.join(tmp, 'dark-only.html');
   fs.writeFileSync(darkOnly, `${head}<style>.d{display:none}[data-theme=dark] .d{display:block}</style><p>top</p><div class="d"><div style="height:9000px"></div><img loading="lazy" src="dot.png" alt="dark only"></div></body>`);
   fs.writeFileSync(frag, '<p>A fragment with a relative image.</p><img src="dot.png" alt="relative">');
-  const results = [];
+  const results = [], info = [];
   try {
     const r1 = await capture({ ...a, page: over, out: path.join(tmp, 'o'), states: ['phone-light'] });
     const s1 = r1.states['phone-light'];
@@ -260,11 +264,18 @@ async function selftest(a) {
     const s2 = r2.states['phone-light'];
     results.push(['a 9,500 CSS px page at 2x is stitched from segments', s2.segments > 1]);
     results.push(['the stitched image is the full size and does not wrap', s2.sizeOk && !s2.wrapsToTop]);
+    // Whether a real single shot wraps depends on the browser (see WRAP_PX), so the wrap check is proven on copies
+    // of the joined image built to trip it and to pass it. A capture skips the comparison on a joined image.
+    const joined = path.join(tmp, 't', 'phone-light.png'), [jw, jh] = s2.imageSize;
+    const repeats = path.join(tmp, 'repeats.png');   // the top repeated from 16,384 px on, as Chrome paints it
+    magick(joined, '(', joined, '-crop', `${jw}x${jh - WRAP_PX}+0+0`, '+repage', ')', '-geometry', `+0+${WRAP_PX}`, '-composite', '+repage', repeats);
+    results.push(['a copy that repeats the page top from 16,384 px trips the wrap check', wrapCheck(repeats, 1) === true]);
+    results.push(['the joined image, checked as a single shot, passes the wrap check', wrapCheck(joined, 1) === false]);
     const r3 = await capture({ ...a, page: tall, out: path.join(tmp, 's'), states: ['phone-light'], singleShot: true });
-    const s3 = r3.states['phone-light'];
-    results.push(['a single shot of the same page trips the wrap check', s3.wrapsToTop === true]);
+    info.push(`browser ${r3.browser} (${r3.browserSource}): a single shot of the 9,500 CSS px page ${r3.states['phone-light'].wrapsToTop
+      ? 'repeats its top from 16,384 px, so segmenting is needed here' : 'does not repeat its top'}`);
     const short = path.join(tmp, 'short.png');   // 400 px short: far past the ±dpr the size check allows
-    magick(path.join(tmp, 't', 'phone-light.png'), '-crop', `${s2.imageSize[0]}x${s2.imageSize[1] - 400}+0+0`, '+repage', short);
+    magick(joined, '-crop', `${jw}x${jh - 400}+0+0`, '+repage', short);
     results.push(['a copy 400 px short trips the size check', complete(short, STATES['phone-light'], s2).sizeOk === false]);
     const one = (page, out, extra = {}, state = 'desktop-light') => capture({ ...a, page, out: path.join(tmp, out), states: [state], ...extra })
       .then(r => r.states[state]);
@@ -282,6 +293,7 @@ async function selftest(a) {
     results.push(['a wrapped fragment still loads its relative image (base URL kept)', wrapped.imagesNotLoaded === 0]);
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
   for (const [name, ok] of results) console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}`);
+  for (const line of info) console.log(`INFO  ${line}`);
   return results.every(([, ok]) => ok);
 }
 
