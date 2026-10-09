@@ -43,6 +43,7 @@ const STEPS = [
   [`${LIB}/account-derive.mjs`, ['--selftest'], /^selftest OK \(/m],
   [`${LIB}/recipient-safety.mjs`, ['--selftest'], /^selftest OK \(/m],
   [`${LIB}/portal-derive.mjs`, ['--selftest'], /^selftest OK \(/m],
+  [`${LIB}/copy-segments.mjs`, ['--selftest'], /^copy-segments self-test: PASS\b/m],
   [`${LIB}/encounter-audit.mjs`, ['--selftest'], /^encounter-audit self-test: PASS\b/m],
   [`${LIB}/invoked-directly.mjs`, ['--self-test'], /^invoked-directly self-test: PASS\b/m],
   [`${LIB}/portal-reviewer-routing.mjs`, ['--selftest'], /^portal-reviewer-routing self-test: PASS\b/m],
