@@ -45,6 +45,11 @@ const NON_COPY_PROPS = new Set(['className', 'class']);
 /** Keywords after which `/` starts a regex and `<` may start JSX. */
 const EXPRESSION_KEYWORDS = new Set(['return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'instanceof', 'new', 'delete', 'void', 'throw', 'yield', 'await', 'default']);
 const CLOSERS = { '(': ')', '[': ']', '{': '}' };
+/** A `(` after these opens a condition, so a `/` right after its `)` starts a regex. */
+const CONDITION_KEYWORDS = new Set(['if', 'while', 'for', 'with']);
+const REGEX_FLAGS = /^[dgimsuvy]*$/;
+/** What may follow a regex literal: member access, a separator, a closer, an operator, or the end of the line. */
+const REGEX_FOLLOWER = /^[ \t]*(?:$|[\r\n.,;:)\]}?]|&&|\|\||===?|!==?)/;
 
 const isIdentStart = (c) => c !== undefined && /[\p{L}_$]/u.test(c);
 const isIdentPart = (c) => c !== undefined && /[\p{L}\p{N}_$]/u.test(c);
@@ -145,15 +150,24 @@ class Scanner {
   skipRegex() {
     this.i += 1;
     let inClass = false;
+    let swallowsCopy = false;
     while (this.i < this.n) {
       const c = this.s[this.i];
       if (c === '\\') { this.i += 2; continue; }
       if (c === '\n') this.fail('unterminated regex');
+      if (c === '"' || c === "'" || c === '`' || c === '<') swallowsCopy = true;
       if (c === '[') inClass = true;
       else if (c === ']') inClass = false;
       else if (c === '/' && !inClass) {
         this.i += 1;
+        const flagsStart = this.i;
         while (isIdentPart(this.s[this.i])) this.i += 1;
+        // A body holding a quote or `<` could be a division sign misread as a
+        // regex, swallowing a string or JSX. Keep it only if it ends like a real
+        // regex; otherwise give up so the file is hashed by bytes.
+        if (swallowsCopy && !(REGEX_FLAGS.test(this.s.slice(flagsStart, this.i)) && REGEX_FOLLOWER.test(this.s.slice(this.i)))) {
+          this.fail('regex holding a quote or < does not end like a regex');
+        }
         return;
       }
       this.i += 1;
@@ -189,10 +203,11 @@ class Scanner {
       if (c === '`') { this.readTemplate(excluded); prev = { t: 'value' }; continue; }
       if (c in CLOSERS) {
         const callOfClassHelper = c === '(' && prev?.t === 'ident' && (CLASS_HELPERS.has(prev.v) || prev.v === 'require' || prev.v === 'import');
+        const condition = c === '(' && prev?.t === 'ident' && CONDITION_KEYWORDS.has(prev.v);
         this.i += 1;
         this.scanUntil(new Set([CLOSERS[c]]), excluded || callOfClassHelper, { t: 'punct', v: c });
         this.expect(CLOSERS[c]);
-        prev = { t: 'value' };
+        prev = condition ? { t: 'punct', v: ')' } : { t: 'value' };
         continue;
       }
       if (c === ')' || c === ']' || c === '}') this.fail(`unbalanced ${JSON.stringify(c)}`);
@@ -206,6 +221,7 @@ class Scanner {
         const start = this.i;
         while (isIdentPart(this.s[this.i])) this.i += 1;
         const word = this.s.slice(start, this.i);
+        if (prev?.t === 'punct' && prev.v === '.') { prev = { t: 'value' }; continue; } // a property name, even `.default`
         const following = this.nextNonSpace();
         if ((word === 'from' || word === 'import') && (following === '"' || following === "'")) {
           this.moduleSpecifierNext = true;
@@ -224,6 +240,13 @@ class Scanner {
         continue;
       }
       if (c === '=' && this.s[this.i + 1] === '>') { this.i += 2; prev = { t: 'punct', v: '=>' }; continue; }
+      const afterValue = prev && (prev.t === 'value' || (prev.t === 'ident' && !EXPRESSION_KEYWORDS.has(prev.v)));
+      if ((c === '+' || c === '-') && this.s[this.i + 1] === c) {
+        this.i += 2;
+        if (!afterValue) prev = { t: 'punct', v: c + c }; // prefix ++x: an operand follows; postfix x++ stays a value
+        continue;
+      }
+      if (c === '!' && afterValue && this.s[this.i + 1] !== '=') { this.i += 1; continue; } // TypeScript non-null x!
       this.i += 1;
       prev = { t: 'punct', v: c };
     }
@@ -345,7 +368,7 @@ export function Card({ open }: { open: boolean }) {
 }`), ['Season', 'recap', 'src=/a.webp', 'alt=Players at the net', 'href=/gallery', 'aria-label=View the gallery', 'View Gallery', 'aria-hidden=true', '→', 'Open now', 'Opens {} at 9'], 'tsx component');
 
   same(copySegments(`const items = [{ title: 'Media', className: 'p-2 text-sm', body: "Photo & video" }]
-const re = /it's "not" a string/g
+const re = /^[a-z]+\\/(\\d+)$/gi
 const half = total / 2 / 3
 const lazy = await import('./x')
 const cfg = require('./cfg')
@@ -360,6 +383,19 @@ const list = useState<string | null>(null)`, { jsx: false }), ['Media', 'Photo &
 
   same(tsx(`export const motionProps = <motion.div initial={{ opacity: 0 }} transition={{ ease: 'easeOut' }} whileInView="show">Hi</motion.div>`), ['Hi'], 'motion props excluded');
 
+  // Division signs the scanner must not mistake for a regex start (each would hide the string between them).
+  same(copySegments(`const h = i++ / 2; const label = 'Hello reader'; const q = total / 3`, { jsx: false }), ['Hello reader'], 'division after postfix ++');
+  same(copySegments(`const w = size.default / 2; const t = 'Welcome'; const r = a / b`, { jsx: false }), ['Welcome'], 'division after a keyword-named property');
+  same(copySegments(`const n = value! / 2; const s = 'Non-null'; const m = x / y`, { jsx: false }), ['Non-null'], 'division after a non-null assertion');
+  same(copySegments(`if (ok) /^a+$/.test(s); const z = 'After a condition'`, { jsx: false }), ['After a condition'], 'regex after an if condition');
+
+  const throws = (source, label) => {
+    let threw = false;
+    try { tsx(source); } catch (error) { threw = error instanceof CopyScanError; }
+    if (!threw) throw new Error(`${label} did not throw CopyScanError`);
+  };
+  same(tsx(`const safe = json.replace(/</g, '\\u003c'); const q = /['"]/.test(s) ? 'Quoted' : 'Plain'`), ['\u003c', 'Quoted', 'Plain'], 'real regexes holding < and quotes');
+  throws(`const re = /['"]/ 2\nexport const s = 'x'`, 'a regex holding a quote that does not end like a regex');
   let threw = false;
   try { tsx(`const f = <T,>(x: T) => x\nexport const label = 'Hi'`); } catch (error) { threw = error instanceof CopyScanError; }
   if (!threw) throw new Error('a generic arrow the scanner cannot follow did not throw CopyScanError');
@@ -367,7 +403,7 @@ const list = useState<string | null>(null)`, { jsx: false }), ['Media', 'Photo &
   try { tsx(`const s = 'unterminated\n`); } catch (error) { threw = error instanceof CopyScanError; }
   if (!threw) throw new Error('an unterminated string did not throw CopyScanError');
 
-  console.log('copy-segments self-test: PASS (JSX text, attributes, class helpers, data strings, module specifiers, regex, scan errors)');
+  console.log('copy-segments self-test: PASS (JSX text, attributes, class helpers, data strings, module specifiers, regex vs division, scan errors)');
 }
 
 if (invokedDirectly(import.meta.url)) {
