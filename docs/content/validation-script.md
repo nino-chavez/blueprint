@@ -67,6 +67,32 @@ Asked first, while being wrong is cheap:
 - **Time (A6, named target)**: a working session with R. mapping his four-skill loop onto Blueprint primitives. Whether he shows up IS the A6 test — a second compliment-and-keep-theirs is a second disconfirming datum.
 - **ACCEPT the inbound offer (A2/A3/A7 + the ground-truth bug, one experiment)**: J.'s team proposed a second attempt with full repo scope + their review time. Accepting tests whether correct ground truth fixes the accuracy finding, and their structured retro (worked / didn't / accelerated / slowed) is the A1–A7 conversation plan run by the stakeholders themselves. Response pending — the hottest open item.
 
+## Free entry point to real adoption — first application, 2026-10-14
+
+**Test whether the existing portal helps a practitioner start useful work before building another free tool.** A2 names installation and initiative use, but does not separate finding the right audience, reaching them, delivering value, and continuing into the product. Those are separate hypotheses.
+
+This applies [Free Tools' strategy questions](https://github.com/coreyhaines31/marketingskills/blob/c7d7dfb6b460fc376b4b2204b78a9c9fd5ca6467/skills/free-tools/SKILL.md) to Blueprint's own free entry point. Blueprint is an open-source methodology and CLI; the outcome here is adoption, not revenue or sales leads. This is a first application to a portal, not validation of a calculator or generator business. The source's conversion benchmarks and numerical scorecard are not local evidence.
+
+### What is known from the source
+
+At commit `80686d6`, the [homepage](../../apps/portal/src/pages/index.astro) offers an initiative-init command. The [copy button](../../apps/portal/src/components/CommandBlock.tsx) writes it to the clipboard and updates its label; it does not record an adoption event. The [layout](../../apps/portal/src/layouts/Layout.astro) has an empty `CF_BEACON_TOKEN`. These source checks do not establish what is deployed, what a visitor did, or what provider-side logs contain. The historical conversations above remain historical; no new customer observation was collected for this application.
+
+### Questions to add to the next adoption trial
+
+| Hypothesis | Evidence to collect | What would change the plan |
+|---|---|---|
+| The visitor can use or sponsor Blueprint for real work | Ask about their last initiative, current delivery loop, and role in changing it. Keep practitioner and team sponsor separate. | Interest from readers with no relevant job does not establish adopter fit. |
+| We can reach that person repeatedly | Record the actual referral, community, or search query that brought them. If relying on search, check demand and existing alternatives with dated sources. | No demonstrated route means distribution remains unproven, even if the tool works. |
+| The free entry point gives useful value and a natural next step | Observe what they use on the portal, then whether they choose to initialize a real initiative and use an output for a decision. Ask what they keep if they stop. | Copying a command or completing a demo alone is insufficient. A missing continuation may require a better handoff, not another tool. |
+| The benefit justifies operating it | Record the responsible maintainer, actual support time, hosting/API costs, dependencies, and work displaced. Set a trial allowance with the owner before spending. | An unowned maintenance burden or an exhausted allowance ends expansion. |
+| We can connect the steps without overstating the result | For a consented trial, log arrival source, relevant role, useful result, product action, and observed return separately. Count only linked, observed steps. | Missing observations stay unknown. Visits, copies, installs, and qualified adoption are different measures. |
+
+Use the existing ask-outcome Log for any conversation. A useful result should be available before requesting optional contact details in this pilot; contact capture is not a success measure. No outreach, analytics installation, paid trial, or new tool is authorized by this section.
+
+**Scope check:** the portal-to-CLI case is a partial fit. Internal `web-capture` and `object-box-count` utilities have no established adopter continuation merely because they are useful. A marketing-video template produces promotional material; that alone does not make it a free acquisition tool. Neither is a second confirming instance.
+
+**Decision:** adopt these questions in this initiative's validation plan. Outcome is **not yet measured**. Revisit after a real adoption trial; promote a shared assumption pattern only after independent feedback exposes the same need in another initiative. See the [local amendment](../../METHODOLOGY-AMENDMENTS.md#2026-10-14--test-the-path-from-a-free-entry-point-to-useful-product-work).
+
 ## Portal persona-walk gate (recurring; adopted 2026-07-02)
 
 The fitness half of `docs/patterns/stakeholder-surface-packaging-pattern.md`'s
