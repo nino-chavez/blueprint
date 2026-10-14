@@ -8,7 +8,7 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 **Trigger**: Nino asked to adapt the next useful practice from the reviewed tool list; Free Tools adds acquisition-specific questions to the existing adoption hypothesis A2.
 **Scope**: Candidate for methodology promotion
-**Bucket**: consumer-local
+**Bucket**: methodology
 **Status**: Active — first application in the self-application's validation plan; no customer outcome measured and no shared-method promotion.
 
 The [validation script](docs/content/validation-script.md#free-entry-point-to-real-adoption--first-application-2026-10-14) now separates audience fit, distribution, useful value and product continuation, operating burden, and measurement for the existing portal-to-CLI path. It applies the questions to current source and names missing observations. It adds no tool, scorecard threshold, analytics, or outreach.
