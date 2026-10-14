@@ -189,7 +189,8 @@ function variantShapedNames(names) {
   return hits;
 }
 
-// Count list bullets under a named `## <heading>` section. Line scan, not a
+// Count the outer bullet level under a named `## <heading>` section. Nested
+// states/details are not additional concepts. Line scan, not a
 // section regex — a "next heading or end of input" lookahead is the shape that
 // goes subtly wrong (JS has no \\Z).
 function countSectionBullets(text, heading) {
@@ -199,9 +200,16 @@ function countSectionBullets(text, heading) {
   const start = lines.findIndex((l) => re.test(l));
   if (start === -1) return 0;
   let n = 0;
+  let outerIndent = Infinity;
   for (let i = start + 1; i < lines.length; i++) {
     if (/^##[ \t]/.test(lines[i])) break;
-    if (/^[ \t]*[-*][ \t]+\S/.test(lines[i])) n += 1;
+    const bullet = /^( {0,3})[-*][ \t]+\S/.exec(lines[i]);
+    if (!bullet) continue;
+    const indent = bullet[1].length;
+    if (indent < outerIndent) {
+      outerIndent = indent;
+      n = 1;
+    } else if (indent === outerIndent) n += 1;
   }
   return n;
 }
@@ -1080,6 +1088,25 @@ Stakeholder review surface, one confident take per route.
     const res = await review({ targetDir: dir });
     check('two concepts in a rethink brief → WARN', res.status === 'WARN');
     check('two concepts name the three-concept minimum', res.findings.some((f) => /only 2 divergent concept\(s\) recorded \(need at least 3\)/.test(f.message)));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Nested states/details are not additional whole-screen concepts.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
+    const nested = brief.replace('- concept-c — a timeline\n', '  - dense state of concept-b\n');
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', nested);
+    let res = await review({ targetDir: dir });
+    check('two concepts plus a nested state → WARN', res.status === 'WARN');
+    check('nested state does not count as a third concept', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', `${nested}- concept-c — a timeline\n`);
+    res = await review({ targetDir: dir });
+    check('three concepts plus a nested state → PASS', res.status === 'PASS');
+    check('nested state does not inflate three concepts', /concepts=3\/adr=present/.test(res.metadata.targetSummary));
     await fs.rm(dir, { recursive: true, force: true });
   }
 
