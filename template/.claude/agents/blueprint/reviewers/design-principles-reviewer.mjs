@@ -189,7 +189,8 @@ function variantShapedNames(names) {
   return hits;
 }
 
-// Count list bullets under a named `## <heading>` section. Line scan, not a
+// Count the outer bullet level under a named `## <heading>` section. Nested
+// states/details are not additional concepts. Line scan, not a
 // section regex — a "next heading or end of input" lookahead is the shape that
 // goes subtly wrong (JS has no \\Z).
 function countSectionBullets(text, heading) {
@@ -199,9 +200,16 @@ function countSectionBullets(text, heading) {
   const start = lines.findIndex((l) => re.test(l));
   if (start === -1) return 0;
   let n = 0;
+  let outerIndent = Infinity;
   for (let i = start + 1; i < lines.length; i++) {
     if (/^##[ \t]/.test(lines[i])) break;
-    if (/^[ \t]*[-*][ \t]+\S/.test(lines[i])) n += 1;
+    const bullet = /^( {0,3})[-*][ \t]+\S/.exec(lines[i]);
+    if (!bullet) continue;
+    const indent = bullet[1].length;
+    if (indent < outerIndent) {
+      outerIndent = indent;
+      n = 1;
+    } else if (indent === outerIndent) n += 1;
   }
   return n;
 }
@@ -525,7 +533,7 @@ export default async function review({ targetDir, blueprintYml }) {
   // concept exercise and a genuine redesign cannot skip one:
   //   preserve → design_direction points at a record that EXISTS; no brief.
   //   refit    → brief + matrix; no concepts.
-  //   rethink  → brief + matrix + >=2 concepts + a selection ADR.
+  //   rethink  → brief + matrix + >=3 concepts + a selection ADR.
   const ymlTextCache = (await read(path.join(artifactsRoot, 'blueprint.yml'))) || '';
   const designIntentRaw =
     (blueprintYml && typeof blueprintYml.design_intent === 'string'
@@ -648,7 +656,7 @@ export default async function review({ targetDir, blueprintYml }) {
     selectionAdr = adr.file;
     attribution = adr.attributed;
     const missingBits = [];
-    if (conceptCount < 2) missingBits.push(`only ${conceptCount} divergent concept(s) recorded (need at least 2)`);
+    if (conceptCount < 3) missingBits.push(`only ${conceptCount} divergent concept(s) recorded (need at least 3)`);
     if (!selectionAdr) missingBits.push('no selection ADR in decisions/');
     if (missingBits.length) {
       findings.push({
@@ -1065,6 +1073,43 @@ Stakeholder review surface, one confident take per route.
     await fs.rm(dir, { recursive: true, force: true });
   }
 
+  // Fixture 11a — two concepts in the brief are insufficient for rethink.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
+    await writeFile(
+      dir,
+      'prototype/EXPERIENCE-BRIEF.md',
+      brief.replace('- concept-c — a timeline\n', ''),
+    );
+    const res = await review({ targetDir: dir });
+    check('two concepts in a rethink brief → WARN', res.status === 'WARN');
+    check('two concepts name the three-concept minimum', res.findings.some((f) => /only 2 divergent concept\(s\) recorded \(need at least 3\)/.test(f.message)));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
+  // Nested states/details are not additional whole-screen concepts.
+  {
+    const dir = await mkTmp();
+    await writeFile(dir, 'blueprint.yml', 'variant: greenfield\ndesign_intent: rethink\n');
+    await writeFile(dir, 'prototype/DESIGN.md', COMPLETE_DESIGN);
+    await writeJudgedScreenArtifacts(dir, 'rethink');
+    const brief = await fs.readFile(path.join(dir, 'prototype/EXPERIENCE-BRIEF.md'), 'utf8');
+    const nested = brief.replace('- concept-c — a timeline\n', '  - dense state of concept-b\n');
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', nested);
+    let res = await review({ targetDir: dir });
+    check('two concepts plus a nested state → WARN', res.status === 'WARN');
+    check('nested state does not count as a third concept', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', `${nested}- concept-c — a timeline\n`);
+    res = await review({ targetDir: dir });
+    check('three concepts plus a nested state → PASS', res.status === 'PASS');
+    check('nested state does not inflate three concepts', /concepts=3\/adr=present/.test(res.metadata.targetSummary));
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+
   // Fixture 11b — concepts on disk (not in the brief) satisfy check 11.
   {
     const dir = await mkTmp();
@@ -1075,9 +1120,10 @@ Stakeholder review surface, one confident take per route.
     await writeFile(dir, 'prototype/EXPERIENCE-BRIEF.md', brief.replace(/## Concepts[\s\S]*$/, ''));
     await writeFile(dir, 'prototype/concepts/concept-a.md', 'stacked list\n');
     await writeFile(dir, 'prototype/concepts/concept-b.md', 'two-column split\n');
+    await writeFile(dir, 'prototype/concepts/concept-c.md', 'timeline\n');
     const res = await review({ targetDir: dir });
     check('concepts on disk → PASS', res.status === 'PASS');
-    check('summary counts 2 concepts', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    check('summary counts 3 concepts', /concepts=3\/adr=present/.test(res.metadata.targetSummary));
     await fs.rm(dir, { recursive: true, force: true });
   }
 
@@ -1100,10 +1146,11 @@ Stakeholder review surface, one confident take per route.
     await writeFile(dir, 'docs/design/concepts/alpha/CONCEPT.md', 'stacked list\n');
     await writeFile(dir, 'docs/design/concepts/alpha/01-alpha.png', 'x');
     await writeFile(dir, 'docs/design/concepts/beta/CONCEPT.md', 'two-column split\n');
-    await writeFile(dir, 'docs/design/concepts/gamma/notes.txt', 'not a record\n');
+    await writeFile(dir, 'docs/design/concepts/gamma/CONCEPT.md', 'timeline\n');
+    await writeFile(dir, 'docs/design/concepts/not-a-concept/notes.txt', 'not a record\n');
     const res = await review({ targetDir: dir });
     check('folder-per-concept → PASS', res.status === 'PASS');
-    check('summary counts 2 concept folders, not the README or the empty folder', /concepts=2\/adr=present/.test(res.metadata.targetSummary));
+    check('summary counts 3 concept folders, not the README or the unrecognized folder', /concepts=3\/adr=present/.test(res.metadata.targetSummary));
     check('"Object, action, and state" heading in DIRECTION.md is the matrix', !res.findings.some((f) => /no object \/ action \/ state matrix/.test(f.message)));
     await fs.rm(dir, { recursive: true, force: true });
   }
@@ -1137,7 +1184,8 @@ Stakeholder review surface, one confident take per route.
     );
     await writeFile(dir, 'docs/design/concepts/concept-a.md', 'stacked list\n');
     await writeFile(dir, 'docs/design/concepts/concept-b.md', 'two-column split\n');
-    await writeFile(dir, 'decisions/design/0001-concept-selection.md', '# Concept selection\n\nThe operator chose concept-b; concept-a was rejected.\n');
+    await writeFile(dir, 'docs/design/concepts/concept-c.md', 'timeline\n');
+    await writeFile(dir, 'decisions/design/0001-concept-selection.md', '# Concept selection\n\nThe operator chose concept-b; concept-a and concept-c were rejected.\n');
     const res = await review({ targetDir: dir });
     check('docs/design layout → PASS', res.status === 'PASS');
     check('matrix found outside the brief', /experience-brief=present;/.test(res.metadata.targetSummary));
