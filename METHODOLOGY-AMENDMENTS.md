@@ -4,6 +4,22 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-10-14 — Test the path from a free entry point to useful product work
+
+**Trigger**: Nino asked to adapt the next useful practice from the reviewed tool list; Free Tools adds acquisition-specific questions to the existing adoption hypothesis A2.
+**Scope**: Candidate for methodology promotion
+**Bucket**: consumer-local
+**Status**: Active — first application in the self-application's validation plan; no customer outcome measured and no shared-method promotion.
+
+The [validation script](docs/content/validation-script.md#free-entry-point-to-real-adoption--first-application-2026-10-14) now separates audience fit, distribution, useful value and product continuation, operating burden, and measurement for the existing portal-to-CLI path. It applies the questions to current source and names missing observations. It adds no tool, scorecard threshold, analytics, or outreach.
+
+The canonical Mom Test pattern already owns evidence classes and commitment outcomes. Its assumption-archetype list requires two feedback-discovered instances before adding a pattern. This source-based application is not one of those observations. Keep the questions local until real feedback supports promotion; no `template/` change or consumer migration is involved.
+
+**References**:
+- [Free Tools, pinned source](https://github.com/coreyhaines31/marketingskills/blob/c7d7dfb6b460fc376b4b2204b78a9c9fd5ca6467/skills/free-tools/SKILL.md).
+- [Assumption archetypes](template/docs/methodology/mom-test-validation-pattern.md#assumption-archetypes-prompt-these-at-script-generation-time).
+- Source baseline: `80686d6`; `apps/portal/src/pages/index.astro`, `apps/portal/src/components/CommandBlock.tsx`, and `apps/portal/src/layouts/Layout.astro`.
+
 ## 2026-09-26 — Blueprint should point at decision-package for register-as-source, not restate it
 
 **Trigger**: A decision package that promotes into Blueprint carries `research-to-decision/` in as its evidence tree, and that tree now includes a register plus a generator the methodology has never heard of — `grep -rl 'research-to-decision\|decision-package' template/ docs/` returns nothing.
