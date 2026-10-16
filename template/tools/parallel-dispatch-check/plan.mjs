@@ -55,6 +55,28 @@ function overlaps(a, b) {
   return a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`);
 }
 
+function parsePlan(text) {
+  // JSON.parse checks grammar but discards earlier duplicate members. Scan the
+  // valid JSON tokens too, retaining decoded member names per object. Strings
+  // are whole tokens, so braces and key-looking text inside values stay inert.
+  const plan = JSON.parse(text);
+  const tokens = text.match(/"(?:\\[\s\S]|[^"\\])*"|[{}\[\]:,]|[^\s{}\[\]:,]+/g);
+  const scopes = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (token === '{') scopes.push(new Set());
+    else if (token === '[') scopes.push(null);
+    else if (token === '}' || token === ']') scopes.pop();
+    else if (tokens[i + 1] === ':') {
+      const key = JSON.parse(token);
+      const keys = scopes[scopes.length - 1];
+      if (keys.has(key)) reject(`duplicate JSON member: ${JSON.stringify(key)}`);
+      keys.add(key);
+    }
+  }
+  return plan;
+}
+
 function validate(plan, root) {
   shape(plan, ['version', 'source', 'requirements', 'tasks'], 'plan');
   if (plan.version !== 1) reject('version: expected 1');
@@ -139,7 +161,7 @@ if ((args.length !== 2 && args.length !== 4) || args[0] !== '--plan' || !args[1]
 try {
   const root = realpathSync(path.resolve(args[3] || '.'));
   if (!statSync(root).isDirectory()) reject('root: must name a directory');
-  const plan = JSON.parse(readFileSync(path.resolve(args[1]), 'utf8'));
+  const plan = parsePlan(readFileSync(path.resolve(args[1]), 'utf8'));
   const result = validate(plan, root);
   console.log(`PASS: structural checks passed (${result}).`);
   console.log('Coverage meaning, undeclared effects, approval, and runtime ordering still require review. Verification is planned, not performed.');

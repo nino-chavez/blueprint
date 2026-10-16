@@ -65,7 +65,8 @@ to those bytes. Requirement IDs name criteria in that source; a reviewer must
 check their meaning and whether the source lists everything the task requires.
 The checker does not extract or interpret requirements from prose.
 
-All illustrated fields are required; unknown fields are rejected. Requirements
+All illustrated fields are required; unknown fields and duplicate JSON member
+names are rejected, including escaped spellings of the same name. Requirements
 and tasks must be nonempty. IDs use letters, digits, dots, underscores, or
 hyphens, starting with a letter or digit. Requirement and task IDs must each be
 unique within their own list.

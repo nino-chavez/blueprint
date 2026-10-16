@@ -101,6 +101,18 @@ try {
   const planFile = path.join(root, 'plan.json');
   writeFileSync(planFile, JSON.stringify(base()));
   assert.equal(run(['--plan', 'plan.json'], root).status, 0, 'default root is cwd'); cases++;
+  for (const [label, raw] of [
+    ['duplicate edits', JSON.stringify(base()).replace('"edits":["docs/new.md"]', '"edits":["src/new.ts"],"edits":["docs/new.md"]')],
+    ['escaped duplicate edits', JSON.stringify(base()).replace('"edits":["docs/new.md"]', String.raw`"edits":["src/new.ts"],"ed\u0069ts":["docs/new.md"]`)],
+    ['duplicate version', JSON.stringify(base()).replace('"version":1', '"version":2,"version":1')],
+    ['duplicate source path', JSON.stringify(base()).replace('"path":"spec.md"', '"path":"missing.md","path":"spec.md"')],
+  ]) {
+    writeFileSync(planFile, raw);
+    const duplicate = run(['--plan', planFile, '--root', root]);
+    assert.equal(duplicate.status, 1, label);
+    assert.match(duplicate.stderr, /duplicate JSON member/, label); cases++;
+  }
+  check('key-looking text inside verification stays text', (p) => { p.tasks[0].verification = ['Check the "edits": ["a"] field; braces {} and a backslash \\ stay text']; }, 0, /structural checks passed/);
   writeFileSync(planFile, '{broken');
   assert.equal(run(['--plan', planFile, '--root', root]).status, 1, 'malformed JSON'); cases++;
   writeFileSync(planFile, 'null');
