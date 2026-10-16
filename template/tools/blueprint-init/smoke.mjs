@@ -45,7 +45,8 @@
  * Exit: 0 = all green; 1 = any failure (each failure printed).
  */
 import { promises as fs } from "node:fs";
-import { execFile as execFileCb } from "node:child_process";
+import { createHash } from 'node:crypto';
+import { execFile as execFileCb, spawnSync } from "node:child_process";
 import { promisify } from "node:util";
 import os from "node:os";
 import path from "node:path";
@@ -71,6 +72,31 @@ async function checkConsumerGuide(root, label) {
   check(actual === expected, `${label} delivers the canonical root instruction file`, "missing or changed CLAUDE.md");
   const entry = await fs.readFile(path.join(root, 'AGENTS.md'), 'utf8').catch(() => '');
   check(entry === await fs.readFile(path.join(BLUEPRINT_ROOT, 'template/AGENTS.md'), 'utf8'), `${label} delivers the Codex pointer to that same map`);
+  // Run the delivered tool: presence alone misses omitted sibling imports.
+  const scratch = await fs.mkdtemp(path.join(root, '.dispatch-smoke-'));
+  try {
+    const source = path.join(scratch, 'spec.md');
+    await fs.writeFile(source, 'REQ-1: implement the behavior\n');
+    const plan = {
+      version: 1,
+      source: { path: path.relative(root, source), sha256: createHash('sha256').update(await fs.readFile(source)).digest('hex') },
+      requirements: ['REQ-1'],
+      tasks: ['a', 'b'].map((id) => ({ id, covers: ['REQ-1'], reads: [], edits: [`future/${id}`], depends_on: [], verification: ['Run the focused test'] })),
+    };
+    const planFile = path.join(scratch, 'plan.json');
+    const run = () => spawnSync('bash', [path.join(root, 'tools/parallel-dispatch-check/check.sh'), '--plan', planFile, '--root', root], {
+      cwd: scratch, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000,
+    });
+    await fs.writeFile(planFile, JSON.stringify(plan));
+    const passed = run();
+    check(passed.status === 0 && /structural checks passed/.test(passed.stdout), `${label} delivered plan checker runs`, passed.stderr || passed.error?.message);
+    plan.tasks[1].reads = ['future/a'];
+    await fs.writeFile(planFile, JSON.stringify(plan));
+    const rejected = run();
+    check(rejected.status === 1 && /unordered conflict/.test(rejected.stderr), `${label} delivered checker rejects an unordered read/edit conflict`, rejected.stderr);
+  } finally {
+    await fs.rm(scratch, { recursive: true, force: true });
+  }
 }
 
 // Every script in a stamped package.json must run against what the stamp wrote:
@@ -802,6 +828,7 @@ try {
   // and, because package.json and blueprint.yml are preserved, names both.
   try {
     const t0 = path.join(tmp, "smoke-tier0-greenfield");
+    await checkConsumerGuide(t0, "Tier 0");
     const restamp = await execFile(process.execPath, [
       STAMP, "--mode=stamp", "--name=smoke-tier0-greenfield", "--variant=greenfield", "--tier=1", "--portal-type=initiative", `--target=${t0}`,
     ]);

@@ -26,7 +26,7 @@ historical source evidence, not this initiative's commit history.
 
 ## What Blueprint makes stricter
 
-1. **The overlap check is mandatory, not conditional.** `dispatch-wave` says to run a project's overlap tool if one exists and otherwise check by inspection. A Blueprint initiative always has one. Run `template/tools/parallel-dispatch-check/check.sh` with each agent's file globs as separate args before every dispatch. Exit 0 → safe; exit 1 → switch to serial or narrow scopes. A passing scope check does not replace separate worktrees for independent writers, including writers adding non-overlapping new files.
+1. **The scope check is mandatory; a structured plan is optional.** In a newly stamped initiative, run `bash tools/parallel-dispatch-check/check.sh` before dispatch. In the Blueprint source, use the `template/tools/parallel-dispatch-check/` path. For a version that supports it, `--plan <json> [--root <repo>]` checks the source digest, requirement IDs, declared reads/edits, and prerequisite tasks. Its [README](../../../tools/parallel-dispatch-check/README.md) owns the format and limits. Without a plan, pass each writer's edit globs as a separate argument and inspect future paths, directory contents, reads, and dependencies manually. Older stamps without the tool use it from the methodology home; do not restamp merely to run this check. Exit 1 or 2 requires correction before dispatch. Exit 0 is a limited structural result, not proof of semantic coverage or permission. A dependency permits overlapping scopes only when the host actually runs those tasks in order. Independent writers still require separate worktrees.
 2. **Parent judgment stays with the parent.** Send a bounded brief through the host's configured dispatch route. Honor its classification, model, effort, and receipt requirements. Keep judgment only the parent can make inline; do not hard-code model names here.
 3. **Reporting follows the output-discipline rule.** Each agent reports the synthesized result plus pointers (file path, line count, cross-refs they couldn't resolve, judgment calls), never the corpus it read. Canonical rule + tier dial: `template/docs/methodology/agent-output-discipline-pattern.md`.
 4. **Publication follows existing authority.** A local-only task stays local. When the task or project workflow already authorizes commit or publication, complete that authorized step without adding a new confirmation. Follow the project's branch and attribution rules; this skill does not prescribe a branch or push.
@@ -35,7 +35,7 @@ historical source evidence, not this initiative's commit history.
 
 For when `dispatch-wave` is not to hand. Each line is a step it specifies in full.
 
-1. Pre-flight: ≥2 artifacts with named target files; specs complete; each writer has a separate linked worktree carrying the intended source state; file scopes checked (item 1 above); no orchestrator synthesis needed mid-flight; the brief set matches what was actually asked.
+1. Pre-flight: ≥2 artifacts with named target files; specs complete and source version recorded; requirement coverage, reads, edits, and dependencies named; each writer has a separate linked worktree carrying the intended source state; file scopes checked (item 1 above); no orchestrator synthesis needed mid-flight; the brief set matches what was actually asked.
 2. One self-contained brief per artifact: goal and audience, READ-FIRST sources, full output structure, cross-references with forward-links marked, a don't-do list, voice and length, reporting expectations (item 3 above), and cleanup of anything the agent starts.
 3. Use the host's required route when configured; otherwise use the portable route in `dispatch-wave`. Follow its model and receipt policy. Do not substitute another worker-creation route if a required launch fails.
 4. Make the wave visible in local task bookkeeping and launch through the configured dispatcher. Use completion notifications or bounded waits supported by the host; this does not authorize persistent sidebar chats.
@@ -68,7 +68,7 @@ Consider proactively suggesting this skill when:
 ## Reference
 
 - `dispatch-wave` — owner of the general workflow (link above)
-- `template/tools/parallel-dispatch-check/check.sh` — pre-flight file-scope overlap detector (run before every dispatch)
+- `tools/parallel-dispatch-check/check.sh` in a stamped initiative, or `template/tools/parallel-dispatch-check/check.sh` in Blueprint — pre-flight scope checker
 - `template/tools/wave-digest/digest.mjs` — post-wave filter for the methodology log
 - `template/methodology/handoff/handoff-template.md` — the cross-session handoff format; precursor to multi-agent dispatch
 - `template/docs/methodology/agent-output-discipline-pattern.md` — what an agent reports back, and the tier dial

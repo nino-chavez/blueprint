@@ -29,6 +29,7 @@ const TIMEOUT_MS = 10 * 60 * 1000;
 // [script, args, pass line]. Each pattern anchors on the test's own summary line
 // and leaves assertion counts out, so adding an assertion never breaks the gate.
 const STEPS = [
+  ['template/tools/parallel-dispatch-check/test.mjs', [], /^parallel-dispatch-check self-test: PASS\b/m],
   [`${LIB}/consumers-registry.mjs`, ['--self-test'], /^consumers-registry self-test: PASS\b/m],
   [`${LIB}/cost-dial.mjs`, ['--self-test'], /^cost-dial self-test: PASS\b/m],
   [`${LIB}/doctor.mjs`, ['--selftest'], /^doctor self-test: PASS\b/m],

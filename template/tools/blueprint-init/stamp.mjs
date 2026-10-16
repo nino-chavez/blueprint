@@ -305,6 +305,7 @@ async function copyTree({ src, dst, subs, dryRun, log }) {
 //                            without it a reviewer ERRORs when run from the
 //                            initiative (Phase-3 fix)
 //   tools/run-reviewers.mjs  runs the reviewers that apply to this initiative
+//   tools/parallel-dispatch-check/  optional plan mode + legacy scope check
 // History, and why this is one function: the 2026-06-16 install-gap fix
 // (08e8a9c) wired .claude + tools/lib for Initiative Portal stamps. The runner
 // shipped the same day for research only (d82963d). Wave 85 (c0b6aa7) copied
@@ -345,6 +346,13 @@ async function installImpositionLayer({ target, subs, dryRun, log }) {
   await copyTree({
     src: path.join(BLUEPRINT_ROOT, "template/tools/lib"),
     dst: path.join(target, "tools/lib"),
+    subs,
+    dryRun,
+    log,
+  });
+  await copyTree({
+    src: path.join(BLUEPRINT_ROOT, "template/tools/parallel-dispatch-check"),
+    dst: path.join(target, "tools/parallel-dispatch-check"),
     subs,
     dryRun,
     log,
