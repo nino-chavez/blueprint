@@ -524,13 +524,13 @@ bash template/tools/parallel-dispatch-check/check.sh \
 ```
 
 Exit codes:
-- **0** — no overlap; safe to dispatch in parallel
+- **0** — no equal paths in the expanded legacy glob lists; future paths, directory contents, reads, and dependencies still need review
 - **1** — overlap detected; switch to serial dispatch or narrow scope
 - **2** — usage error
 
-**Mandatory use**: before every parallel-dispatch wave, run this check. If any two agents' file globs overlap, switch to serial dispatch. This prevents commit-attribution bundling (the 2026-05-26 P14/P20/P15 failure where one agent's worktree inherited another's pending changes).
+**Mandatory use**: before every parallel-dispatch wave, run this check. If any two agents' file globs overlap, switch to serial dispatch. This helps detect the scope conflicts behind the 2026-05-26 P14/P20/P15 attribution failure; separate writer worktrees remain required.
 
-Tool location: `template/tools/parallel-dispatch-check/check.sh`. Full reference: `template/tools/parallel-dispatch-check/README.md`.
+Tool location: `template/tools/parallel-dispatch-check/check.sh` in Blueprint, or `tools/parallel-dispatch-check/check.sh` in new stamps. An optional `--plan` mode also checks source freshness, requirement IDs, literal read/edit scopes, and declared dependencies. It does not schedule work or grant approval. Full reference: `template/tools/parallel-dispatch-check/README.md`.
 
 ## Tools
 

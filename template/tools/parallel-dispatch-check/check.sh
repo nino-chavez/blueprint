@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-# parallel-dispatch-check — warn when two parallel agents' file globs overlap.
+# parallel-dispatch-check — validate a plan or compare legacy edit globs.
 # See template/tools/parallel-dispatch-check/README.md for full usage.
 #
 # Usage:
 #   bash check.sh "agent1-glob1,agent1-glob2" "agent2-glob1" "agent3-glob1,..."
 #
 # Exit codes:
-#   0 — no overlap; safe to dispatch in parallel
+#   0 — structural plan checks pass, or no equal paths in expanded legacy lists
 #   1 — overlap detected; switch to serial dispatch or narrow scope
 #   2 — usage error (need ≥2 agent arg lists)
 
 set -euo pipefail
 
-if [[ $# -lt 2 ]]; then
+if [[ "${1:-}" == "--plan" ]]; then
+  exec node "$(cd "$(dirname "$0")" && pwd)/plan.mjs" "$@"
+fi
+
+if [[ "${1:-}" == --* || $# -lt 2 ]]; then
+  echo "usage: bash check.sh --plan <json> [--root <repo>]" >&2
   echo "usage: bash check.sh \"agent1-globs\" \"agent2-globs\" [\"agent3-globs\"...]" >&2
   echo "  each arg is a comma-separated list of file globs for one agent" >&2
   exit 2
@@ -68,5 +73,6 @@ if [[ $overlap_found -eq 1 ]]; then
   exit 1
 fi
 
-echo "SAFE: $N agents, no scope overlap. Safe to dispatch in parallel."
+echo "PASS: $N agents, no equal paths in expanded legacy glob lists."
+echo "Unmatched globs, directory contents, reads, and dependencies are not checked. Review those manually or use --plan."
 exit 0

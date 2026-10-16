@@ -91,6 +91,26 @@ return remains pending until it is actually sent. `sent` requires a timestamp,
 the channel used, and a durable receipt reference; a timestamp alone does not
 prove the reader received the result.
 
+## Preparing decision questions from a review
+
+For a review that produces several decisions, use the portable
+[review-to-decision reference](https://github.com/nino-chavez/agentic-ways-of-working/blob/main/docs/review-decisions.md).
+It owns source-bound findings, independent challenge, question IDs, and partial
+answer capture. `grill-with-docs` owns the interview; `dispatch-wave` owns the
+resulting work assignments. Use the configured host route for any reviewer.
+
+Map human-facing questions to the existing review contract's targets and
+submission/disposition records. Keep agent recommendations separate from the
+human's actual replies. A local answer sheet is working material, not an
+approval receipt. If a source changes, reassess affected answers before applying
+them; do not silently carry approval to the new revision.
+
+Application-definition decisions still use the existing authenticated host and
+source/review bindings in `tools/lib/application-definition-decisions.mjs`.
+The optional `tools/parallel-dispatch-check/check.sh --plan` mode checks the
+resulting assignment structure. It neither grants that authority nor proves the
+planned verification ran. Existing review and stage gates remain the owners.
+
 ## Self-service versus mediated capture
 
 `capture.mode: self-service` means the reader can contribute through the
