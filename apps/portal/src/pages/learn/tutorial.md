@@ -239,7 +239,7 @@ Brownfield runs this whether or not Stage 3 produced a prototype.
 - `current-state-claim-verifier` — existence claims match the screenshots in `research/current-state/`
 - `codebase-claim-verifier` — buildability claims match actual code
 
-All sub-reviewers must PASS. The loop caps at 5 iterations before escalating to the operator. PASS unblocks Stage 5.
+All sub-reviewers must PASS within the review allowance: one independent round, then one verification round against the fixes you authorized. Findings still open after that come to you as unresolved risk; the orchestrator does not run a third round. PASS unblocks Stage 5.
 
 ---
 

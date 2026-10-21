@@ -59,7 +59,7 @@ Read the output, not only the exit code:
 
 4. If any sub-reviewer BLOCKED, surface its findings as actionable items to the calling agent. Do not patch findings yourself — the calling agent owns the fixes.
 
-5. After the calling agent applies the authorized fixes, the orchestrator is re-invoked once. Re-run the sub-reviewers that BLOCKED against the updated state. This verification round is the whole allowance: one independent round (steps 2–4), one verification round (this step).
+5. After the calling agent applies the authorized fixes, the orchestrator is re-invoked once. Re-run every in-scope sub-reviewer against the updated state — a round-1 PASS does not carry over, because a fix for one sub-reviewer's finding can add or change a claim that another sub-reviewer covers. This verification round is the whole allowance: one independent round (steps 2–4), one verification round (this step).
 
 6. If any sub-reviewer still BLOCKS after the verification round, stop. Record each open finding as unresolved risk — a stable ID, the exact claim and its location, the source check, disposition `unresolved` — and hand the list to the owner. Do not start a third round: a changed draft or an open finding does not reset the allowance, and persistent findings mean the underlying claims are unsupportable as written. What happens next (fix outside this review, accept the risk in writing, or hold the release) is the owner's decision, not a reason to keep iterating.
 ```
