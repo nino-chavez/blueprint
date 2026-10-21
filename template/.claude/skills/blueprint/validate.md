@@ -108,7 +108,7 @@ For each confirmed root cause:
    - For terminology drift: add the forbidden term to CLAUDE.md anti-patterns + the regex sweep
    - For missing citations: add a "no orphan claim" pre-check
 3. **Apply the propagated fix** to every affected location (doc, prototype, deck).
-4. **Re-run the Phase 1 feedback loops** against the affected areas. All loops must pass.
+4. **Re-run the Phase 1 feedback loops** against the affected areas, once per applied fix. A loop passes or its failure goes to the Phase 6 unresolved-risk register. A failure that survives its fix is not fixed again on a guess, and a claim the source does not support does not become supportable by re-running the loop.
 
 If no regression seam is possible, that itself is a finding — flag for the next initiative's process improvements.
 
@@ -116,10 +116,12 @@ If no regression seam is possible, that itself is a finding — flag for the nex
 
 Required before declaring validation passed:
 
-- [ ] All Phase 1 loops pass (or remaining failures are documented as accepted, with rationale)
+- [ ] All Phase 1 loops pass, or each remaining failure is recorded as unresolved risk for the owner: a stable ID, the exact claim and its location, the source check, and disposition `unresolved`. An agent's rationale is not acceptance. Only the owner can accept a risk, in writing, and the report records that decision beside the finding; until then the loop stays failed and the box stays unticked.
 - [ ] Regression seams added (or absence noted as findings)
 - [ ] Each cluster of failures has a documented root cause + fix
-- [ ] Validation report written to `validation/[date]-validate.md`
+- [ ] Validation report written to `validation/[date]-validate.md`, with the unresolved-risk register (if any) in its Phase 6 section
+
+Unresolved risk is the end of the review allowance, not a reason for another round. Two different limits apply. The Phase 1 feedback loops are the agent's own deterministic checks: re-run each one once per applied fix (Phase 5 step 4), and a failure that survives its fix goes to the register. The fact-check gate is the independent review: one independent round plus one verification of authorized fixes (`fact-check-loop-reviewer`, per the fleet's [review-decisions.md](https://github.com/nino-chavez/agentic-ways-of-working/blob/main/docs/review-decisions.md)). What is still open after either limit goes to the owner as recorded risk, and a share-link is not released over it.
 
 **Then ask: what would have prevented this entire validation pass from finding anything?** That answer points to upstream improvements — usually in `/blueprint-research` or `/blueprint-docs`. Make the recommendation after the validation pass, not before.
 
@@ -132,7 +134,7 @@ Validation report at `validation/[date]-validate.md` with:
 - Phase 3: Hypothesis clusters and rankings
 - Phase 4: Probe results (which hypothesis was confirmed for each cluster)
 - Phase 5: Root-cause fixes applied + regression seams added
-- Phase 6: Cleanup confirmation + upstream improvement recommendations
+- Phase 6: Cleanup confirmation + unresolved-risk register (if any) + upstream improvement recommendations
 
 Severity ranking applied to remaining issues: **CRITICAL** / **HIGH** / **MEDIUM** / **LOW**. Critical = stakeholder-visible falsehood; High = internally embarrassing inaccuracy; Medium = minor terminology drift; Low = cosmetic.
 
