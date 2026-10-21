@@ -18,7 +18,7 @@ The 8-consecutive-blocks Stop-hook override is the real hard backstop and will f
 
 ## The gap this closes (and the gap it does not)
 
-The two-round allowance only guarantees the fact-check loop *terminates honestly*. It does **not** bind that loop's verdict to the Phase 6 report (`validate.md` Phase 6 is a self-attested checklist; line ~119 carries the `or remaining failures documented as accepted, with rationale` escape hatch). So today a session can converge — or merely *escalate* — the loop and still hand-check Phase 6 boxes that no green sub-reviewer PASS backs. The `/goal` condition closes exactly that bind-gap by forcing each Phase 6 box to quote the orchestrator line that backs it. It does **not** defeat an agent that fabricates a quoted verdict in-transcript — that is the residual risk, mitigated only by quoting being harder to fake consistently than a bare checkbox.
+The two-round allowance only guarantees the fact-check loop *terminates honestly*. It does **not** bind that loop's verdict to the Phase 6 report (`validate.md` Phase 6 is a self-attested checklist; since 2026-10-21 a remaining failure must be recorded as unresolved risk for the owner instead of being accepted with a rationale, but that record is still the agent's own). So today a session can converge — or merely *escalate* — the loop and still hand-check Phase 6 boxes that no green sub-reviewer PASS backs. The `/goal` condition closes exactly that bind-gap by forcing each Phase 6 box to quote the orchestrator line that backs it. It does **not** defeat an agent that fabricates a quoted verdict in-transcript — that is the residual risk, mitigated only by quoting being harder to fake consistently than a bare checkbox.
 
 ## The condition (interactive)
 
