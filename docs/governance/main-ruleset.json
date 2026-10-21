@@ -1,5 +1,5 @@
 {
-  "_comment": "GitHub repository ruleset for the default branch (ADR-0004). The canonical successor to classic branch protection — layerable, readable by all developers, most-restrictive-wins. Apply with docs/governance/apply-ruleset.sh (idempotent gh api). Do NOT also configure classic branch protection on the same branch — two layers = two sources of truth; migrate OFF classic. require_code_owner_review pairs with .github/CODEOWNERS to make promotion authority mechanical. NOTE: while the admin set is a single person, the required review is a self-approval no-op (it binds when a second admin joins). bypass_actors lists the repo-admin role so the owner can still ship waves directly during the solo phase; tighten it when the team grows.",
+  "_comment": "GitHub repository ruleset for the default branch (ADR-0004). The canonical successor to classic branch protection — layerable, readable by all developers, most-restrictive-wins. Apply with docs/governance/apply-ruleset.sh (idempotent gh api). Do NOT also configure classic branch protection on the same branch — two layers = two sources of truth; migrate OFF classic. require_code_owner_review pairs with .github/CODEOWNERS to make promotion authority mechanical. NOTE (2026-10-21): while the admin set is a single person, no approving or code-owner review is required: the sole code owner authors every PR and cannot approve it, so the review rule could only ever be met by an admin bypass. The PR itself, linear history and the six status checks (auto-merge-gate ruleset) stay required. When a second admin joins, set required_approving_review_count to 1 and require_code_owner_review and require_extra_approval_for_unattributed_changes to true, then re-apply. bypass_actors lists the repo-admin role; tighten it when the team grows.",
   "name": "main-protection",
   "target": "branch",
   "enforcement": "active",
@@ -13,8 +13,9 @@
     {
       "type": "pull_request",
       "parameters": {
-        "required_approving_review_count": 1,
-        "require_code_owner_review": true,
+        "required_approving_review_count": 0,
+        "require_code_owner_review": false,
+        "require_extra_approval_for_unattributed_changes": false,
         "dismiss_stale_reviews_on_push": true,
         "require_last_push_approval": false,
         "required_review_thread_resolution": true,

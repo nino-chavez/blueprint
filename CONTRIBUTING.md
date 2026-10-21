@@ -56,8 +56,10 @@ one:
 - Reference the RFC/amendment issue (`Closes #NNN`) when there is one.
 - Promotion-sensitive paths (`METHODOLOGY.md`, `docs/`, `template/`,
   `*AMENDMENTS*`, governance + distribution config) require an **admin review** —
-  enforced by `CODEOWNERS` + the `main` ruleset (`docs/governance/`). This is the
-  mechanical promotion authority; it is not optional.
+  enforced by `CODEOWNERS` + the `main` ruleset (`docs/governance/`) once a second
+  admin exists. During the solo phase the sole admin is the review-of-record and the
+  ruleset requires only the PR, linear history and the status checks (since
+  2026-10-21). This is the mechanical promotion authority; it is not optional.
 - Methodology changes ship as **waves** (a freeze-rule acknowledgment + a
   consumer-sync note per wave; see `WAVE-LOG.md` and `CLAUDE.md`). A PR that lands
   a promotion should say which wave it belongs to.
