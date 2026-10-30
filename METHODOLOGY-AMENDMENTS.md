@@ -4,6 +4,47 @@ Append-only, reverse-chronological. Methodology learnings from applying Blueprin
 
 ---
 
+## 2026-10-30 — A cold reviewer's working files live beside the record, not in a scratchpad
+
+**Trigger**: Holdfast found 19 cold-review records citing crops and briefs in agent session scratchpads under `/private/tmp`, which macOS clears (holdfast#46, #47); a read-only sweep of every repo with judged-screen evidence the same day found the same loss in three more products.
+
+**Scope**: Candidate for methodology promotion
+
+**Bucket**: template
+
+**Status**: Active — proposed as wave 136 (clarification of `judged-screen-pattern.md` § 3a); the guard test stays a candidate. Merging the wave is the promotion decision and is Nino's.
+
+### What the sweep found (2026-10-30)
+
+The sweep covered 13 judged-screen evidence folders across 9 repos, on `origin/main`, for `/private/tmp/`, `/tmp/claude-`, `/var/folders/`, `.claude/cache/` and absolute `/.worktrees/` paths. Nothing was moved or edited in any of those repos.
+
+| Product | Records citing a path outside git | What they cite | Still on disk |
+|---|---|---|---|
+| holdfast | 0 since #46/#47 (19 before) | session scratchpads; now working folders beside each record | scratchpads trashed after the move |
+| photography | 3, plus 48 harness scripts beside the records | one session scratchpad holding the 2,800 captures the gates ran on | no; 623 captures are committed, the rest are gone |
+| public-site-rethink | 3 (two blind briefs, one conformance review) | blind packets and frame sets in one session scratchpad | no |
+| minder | 1 | the image guard's downscaled copy in `~/.claude/cache/read-guard/` | no |
+| film-room | 0 (one match quotes a path the app displayed; a finding, not a citation) | — | — |
+| yawn | 0; every frame the reviewer saw is committed to `<record>/pass-N/` | its session scratchpad holds byte-identical copies | yes, duplicates only |
+| letspepper, volley-watch, jva-member-account | 0 | — | — |
+
+Holdfast also cites absolute worktree paths in 4 records; each resolves at the same repo-relative path on main, so nothing was lost, but the root dies with the worktree. Yawn's 2026-09-08 layout `checks.json` cites a worktree's gitignored `.artifacts/` folder, which is gone.
+
+### Why this is a clarification, and why the test is not promoted
+
+§ 3a already requires captures and the alias map to live beside the record, and calls a review pointing at moved captures "a claim with no evidence behind it". Yawn shows that rule working. The new parts — the brief, crops and scripts in a folder named after the record, and repo-relative citations — have only partial second instances: public-site-rethink commits its blind briefs beside the records, and photography commits its harness scripts, yet both still lost the packet those files point at. So the wave extends the existing captures rule to the reviewer's working files, on the evidence that the failure occurred independently in four products. That is the rule-versus-count split the pattern already uses for the box rule (§ "Promotion status differs by claim").
+
+Holdfast's guard (`tests/evidence.test.ts`) is the only one in the fleet. It stays a documented candidate until a second product runs it, and `screen-composition-reviewer.mjs` is unchanged. Two requirements for any future guard came out of the sweep: it must allow a finding that quotes on-screen text (film-room's false positive), and a list of bad roots misses worktree paths, so repo-relative citation is the rule the check should enforce.
+
+### Not done here
+
+Moving files in photography, public-site-rethink, minder or yawn. Most of what their records cite is already gone; what remains (yawn's duplicate frames and two build briefs in a live session scratchpad) belongs to that session's closeout.
+
+**References**:
+- holdfast#46 (`4682032`) and #47 (`f9bf359`): working folders, `docs/evidence/screen-reviews/cold-brief-template.md`, `tests/evidence.test.ts`, the screen-reviews README's "Working files" section
+- photography `docs/evidence/screen-reviews/analytics-acceptance-a8bfd28/mechanical.md` (`fbf729dd`); public-site-rethink `sites/flickday/…/concepts-2026-10-09/blind-brief.md` (`379a202`), `sites/flickday/…/home-showreel-port-conformance.md` (`beced94`), `sites/rally-hq/…/concepts-2026-10-09/blind-brief.md` (`3f81a01`); minder `today-sources-sheet-e641bac-cold.md` (`17866671`); film-room `desktop-review-inspect-a33d929c-cold.md` (`10cf6097`); yawn `3473512`, `d8bde8a`
+- Precedent for filing a fleet learning here: [[2026-09-26]]
+
 ## 2026-10-14 — Test the path from a free entry point to useful product work
 
 **Trigger**: Nino asked to adapt the next useful practice from the reviewed tool list; Free Tools adds acquisition-specific questions to the existing adoption hypothesis A2.
